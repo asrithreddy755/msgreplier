@@ -44,6 +44,8 @@ export default function MsgRepeaterPage() {
     useState<RepetitionType>("row");
   const [addSpace, setAddSpace] = useState(true);
   const [customCharLimit, setCustomCharLimit] = useState(280);
+  const [useRepetitionCount, setUseRepetitionCount] = useState(false);
+  const [repetitionCount, setRepetitionCount] = useState(10);
 
   const selectedPlatform = useMemo(
     () => PLATFORMS.find((p) => p.id === platformId)!,
@@ -61,7 +63,6 @@ export default function MsgRepeaterPage() {
     }
     setIsLoading(true);
 
-    // Simulate a short delay for loading effect
     setTimeout(() => {
       let separator = "";
       if (repetitionType === "column") {
@@ -71,28 +72,35 @@ export default function MsgRepeaterPage() {
       }
       
       const textWithSeparator = inputText + separator;
-
       let repeatedText = "";
-      if (textWithSeparator.length > 0) {
-        while ((repeatedText + textWithSeparator).length <= charLimit) {
-          repeatedText += textWithSeparator;
+
+      if (useRepetitionCount) {
+        // Generate text based on repetition count
+        if (repetitionCount > 0 && inputText) {
+          const result = Array(repetitionCount).fill(inputText).join(separator);
+          repeatedText = result.slice(0, charLimit);
         }
-      }
-      
-      // Trim the last separator
-      if (repeatedText.endsWith(separator) && separator !== "") {
-          repeatedText = repeatedText.slice(0, -separator.length);
-      }
-      
-      // Final check to see if just the input text fits
-      if (repeatedText.length === 0 && inputText.length <= charLimit) {
-          repeatedText = inputText;
+      } else {
+        // Generate text based on character limit
+        if (textWithSeparator.length > 0) {
+          while ((repeatedText + textWithSeparator).length <= charLimit) {
+            repeatedText += textWithSeparator;
+          }
+        }
+        
+        if (repeatedText.endsWith(separator) && separator !== "") {
+            repeatedText = repeatedText.slice(0, -separator.length);
+        }
+        
+        if (repeatedText.length === 0 && inputText.length <= charLimit) {
+            repeatedText = inputText;
+        }
       }
 
       setGeneratedText(repeatedText);
       setIsLoading(false);
     }, 300);
-  }, [inputText, charLimit, repetitionType, addSpace]);
+  }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount]);
 
   const handleCopy = () => {
     if (!generatedText) return;
@@ -255,6 +263,31 @@ export default function MsgRepeaterPage() {
                 </div>
               </div>
 
+              <div className="flex flex-col space-y-2">
+                <Label>Repetition Count</Label>
+                <div className="flex items-center gap-4 p-4 border rounded-md">
+                    <Checkbox
+                      id="use-repetition-count"
+                      checked={useRepetitionCount}
+                      onCheckedChange={(checked) => setUseRepetitionCount(!!checked)}
+                    />
+                    <Label htmlFor="use-repetition-count" className="flex-1 text-sm font-normal">
+                      Specify how many times to repeat the text
+                    </Label>
+                    <Input
+                      id="repetition-count"
+                      type="number"
+                      value={repetitionCount}
+                      onChange={(e) => setRepetitionCount(Number(e.target.value))}
+                      className="w-24"
+                      disabled={!useRepetitionCount}
+                    />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  If unchecked, it will repeat as many times as possible within the platform's character limit.
+                </p>
+              </div>
+
               <Button onClick={handleGenerate} disabled={isLoading || !inputText.trim()}>
                 {isLoading ? "Generating..." : "Generate"}
               </Button>
@@ -316,7 +349,7 @@ export default function MsgRepeaterPage() {
             <ul className="list-disc list-inside space-y-2">
               <li><span className="font-semibold">Meeting Character Minimums:</span> Some online forms or comment sections have a minimum character requirement. Quickly pad your message to meet the minimum length.</li>
               <li><span className="font-semibold">Creating Emphasis:</span> Repeating a word or phrase can be a powerful way to draw attention to your message in social media posts or chats.</li>
-              <li><span className="font-semibold">Artistic Text Patterns:</span> Use the column feature to create ASCII art or interesting visual patterns with text for platforms like Discord or Twitter.</li>
+              <li><span className="font-semibold">Artistic Text Patterns:</span> Use the column feature to create ASCII art or interesting visual patterns with platforms like Discord or Twitter.</li>
               <li><span className="font-semibold">Testing and Development:</span> Developers can use this tool to generate long strings of text to test text fields, database limits, and layout constraints in their applications.</li>
             </ul>
           </div>
