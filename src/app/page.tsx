@@ -5,9 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -116,8 +113,8 @@ export default function MsgRepeaterPage() {
             MsgRepeater
           </h1>
         </div>
-        <p className="text-muted-foreground mt-2">
-          Repeat your text for any social media platform.
+        <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
+          Welcome to MsgRepeater! Easily repeat your message to meet the character limits of any social media platform. Just type your text, choose your platform, and generate the repeated message instantly.
         </p>
       </div>
       <Card className="w-full max-w-2xl shadow-lg">
