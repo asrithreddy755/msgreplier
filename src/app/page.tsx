@@ -30,6 +30,7 @@ import {
   DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 type RepetitionType = "row" | "column";
 
@@ -114,6 +115,7 @@ export default function MsgRepeaterPage() {
           </h1>
         </div>
         <div className="flex items-center gap-4 flex-shrink-0">
+          <ThemeToggle />
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground text-center">Terms and Conditions</Button>
