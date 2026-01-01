@@ -8,7 +8,7 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    const defaultPlatform = PLATFORMS.find(p => p.id === 'x');
+    const defaultPlatform = PLATFORMS.find(p => p.id === 'instagram');
     if (defaultPlatform) {
       router.replace(`/${defaultPlatform.slug}`);
     } else {
