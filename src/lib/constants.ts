@@ -1,5 +1,5 @@
 export type Platform = {
-  id: 'instagram' | 'whatsapp' | 'telegram' | 'x' | 'facebook' | 'custom';
+  id: 'instagram' | 'whatsapp' | 'telegram' | 'x' | 'facebook' | 'youtube' | 'custom';
   name: string;
   charLimit: number;
 };
@@ -10,5 +10,6 @@ export const PLATFORMS: Platform[] = [
   { id: 'facebook', name: 'Facebook', charLimit: 8000 },
   { id: 'whatsapp', name: 'WhatsApp', charLimit: 4096 },
   { id: 'telegram', name: 'Telegram', charLimit: 4096 },
+  { id: 'youtube', name: 'YouTube Live', charLimit: 200 },
   { id: 'custom', name: 'Custom', charLimit: 280 },
 ];
