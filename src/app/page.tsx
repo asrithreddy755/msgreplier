@@ -299,6 +299,15 @@ export default function MsgRepeaterPage() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
+          <h3 className="text-2xl font-bold tracking-tight mb-4">How Does Text MsgRepeater Work?</h3>
+          <div className="space-y-4 text-muted-foreground">
+            <p>Our tool is straightforward. You enter the text you want to repeat in the "Your Text" field. Then, you select a social media platform from the dropdown menu, which automatically sets the character limit for you. Alternatively, you can choose "Custom" to define your own limit.</p>
+            <p>You can also decide if you want the text to be repeated in a single row or in a column format, and whether to add spaces between each repetition. Once you click "Generate," the tool repeats your text as many times as possible without exceeding the character limit and displays it in the "Generated Text" box. From there, you can easily copy it to your clipboard.</p>
+          </div>
+        </div>
+
         <footer className="mt-8 text-center text-sm text-muted-foreground">
           <p>
             Created by an AI assistant in Firebase Studio.
