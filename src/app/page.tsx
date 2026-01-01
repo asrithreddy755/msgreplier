@@ -22,6 +22,10 @@ import { PLATFORMS, type Platform } from "@/lib/constants";
 import PlatformIcon from "@/components/platform-icon";
 import { Copy, Check, MessageSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+
+type RepetitionType = "row" | "column";
 
 export default function MsgRepeaterPage() {
   const [platformId, setPlatformId] = useState<Platform["id"]>(PLATFORMS[0].id);
@@ -29,6 +33,9 @@ export default function MsgRepeaterPage() {
   const [generatedText, setGeneratedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [repetitionType, setRepetitionType] =
+    useState<RepetitionType>("row");
+  const [addSpace, setAddSpace] = useState(true);
 
   const selectedPlatform = useMemo(
     () => PLATFORMS.find((p) => p.id === platformId)!,
@@ -42,14 +49,35 @@ export default function MsgRepeaterPage() {
     }
     setIsLoading(true);
 
-    let repeatedText = "";
-    while ((repeatedText + inputText).length <= selectedPlatform.charLimit) {
-      repeatedText += inputText;
+    let separator = "";
+    if (repetitionType === "column") {
+      separator = "\n";
+    } else if (addSpace) {
+      separator = " ";
     }
+    
+    const textWithSeparator = inputText + separator;
+
+    let repeatedText = "";
+    while ((repeatedText + textWithSeparator).length <= selectedPlatform.charLimit) {
+      repeatedText += textWithSeparator;
+    }
+    
+    // Trim the last separator
+    if (repeatedText.endsWith(separator)) {
+        repeatedText = repeatedText.slice(0, -separator.length);
+    }
+    
+    // Final check to see if just the input text fits
+    if (repeatedText.length === 0 && inputText.length <= selectedPlatform.charLimit) {
+        repeatedText = inputText;
+    }
+
+
     setGeneratedText(repeatedText);
 
     setIsLoading(false);
-  }, [inputText, selectedPlatform]);
+  }, [inputText, selectedPlatform, repetitionType, addSpace]);
 
   const handleCopy = () => {
     if (!generatedText) return;
@@ -119,6 +147,44 @@ export default function MsgRepeaterPage() {
                 rows={3}
               />
             </div>
+            
+            <div className="flex flex-col space-y-4">
+              <Label>Formatting Options</Label>
+              <div className="flex items-center space-x-6">
+                <RadioGroup
+                  defaultValue="row"
+                  value={repetitionType}
+                  onValueChange={(value) =>
+                    setRepetitionType(value as RepetitionType)
+                  }
+                  className="flex items-center"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="row" id="r1" />
+                    <Label htmlFor="r1">Row</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="column" id="r2" />
+                    <Label htmlFor="r2">Column</Label>
+                  </div>
+                </RadioGroup>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="add-space"
+                    checked={addSpace}
+                    onCheckedChange={(checked) => setAddSpace(!!checked)}
+                    disabled={repetitionType === "column"}
+                  />
+                  <Label
+                    htmlFor="add-space"
+                    className={repetitionType === 'column' ? 'text-muted-foreground' : ''}
+                  >
+                    Add space
+                  </Label>
+                </div>
+              </div>
+            </div>
+
 
             <Button onClick={handleGenerate} disabled={isLoading}>
               {isLoading ? "Generating..." : "Generate"}
