@@ -255,10 +255,12 @@ export default function MsgRepeaterPage() {
               <DialogHeader>
                 <DialogTitle>Terms and Conditions</DialogTitle>
               </DialogHeader>
-              <DialogDescription className="space-y-4 max-h-[60vh] overflow-y-auto">
-                <p>Welcome to MsgRepeater. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</p>
-                <p>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</p>
-                <p>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</p>
+              <DialogDescription asChild>
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                  <p>Welcome to MsgRepeater. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</p>
+                  <p>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</p>
+                  <p>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</p>
+                </div>
               </DialogDescription>
             </DialogContent>
           </Dialog>
@@ -270,10 +272,12 @@ export default function MsgRepeaterPage() {
               <DialogHeader>
                 <DialogTitle>Privacy Policy</DialogTitle>
               </DialogHeader>
-              <DialogDescription className="space-y-4 max-h-[60vh] overflow-y-auto">
-                  <p>Your privacy is important to us. It is MsgRepeater's policy to respect your privacy regarding any information we may collect from you across our website.</p>
-                  <p className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</p>
-                  <p>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</p>
+              <DialogDescription asChild>
+                  <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    <p>Your privacy is important to us. It is MsgRepeater's policy to respect your privacy regarding any information we may collect from you across our website.</p>
+                    <p className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</p>
+                    <p>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</p>
+                  </div>
               </DialogDescription>
             </DialogContent>
           </Dialog>
