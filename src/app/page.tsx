@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { optimizeRepeatedTextForPlatform } from "@/ai/flows/optimize-repeated-text-for-platform";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,9 +20,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare, Loader2 } from "lucide-react";
+import { Copy, Check, MessageSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
 
 export default function MsgRepeaterPage() {
   const [platformId, setPlatformId] = useState<Platform["id"]>(PLATFORMS[0].id);
@@ -31,7 +29,6 @@ export default function MsgRepeaterPage() {
   const [generatedText, setGeneratedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  const { toast } = useToast();
 
   const selectedPlatform = useMemo(
     () => PLATFORMS.find((p) => p.id === platformId)!,
@@ -39,39 +36,28 @@ export default function MsgRepeaterPage() {
   );
 
   const generateRepeatedText = useCallback(
-    async (text: string, platform: Platform) => {
+    (text: string, platform: Platform) => {
       if (!text.trim()) {
         setGeneratedText("");
         return;
       }
       setIsLoading(true);
-      try {
-        const result = await optimizeRepeatedTextForPlatform({
-          platform: platform.name,
-          text: text,
-          characterLimit: platform.charLimit,
-        });
-        setGeneratedText(result.optimizedText);
-      } catch (error) {
-        console.error("Error generating text:", error);
-        setGeneratedText("Error: Could not generate text.");
-        toast({
-          variant: "destructive",
-          title: "Generation Failed",
-          description:
-            "There was an issue generating the text. Please try again.",
-        });
-      } finally {
-        setIsLoading(false);
+      
+      let repeatedText = "";
+      while ((repeatedText + text).length <= platform.charLimit) {
+        repeatedText += text;
       }
+      setGeneratedText(repeatedText);
+
+      setIsLoading(false);
     },
-    [toast]
+    []
   );
 
   useEffect(() => {
     const handler = setTimeout(() => {
       generateRepeatedText(inputText, selectedPlatform);
-    }, 500);
+    }, 250); // Reduced delay for faster response
 
     return () => {
       clearTimeout(handler);
@@ -101,7 +87,7 @@ export default function MsgRepeaterPage() {
             </CardTitle>
           </div>
           <CardDescription>
-            Optimize repeated text for any social media platform, powered by AI.
+            Repeat your text for any social media platform.
           </CardDescription>
         </CardHeader>
         <CardContent>
