@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -109,19 +109,19 @@ export default function MsgRepeaterPage() {
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 font-body">
+      <div className="text-center mb-8">
+        <div className="flex items-center justify-center gap-3">
+          <MessageSquare className="h-10 w-10 text-primary" />
+          <h1 className="font-headline text-5xl font-bold tracking-tight">
+            MsgRepeater
+          </h1>
+        </div>
+        <p className="text-muted-foreground mt-2">
+          Repeat your text for any social media platform.
+        </p>
+      </div>
       <Card className="w-full max-w-2xl shadow-lg">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-             <MessageSquare className="h-8 w-8 text-primary" />
-            <CardTitle className="font-headline text-3xl tracking-tight">
-              MsgRepeater
-            </CardTitle>
-          </div>
-          <CardDescription>
-            Repeat your text for any social media platform.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="grid w-full items-center gap-6">
             <div className="flex flex-col space-y-2">
               <Label htmlFor="platform">Platform</Label>
@@ -275,9 +275,9 @@ export default function MsgRepeaterPage() {
               </DialogHeader>
               <DialogDescription asChild>
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                  <p>Welcome to MsgRepeater. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</p>
-                  <p>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</p>
-                  <p>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</p>
+                  <div>Welcome to MsgRepeater. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</div>
+                  <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
+                  <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
                 </div>
               </DialogDescription>
             </DialogContent>
@@ -292,9 +292,9 @@ export default function MsgRepeaterPage() {
               </DialogHeader>
               <DialogDescription asChild>
                   <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    <p>Your privacy is important to us. It is MsgRepeater's policy to respect your privacy regarding any information we may collect from you across our website.</p>
-                    <p className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</p>
-                    <p>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</p>
+                    <div>Your privacy is important to us. It is MsgRepeater's policy to respect your privacy regarding any information we may collect from you across our website.</div>
+                    <div className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</div>
+                    <div>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</div>
                   </div>
               </DialogDescription>
             </DialogContent>
