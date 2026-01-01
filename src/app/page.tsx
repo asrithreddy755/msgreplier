@@ -106,17 +106,17 @@ export default function MsgRepeaterPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-body">
-      <header className="flex items-center justify-between p-4 border-b bg-card shadow-sm">
+      <header className="flex flex-wrap items-center justify-between p-4 border-b bg-card shadow-sm gap-4">
         <div className="flex items-center gap-3">
           <MessageSquare className="h-8 w-8 text-primary" />
           <h1 className="font-headline text-2xl font-bold tracking-tight">
             MsgRepeater
           </h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-shrink-0">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground">Terms and Conditions</Button>
+              <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground text-center">Terms and Conditions</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -133,7 +133,7 @@ export default function MsgRepeaterPage() {
           </Dialog>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground">Privacy Policy</Button>
+              <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground text-center">Privacy Policy</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
