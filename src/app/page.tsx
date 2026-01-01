@@ -308,6 +308,18 @@ export default function MsgRepeaterPage() {
           </div>
         </div>
 
+        <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
+          <h3 className="text-2xl font-bold tracking-tight mb-4">Common Uses</h3>
+          <div className="space-y-4 text-muted-foreground">
+            <ul className="list-disc list-inside space-y-2">
+              <li><span className="font-semibold">Meeting Character Minimums:</span> Some online forms or comment sections have a minimum character requirement. Quickly pad your message to meet the minimum length.</li>
+              <li><span className="font-semibold">Creating Emphasis:</span> Repeating a word or phrase can be a powerful way to draw attention to your message in social media posts or chats.</li>
+              <li><span className="font-semibold">Artistic Text Patterns:</span> Use the column feature to create ASCII art or interesting visual patterns with text for platforms like Discord or Twitter.</li>
+              <li><span className="font-semibold">Testing and Development:</span> Developers can use this tool to generate long strings of text to test text fields, database limits, and layout constraints in their applications.</li>
+            </ul>
+          </div>
+        </div>
+
         <footer className="mt-8 text-center text-sm text-muted-foreground">
           <div className="flex justify-center gap-4 mb-2">
              <Dialog>
