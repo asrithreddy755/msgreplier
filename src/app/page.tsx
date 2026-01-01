@@ -343,6 +343,19 @@ export default function MsgRepeaterPage() {
         </Card>
 
         <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
+          <h3 className="text-2xl font-bold tracking-tight mb-4">How to Use This Tool</h3>
+          <div className="space-y-4 text-muted-foreground">
+            <ol className="list-decimal list-inside space-y-2">
+              <li><span className="font-semibold">Enter Your Text:</span> Start by typing or pasting the text you want to repeat into the "Your Text" field.</li>
+              <li><span className="font-semibold">Choose a Platform:</span> Select your target social media platform from the dropdown menu. This sets the correct character limit automatically. For a custom limit, choose "Custom" and enter a number.</li>
+              <li><span className="font-semibold">Set Formatting Options:</span> Choose to repeat your text in a "Row" (side-by-side) or "Column" (line-by-line). You can also choose whether to add a space between repetitions for the "Row" option.</li>
+              <li><span className="font-semibold">Specify Repetition Count (Optional):</span> If you want to repeat the text a specific number of times, check the box and enter the desired count. Otherwise, the tool will repeat it as many times as possible within the character limit.</li>
+              <li><span className="font-semibold">Generate and Copy:</span> Click the "Generate" button. Your repeated text will appear below. You can then click the copy icon to copy it to your clipboard.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
           <h3 className="text-2xl font-bold tracking-tight mb-4">How Does Text MsgRepeater Work?</h3>
           <div className="space-y-4 text-muted-foreground">
             <p>Our tool is straightforward. You enter the text you want to repeat in the "Your Text" field. Then, you select a social media platform from the dropdown menu, which automatically sets the character limit for you. Alternatively, you can choose "Custom" to define your own limit.</p>
@@ -407,5 +420,7 @@ export default function MsgRepeaterPage() {
     </div>
   );
 }
+
+    
 
     
