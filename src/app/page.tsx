@@ -31,6 +31,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useToast } from "@/hooks/use-toast";
 
 type RepetitionType = "row" | "column";
 
@@ -46,6 +47,7 @@ export default function MsgRepeaterPage() {
   const [customCharLimit, setCustomCharLimit] = useState(280);
   const [useRepetitionCount, setUseRepetitionCount] = useState(false);
   const [repetitionCount, setRepetitionCount] = useState(10);
+  const { toast } = useToast();
 
   const selectedPlatform = useMemo(
     () => PLATFORMS.find((p) => p.id === platformId)!,
@@ -75,13 +77,18 @@ export default function MsgRepeaterPage() {
       let repeatedText = "";
 
       if (useRepetitionCount) {
-        // Generate text based on repetition count
         if (repetitionCount > 0 && inputText) {
           const result = Array(repetitionCount).fill(inputText).join(separator);
+          if (result.length > charLimit) {
+            toast({
+              variant: "destructive",
+              title: "Character limit exceeded",
+              description: `The generated text is longer than the platform's limit of ${charLimit} characters and has been truncated.`,
+            });
+          }
           repeatedText = result.slice(0, charLimit);
         }
       } else {
-        // Generate text based on character limit
         if (textWithSeparator.length > 0) {
           while ((repeatedText + textWithSeparator).length <= charLimit) {
             repeatedText += textWithSeparator;
@@ -100,7 +107,7 @@ export default function MsgRepeaterPage() {
       setGeneratedText(repeatedText);
       setIsLoading(false);
     }, 300);
-  }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount]);
+  }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast]);
 
   const handleCopy = () => {
     if (!generatedText) return;
@@ -400,3 +407,5 @@ export default function MsgRepeaterPage() {
     </div>
   );
 }
+
+    
