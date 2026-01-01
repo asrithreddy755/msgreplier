@@ -106,7 +106,7 @@ export default function MsgRepeaterPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-body">
-      <header className="flex items-center justify-between p-4 border-b">
+      <header className="flex items-center justify-between p-4 border-b bg-card shadow-sm">
         <div className="flex items-center gap-3">
           <MessageSquare className="h-8 w-8 text-primary" />
           <h1 className="font-headline text-2xl font-bold tracking-tight">
@@ -307,3 +307,4 @@ export default function MsgRepeaterPage() {
       </main>
     </div>
   );
+}
