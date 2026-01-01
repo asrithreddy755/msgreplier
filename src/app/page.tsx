@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -35,34 +35,21 @@ export default function MsgRepeaterPage() {
     [platformId]
   );
 
-  const generateRepeatedText = useCallback(
-    (text: string, platform: Platform) => {
-      if (!text.trim()) {
-        setGeneratedText("");
-        return;
-      }
-      setIsLoading(true);
-      
-      let repeatedText = "";
-      while ((repeatedText + text).length <= platform.charLimit) {
-        repeatedText += text;
-      }
-      setGeneratedText(repeatedText);
+  const handleGenerate = useCallback(() => {
+    if (!inputText.trim()) {
+      setGeneratedText("");
+      return;
+    }
+    setIsLoading(true);
 
-      setIsLoading(false);
-    },
-    []
-  );
+    let repeatedText = "";
+    while ((repeatedText + inputText).length <= selectedPlatform.charLimit) {
+      repeatedText += inputText;
+    }
+    setGeneratedText(repeatedText);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      generateRepeatedText(inputText, selectedPlatform);
-    }, 250); // Reduced delay for faster response
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [inputText, selectedPlatform, generateRepeatedText]);
+    setIsLoading(false);
+  }, [inputText, selectedPlatform]);
 
   const handleCopy = () => {
     if (!generatedText) return;
@@ -91,7 +78,7 @@ export default function MsgRepeaterPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid w-full items-center gap-6">
+          <div className="grid w-full items-center gap-6">
             <div className="flex flex-col space-y-2">
               <Label htmlFor="platform">Platform</Label>
               <Select
@@ -133,6 +120,10 @@ export default function MsgRepeaterPage() {
               />
             </div>
 
+            <Button onClick={handleGenerate} disabled={isLoading}>
+              {isLoading ? "Generating..." : "Generate"}
+            </Button>
+
             <div className="flex flex-col space-y-2">
               <div className="flex justify-between items-center">
                 <Label htmlFor="generated-text">Generated Text</Label>
@@ -172,7 +163,7 @@ export default function MsgRepeaterPage() {
                 </Button>
               </div>
             </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
       <footer className="mt-8 text-center text-sm text-muted-foreground">
