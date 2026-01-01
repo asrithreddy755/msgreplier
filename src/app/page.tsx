@@ -105,166 +105,18 @@ export default function MsgRepeaterPage() {
   const isOverLimit = charCount > charLimit;
 
   return (
-    <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4 font-body">
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-3">
-          <MessageSquare className="h-10 w-10 text-primary" />
-          <h1 className="font-headline text-5xl font-bold tracking-tight">
+    <div className="flex flex-col min-h-screen bg-background font-body">
+      <header className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center gap-3">
+          <MessageSquare className="h-8 w-8 text-primary" />
+          <h1 className="font-headline text-2xl font-bold tracking-tight">
             MsgRepeater
           </h1>
         </div>
-        <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-          Welcome to MsgRepeater! Easily repeat your message to meet the character limits of any social media platform. Just type your text, choose your platform, and generate the repeated message instantly.
-        </p>
-      </div>
-      <Card className="w-full max-w-2xl shadow-lg">
-        <CardContent className="pt-6">
-          <div className="grid w-full items-center gap-6">
-            <div className="flex flex-col space-y-2">
-              <Label htmlFor="platform">Platform</Label>
-              <div className="flex gap-4">
-                <Select
-                  value={platformId}
-                  onValueChange={(value) => setPlatformId(value as Platform["id"])}
-                >
-                  <SelectTrigger id="platform" className="flex-1">
-                    <SelectValue placeholder="Select a platform">
-                      <div className="flex items-center gap-2">
-                        <PlatformIcon platformId={platformId} className="h-5 w-5" />
-                        <span>{selectedPlatform.name}</span>
-                      </div>
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PLATFORMS.map((platform) => (
-                      <SelectItem key={platform.id} value={platform.id}>
-                        <div className="flex items-center gap-2">
-                          <PlatformIcon
-                            platformId={platform.id}
-                            className="h-5 w-5"
-                          />
-                          <span>{platform.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {platformId === 'custom' && (
-                  <div className="flex flex-col space-y-2 w-40">
-                     <Input
-                        id="custom-limit"
-                        type="number"
-                        value={customCharLimit}
-                        onChange={(e) => setCustomCharLimit(Number(e.target.value))}
-                        placeholder="Char limit"
-                      />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <Label htmlFor="input-text">Your Text</Label>
-              <Textarea
-                id="input-text"
-                placeholder="Enter text to repeat..."
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                rows={3}
-              />
-            </div>
-            
-            <div className="flex flex-col space-y-4">
-              <Label>Formatting Options</Label>
-              <div className="flex items-center space-x-6">
-                <RadioGroup
-                  defaultValue="row"
-                  value={repetitionType}
-                  onValueChange={(value) =>
-                    setRepetitionType(value as RepetitionType)
-                  }
-                  className="flex items-center"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="row" id="r1" />
-                    <Label htmlFor="r1">Row</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="column" id="r2" />
-                    <Label htmlFor="r2">Column</Label>
-                  </div>
-                </RadioGroup>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="add-space"
-                    checked={addSpace}
-                    onCheckedChange={(checked) => setAddSpace(!!checked)}
-                    disabled={repetitionType === "column"}
-                  />
-                  <Label
-                    htmlFor="add-space"
-                    className={repetitionType === 'column' ? 'text-muted-foreground' : ''}
-                  >
-                    Add space
-                  </Label>
-                </div>
-              </div>
-            </div>
-
-            <Button onClick={handleGenerate} disabled={isLoading || !inputText.trim()}>
-              {isLoading ? "Generating..." : "Generate"}
-            </Button>
-
-            <div className="flex flex-col space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="generated-text">Generated Text</Label>
-                <div
-                  className={`text-sm ${
-                    isOverLimit ? "text-destructive font-bold" : "text-muted-foreground"
-                  }`}
-                >
-                  {charCount} / {charLimit}
-                </div>
-              </div>
-              <div className="relative">
-                {isLoading ? (
-                  <Skeleton className="h-[120px] w-full" />
-                ) : (
-                  <Textarea
-                    id="generated-text"
-                    readOnly
-                    value={generatedText}
-                    placeholder="Generated text will appear here..."
-                    className="pr-12 min-h-[120px] bg-muted/50"
-                  />
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:bg-accent/50"
-                  onClick={handleCopy}
-                  disabled={isLoading || !generatedText || isCopied}
-                  aria-label="Copy to clipboard"
-                >
-                  {isCopied ? (
-                    <Check className="h-5 w-5 text-green-500" />
-                  ) : (
-                    <Copy className="h-5 w-5" />
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      <footer className="mt-8 text-center text-sm text-muted-foreground">
-        <p className="mb-2">
-          Created by an AI assistant in Firebase Studio.
-        </p>
-        <div className="flex justify-center gap-4">
+        <div className="flex items-center gap-4">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="link" className="p-0 h-auto">Terms and Conditions</Button>
+              <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground">Terms and Conditions</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -281,7 +133,7 @@ export default function MsgRepeaterPage() {
           </Dialog>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="link" className="p-0 h-auto">Privacy Policy</Button>
+              <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground">Privacy Policy</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -297,7 +149,161 @@ export default function MsgRepeaterPage() {
             </DialogContent>
           </Dialog>
         </div>
-      </footer>
-    </main>
+      </header>
+      <main className="flex flex-1 w-full flex-col items-center justify-center p-4">
+        <div className="text-center mb-8">
+          <h2 className="font-headline text-4xl font-bold tracking-tight">
+            Repeat Your Message Instantly
+          </h2>
+          <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
+            Easily repeat your message to meet the character limits of any social media platform. Just type your text, choose your platform, and generate the repeated message instantly.
+          </p>
+        </div>
+        <Card className="w-full max-w-2xl shadow-lg">
+          <CardContent className="pt-6">
+            <div className="grid w-full items-center gap-6">
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="platform">Platform</Label>
+                <div className="flex gap-4">
+                  <Select
+                    value={platformId}
+                    onValueChange={(value) => setPlatformId(value as Platform["id"])}
+                  >
+                    <SelectTrigger id="platform" className="flex-1">
+                      <SelectValue placeholder="Select a platform">
+                        <div className="flex items-center gap-2">
+                          <PlatformIcon platformId={platformId} className="h-5 w-5" />
+                          <span>{selectedPlatform.name}</span>
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PLATFORMS.map((platform) => (
+                        <SelectItem key={platform.id} value={platform.id}>
+                          <div className="flex items-center gap-2">
+                            <PlatformIcon
+                              platformId={platform.id}
+                              className="h-5 w-5"
+                            />
+                            <span>{platform.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {platformId === 'custom' && (
+                    <div className="flex flex-col space-y-2 w-40">
+                       <Input
+                          id="custom-limit"
+                          type="number"
+                          value={customCharLimit}
+                          onChange={(e) => setCustomCharLimit(Number(e.target.value))}
+                          placeholder="Char limit"
+                        />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="input-text">Your Text</Label>
+                <Textarea
+                  id="input-text"
+                  placeholder="Enter text to repeat..."
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex flex-col space-y-4">
+                <Label>Formatting Options</Label>
+                <div className="flex items-center space-x-6">
+                  <RadioGroup
+                    defaultValue="row"
+                    value={repetitionType}
+                    onValueChange={(value) =>
+                      setRepetitionType(value as RepetitionType)
+                    }
+                    className="flex items-center"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="row" id="r1" />
+                      <Label htmlFor="r1">Row</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="column" id="r2" />
+                      <Label htmlFor="r2">Column</Label>
+                    </div>
+                  </RadioGroup>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="add-space"
+                      checked={addSpace}
+                      onCheckedChange={(checked) => setAddSpace(!!checked)}
+                      disabled={repetitionType === "column"}
+                    />
+                    <Label
+                      htmlFor="add-space"
+                      className={repetitionType === 'column' ? 'text-muted-foreground' : ''}
+                    >
+                      Add space
+                    </Label>
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={handleGenerate} disabled={isLoading || !inputText.trim()}>
+                {isLoading ? "Generating..." : "Generate"}
+              </Button>
+
+              <div className="flex flex-col space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="generated-text">Generated Text</Label>
+                  <div
+                    className={`text-sm ${
+                      isOverLimit ? "text-destructive font-bold" : "text-muted-foreground"
+                    }`}
+                  >
+                    {charCount} / {charLimit}
+                  </div>
+                </div>
+                <div className="relative">
+                  {isLoading ? (
+                    <Skeleton className="h-[120px] w-full" />
+                  ) : (
+                    <Textarea
+                      id="generated-text"
+                      readOnly
+                      value={generatedText}
+                      placeholder="Generated text will appear here..."
+                      className="pr-12 min-h-[120px] bg-muted/50"
+                    />
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:bg-accent/50"
+                    onClick={handleCopy}
+                    disabled={isLoading || !generatedText || isCopied}
+                    aria-label="Copy to clipboard"
+                  >
+                    {isCopied ? (
+                      <Check className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <Copy className="h-5 w-5" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <footer className="mt-8 text-center text-sm text-muted-foreground">
+          <p>
+            Created by an AI assistant in Firebase Studio.
+          </p>
+        </footer>
+      </main>
+    </div>
   );
-}
