@@ -24,6 +24,14 @@ import { Copy, Check, MessageSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 type RepetitionType = "row" | "column";
 
@@ -49,34 +57,37 @@ export default function MsgRepeaterPage() {
     }
     setIsLoading(true);
 
-    let separator = "";
-    if (repetitionType === "column") {
-      separator = "\n";
-    } else if (addSpace) {
-      separator = " ";
-    }
-    
-    const textWithSeparator = inputText + separator;
+    // Simulate a short delay for loading effect
+    setTimeout(() => {
+      let separator = "";
+      if (repetitionType === "column") {
+        separator = "\n";
+      } else if (addSpace) {
+        separator = " ";
+      }
+      
+      const textWithSeparator = inputText + separator;
 
-    let repeatedText = "";
-    while ((repeatedText + textWithSeparator).length <= selectedPlatform.charLimit) {
-      repeatedText += textWithSeparator;
-    }
-    
-    // Trim the last separator
-    if (repeatedText.endsWith(separator)) {
-        repeatedText = repeatedText.slice(0, -separator.length);
-    }
-    
-    // Final check to see if just the input text fits
-    if (repeatedText.length === 0 && inputText.length <= selectedPlatform.charLimit) {
-        repeatedText = inputText;
-    }
+      let repeatedText = "";
+      if (textWithSeparator.length > 0) {
+        while ((repeatedText + textWithSeparator).length <= selectedPlatform.charLimit) {
+          repeatedText += textWithSeparator;
+        }
+      }
+      
+      // Trim the last separator
+      if (repeatedText.endsWith(separator) && separator !== "") {
+          repeatedText = repeatedText.slice(0, -separator.length);
+      }
+      
+      // Final check to see if just the input text fits
+      if (repeatedText.length === 0 && inputText.length <= selectedPlatform.charLimit) {
+          repeatedText = inputText;
+      }
 
-
-    setGeneratedText(repeatedText);
-
-    setIsLoading(false);
+      setGeneratedText(repeatedText);
+      setIsLoading(false);
+    }, 300);
   }, [inputText, selectedPlatform, repetitionType, addSpace]);
 
   const handleCopy = () => {
@@ -185,8 +196,7 @@ export default function MsgRepeaterPage() {
               </div>
             </div>
 
-
-            <Button onClick={handleGenerate} disabled={isLoading}>
+            <Button onClick={handleGenerate} disabled={isLoading || !inputText.trim()}>
               {isLoading ? "Generating..." : "Generate"}
             </Button>
 
@@ -233,9 +243,41 @@ export default function MsgRepeaterPage() {
         </CardContent>
       </Card>
       <footer className="mt-8 text-center text-sm text-muted-foreground">
-        <p>
+        <p className="mb-2">
           Created by an AI assistant in Firebase Studio.
         </p>
+        <div className="flex justify-center gap-4">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="link" className="p-0 h-auto">Terms and Conditions</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Terms and Conditions</DialogTitle>
+              </DialogHeader>
+              <DialogDescription className="space-y-4 max-h-[60vh] overflow-y-auto">
+                <p>Welcome to MsgRepeater. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</p>
+                <p>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</p>
+                <p>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</p>
+              </DialogDescription>
+            </DialogContent>
+          </Dialog>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="link" className="p-0 h-auto">Privacy Policy</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Privacy Policy</DialogTitle>
+              </DialogHeader>
+              <DialogDescription className="space-y-4 max-h-[60vh] overflow-y-auto">
+                  <p>Your privacy is important to us. It is MsgRepeater's policy to respect your privacy regarding any information we may collect from you across our website.</p>
+                  <p className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</p>
+                  <p>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</p>
+              </DialogDescription>
+            </DialogContent>
+          </Dialog>
+        </div>
       </footer>
     </main>
   );
