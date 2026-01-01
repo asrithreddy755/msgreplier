@@ -1,4 +1,5 @@
 import type { Platform } from '@/lib/constants';
+import { Settings } from 'lucide-react';
 
 const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -101,6 +102,7 @@ const PlatformIcon = ({
     telegram: TelegramIcon,
     x: XIcon,
     facebook: FacebookIcon,
+    custom: Settings,
   };
 
   const IconComponent = icons[platformId];

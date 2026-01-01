@@ -24,6 +24,7 @@ import { Copy, Check, MessageSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -44,11 +45,16 @@ export default function MsgRepeaterPage() {
   const [repetitionType, setRepetitionType] =
     useState<RepetitionType>("row");
   const [addSpace, setAddSpace] = useState(true);
+  const [customCharLimit, setCustomCharLimit] = useState(280);
 
   const selectedPlatform = useMemo(
     () => PLATFORMS.find((p) => p.id === platformId)!,
     [platformId]
   );
+  
+  const charLimit = useMemo(() => {
+    return platformId === 'custom' ? customCharLimit : selectedPlatform.charLimit;
+  }, [platformId, customCharLimit, selectedPlatform]);
 
   const handleGenerate = useCallback(() => {
     if (!inputText.trim()) {
@@ -70,7 +76,7 @@ export default function MsgRepeaterPage() {
 
       let repeatedText = "";
       if (textWithSeparator.length > 0) {
-        while ((repeatedText + textWithSeparator).length <= selectedPlatform.charLimit) {
+        while ((repeatedText + textWithSeparator).length <= charLimit) {
           repeatedText += textWithSeparator;
         }
       }
@@ -81,14 +87,14 @@ export default function MsgRepeaterPage() {
       }
       
       // Final check to see if just the input text fits
-      if (repeatedText.length === 0 && inputText.length <= selectedPlatform.charLimit) {
+      if (repeatedText.length === 0 && inputText.length <= charLimit) {
           repeatedText = inputText;
       }
 
       setGeneratedText(repeatedText);
       setIsLoading(false);
     }, 300);
-  }, [inputText, selectedPlatform, repetitionType, addSpace]);
+  }, [inputText, charLimit, repetitionType, addSpace]);
 
   const handleCopy = () => {
     if (!generatedText) return;
@@ -99,7 +105,6 @@ export default function MsgRepeaterPage() {
   };
 
   const charCount = generatedText.length;
-  const charLimit = selectedPlatform.charLimit;
   const isOverLimit = charCount > charLimit;
 
   return (
@@ -120,32 +125,45 @@ export default function MsgRepeaterPage() {
           <div className="grid w-full items-center gap-6">
             <div className="flex flex-col space-y-2">
               <Label htmlFor="platform">Platform</Label>
-              <Select
-                value={platformId}
-                onValueChange={(value) => setPlatformId(value as Platform["id"])}
-              >
-                <SelectTrigger id="platform">
-                  <SelectValue placeholder="Select a platform">
-                    <div className="flex items-center gap-2">
-                      <PlatformIcon platformId={platformId} className="h-5 w-5" />
-                      <span>{selectedPlatform.name}</span>
-                    </div>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {PLATFORMS.map((platform) => (
-                    <SelectItem key={platform.id} value={platform.id}>
+              <div className="flex gap-4">
+                <Select
+                  value={platformId}
+                  onValueChange={(value) => setPlatformId(value as Platform["id"])}
+                >
+                  <SelectTrigger id="platform" className="flex-1">
+                    <SelectValue placeholder="Select a platform">
                       <div className="flex items-center gap-2">
-                        <PlatformIcon
-                          platformId={platform.id}
-                          className="h-5 w-5"
-                        />
-                        <span>{platform.name}</span>
+                        <PlatformIcon platformId={platformId} className="h-5 w-5" />
+                        <span>{selectedPlatform.name}</span>
                       </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PLATFORMS.map((platform) => (
+                      <SelectItem key={platform.id} value={platform.id}>
+                        <div className="flex items-center gap-2">
+                          <PlatformIcon
+                            platformId={platform.id}
+                            className="h-5 w-5"
+                          />
+                          <span>{platform.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {platformId === 'custom' && (
+                  <div className="flex flex-col space-y-2 w-40">
+                     <Input
+                        id="custom-limit"
+                        type="number"
+                        value={customCharLimit}
+                        onChange={(e) => setCustomCharLimit(Number(e.target.value))}
+                        placeholder="Char limit"
+                      />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-col space-y-2">
