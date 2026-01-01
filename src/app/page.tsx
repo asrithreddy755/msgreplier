@@ -37,7 +37,7 @@ type RepetitionType = "row" | "column";
 
 export default function MsgRepeaterPage() {
   const [platformId, setPlatformId] = useState<Platform["id"]>(PLATFORMS[0].id);
-  const [inputText, setInputText] = useState("Hello! ");
+  const [inputText, setInputText] = useState("");
   const [generatedText, setGeneratedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -60,6 +60,11 @@ export default function MsgRepeaterPage() {
 
   const handleGenerate = useCallback(() => {
     if (!inputText.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Input is empty",
+        description: "Please enter some text to generate.",
+      });
       setGeneratedText("");
       return;
     }
@@ -295,7 +300,7 @@ export default function MsgRepeaterPage() {
                 </p>
               </div>
 
-              <Button onClick={handleGenerate} disabled={isLoading || !inputText.trim()}>
+              <Button onClick={handleGenerate} disabled={isLoading}>
                 {isLoading ? "Generating..." : "Generate"}
               </Button>
 
@@ -420,7 +425,5 @@ export default function MsgRepeaterPage() {
     </div>
   );
 }
-
-    
 
     
