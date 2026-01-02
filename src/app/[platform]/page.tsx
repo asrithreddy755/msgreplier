@@ -123,22 +123,36 @@ export default function MsgRepeaterPage() {
         }
       } else {
         if (textWithSeparator.length > 0) {
-          while ((repeatedText + textWithSeparator).length <= charLimit) {
-            repeatedText += textWithSeparator;
+          let tempText = "";
+           // To avoid infinite loops with just a separator
+          if (inputText.length > 0) {
+            while ((tempText + textWithSeparator).length <= charLimit) {
+              tempText += textWithSeparator;
+            }
           }
-        }
+          
+          if (tempText.endsWith(separator) && separator) {
+              repeatedText = tempText.slice(0, -separator.length);
+          } else {
+            repeatedText = tempText;
+          }
         
-        if (repeatedText.endsWith(separator) && separator !== "") {
-            repeatedText = repeatedText.slice(0, -separator.length);
-        }
-        
-        if (repeatedText.length === 0 && inputText.length <= charLimit) {
-            repeatedText = inputText;
+          if (repeatedText.length === 0 && inputText.length <= charLimit) {
+              repeatedText = inputText;
+          }
         }
       }
 
       setGeneratedText(repeatedText);
       setIsLoading(false);
+      
+      if (repeatedText) {
+        navigator.clipboard.writeText(repeatedText).then(() => {
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        });
+      }
+
     }, 300);
   }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast]);
 
