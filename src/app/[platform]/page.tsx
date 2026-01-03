@@ -196,7 +196,7 @@ function AppContent() {
         <div className="flex items-center gap-4 flex-shrink-0">
           <ThemeToggle />
           <SidebarTrigger className="hidden md:flex">
-            {sidebarOpen ? <X/> : <Menu/>}
+            {sidebarOpen ? <X /> : <Menu />}
           </SidebarTrigger>
           <Button variant="ghost" size="icon" onClick={() => setOpenMobile(true)} className="md:hidden">
             <Menu />
@@ -503,7 +503,7 @@ function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
     return (
       <>
         <SidebarHeader className="flex items-center justify-between p-4 border-b">
-            <h2 className="text-xl font-semibold">Platforms</h2>
+            <h2 className="text-xl font-semibold transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Platforms</h2>
             <Button variant="ghost" size="icon" onClick={toggleSidebar}>
               <X />
             </Button>
@@ -525,7 +525,7 @@ function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
                   <SidebarMenuButton asChild isActive={platform.slug === platformSlug}>
                     <Link href={`/${platform.slug}`}>
                       <PlatformIcon platformId={platform.id} className="h-5 w-5" />
-                      <span>{platform.name}</span>
+                      <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">{platform.name}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
