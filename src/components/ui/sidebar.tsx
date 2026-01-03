@@ -193,6 +193,11 @@ const Sidebar = React.forwardRef<
     }
 
     if (isMobile) {
+      const child = React.Children.only(children) as React.ReactElement;
+      const grandChildren = child.props.children;
+      const title = grandChildren[0];
+      const content = grandChildren.slice(1);
+
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
@@ -206,10 +211,10 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-            <SheetHeader className="p-4 border-b">
-              <SheetTitle>Platforms</SheetTitle>
-            </SheetHeader>
-            <div className="flex h-full w-full flex-col">{children}</div>
+             <SheetHeader className="p-4 border-b">
+                <SheetTitle>{title}</SheetTitle>
+              </SheetHeader>
+              <div className="flex h-full w-full flex-col p-4">{content}</div>
           </SheetContent>
         </Sheet>
       )
