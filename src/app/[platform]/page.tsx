@@ -18,7 +18,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare, Menu } from "lucide-react";
+import { Copy, Check, MessageSquare, Menu, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -44,8 +44,9 @@ import {
   SidebarInset,
   useSidebar,
   SidebarTrigger,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
-import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 
 type RepetitionType = "row" | "column";
 
@@ -54,7 +55,7 @@ function AppContent() {
   const router = useRouter();
   const params = useParams();
   const platformSlug = params.platform as string;
-  const { setOpenMobile } = useSidebar();
+  const { setOpenMobile, open: sidebarOpen } = useSidebar();
 
   const initialPlatform = useMemo(() => {
     return PLATFORMS.find((p) => p.slug === platformSlug) || PLATFORMS[0];
@@ -194,7 +195,9 @@ function AppContent() {
         </div>
         <div className="flex items-center gap-4 flex-shrink-0">
           <ThemeToggle />
-          <SidebarTrigger className="hidden md:flex" />
+          <SidebarTrigger className="hidden md:flex">
+            {sidebarOpen ? <X/> : <Menu/>}
+          </SidebarTrigger>
           <Button variant="ghost" size="icon" onClick={() => setOpenMobile(true)} className="md:hidden">
             <Menu />
           </Button>
@@ -496,10 +499,17 @@ function MobileSidebarMenu({ platformSlug }: { platformSlug: string }) {
 
 function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
     const homePlatform = PLATFORMS.find(p => p.id === 'instagram');
+    const { toggleSidebar } = useSidebar();
     return (
+      <>
+        <SidebarHeader className="flex items-center justify-between p-4 border-b">
+            <h2 className="text-xl font-semibold">Platforms</h2>
+            <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+              <X />
+            </Button>
+        </SidebarHeader>
         <SidebarContent>
-          <div className="p-4 md:p-0">
-            <h2 className="text-xl font-semibold mb-4 hidden md:block">Platforms</h2>
+          <div className="p-4">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
@@ -523,6 +533,7 @@ function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
             </SidebarMenu>
           </div>
         </SidebarContent>
+      </>
     )
 }
 
@@ -535,7 +546,7 @@ export default function MsgRepeaterPage() {
       <SidebarInset>
         <AppContent />
       </SidebarInset>
-      <Sidebar side="right" className="md:border-l">
+      <Sidebar side="right" className="border-l bg-card">
         <MobileSidebarMenu platformSlug={platformSlug} />
         <DesktopSidebarMenu platformSlug={platformSlug} />
       </Sidebar>
