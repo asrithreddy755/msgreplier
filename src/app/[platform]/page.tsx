@@ -464,10 +464,10 @@ export default function MsgRepeaterPage() {
         <AppContent />
       </SidebarInset>
       <Sidebar side="right" className="md:border-l">
-        <SidebarContent>
-          <SheetHeader className="p-4 border-b md:hidden">
+        <SheetHeader className="p-4 border-b md:hidden">
             <SheetTitle>Platforms</SheetTitle>
-          </SheetHeader>
+        </SheetHeader>
+        <SidebarContent>
           <div className="p-4 md:p-0">
             <h2 className="text-xl font-semibold mb-4 hidden md:block">Platforms</h2>
             <SidebarMenu>
