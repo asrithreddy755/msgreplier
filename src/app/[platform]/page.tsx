@@ -18,7 +18,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare, Menu, X } from "lucide-react";
+import { Copy, Check, MessageSquare, Menu, X, RotateCcw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -50,11 +50,6 @@ import { SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 
 type RepetitionType = "row" | "column" | "separate";
 
-type IndividualCopyState = {
-  [key: number]: boolean;
-};
-
-
 function AppContent() {
   const router = useRouter();
   const params = useParams();
@@ -71,19 +66,20 @@ function AppContent() {
   const [generatedItems, setGeneratedItems] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  const [individualCopied, setIndividualCopied] = useState<IndividualCopyState>({});
   const [repetitionType, setRepetitionType] =
     useState<RepetitionType>("row");
   const [addSpace, setAddSpace] = useState(true);
   const [customCharLimit, setCustomCharLimit] = useState(initialPlatform.charLimit);
   const [useRepetitionCount, setUseRepetitionCount] = useState(false);
   const [repetitionCount, setRepetitionCount] = useState(10);
+  const [currentItemIndex, setCurrentItemIndex] = useState(0);
+  const [isCycleCopied, setIsCycleCopied] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const currentPlatform = PLATFORMS.find(p => p.slug === platformSlug);
     if (!currentPlatform) {
-      const defaultPlatform = PLATFORMS.find(p => p.id === 'x') || PLATFORMS[0];
+      const defaultPlatform = PLATFORMS.find(p => p.id === 'instagram') || PLATFORMS[0];
       router.replace(`/${defaultPlatform.slug}`);
     } else {
       setPlatformId(currentPlatform.id);
@@ -121,23 +117,36 @@ function AppContent() {
     setIsLoading(true);
     setGeneratedText("");
     setGeneratedItems([]);
+    setCurrentItemIndex(0);
 
 
     setTimeout(() => {
       if (repetitionType === 'separate') {
-          const count = useRepetitionCount ? repetitionCount : Math.floor(charLimit / inputText.length) || 1;
+          const count = useRepetitionCount ? repetitionCount : Math.floor(charLimit / (inputText.length + 1)) || 1;
           if (inputText) {
-              const items = Array(count).fill(inputText);
-              if (items.join('\n').length > charLimit && !useRepetitionCount) {
+              let items = Array(count).fill(inputText);
+              
+              if (useRepetitionCount && items.join('\n').length > charLimit) {
                   toast({
                       variant: "destructive",
-                      title: "Could not generate within limit",
-                      description: "Even one repetition is over the character limit.",
+                      title: "Content may exceed some limits",
+                      description: "The total length of messages for your specified count is high. Ensure it fits within platform limits if pasting all at once.",
                   });
-                   setGeneratedItems([]);
-              } else {
-                   setGeneratedItems(items);
+              } else if (!useRepetitionCount && items.join('\n').length > charLimit) {
+                  const singleItemLength = inputText.length + 1; // +1 for newline
+                  const newCount = Math.floor(charLimit / singleItemLength);
+                  if (newCount > 0) {
+                      items = Array(newCount).fill(inputText);
+                  } else {
+                      toast({
+                          variant: "destructive",
+                          title: "Could not generate within limit",
+                          description: "Even one repetition is over the character limit.",
+                      });
+                      items = [];
+                  }
               }
+              setGeneratedItems(items);
           }
       } else {
           let separator = "";
@@ -206,13 +215,23 @@ function AppContent() {
     });
   };
 
-  const handleIndividualCopy = (text: string, index: number) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setIndividualCopied(prev => ({ ...prev, [index]: true }));
-      setTimeout(() => {
-        setIndividualCopied(prev => ({ ...prev, [index]: false }));
-      }, 2000);
+  const handleCopyCycle = () => {
+    if (generatedItems.length === 0 || currentItemIndex >= generatedItems.length) return;
+    
+    const currentText = generatedItems[currentItemIndex];
+    navigator.clipboard.writeText(currentText).then(() => {
+        setIsCycleCopied(true);
+        setTimeout(() => {
+            setIsCycleCopied(false);
+            if (currentItemIndex < generatedItems.length - 1) {
+                setCurrentItemIndex(prev => prev + 1);
+            }
+        }, 1000);
     });
+  };
+
+  const resetCycle = () => {
+    setCurrentItemIndex(0);
   };
 
   const charCount = generatedText.length;
@@ -390,30 +409,51 @@ function AppContent() {
                 {isLoading ? (
                     <Skeleton className="h-[120px] w-full" />
                 ) : repetitionType === 'separate' ? (
-                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                  {generatedItems.map((item, index) => (
-                      <div key={index} className="relative flex items-center">
+                  <div className="space-y-3">
+                    {generatedItems.length > 0 ? (
+                      <>
+                        <div className="relative">
                           <Input
-                              readOnly
-                              value={item}
-                              className="pr-12 bg-muted/50"
+                            readOnly
+                            value={generatedItems[currentItemIndex]}
+                            className="pr-12 bg-muted/50 text-lg h-12"
+                            placeholder="Your message will appear here"
                           />
-                          <Button
-                              variant="ghost"
-                              size="icon"
-                              className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:bg-accent/50"
-                              onClick={() => handleIndividualCopy(item, index)}
-                              aria-label="Copy to clipboard"
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <Button
+                            onClick={handleCopyCycle}
+                            className="flex-1"
+                            disabled={isCycleCopied || currentItemIndex >= generatedItems.length}
                           >
-                              {individualCopied[index] ? (
-                                  <Check className="h-5 w-5 text-green-500" />
-                              ) : (
-                                  <Copy className="h-5 w-5" />
-                              )}
+                            {isCycleCopied ? (
+                              <>
+                                <Check className="h-5 w-5 mr-2" />
+                                Copied!
+                              </>
+                            ) : currentItemIndex < generatedItems.length -1 ? (
+                              <>
+                                <Copy className="h-5 w-5 mr-2" />
+                                Copy & Show Next
+                              </>
+                            ) : (
+                               <>
+                                <Copy className="h-5 w-5 mr-2" />
+                                Copy Last Message
+                              </>
+                            )}
                           </Button>
-                      </div>
-                  ))}
-                   {generatedItems.length === 0 && !isLoading && (
+                          <Button variant="outline" size="icon" onClick={resetCycle} aria-label="Reset">
+                              <RotateCcw className="h-5 w-5" />
+                          </Button>
+                        </div>
+                        <div className="text-center text-sm text-muted-foreground">
+                          {currentItemIndex >= generatedItems.length
+                            ? `All ${generatedItems.length} messages copied!`
+                            : `Message ${currentItemIndex + 1} of ${generatedItems.length}`}
+                        </div>
+                      </>
+                    ) : (
                       <div className="flex items-center justify-center h-24 text-sm text-muted-foreground">
                         Separated messages will appear here...
                       </div>
@@ -457,7 +497,7 @@ function AppContent() {
               <li><span className="font-semibold">Choose a Platform:</span> Select your target social media platform from the dropdown menu. This sets the correct character limit automatically. For a custom limit, choose "Custom" and enter a number.</li>
               <li><span className="font-semibold">Set Formatting Options:</span> Choose to repeat your text in a "Row" (side-by-side), "Column" (line-by-line), or "Separate" (individual messages). You can also choose whether to add a space between repetitions for the "Row" option.</li>
               <li><span className="font-semibold">Specify Repetition Count (Optional):</span> If you want to repeat the text a specific number of times, check the box and enter the desired count. Otherwise, the tool will repeat it as many times as possible within the character limit.</li>
-              <li><span className="font-semibold">Generate and Copy:</span> Click the "Generate" button. Your repeated text will appear below. You can then click the copy icon to copy it to your clipboard. For "Separate" mode, each message has its own copy button.</li>
+              <li><span className="font-semibold">Generate and Copy:</span> Click the "Generate" button. Your repeated text will appear below. You can then click the copy icon to copy it to your clipboard. For "Separate" mode, use the "Copy & Cycle" button for one-by-one copying.</li>
             </ol>
           </div>
         </div>
