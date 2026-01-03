@@ -176,6 +176,8 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    
+    const [mobileContent, desktopContent] = React.Children.toArray(children);
 
     if (collapsible === "none") {
       return (
@@ -206,7 +208,7 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-            {children}
+            {mobileContent}
           </SheetContent>
         </Sheet>
       )
@@ -250,7 +252,7 @@ const Sidebar = React.forwardRef<
             data-sidebar="sidebar"
             className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
           >
-            {children}
+            {desktopContent}
           </div>
         </div>
       </div>

@@ -453,20 +453,46 @@ function AppContent() {
   );
 }
 
-export default function MsgRepeaterPage() {
-  const params = useParams();
-  const platformSlug = params.platform as string;
-  const homePlatform = PLATFORMS.find(p => p.id === 'instagram');
+function MobileSidebarMenu({ platformSlug }: { platformSlug: string }) {
+    const homePlatform = PLATFORMS.find(p => p.id === 'instagram');
+    return (
+        <>
+            <SheetHeader className="p-4 border-b">
+                <SheetTitle>Platforms</SheetTitle>
+            </SheetHeader>
+            <SidebarContent>
+              <div className="p-4">
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link href={`/${homePlatform?.slug || ''}`}>
+                        <PlatformIcon platformId="instagram" className="h-5 w-5" />
+                        Home
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <hr className="my-2"/>
+                  {PLATFORMS.map(platform => (
+                    <SidebarMenuItem key={platform.id}>
+                      <SidebarMenuButton asChild isActive={platform.slug === platformSlug}>
+                        <Link href={`/${platform.slug}`}>
+                          <PlatformIcon platformId={platform.id} className="h-5 w-5" />
+                          <span>{platform.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </div>
+            </SidebarContent>
+        </>
+    )
+}
 
-  return (
-    <SidebarProvider>
-      <SidebarInset>
-        <AppContent />
-      </SidebarInset>
-      <Sidebar side="right" className="md:border-l">
-        <SheetHeader className="p-4 border-b md:hidden">
-            <SheetTitle>Platforms</SheetTitle>
-        </SheetHeader>
+
+function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
+    const homePlatform = PLATFORMS.find(p => p.id === 'instagram');
+    return (
         <SidebarContent>
           <div className="p-4 md:p-0">
             <h2 className="text-xl font-semibold mb-4 hidden md:block">Platforms</h2>
@@ -493,6 +519,21 @@ export default function MsgRepeaterPage() {
             </SidebarMenu>
           </div>
         </SidebarContent>
+    )
+}
+
+export default function MsgRepeaterPage() {
+  const params = useParams();
+  const platformSlug = params.platform as string;
+  
+  return (
+    <SidebarProvider>
+      <SidebarInset>
+        <AppContent />
+      </SidebarInset>
+      <Sidebar side="right" className="md:border-l">
+        <MobileSidebarMenu platformSlug={platformSlug} />
+        <DesktopSidebarMenu platformSlug={platformSlug} />
       </Sidebar>
     </SidebarProvider>
   )
