@@ -185,7 +185,6 @@ function AppContent() {
     <div className="flex flex-col min-h-screen bg-background font-body">
       <header className="flex flex-wrap items-center justify-between p-4 border-b bg-card shadow-sm gap-4">
         <div className="flex items-center gap-2">
-            <SidebarTrigger className="hidden md:flex" />
             <Link href="/" className="flex items-center gap-3">
             <MessageSquare className="h-8 w-8 text-primary" />
             <h1 className="font-headline text-2xl font-bold tracking-tight">
@@ -195,6 +194,7 @@ function AppContent() {
         </div>
         <div className="flex items-center gap-4 flex-shrink-0">
           <ThemeToggle />
+          <SidebarTrigger className="hidden md:flex" />
           <Button variant="ghost" size="icon" onClick={() => setOpenMobile(true)} className="md:hidden">
             <Menu />
           </Button>
@@ -535,7 +535,7 @@ export default function MsgRepeaterPage() {
       <SidebarInset>
         <AppContent />
       </SidebarInset>
-      <Sidebar side="left" className="md:border-r">
+      <Sidebar side="right" className="md:border-l">
         <MobileSidebarMenu platformSlug={platformSlug} />
         <DesktopSidebarMenu platformSlug={platformSlug} />
       </Sidebar>
