@@ -48,7 +48,11 @@ import {
 } from "@/components/ui/sidebar";
 import { SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 
-type RepetitionType = "row" | "column";
+type RepetitionType = "row" | "column" | "separate";
+
+type IndividualCopyState = {
+  [key: number]: boolean;
+};
 
 
 function AppContent() {
@@ -64,8 +68,10 @@ function AppContent() {
   const [platformId, setPlatformId] = useState<Platform["id"]>(initialPlatform.id);
   const [inputText, setInputText] = useState("");
   const [generatedText, setGeneratedText] = useState("");
+  const [generatedItems, setGeneratedItems] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [individualCopied, setIndividualCopied] = useState<IndividualCopyState>({});
   const [repetitionType, setRepetitionType] =
     useState<RepetitionType>("row");
   const [addSpace, setAddSpace] = useState(true);
@@ -109,64 +115,85 @@ function AppContent() {
         description: "Please enter some text to generate.",
       });
       setGeneratedText("");
+      setGeneratedItems([]);
       return;
     }
     setIsLoading(true);
+    setGeneratedText("");
+    setGeneratedItems([]);
+
 
     setTimeout(() => {
-      let separator = "";
-      if (repetitionType === "column") {
-        separator = "\n";
-      } else if (addSpace) {
-        separator = " ";
-      }
-      
-      const textWithSeparator = inputText + separator;
-      let repeatedText = "";
-
-      if (useRepetitionCount) {
-        if (repetitionCount > 0 && inputText) {
-          const result = Array(repetitionCount).fill(inputText).join(separator);
-          if (result.length > charLimit) {
-            toast({
-              variant: "destructive",
-              title: "Character limit exceeded",
-              description: `The generated text is longer than the platform's limit of ${charLimit} characters and has been truncated.`,
-            });
+      if (repetitionType === 'separate') {
+          const count = useRepetitionCount ? repetitionCount : Math.floor(charLimit / inputText.length) || 1;
+          if (inputText) {
+              const items = Array(count).fill(inputText);
+              if (items.join('\n').length > charLimit && !useRepetitionCount) {
+                  toast({
+                      variant: "destructive",
+                      title: "Could not generate within limit",
+                      description: "Even one repetition is over the character limit.",
+                  });
+                   setGeneratedItems([]);
+              } else {
+                   setGeneratedItems(items);
+              }
           }
-          repeatedText = result.slice(0, charLimit);
-        }
       } else {
-        if (textWithSeparator.length > 0) {
-          let tempText = "";
-           // To avoid infinite loops with just a separator
-          if (inputText.length > 0) {
-            while ((tempText + textWithSeparator).length <= charLimit) {
-              tempText += textWithSeparator;
-            }
+          let separator = "";
+          if (repetitionType === "column") {
+            separator = "\n";
+          } else if (addSpace) {
+            separator = " ";
           }
           
-          if (tempText.endsWith(separator) && separator) {
-              repeatedText = tempText.slice(0, -separator.length);
+          const textWithSeparator = inputText + separator;
+          let repeatedText = "";
+
+          if (useRepetitionCount) {
+            if (repetitionCount > 0 && inputText) {
+              const result = Array(repetitionCount).fill(inputText).join(separator);
+              if (result.length > charLimit) {
+                toast({
+                  variant: "destructive",
+                  title: "Character limit exceeded",
+                  description: `The generated text is longer than the platform's limit of ${charLimit} characters and has been truncated.`,
+                });
+              }
+              repeatedText = result.slice(0, charLimit);
+            }
           } else {
-            repeatedText = tempText;
+            if (textWithSeparator.length > 0) {
+              let tempText = "";
+               // To avoid infinite loops with just a separator
+              if (inputText.length > 0) {
+                while ((tempText + textWithSeparator).length <= charLimit) {
+                  tempText += textWithSeparator;
+                }
+              }
+              
+              if (tempText.endsWith(separator) && separator) {
+                  repeatedText = tempText.slice(0, -separator.length);
+              } else {
+                repeatedText = tempText;
+              }
+            
+              if (repeatedText.length === 0 && inputText.length <= charLimit) {
+                  repeatedText = inputText;
+              }
+            }
           }
-        
-          if (repeatedText.length === 0 && inputText.length <= charLimit) {
-              repeatedText = inputText;
+          setGeneratedText(repeatedText);
+           if (repeatedText) {
+            navigator.clipboard.writeText(repeatedText).then(() => {
+              setIsCopied(true);
+              setTimeout(() => setIsCopied(false), 2000);
+            });
           }
-        }
       }
 
-      setGeneratedText(repeatedText);
       setIsLoading(false);
       
-      if (repeatedText) {
-        navigator.clipboard.writeText(repeatedText).then(() => {
-          setIsCopied(true);
-          setTimeout(() => setIsCopied(false), 2000);
-        });
-      }
 
     }, 300);
   }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast]);
@@ -179,8 +206,17 @@ function AppContent() {
     });
   };
 
+  const handleIndividualCopy = (text: string, index: number) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setIndividualCopied(prev => ({ ...prev, [index]: true }));
+      setTimeout(() => {
+        setIndividualCopied(prev => ({ ...prev, [index]: false }));
+      }, 2000);
+    });
+  };
+
   const charCount = generatedText.length;
-  const isOverLimit = charCount > charLimit;
+  const isOverLimit = charCount > charLimit && repetitionType !== 'separate';
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-body">
@@ -271,9 +307,8 @@ function AppContent() {
               
               <div className="flex flex-col space-y-4">
                 <Label>Formatting Options</Label>
-                <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-6 flex-wrap gap-y-2">
                   <RadioGroup
-                    defaultValue="row"
                     value={repetitionType}
                     onValueChange={(value) =>
                       setRepetitionType(value as RepetitionType)
@@ -288,17 +323,21 @@ function AppContent() {
                       <RadioGroupItem value="column" id="r2" />
                       <Label htmlFor="r2">Column</Label>
                     </div>
+                     <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="separate" id="r3" />
+                      <Label htmlFor="r3">Separate</Label>
+                    </div>
                   </RadioGroup>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="add-space"
                       checked={addSpace}
                       onCheckedChange={(checked) => setAddSpace(!!checked)}
-                      disabled={repetitionType === "column"}
+                      disabled={repetitionType !== "row"}
                     />
                     <Label
                       htmlFor="add-space"
-                      className={repetitionType === 'column' ? 'text-muted-foreground' : ''}
+                      className={repetitionType !== 'row' ? 'text-muted-foreground' : ''}
                     >
                       Add space
                     </Label>
@@ -338,6 +377,7 @@ function AppContent() {
               <div className="flex flex-col space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="generated-text">Generated Text</Label>
+                  {repetitionType !== 'separate' && (
                   <div
                     className={`text-sm ${
                       isOverLimit ? "text-destructive font-bold" : "text-muted-foreground"
@@ -345,11 +385,42 @@ function AppContent() {
                   >
                     {charCount} / {charLimit}
                   </div>
+                  )}
                 </div>
-                <div className="relative">
-                  {isLoading ? (
+                {isLoading ? (
                     <Skeleton className="h-[120px] w-full" />
-                  ) : (
+                ) : repetitionType === 'separate' ? (
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                  {generatedItems.map((item, index) => (
+                      <div key={index} className="relative flex items-center">
+                          <Input
+                              readOnly
+                              value={item}
+                              className="pr-12 bg-muted/50"
+                          />
+                          <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:bg-accent/50"
+                              onClick={() => handleIndividualCopy(item, index)}
+                              aria-label="Copy to clipboard"
+                          >
+                              {individualCopied[index] ? (
+                                  <Check className="h-5 w-5 text-green-500" />
+                              ) : (
+                                  <Copy className="h-5 w-5" />
+                              )}
+                          </Button>
+                      </div>
+                  ))}
+                   {generatedItems.length === 0 && !isLoading && (
+                      <div className="flex items-center justify-center h-24 text-sm text-muted-foreground">
+                        Separated messages will appear here...
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                <div className="relative">
                     <Textarea
                       id="generated-text"
                       readOnly
@@ -357,7 +428,6 @@ function AppContent() {
                       placeholder="Generated text will appear here..."
                       className="pr-12 min-h-[120px] bg-muted/50"
                     />
-                  )}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -373,6 +443,7 @@ function AppContent() {
                     )}
                   </Button>
                 </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -384,9 +455,9 @@ function AppContent() {
             <ol className="list-decimal list-inside space-y-2">
               <li><span className="font-semibold">Enter Your Text:</span> Start by typing or pasting the text you want to repeat into the "Your Text" field.</li>
               <li><span className="font-semibold">Choose a Platform:</span> Select your target social media platform from the dropdown menu. This sets the correct character limit automatically. For a custom limit, choose "Custom" and enter a number.</li>
-              <li><span className="font-semibold">Set Formatting Options:</span> Choose to repeat your text in a "Row" (side-by-side) or "Column" (line-by-line). You can also choose whether to add a space between repetitions for the "Row" option.</li>
+              <li><span className="font-semibold">Set Formatting Options:</span> Choose to repeat your text in a "Row" (side-by-side), "Column" (line-by-line), or "Separate" (individual messages). You can also choose whether to add a space between repetitions for the "Row" option.</li>
               <li><span className="font-semibold">Specify Repetition Count (Optional):</span> If you want to repeat the text a specific number of times, check the box and enter the desired count. Otherwise, the tool will repeat it as many times as possible within the character limit.</li>
-              <li><span className="font-semibold">Generate and Copy:</span> Click the "Generate" button. Your repeated text will appear below. You can then click the copy icon to copy it to your clipboard.</li>
+              <li><span className="font-semibold">Generate and Copy:</span> Click the "Generate" button. Your repeated text will appear below. You can then click the copy icon to copy it to your clipboard. For "Separate" mode, each message has its own copy button.</li>
             </ol>
           </div>
         </div>
@@ -395,7 +466,7 @@ function AppContent() {
           <h3 className="text-2xl font-bold tracking-tight mb-4">How Does Text MsgRepeater Work?</h3>
           <div className="space-y-4 text-muted-foreground">
             <p>Our tool is straightforward. You enter the text you want to repeat in the "Your Text" field. Then, you select a social media platform from the dropdown menu, which automatically sets the character limit for you. Alternatively, you can choose "Custom" to define your own limit.</p>
-            <p>You can also decide if you want the text to be repeated in a single row or in a column format, and whether to add spaces between each repetition. Once you click "Generate," the tool repeats your text as many times as possible without exceeding the character limit and displays it in the "Generated Text" box. From there, you can easily copy it to your clipboard.</p>
+            <p>You can also decide if you want the text to be repeated in a single row, in a column format, or as separate messages. Once you click "Generate," the tool processes your request and displays the output in the "Generated Text" box. From there, you can easily copy it to your clipboard.</p>
           </div>
         </div>
 
@@ -515,7 +586,7 @@ function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
                 <SidebarMenuButton asChild>
                   <Link href={`/${homePlatform?.slug || ''}`}>
                     <PlatformIcon platformId="instagram" className="h-5 w-5" />
-                    Home
+                    <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Home</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
