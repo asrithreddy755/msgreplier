@@ -542,7 +542,7 @@ export default function MsgRepeaterPage() {
   const platformSlug = params.platform as string;
   
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <SidebarInset>
         <AppContent />
       </SidebarInset>
