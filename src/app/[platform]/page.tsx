@@ -498,9 +498,14 @@ function AppContent() {
             <ol className="list-decimal list-inside space-y-2">
               <li><span className="font-semibold">Enter Your Text:</span> Start by typing or pasting the text you want to repeat into the "Your Text" field.</li>
               <li><span className="font-semibold">Choose a Platform:</span> Select your target social media platform from the dropdown menu. This sets the correct character limit automatically. For a custom limit, choose "Custom" and enter a number.</li>
-              <li><span className="font-semibold">Set Formatting Options:</span> Choose to repeat your text in a "Row" (side-by-side), "Column" (line-by-line), or "Separate" (individual messages). You can also choose whether to add a space between repetitions for the "Row" option.</li>
+              <li><span className="font-semibold">Set Formatting Options:</span> Choose to repeat your text in a "Row" (side-by-side), "Column" (line-by-line), or "Separate" (for individual messages). You can also choose whether to add a space between repetitions for the "Row" option.</li>
               <li><span className="font-semibold">Specify Repetition Count (Optional):</span> If you want to repeat the text a specific number of times, check the box and enter the desired count. Otherwise, the tool will repeat it as many times as possible within the character limit.</li>
-              <li><span className="font-semibold">Generate and Copy:</span> Click the "Generate" button. Your repeated text will appear below. You can then click the copy icon to copy it to your clipboard. For "Separate" mode, use the "Copy & Cycle" button for one-by-one copying.</li>
+              <li><span className="font-semibold">Generate and Copy:</span> Click the "Generate" button.
+                <ul className="list-disc list-inside ml-4 mt-2">
+                  <li>For "Row" and "Column", your repeated text will appear in a single box. Click the copy icon to copy it all at once.</li>
+                  <li>For "Separate" mode, use the "Copy & Show Next" button to copy each message one-by-one. This is perfect for mobile users.</li>
+                </ul>
+              </li>
             </ol>
           </div>
         </div>
@@ -508,8 +513,8 @@ function AppContent() {
         <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
           <h3 className="text-2xl font-bold tracking-tight mb-4">How Does Text MsgRepeater Work?</h3>
           <div className="space-y-4 text-muted-foreground">
-            <p>Our tool is straightforward. You enter the text you want to repeat in the "Your Text" field. Then, you select a social media platform from the dropdown menu, which automatically sets the character limit for you. Alternatively, you can choose "Custom" to define your own limit.</p>
-            <p>You can also decide if you want the text to be repeated in a single row, in a column format, or as separate messages. Once you click "Generate," the tool processes your request and displays the output in the "Generated Text" box. From there, you can easily copy it to your clipboard.</p>
+            <p>Our tool is straightforward. You enter the text you want to repeat, select a social media platform to set the character limit (or set a custom one), and choose your formatting. You can have the text repeated in a single "Row," a "Column" format with line breaks, or as "Separate" individual messages.</p>
+            <p>The "Separate" option is designed for mobile users. It allows you to copy each repeated message one at a time with a "Copy & Show Next" button, preventing clipboard issues with duplicate content. Once you click "Generate," the tool processes your request and provides the output for you to easily copy.</p>
           </div>
         </div>
 
@@ -519,6 +524,7 @@ function AppContent() {
             <ul className="list-disc list-inside space-y-2">
               <li><span className="font-semibold">Meeting Character Minimums:</span> Some online forms or comment sections have a minimum character requirement. Quickly pad your message to meet the minimum length.</li>
               <li><span className="font-semibold">Creating Emphasis:</span> Repeating a word or phrase can be a powerful way to draw attention to your message in social media posts or chats.</li>
+              <li><span className="font-semibold">Spamming Comments (Responsibly!):</span> Use the "Separate" mode to quickly post multiple individual comments in a live stream or chat. The "Copy & Show Next" feature makes this fast and easy from a mobile device.</li>
               <li><span className="font-semibold">Artistic Text Patterns:</span> Use the column feature to create ASCII art or interesting visual patterns with platforms like Discord or Twitter.</li>
               <li><span className="font-semibold">Testing and Development:</span> Developers can use this tool to generate long strings of text to test text fields, database limits, and layout constraints in their applications.</li>
             </ul>
