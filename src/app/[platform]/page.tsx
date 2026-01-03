@@ -37,7 +37,6 @@ import Link from "next/link";
 import {
   SidebarProvider,
   Sidebar,
-  SidebarTrigger,
   SidebarContent,
   SidebarMenu,
   SidebarMenuItem,
@@ -45,6 +44,7 @@ import {
   SidebarInset,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 type RepetitionType = "row" | "column";
 
@@ -53,7 +53,7 @@ function AppContent() {
   const router = useRouter();
   const params = useParams();
   const platformSlug = params.platform as string;
-  const { openMobile, setOpenMobile } = useSidebar();
+  const { setOpenMobile } = useSidebar();
 
   const initialPlatform = useMemo(() => {
     return PLATFORMS.find((p) => p.slug === platformSlug) || PLATFORMS[0];
@@ -464,29 +464,34 @@ export default function MsgRepeaterPage() {
         <AppContent />
       </SidebarInset>
       <Sidebar side="right" className="md:border-l">
-        <SidebarContent className="p-4">
-          <h2 className="text-xl font-semibold mb-4">Platforms</h2>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href={`/${homePlatform?.slug || ''}`}>
-                  <PlatformIcon platformId="instagram" className="h-5 w-5" />
-                  Home
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-             <hr className="my-2"/>
-            {PLATFORMS.map(platform => (
-              <SidebarMenuItem key={platform.id}>
-                <SidebarMenuButton asChild isActive={platform.slug === platformSlug}>
-                  <Link href={`/${platform.slug}`}>
-                    <PlatformIcon platformId={platform.id} className="h-5 w-5" />
-                    <span>{platform.name}</span>
+        <SidebarContent>
+          <SheetHeader className="p-4 border-b md:hidden">
+            <SheetTitle>Platforms</SheetTitle>
+          </SheetHeader>
+          <div className="p-4 md:p-0">
+            <h2 className="text-xl font-semibold mb-4 hidden md:block">Platforms</h2>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href={`/${homePlatform?.slug || ''}`}>
+                    <PlatformIcon platformId="instagram" className="h-5 w-5" />
+                    Home
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+              <hr className="my-2"/>
+              {PLATFORMS.map(platform => (
+                <SidebarMenuItem key={platform.id}>
+                  <SidebarMenuButton asChild isActive={platform.slug === platformSlug}>
+                    <Link href={`/${platform.slug}`}>
+                      <PlatformIcon platformId={platform.id} className="h-5 w-5" />
+                      <span>{platform.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </div>
         </SidebarContent>
       </Sidebar>
     </SidebarProvider>
