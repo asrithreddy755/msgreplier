@@ -459,9 +459,6 @@ export default function MsgRepeaterPage() {
               </DialogContent>
             </Dialog>
           </div>
-          <p>
-            Created by an AI assistant in Firebase Studio.
-          </p>
         </footer>
       </main>
     </div>
