@@ -18,7 +18,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare } from "lucide-react";
+import { Copy, Check, MessageSquare, Menu } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,13 +34,26 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarTrigger,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarInset,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
 type RepetitionType = "row" | "column";
 
-export default function MsgRepeaterPage() {
+
+function AppContent() {
   const router = useRouter();
   const params = useParams();
   const platformSlug = params.platform as string;
+  const { openMobile, setOpenMobile } = useSidebar();
 
   const initialPlatform = useMemo(() => {
     return PLATFORMS.find((p) => p.slug === platformSlug) || PLATFORMS[0];
@@ -178,40 +191,9 @@ export default function MsgRepeaterPage() {
         </Link>
         <div className="flex items-center gap-4 flex-shrink-0">
           <ThemeToggle />
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground text-center">Terms and Conditions</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Terms and Conditions</DialogTitle>
-              </DialogHeader>
-              <DialogDescription asChild>
-                <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                  <div>Welcome to MsgRepeater. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</div>
-                  <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
-                  <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
-                </div>
-              </DialogDescription>
-            </DialogContent>
-          </Dialog>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground text-center">Privacy Policy</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Privacy Policy</DialogTitle>
-              </DialogHeader>
-              <DialogDescription asChild>
-                  <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                    <div>Your privacy is important to us. It is MsgRepeater's policy to respect your privacy regarding any information we may collect from you across our website.</div>
-                    <div className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</div>
-                    <div>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</div>
-                  </div>
-              </DialogDescription>
-            </DialogContent>
-          </Dialog>
+          <Button variant="ghost" size="icon" onClick={() => setOpenMobile(true)} className="md:hidden">
+            <Menu />
+          </Button>
         </div>
       </header>
       <main className="flex flex-1 w-full flex-col items-center justify-center p-4">
@@ -469,4 +451,44 @@ export default function MsgRepeaterPage() {
       </main>
     </div>
   );
+}
+
+export default function MsgRepeaterPage() {
+  const params = useParams();
+  const platformSlug = params.platform as string;
+  const homePlatform = PLATFORMS.find(p => p.id === 'instagram');
+
+  return (
+    <SidebarProvider>
+      <SidebarInset>
+        <AppContent />
+      </SidebarInset>
+      <Sidebar side="right" className="md:border-l">
+        <SidebarContent className="p-4">
+          <h2 className="text-xl font-semibold mb-4">Platforms</h2>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href={`/${homePlatform?.slug || ''}`}>
+                  <PlatformIcon platformId="instagram" className="h-5 w-5" />
+                  Home
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <hr className="my-2"/>
+            {PLATFORMS.map(platform => (
+              <SidebarMenuItem key={platform.id}>
+                <SidebarMenuButton asChild isActive={platform.slug === platformSlug}>
+                  <Link href={`/${platform.slug}`}>
+                    <PlatformIcon platformId={platform.id} className="h-5 w-5" />
+                    <span>{platform.name}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+      </Sidebar>
+    </SidebarProvider>
+  )
 }
