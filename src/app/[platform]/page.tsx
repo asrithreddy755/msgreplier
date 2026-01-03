@@ -124,19 +124,22 @@ function AppContent() {
       if (repetitionType === 'separate') {
           const count = useRepetitionCount ? repetitionCount : Math.floor(charLimit / (inputText.length + 1)) || 1;
           if (inputText) {
-              let items = Array(count).fill(inputText);
+              // Add invisible characters to make each item unique for clipboard
+              let items = Array.from({ length: count }, (_, i) => inputText + '\u200B'.repeat(i));
               
-              if (useRepetitionCount && items.join('\n').length > charLimit) {
+              const totalLengthWithNewlines = items.reduce((acc, item) => acc + item.length + 1, -1);
+
+              if (useRepetitionCount && totalLengthWithNewlines > charLimit) {
                   toast({
                       variant: "destructive",
                       title: "Content may exceed some limits",
                       description: "The total length of messages for your specified count is high. Ensure it fits within platform limits if pasting all at once.",
                   });
-              } else if (!useRepetitionCount && items.join('\n').length > charLimit) {
+              } else if (!useRepetitionCount && totalLengthWithNewlines > charLimit) {
                   const singleItemLength = inputText.length + 1; // +1 for newline
                   const newCount = Math.floor(charLimit / singleItemLength);
                   if (newCount > 0) {
-                      items = Array(newCount).fill(inputText);
+                      items = Array.from({ length: newCount }, (_, i) => inputText + '\u200B'.repeat(i));
                   } else {
                       toast({
                           variant: "destructive",
