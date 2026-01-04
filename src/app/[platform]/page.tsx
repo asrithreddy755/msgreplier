@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,7 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare, Menu, X, RotateCcw } from "lucide-react";
+import { Copy, Check, MessageSquare, Menu, X, RotateCcw, Bot } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,8 +31,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogDescription,
+  DialogDescription as DialogDescriptionPrimitive,
 } from "@/components/ui/dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
@@ -46,7 +48,9 @@ import {
   SidebarTrigger,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
+import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Slider } from "@/components/ui/slider";
+
 
 type RepetitionType = "row" | "column" | "separate";
 
@@ -75,6 +79,11 @@ function AppContent() {
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [isCycleCopied, setIsCycleCopied] = useState(false);
   const { toast } = useToast();
+
+  // AI assistant state
+  const [userGender, setUserGender] = useState("male");
+  const [replyCount, setReplyCount] = useState([5]);
+  const [replyTone, setReplyTone] = useState("friendly");
 
   useEffect(() => {
     const currentPlatform = PLATFORMS.find(p => p.slug === platformSlug);
@@ -492,6 +501,88 @@ function AppContent() {
           </CardContent>
         </Card>
 
+        <Card className="w-full max-w-2xl shadow-lg mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="h-6 w-6" />
+              MsgCham AI
+            </CardTitle>
+            <CardDescription>
+              Craft the perfect reply for any situation. Describe the context and let our AI generate responses for you.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid w-full items-center gap-6">
+              <div className="flex flex-col space-y-2">
+                <Label>Your Gender</Label>
+                <RadioGroup
+                  value={userGender}
+                  onValueChange={setUserGender}
+                  className="flex items-center gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="male" id="gender-male" />
+                    <Label htmlFor="gender-male">Male</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="female" id="gender-female" />
+                    <Label htmlFor="gender-female">Female</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="other" id="gender-other" />
+                    <Label htmlFor="gender-other">Other</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="reply-count">Number of Replies</Label>
+                  <span className="text-sm text-muted-foreground font-medium">{replyCount[0]}</span>
+                </div>
+                <Slider
+                  id="reply-count"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={replyCount}
+                  onValueChange={setReplyCount}
+                />
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="tone">Desired Tone</Label>
+                <Select value={replyTone} onValueChange={setReplyTone}>
+                  <SelectTrigger id="tone">
+                    <SelectValue placeholder="Select a tone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="friendly">Friendly</SelectItem>
+                    <SelectItem value="funny">Funny</SelectItem>
+                    <SelectItem value="flirty">Flirty</SelectItem>
+                    <SelectItem value="professional">Professional</SelectItem>
+                    <SelectItem value="sarcastic">Sarcastic</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+               <div className="flex flex-col space-y-2">
+                <Label htmlFor="ai-input-text">Describe the Situation</Label>
+                <Textarea
+                  id="ai-input-text"
+                  placeholder="e.g., 'A girl I like messaged me 'what's up?' and I want to be flirty.'"
+                  rows={4}
+                />
+              </div>
+
+              <Button>
+                <Bot className="mr-2 h-5 w-5" />
+                Generate Replies
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
           <h3 className="text-2xl font-bold tracking-tight mb-4">How to Use This Tool</h3>
           <div className="space-y-4 text-muted-foreground">
@@ -503,7 +594,7 @@ function AppContent() {
               <li><span className="font-semibold">Generate and Copy:</span> Click the "Generate" button.
                 <ul className="list-disc list-inside ml-4 mt-2">
                   <li>For "Row" and "Column", your repeated text will appear in a single box. Click the copy icon to copy it all at once.</li>
-                  <li>For "Separate" mode, use the "Copy & Show Next" button to copy each message one-by-one. This is perfect for mobile users.</li>
+                  <li>For "Separate" mode, use the "Copy & Show Next" button to copy each message one-by-one. This is perfect for mobile users who need to post multiple comments, as it avoids clipboard issues with duplicate content.</li>
                 </ul>
               </li>
             </ol>
@@ -524,7 +615,7 @@ function AppContent() {
             <ul className="list-disc list-inside space-y-2">
               <li><span className="font-semibold">Meeting Character Minimums:</span> Some online forms or comment sections have a minimum character requirement. Quickly pad your message to meet the minimum length.</li>
               <li><span className="font-semibold">Creating Emphasis:</span> Repeating a word or phrase can be a powerful way to draw attention to your message in social media posts or chats.</li>
-              <li><span className="font-semibold">Spamming Comments (Responsibly!):</span> Use the "Separate" mode to quickly post multiple individual comments in a live stream or chat. The "Copy & Show Next" feature makes this fast and easy from a mobile device.</li>
+              <li><span className="font-semibold">Spamming Comments (Responsibly!):</span> Use the "Separate" mode to quickly post multiple individual comments in a live stream or chat. The "Copy & Show Next" feature makes this fast and easy from a mobile device by ensuring each copy is unique.</li>
               <li><span className="font-semibold">Artistic Text Patterns:</span> Use the column feature to create ASCII art or interesting visual patterns with platforms like Discord or Twitter.</li>
               <li><span className="font-semibold">Testing and Development:</span> Developers can use this tool to generate long strings of text to test text fields, database limits, and layout constraints in their applications.</li>
             </ul>
@@ -546,13 +637,13 @@ function AppContent() {
                   <DialogHeader>
                     <DialogTitle>Terms and Conditions</DialogTitle>
                   </DialogHeader>
-                  <DialogDescription asChild>
+                  <DialogDescriptionPrimitive asChild>
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                       <div>Welcome to MsgRepeater. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</div>
                       <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
                       <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
                     </div>
-                  </DialogDescription>
+                  </DialogDescriptionPrimitive>
                 </DialogContent>
               </Dialog>
               <Dialog>
@@ -563,13 +654,13 @@ function AppContent() {
                   <DialogHeader>
                     <DialogTitle>Privacy Policy</DialogTitle>
                   </DialogHeader>
-                  <DialogDescription asChild>
+                  <DialogDescriptionPrimitive asChild>
                       <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                         <div>Your privacy is important to us. It is MsgRepeater's policy to respect your privacy regarding any information we may collect from you across our website.</div>
                         <div className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</div>
                         <div>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</div>
                       </div>
-                  </DialogDescription>
+                  </DialogDescriptionPrimitive>
                 </DialogContent>
               </Dialog>
             </div>
@@ -673,3 +764,5 @@ export default function MsgRepeaterPage() {
     </SidebarProvider>
   )
 }
+
+    
