@@ -59,7 +59,7 @@ function AppContent() {
   const router = useRouter();
   const params = useParams();
   const platformSlug = params.platform as string;
-  const { setOpenMobile, open: sidebarOpen } = useSidebar();
+  const { setOpenMobile, open: sidebarOpen, toggleSidebar } = useSidebar();
 
   const initialPlatform = useMemo(() => {
     return PLATFORMS.find((p) => p.slug === platformSlug) || PLATFORMS[0];
@@ -84,7 +84,7 @@ function AppContent() {
   // AI assistant state
   const [userGender, setUserGender] = useState("male");
   const [replyCount, setReplyCount] = useState([5]);
-  const [replyTone, setReplyTone] = useState("friendly");
+  const [replyTone, setReplyTone] = useState("friendly-casual");
 
   useEffect(() => {
     const currentPlatform = PLATFORMS.find(p => p.slug === platformSlug);
@@ -263,11 +263,8 @@ function AppContent() {
         </div>
         <div className="flex items-center gap-4 flex-shrink-0">
           <ThemeToggle />
-          <SidebarTrigger className="hidden md:flex">
+          <Button variant="ghost" size="icon" onClick={toggleSidebar}>
             {sidebarOpen ? <X /> : <Menu />}
-          </SidebarTrigger>
-          <Button variant="ghost" size="icon" onClick={() => setOpenMobile(true)} className="md:hidden">
-            <Menu />
           </Button>
         </div>
       </header>
@@ -558,11 +555,12 @@ function AppContent() {
                     <SelectValue placeholder="Select a tone" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="friendly">Friendly</SelectItem>
-                    <SelectItem value="funny">Funny</SelectItem>
-                    <SelectItem value="flirty">Flirty</SelectItem>
-                    <SelectItem value="professional">Professional</SelectItem>
-                    <SelectItem value="sarcastic">Sarcastic</SelectItem>
+                    <SelectItem value="formal-polite">Formal / Polite</SelectItem>
+                    <SelectItem value="friendly-casual">Friendly / Casual</SelectItem>
+                    <SelectItem value="caring-supportive">Caring / Supportive</SelectItem>
+                    <SelectItem value="playful-fun">Playful / Fun</SelectItem>
+                    <SelectItem value="romantic-affectionate">Romantic / Affectionate</SelectItem>
+                    <SelectItem value="serious-honest">Serious / Honest</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -606,7 +604,7 @@ function AppContent() {
           <h3 className="text-2xl font-bold tracking-tight mb-4">How Does Text MsgRepeater Work?</h3>
           <div className="space-y-4 text-muted-foreground">
             <p>Our tool is straightforward. You enter the text you want to repeat, select a social media platform to set the character limit (or set a custom one), and choose your formatting. You can have the text repeated in a single "Row," a "Column" format with line breaks, or as "Separate" individual messages.</p>
-            <p>The "Separate" option is designed for mobile users. It allows you to copy each repeated message one at a time with a "Copy & Show Next" button, preventing clipboard issues with duplicate content. Once you click "Generate," the tool processes your request and provides the output for you to easily copy.</p>
+            <p>The "Separate" option is designed for mobile users. It allows you to copy each repeated message one at a time with a "Copy & Show Next" button, preventing clipboard issues with duplicate content. Each copied message has a tiny, invisible character added, making it unique to your clipboard. Once you click "Generate," the tool processes your request and provides the output for you to easily copy.</p>
           </div>
         </div>
 
@@ -765,7 +763,3 @@ export default function MsgRepeaterPage() {
     </SidebarProvider>
   )
 }
-
-    
-
-    
