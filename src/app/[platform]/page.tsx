@@ -278,7 +278,99 @@ function AppContent() {
             Use our AI to craft the perfect reply, or use the text repeater to meet character limits. Your complete messaging toolkit.
           </p>
         </div>
+
         <Card className="w-full max-w-2xl shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="h-6 w-6" />
+              MsgCham AI
+            </CardTitle>
+            <CardDescription>
+              Craft the perfect reply for any situation. Describe the context and let our AI generate responses for you.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid w-full items-center gap-6">
+              <div className="flex flex-col space-y-2">
+                <Label>Your Gender</Label>
+                <RadioGroup
+                  value={userGender}
+                  onValueChange={setUserGender}
+                  className="flex items-center gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="male" id="gender-male" />
+                    <Label htmlFor="gender-male">Male</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="female" id="gender-female" />
+                    <Label htmlFor="gender-female">Female</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="other" id="gender-other" />
+                    <Label htmlFor="gender-other">Other</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="reply-count">Number of Replies</Label>
+                  <span className="text-sm text-muted-foreground font-medium">{replyCount[0]}</span>
+                </div>
+                <Slider
+                  id="reply-count"
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={replyCount}
+                  onValueChange={setReplyCount}
+                />
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="tone">Desired Tone</Label>
+                <Select value={replyTone} onValueChange={setReplyTone}>
+                  <SelectTrigger id="tone">
+                    <SelectValue placeholder="Select a tone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="formal-polite">Formal / Polite</SelectItem>
+                    <SelectItem value="friendly-casual">Friendly / Casual</SelectItem>
+                    <SelectItem value="caring-supportive">Caring / Supportive</SelectItem>
+                    <SelectItem value="playful-fun">Playful / Fun</SelectItem>
+                    <SelectItem value="romantic-affectionate">Romantic / Affectionate</SelectItem>
+                    <SelectItem value="serious-honest">Serious / Honest</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+               <div className="flex flex-col space-y-2">
+                <Label htmlFor="ai-input-text">Message Received</Label>
+                <Textarea
+                  id="ai-input-text"
+                  placeholder="e.g., 'hey what's up?'"
+                  value={aiInputText}
+                  onChange={(e) => setAiInputText(e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              <Button>
+                <Bot className="mr-2 h-5 w-5" />
+                Generate Replies
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="w-full max-w-2xl shadow-lg mt-8">
+          <CardHeader>
+              <CardTitle>Text Repeater</CardTitle>
+              <CardDescription>
+                Repeat text to meet character limits or create emphasis in your messages.
+              </CardDescription>
+          </CardHeader>
           <CardContent className="pt-6">
             <div className="grid w-full items-center gap-6">
               <div className="flex flex-col space-y-2">
@@ -496,91 +588,6 @@ function AppContent() {
                 </div>
                 )}
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="w-full max-w-2xl shadow-lg mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bot className="h-6 w-6" />
-              MsgCham AI
-            </CardTitle>
-            <CardDescription>
-              Craft the perfect reply for any situation. Describe the context and let our AI generate responses for you.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid w-full items-center gap-6">
-              <div className="flex flex-col space-y-2">
-                <Label>Your Gender</Label>
-                <RadioGroup
-                  value={userGender}
-                  onValueChange={setUserGender}
-                  className="flex items-center gap-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="male" id="gender-male" />
-                    <Label htmlFor="gender-male">Male</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="female" id="gender-female" />
-                    <Label htmlFor="gender-female">Female</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="other" id="gender-other" />
-                    <Label htmlFor="gender-other">Other</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="flex flex-col space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor="reply-count">Number of Replies</Label>
-                  <span className="text-sm text-muted-foreground font-medium">{replyCount[0]}</span>
-                </div>
-                <Slider
-                  id="reply-count"
-                  min={1}
-                  max={10}
-                  step={1}
-                  value={replyCount}
-                  onValueChange={setReplyCount}
-                />
-              </div>
-
-              <div className="flex flex-col space-y-2">
-                <Label htmlFor="tone">Desired Tone</Label>
-                <Select value={replyTone} onValueChange={setReplyTone}>
-                  <SelectTrigger id="tone">
-                    <SelectValue placeholder="Select a tone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="formal-polite">Formal / Polite</SelectItem>
-                    <SelectItem value="friendly-casual">Friendly / Casual</SelectItem>
-                    <SelectItem value="caring-supportive">Caring / Supportive</SelectItem>
-                    <SelectItem value="playful-fun">Playful / Fun</SelectItem>
-                    <SelectItem value="romantic-affectionate">Romantic / Affectionate</SelectItem>
-                    <SelectItem value="serious-honest">Serious / Honest</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-               <div className="flex flex-col space-y-2">
-                <Label htmlFor="ai-input-text">Message Received</Label>
-                <Textarea
-                  id="ai-input-text"
-                  placeholder="e.g., 'hey what's up?'"
-                  value={aiInputText}
-                  onChange={(e) => setAiInputText(e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              <Button>
-                <Bot className="mr-2 h-5 w-5" />
-                Generate Replies
-              </Button>
             </div>
           </CardContent>
         </Card>
