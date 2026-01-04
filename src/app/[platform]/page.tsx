@@ -83,6 +83,7 @@ function AppContent() {
 
   // AI assistant state
   const [aiInputText, setAiInputText] = useState("");
+  const [additionalInfo, setAdditionalInfo] = useState("");
   const [userGender, setUserGender] = useState("male");
   const [replyCount, setReplyCount] = useState([5]);
   const [replyTone, setReplyTone] = useState("friendly-casual");
@@ -353,6 +354,17 @@ function AppContent() {
                   value={aiInputText}
                   onChange={(e) => setAiInputText(e.target.value)}
                   rows={3}
+                />
+              </div>
+
+               <div className="flex flex-col space-y-2">
+                <Label htmlFor="ai-additional-info">Additional Information (Optional)</Label>
+                <Textarea
+                  id="ai-additional-info"
+                  placeholder="e.g., 'She is my colleague and I have a crush on her.'"
+                  value={additionalInfo}
+                  onChange={(e) => setAdditionalInfo(e.target.value)}
+                  rows={2}
                 />
               </div>
 
