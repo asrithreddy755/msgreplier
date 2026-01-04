@@ -82,6 +82,7 @@ function AppContent() {
   const { toast } = useToast();
 
   // AI assistant state
+  const [aiInputText, setAiInputText] = useState("");
   const [userGender, setUserGender] = useState("male");
   const [replyCount, setReplyCount] = useState([5]);
   const [replyTone, setReplyTone] = useState("friendly-casual");
@@ -566,11 +567,13 @@ function AppContent() {
               </div>
 
                <div className="flex flex-col space-y-2">
-                <Label htmlFor="ai-input-text">Describe the Situation</Label>
+                <Label htmlFor="ai-input-text">Message Received</Label>
                 <Textarea
                   id="ai-input-text"
-                  placeholder="e.g., 'A girl I like messaged me 'what's up?' and I want to be flirty.'"
-                  rows={4}
+                  placeholder="e.g., 'hey what's up?'"
+                  value={aiInputText}
+                  onChange={(e) => setAiInputText(e.target.value)}
+                  rows={3}
                 />
               </div>
 
@@ -763,3 +766,5 @@ export default function MsgRepeaterPage() {
     </SidebarProvider>
   )
 }
+
+    
