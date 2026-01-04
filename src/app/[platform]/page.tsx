@@ -258,7 +258,7 @@ function AppContent() {
             <Link href="/" className="flex items-center gap-3">
             <MessageSquare className="h-8 w-8 text-primary" />
             <h1 className="font-headline text-2xl font-bold tracking-tight">
-                MsgRepeater
+                MsgReplier
             </h1>
             </Link>
         </div>
@@ -272,10 +272,10 @@ function AppContent() {
       <main className="flex flex-1 w-full flex-col items-center justify-center p-4">
         <div className="text-center mb-8">
           <h2 className="font-headline text-4xl font-bold tracking-tight">
-            Repeat Your Message Instantly
+            Generate perfect replies for any message
           </h2>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-            Easily repeat your message to meet the character limits of any social media platform. Just type your text, choose your platform, and generate the repeated message instantly.
+            Use our AI to craft the perfect reply, or use the text repeater to meet character limits. Your complete messaging toolkit.
           </p>
         </div>
         <Card className="w-full max-w-2xl shadow-lg">
@@ -604,7 +604,7 @@ function AppContent() {
         </div>
 
         <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-bold tracking-tight mb-4">How Does Text MsgRepeater Work?</h3>
+          <h3 className="text-2xl font-bold tracking-tight mb-4">How Does Text MsgReplier Work?</h3>
           <div className="space-y-4 text-muted-foreground">
             <p>Our tool is straightforward. You enter the text you want to repeat, select a social media platform to set the character limit (or set a custom one), and choose your formatting. You can have the text repeated in a single "Row," a "Column" format with line breaks, or as "Separate" individual messages.</p>
             <p>The "Separate" option is designed for mobile users. It allows you to copy each repeated message one at a time with a "Copy & Show Next" button, preventing clipboard issues with duplicate content. Each copied message has a tiny, invisible character added, making it unique to your clipboard. Once you click "Generate," the tool processes your request and provides the output for you to easily copy.</p>
@@ -628,7 +628,7 @@ function AppContent() {
           <div className="container max-w-2xl flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MessageSquare className="h-5 w-5" />
-              <span>© {new Date().getFullYear()} MsgRepeater. All rights reserved.</span>
+              <span>© {new Date().getFullYear()} MsgReplier. All rights reserved.</span>
             </div>
             <div className="flex items-center gap-4">
                <Dialog>
@@ -641,7 +641,7 @@ function AppContent() {
                   </DialogHeader>
                   <DialogDescriptionPrimitive asChild>
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                      <div>Welcome to MsgRepeater. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</div>
+                      <div>Welcome to MsgReplier. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</div>
                       <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
                       <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
                     </div>
@@ -658,7 +658,7 @@ function AppContent() {
                   </DialogHeader>
                   <DialogDescriptionPrimitive asChild>
                       <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                        <div>Your privacy is important to us. It is MsgRepeater's policy to respect your privacy regarding any information we may collect from you across our website.</div>
+                        <div>Your privacy is important to us. It is MsgReplier's policy to respect your privacy regarding any information we may collect from you across our website.</div>
                         <div className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</div>
                         <div>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</div>
                       </div>
@@ -750,7 +750,7 @@ function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
     )
 }
 
-export default function MsgRepeaterPage() {
+export default function MsgReplierPage() {
   const params = useParams();
   const platformSlug = params.platform as string;
   
@@ -766,5 +766,3 @@ export default function MsgRepeaterPage() {
     </SidebarProvider>
   )
 }
-
-    

@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: 'MsgRepeater',
-  description: 'Repeat your message for any social platform.',
+  title: 'MsgReplier',
+  description: 'Generate perfect replies for any message.',
 };
 
 export default function RootLayout({
