@@ -1,5 +1,5 @@
 import type { Platform } from '@/lib/constants';
-import { Settings } from 'lucide-react';
+import { Settings, Bot } from 'lucide-react';
 
 const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -115,6 +115,7 @@ const PlatformIcon = ({
   className?: string;
 }) => {
   const icons: { [key in Platform['id']]: React.ElementType } = {
+    'ai-reply': Bot,
     instagram: InstagramIcon,
     whatsapp: WhatsAppIcon,
     telegram: TelegramIcon,

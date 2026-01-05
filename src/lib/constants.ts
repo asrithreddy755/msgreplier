@@ -1,11 +1,12 @@
 export type Platform = {
-  id: 'instagram' | 'whatsapp' | 'telegram' | 'x' | 'facebook' | 'youtube' | 'custom';
+  id: 'instagram' | 'whatsapp' | 'telegram' | 'x' | 'facebook' | 'youtube' | 'custom' | 'ai-reply';
   name: string;
   charLimit: number;
   slug: string;
 };
 
 export const PLATFORMS: Platform[] = [
+  { id: 'ai-reply', name: 'AI Reply Generator', charLimit: 0, slug: 'ai-reply-generator' },
   { id: 'instagram', name: 'Instagram', charLimit: 2200, slug: 'instagram-text-repeater' },
   { id: 'x', name: 'X (Twitter)', charLimit: 280, slug: 'x-text-repeater' },
   { id: 'facebook', name: 'Facebook', charLimit: 8000, slug: 'facebook-text-repeater' },

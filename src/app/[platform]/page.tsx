@@ -93,8 +93,7 @@ function AppContent() {
   useEffect(() => {
     const currentPlatform = PLATFORMS.find(p => p.slug === platformSlug);
     if (!currentPlatform) {
-      const defaultPlatform = PLATFORMS.find(p => p.id === 'instagram') || PLATFORMS[0];
-      router.replace(`/${defaultPlatform.slug}`);
+      router.replace(`/ai-reply-generator`);
     } else {
       setPlatformId(currentPlatform.id);
     }
@@ -712,7 +711,6 @@ function AppContent() {
 }
 
 function MobileSidebarMenu({ platformSlug }: { platformSlug: string }) {
-    const homePlatform = PLATFORMS.find(p => p.id === 'instagram');
     return (
         <>
             <SheetHeader className="p-4 border-b">
@@ -723,8 +721,8 @@ function MobileSidebarMenu({ platformSlug }: { platformSlug: string }) {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <Link href={`/${homePlatform?.slug || ''}`}>
-                        <PlatformIcon platformId="instagram" className="h-5 w-5" />
+                      <Link href={`/ai-reply-generator`}>
+                        <Bot className="h-5 w-5" />
                         Home
                       </Link>
                     </SidebarMenuButton>
@@ -749,7 +747,6 @@ function MobileSidebarMenu({ platformSlug }: { platformSlug: string }) {
 
 
 function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
-    const homePlatform = PLATFORMS.find(p => p.id === 'instagram');
     const { toggleSidebar } = useSidebar();
     return (
       <>
@@ -764,8 +761,8 @@ function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href={`/${homePlatform?.slug || ''}`}>
-                    <PlatformIcon platformId="instagram" className="h-5 w-5" />
+                  <Link href={`/ai-reply-generator`}>
+                    <Bot className="h-5 w-5" />
                     <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Home</span>
                   </Link>
                 </SidebarMenuButton>
