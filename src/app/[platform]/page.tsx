@@ -641,11 +641,12 @@ function AppContent() {
         </div>
 
         <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-bold tracking-tight mb-4">How Does Text MsgReplier Work?</h3>
+          <h3 className="text-2xl font-bold tracking-tight mb-4">How Does MsgReplier Work?</h3>
           <div className="space-y-4 text-muted-foreground">
             <p>Our tool has two main features: an AI Reply Generator and a Text Repeater.</p>
             <p>The <span className="font-semibold">AI Reply Generator</span> uses advanced AI to understand the context you provide and craft replies in the tone you want. Just tell it who you are, what message you received, and how you want to sound.</p>
             <p>The <span className="font-semibold">Text Repeater</span> is straightforward. You enter text, choose formatting, and it generates the repeated text. The "Separate" option is specially designed for mobile users. It adds a tiny, invisible character to each copied message, making it unique to your phone's clipboard. This allows you to copy multiple messages one after another without the clipboard ignoring duplicates.</p>
+            <p className="font-semibold text-foreground border-l-4 border-primary pl-4">Your privacy is our priority. We do not require any login, and we do not save, store, or collect any of your data. All text processing is done in your browser.</p>
           </div>
         </div>
 
@@ -688,16 +689,18 @@ function AppContent() {
               </Dialog>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground">Privacy Policy</Button>
+                  <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground flex items-center gap-1">
+                    <ShieldCheck className="h-4 w-4" /> Privacy Policy
+                  </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Privacy Policy</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
                   </DialogHeader>
                   <DialogDescriptionPrimitive asChild>
                       <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                         <div>Your privacy is important to us. It is MsgReplier's policy to respect your privacy regarding any information we may collect from you across our website.</div>
-                        <div className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</div>
+                        <div className="font-bold p-3 bg-green-100 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-800">This website does not require any login, and we do not save, store, or collect any of your data. All processing is done in your browser.</div>
                         <div>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</div>
                       </div>
                   </DialogDescriptionPrimitive>
@@ -771,12 +774,12 @@ function MobileSidebarMenu() {
                         </DialogTrigger>
                         <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Privacy Policy</DialogTitle>
+                           <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
                         </DialogHeader>
                         <DialogDescriptionPrimitive asChild>
                             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                                 <div>Your privacy is important to us. It is MsgReplier's policy to respect your privacy regarding any information we may collect from you across our website.</div>
-                                <div className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</div>
+                                <div className="font-bold p-3 bg-green-100 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-800">This website does not require any login, and we do not save, store, or collect any of your data. All processing is done in your browser.</div>
                                 <div>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</div>
                             </div>
                         </DialogDescriptionPrimitive>
@@ -853,12 +856,12 @@ function DesktopSidebarMenu() {
                         </DialogTrigger>
                         <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Privacy Policy</DialogTitle>
+                            <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
                         </DialogHeader>
                         <DialogDescriptionPrimitive asChild>
                             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                                 <div>Your privacy is important to us. It is MsgReplier's policy to respect your privacy regarding any information we may collect from you across our website.</div>
-                                <div className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</div>
+                                <div className="font-bold p-3 bg-green-100 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-800">This website does not require any login, and we do not save, store, or collect any of your data. All processing is done in your browser.</div>
                                 <div>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</div>
                             </div>
                         </DialogDescriptionPrimitive>
@@ -885,5 +888,3 @@ export default function MsgReplierPage() {
     </SidebarProvider>
   )
 }
-
-    
