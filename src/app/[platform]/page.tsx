@@ -88,7 +88,7 @@ function AppContent() {
   const [replyCount, setReplyCount] = useState([5]);
   const [replyTone, setReplyTone] = useState("friendly-casual");
   const [replyLength, setReplyLength] = useState([1]);
-  const replyLengthLabels = ["Short", "Medium", "Long"];
+  const replyLengthLabels = ["Short (~5-15 words)", "Medium (~15-30 words)", "Long (~30-50 words)"];
 
   useEffect(() => {
     const currentPlatform = PLATFORMS.find(p => p.slug === platformSlug);
