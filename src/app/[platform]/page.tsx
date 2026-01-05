@@ -281,7 +281,7 @@ function AppContent() {
             Generate perfect replies for any message
           </h2>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-            Use our AI to craft the perfect reply, or use the text repeater to meet character limits. Your complete messaging toolkit.
+            Use our AI to craft the perfect reply (no login needed), or use the text repeater to meet character limits. Your complete messaging toolkit.
           </p>
         </div>
 
