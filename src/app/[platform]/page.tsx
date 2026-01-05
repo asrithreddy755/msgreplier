@@ -87,6 +87,8 @@ function AppContent() {
   const [userGender, setUserGender] = useState("male");
   const [replyCount, setReplyCount] = useState([5]);
   const [replyTone, setReplyTone] = useState("friendly-casual");
+  const [replyLength, setReplyLength] = useState([1]);
+  const replyLengthLabels = ["Short", "Medium", "Long"];
 
   useEffect(() => {
     const currentPlatform = PLATFORMS.find(p => p.slug === platformSlug);
@@ -344,6 +346,23 @@ function AppContent() {
                     <SelectItem value="serious-honest">Serious / Honest</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="reply-length">Reply Length</Label>
+                  <span className="text-sm text-muted-foreground font-medium">
+                    {replyLengthLabels[replyLength[0]]}
+                  </span>
+                </div>
+                <Slider
+                  id="reply-length"
+                  min={0}
+                  max={2}
+                  step={1}
+                  value={replyLength}
+                  onValueChange={setReplyLength}
+                />
               </div>
 
                <div className="flex flex-col space-y-2">
