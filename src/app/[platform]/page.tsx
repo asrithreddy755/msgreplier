@@ -21,7 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare, Menu, X, RotateCcw, Bot } from "lucide-react";
+import { Copy, Check, MessageSquare, Menu, X, RotateCcw, Bot, BookText, ShieldCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -103,7 +103,11 @@ function AppContent() {
     const platform = PLATFORMS.find((p) => p.id === newPlatformId);
     if (platform) {
       setPlatformId(newPlatformId);
-      router.push(`/${platform.slug}`);
+      // The router push is now mainly for URL consistency if we decide to use it later
+      // but the main repeater functionality is on one page.
+      if (platform.slug !== platformSlug) {
+         router.push(`/${platform.slug}`);
+      }
     }
   };
 
@@ -221,7 +225,7 @@ function AppContent() {
       
 
     }, 300);
-  }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast]);
+  }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast, platformId, selectedPlatform.charLimit]);
 
   const handleCopy = () => {
     if (!generatedText) return;
@@ -394,7 +398,7 @@ function AppContent() {
           </CardContent>
         </Card>
 
-        <Card className="w-full max-w-2xl shadow-lg mt-8">
+        <Card id="text-repeater" className="w-full max-w-2xl shadow-lg mt-8">
           <CardHeader>
               <CardTitle>Text Repeater</CardTitle>
               <CardDescription>
@@ -419,7 +423,7 @@ function AppContent() {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {PLATFORMS.map((platform) => (
+                      {PLATFORMS.filter(p => p.id !== 'ai-reply').map((platform) => (
                         <SelectItem key={platform.id} value={platform.id}>
                           <div className="flex items-center gap-2">
                             <PlatformIcon
@@ -626,16 +630,12 @@ function AppContent() {
           <h3 className="text-2xl font-bold tracking-tight mb-4">How to Use This Tool</h3>
           <div className="space-y-4 text-muted-foreground">
             <ol className="list-decimal list-inside space-y-2">
-              <li><span className="font-semibold">Enter Your Text:</span> Start by typing or pasting the text you want to repeat into the "Your Text" field.</li>
-              <li><span className="font-semibold">Choose a Platform:</span> Select your target social media platform from the dropdown menu. This sets the correct character limit automatically. For a custom limit, choose "Custom" and enter a number.</li>
-              <li><span className="font-semibold">Set Formatting Options:</span> Choose to repeat your text in a "Row" (side-by-side), "Column" (line-by-line), or "Separate" (for individual messages). You can also choose whether to add a space between repetitions for the "Row" option.</li>
-              <li><span className="font-semibold">Specify Repetition Count (Optional):</span> If you want to repeat the text a specific number of times, check the box and enter the desired count. Otherwise, the tool will repeat it as many times as possible within the character limit.</li>
-              <li><span className="font-semibold">Generate and Copy:</span> Click the "Generate" button.
-                <ul className="list-disc list-inside ml-4 mt-2">
-                  <li>For "Row" and "Column", your repeated text will appear in a single box. Click the copy icon to copy it all at once.</li>
-                  <li>For "Separate" mode, use the "Copy & Show Next" button to copy each message one-by-one. This is perfect for mobile users who need to post multiple comments, as it avoids clipboard issues with duplicate content.</li>
-                </ul>
-              </li>
+              <li><span className="font-semibold">AI Reply Generator:</span> Use the "MsgCham AI" to create perfect replies. Just enter the message you received, provide optional context, and select the tone, length, and number of replies you want. The AI does the rest!</li>
+              <li><span className="font-semibold">Text Repeater:</span> Need to make a point or hit a character limit? Scroll down to the "Text Repeater" tool.</li>
+              <li><span className="font-semibold">Enter Your Text:</span> Type the text you want to repeat into the "Your Text" field.</li>
+              <li><span className="font-semibold">Choose a Platform:</span> Select a platform to auto-set the character limit, or choose "Custom".</li>
+              <li><span className="font-semibold">Set Formatting Options:</span> Repeat your text in a "Row", "Column", or as "Separate" messages. The "Separate" option is great for mobile, as it lets you copy each message one-by-one.</li>
+              <li><span className="font-semibold">Generate and Copy:</span> Click "Generate". For "Separate" mode, use the "Copy & Show Next" button to cycle through your messages.</li>
             </ol>
           </div>
         </div>
@@ -643,8 +643,9 @@ function AppContent() {
         <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
           <h3 className="text-2xl font-bold tracking-tight mb-4">How Does Text MsgReplier Work?</h3>
           <div className="space-y-4 text-muted-foreground">
-            <p>Our tool is straightforward. You enter the text you want to repeat, select a social media platform to set the character limit (or set a custom one), and choose your formatting. You can have the text repeated in a single "Row," a "Column" format with line breaks, or as "Separate" individual messages.</p>
-            <p>The "Separate" option is designed for mobile users. It allows you to copy each repeated message one at a time with a "Copy & Show Next" button, preventing clipboard issues with duplicate content. Each copied message has a tiny, invisible character added, making it unique to your clipboard. Once you click "Generate," the tool processes your request and provides the output for you to easily copy.</p>
+            <p>Our tool has two main features: an AI Reply Generator and a Text Repeater.</p>
+            <p>The <span className="font-semibold">AI Reply Generator</span> uses advanced AI to understand the context you provide and craft replies in the tone you want. Just tell it who you are, what message you received, and how you want to sound.</p>
+            <p>The <span className="font-semibold">Text Repeater</span> is straightforward. You enter text, choose formatting, and it generates the repeated text. The "Separate" option is specially designed for mobile users. It adds a tiny, invisible character to each copied message, making it unique to your phone's clipboard. This allows you to copy multiple messages one after another without the clipboard ignoring duplicates.</p>
           </div>
         </div>
 
@@ -652,11 +653,11 @@ function AppContent() {
           <h3 className="text-2xl font-bold tracking-tight mb-4">Common Uses</h3>
           <div className="space-y-4 text-muted-foreground">
             <ul className="list-disc list-inside space-y-2">
-              <li><span className="font-semibold">Meeting Character Minimums:</span> Some online forms or comment sections have a minimum character requirement. Quickly pad your message to meet the minimum length.</li>
-              <li><span className="font-semibold">Creating Emphasis:</span> Repeating a word or phrase can be a powerful way to draw attention to your message in social media posts or chats.</li>
-              <li><span className="font-semibold">Spamming Comments (Responsibly!):</span> Use the "Separate" mode to quickly post multiple individual comments in a live stream or chat. The "Copy & Show Next" feature makes this fast and easy from a mobile device by ensuring each copy is unique.</li>
-              <li><span className="font-semibold">Artistic Text Patterns:</span> Use the column feature to create ASCII art or interesting visual patterns with platforms like Discord or Twitter.</li>
-              <li><span className="font-semibold">Testing and Development:</span> Developers can use this tool to generate long strings of text to test text fields, database limits, and layout constraints in their applications.</li>
+                <li><span className="font-semibold">Breaking the Ice:</span> Not sure how to reply to "hey" or "what's up"? Let the AI give you a creative and engaging start.</li>
+                <li><span className="font-semibold">Finding the Right Tone:</span> Effortlessly switch between a formal, playful, or supportive tone depending on the situation.</li>
+                <li><span className="font-semibold">Meeting Character Minimums:</span> Use the Text Repeater to quickly pad your message to meet minimum length requirements on forums or forms.</li>
+                <li><span className="font-semibold">Creating Emphasis:</span> Repeating a word or phrase can be a powerful way to draw attention to your message.</li>
+                <li><span className="font-semibold">Spamming Comments (Responsibly!):</span> Use the "Separate" mode to quickly post multiple individual comments. The "Copy & Show Next" feature is perfect for this on mobile.</li>
             </ul>
           </div>
         </div>
@@ -710,11 +711,13 @@ function AppContent() {
   );
 }
 
-function MobileSidebarMenu({ platformSlug }: { platformSlug: string }) {
+function MobileSidebarMenu() {
+    const { setOpenMobile } = useSidebar();
+    
     return (
         <>
             <SheetHeader className="p-4 border-b">
-                <SheetTitle>Platforms</SheetTitle>
+                <SheetTitle>Menu</SheetTitle>
             </SheetHeader>
             <SidebarContent>
               <div className="p-4">
@@ -723,21 +726,63 @@ function MobileSidebarMenu({ platformSlug }: { platformSlug: string }) {
                     <SidebarMenuButton asChild>
                       <Link href={`/ai-reply-generator`}>
                         <Bot className="h-5 w-5" />
-                        Home
+                        AI Reply Generator
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                   <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                       <a href="#text-repeater" onClick={() => setOpenMobile(false)}>
+                          <Copy className="h-5 w-5" />
+                          Text Repeater
+                       </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                   <hr className="my-2"/>
-                  {PLATFORMS.map(platform => (
-                    <SidebarMenuItem key={platform.id}>
-                      <SidebarMenuButton asChild isActive={platform.slug === platformSlug}>
-                        <Link href={`/${platform.slug}`}>
-                          <PlatformIcon platformId={platform.id} className="h-5 w-5" />
-                          <span>{platform.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  <SidebarMenuItem>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <SidebarMenuButton>
+                                <BookText className="h-5 w-5" />
+                                Terms & Conditions
+                            </SidebarMenuButton>
+                        </DialogTrigger>
+                        <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Terms and Conditions</DialogTitle>
+                        </DialogHeader>
+                        <DialogDescriptionPrimitive asChild>
+                            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                            <div>Welcome to MsgReplier. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</div>
+                            <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
+                            <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
+                            </div>
+                        </DialogDescriptionPrimitive>
+                        </DialogContent>
+                    </Dialog>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                     <Dialog>
+                        <DialogTrigger asChild>
+                            <SidebarMenuButton>
+                                <ShieldCheck className="h-5 w-5" />
+                                Privacy Policy
+                            </SidebarMenuButton>
+                        </DialogTrigger>
+                        <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Privacy Policy</DialogTitle>
+                        </DialogHeader>
+                        <DialogDescriptionPrimitive asChild>
+                            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                                <div>Your privacy is important to us. It is MsgReplier's policy to respect your privacy regarding any information we may collect from you across our website.</div>
+                                <div className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</div>
+                                <div>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</div>
+                            </div>
+                        </DialogDescriptionPrimitive>
+                        </DialogContent>
+                    </Dialog>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </div>
             </SidebarContent>
@@ -746,12 +791,12 @@ function MobileSidebarMenu({ platformSlug }: { platformSlug: string }) {
 }
 
 
-function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
-    const { toggleSidebar } = useSidebar();
+function DesktopSidebarMenu() {
+    const { toggleSidebar, setOpenMobile } = useSidebar();
     return (
       <>
         <SidebarHeader className="flex items-center justify-between p-4 border-b">
-            <h2 className="text-xl font-semibold transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Platforms</h2>
+            <h2 className="text-xl font-semibold transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Menu</h2>
             <Button variant="ghost" size="icon" onClick={toggleSidebar} className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">
               <X />
             </Button>
@@ -763,21 +808,63 @@ function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
                 <SidebarMenuButton asChild>
                   <Link href={`/ai-reply-generator`}>
                     <Bot className="h-5 w-5" />
-                    <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Home</span>
+                    <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">AI Reply Generator</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                    <a href="#text-repeater" onClick={() => setOpenMobile(false)}>
+                        <Copy className="h-5 w-5" />
+                        <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Text Repeater</span>
+                    </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <hr className="my-2"/>
-              {PLATFORMS.map(platform => (
-                <SidebarMenuItem key={platform.id}>
-                  <SidebarMenuButton asChild isActive={platform.slug === platformSlug}>
-                    <Link href={`/${platform.slug}`}>
-                      <PlatformIcon platformId={platform.id} className="h-5 w-5" />
-                      <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">{platform.name}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+               <SidebarMenuItem>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <SidebarMenuButton>
+                                <BookText className="h-5 w-5" />
+                                <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Terms & Conditions</span>
+                            </SidebarMenuButton>
+                        </DialogTrigger>
+                        <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Terms and Conditions</DialogTitle>
+                        </DialogHeader>
+                        <DialogDescriptionPrimitive asChild>
+                            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                            <div>Welcome to MsgReplier. By using our service, you agree to these terms. You must be at least 13 years old to use this service.</div>
+                            <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
+                            <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
+                            </div>
+                        </DialogDescriptionPrimitive>
+                        </DialogContent>
+                    </Dialog>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <SidebarMenuButton>
+                                <ShieldCheck className="h-5 w-5" />
+                                <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Privacy Policy</span>
+                            </SidebarMenuButton>
+                        </DialogTrigger>
+                        <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Privacy Policy</DialogTitle>
+                        </DialogHeader>
+                        <DialogDescriptionPrimitive asChild>
+                            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                                <div>Your privacy is important to us. It is MsgReplier's policy to respect your privacy regarding any information we may collect from you across our website.</div>
+                                <div className="font-bold">This website does not save, store, or collect any of your data. All text processing is done in your browser and is not sent to our servers.</div>
+                                <div>We don’t share any personally identifying information publicly or with third-parties, simply because we don't collect it in the first place.</div>
+                            </div>
+                        </DialogDescriptionPrimitive>
+                        </DialogContent>
+                    </Dialog>
+              </SidebarMenuItem>
             </SidebarMenu>
           </div>
         </SidebarContent>
@@ -786,18 +873,17 @@ function DesktopSidebarMenu({ platformSlug }: { platformSlug: string }) {
 }
 
 export default function MsgReplierPage() {
-  const params = useParams();
-  const platformSlug = params.platform as string;
-  
   return (
     <SidebarProvider defaultOpen={false}>
       <SidebarInset>
         <AppContent />
       </SidebarInset>
       <Sidebar side="right" className="border-l bg-card">
-        <MobileSidebarMenu platformSlug={platformSlug} />
-        <DesktopSidebarMenu platformSlug={platformSlug} />
+        <MobileSidebarMenu />
+        <DesktopSidebarMenu />
       </Sidebar>
     </SidebarProvider>
   )
 }
+
+    
