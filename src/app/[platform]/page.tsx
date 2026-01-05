@@ -390,10 +390,15 @@ function AppContent() {
                 />
               </div>
 
-              <Button>
-                <Bot className="mr-2 h-5 w-5" />
-                Generate Replies
-              </Button>
+              <div>
+                <Button className="w-full">
+                  <Bot className="mr-2 h-5 w-5" />
+                  Generate Replies
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  MsgCham AI may give misinformation. Please check important info.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
