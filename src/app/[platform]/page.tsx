@@ -90,9 +90,9 @@ function AppContent() {
   const [aiInputText, setAiInputText] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [userGender, setUserGender] = useState("male");
-  const [replyCount, setReplyCount] = useState([5]);
+  const [replyCount, setReplyCount] = useState(5);
   const [replyTone, setReplyTone] = useState("Friendly and Casual");
-  const [replyLength, setReplyLength] = useState([1]);
+  const [replyLength, setReplyLength] = useState(1);
   const [generatedReplies, setGeneratedReplies] = useState<string[]>([]);
   const [copiedReplies, setCopiedReplies] = useState<boolean[]>([]);
   
@@ -141,9 +141,9 @@ function AppContent() {
         message: aiInputText,
         additionalInfo,
         userGender,
-        replyCount: replyCount[0],
+        replyCount: replyCount,
         replyTone,
-        replyLength: replyLengthMap[replyLength[0]],
+        replyLength: replyLengthMap[replyLength],
       });
       setGeneratedReplies(result.replies);
       setCopiedReplies(new Array(result.replies.length).fill(false));
@@ -195,63 +195,51 @@ function AppContent() {
       setGeneratedText("");
       return;
     }
-    setIsLoading(true);
-    setGeneratedText("");
 
+    let separator = "";
+    if (repetitionType === "column") {
+      separator = "\n";
+    } else if (addSpace) {
+      separator = " ";
+    }
+    
+    const textWithSeparator = inputText + separator;
+    let repeatedText = "";
 
-    setTimeout(() => {
-        let separator = "";
-        if (repetitionType === "column") {
-          separator = "\n";
-        } else if (addSpace) {
-          separator = " ";
-        }
-        
-        const textWithSeparator = inputText + separator;
-        let repeatedText = "";
-
-        if (useRepetitionCount) {
-          if (repetitionCount > 0 && inputText) {
-            const result = Array(repetitionCount).fill(inputText).join(separator);
-            if (result.length > charLimit) {
-              toast({
-                variant: "destructive",
-                title: "Character limit exceeded",
-                description: `The generated text is longer than the platform's limit of ${charLimit} characters and has been truncated.`,
-              });
-            }
-            repeatedText = result.slice(0, charLimit);
-          }
-        } else {
-          if (textWithSeparator.length > 0) {
-            let tempText = "";
-             // To avoid infinite loops with just a separator
-            if (inputText.length > 0) {
-              while ((tempText + textWithSeparator).length <= charLimit) {
-                tempText += textWithSeparator;
-              }
-            }
-            
-            if (tempText.endsWith(separator) && separator) {
-                repeatedText = tempText.slice(0, -separator.length);
-            } else {
-              repeatedText = tempText;
-            }
-          
-            if (repeatedText.length === 0 && inputText.length <= charLimit) {
-                repeatedText = inputText;
-            }
-          }
-        }
-        setGeneratedText(repeatedText);
-         if (repeatedText) {
-          navigator.clipboard.writeText(repeatedText).then(() => {
-            setIsCopied(true);
-            setTimeout(() => setIsCopied(false), 2000);
+    if (useRepetitionCount) {
+      if (repetitionCount > 0 && inputText) {
+        const result = Array(repetitionCount).fill(inputText).join(separator);
+        if (result.length > charLimit) {
+          toast({
+            variant: "destructive",
+            title: "Character limit exceeded",
+            description: `The generated text is longer than the platform's limit of ${charLimit} characters and has been truncated.`,
           });
         }
-      setIsLoading(false);
-    }, 300);
+        repeatedText = result.slice(0, charLimit);
+      }
+    } else {
+      if (textWithSeparator.length > 0) {
+        let tempText = "";
+         // To avoid infinite loops with just a separator
+        if (inputText.length > 0) {
+          while ((tempText + textWithSeparator).length <= charLimit) {
+            tempText += textWithSeparator;
+          }
+        }
+        
+        if (tempText.endsWith(separator) && separator) {
+            repeatedText = tempText.slice(0, -separator.length);
+        } else {
+          repeatedText = tempText;
+        }
+      
+        if (repeatedText.length === 0 && inputText.length <= charLimit) {
+            repeatedText = inputText;
+        }
+      }
+    }
+    setGeneratedText(repeatedText);
   }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast]);
 
   const handleCopy = () => {
@@ -286,7 +274,7 @@ function AppContent() {
       <main className="flex flex-1 w-full flex-col items-center justify-center p-4">
         <div className="text-center mb-8">
           <h2 className="font-headline text-4xl font-bold tracking-tight">
-            Generate perfect replies for any message (no login needed)
+            AI Replies & Text Tools (no login needed)
           </h2>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
             Use our AI to craft the perfect reply, or use the text repeater to meet character limits. Your complete messaging toolkit.
@@ -297,7 +285,7 @@ function AppContent() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bot className="h-6 w-6" />
-              MsgCham AI
+              AI Reply Generator
             </CardTitle>
             <CardDescription>
               Craft the perfect reply for any situation. Just paste the message you received and let our AI generate responses for you.
@@ -330,15 +318,15 @@ function AppContent() {
               <div className="flex flex-col space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="reply-count">Number of Replies</Label>
-                  <span className="text-sm text-muted-foreground font-medium">{replyCount[0]}</span>
+                  <span className="text-sm text-muted-foreground font-medium">{replyCount}</span>
                 </div>
                 <Slider
                   id="reply-count"
                   min={1}
                   max={20}
                   step={1}
-                  value={replyCount}
-                  onValueChange={setReplyCount}
+                  value={[replyCount]}
+                  onValueChange={(value) => setReplyCount(value[0])}
                 />
               </div>
 
@@ -363,7 +351,7 @@ function AppContent() {
                 <div className="flex justify-between items-center">
                   <Label htmlFor="reply-length">Reply Length</Label>
                   <span className="text-sm text-muted-foreground font-medium">
-                    {replyLengthLabels[replyLength[0]]}
+                    {replyLengthLabels[replyLength]}
                   </span>
                 </div>
                 <Slider
@@ -371,8 +359,8 @@ function AppContent() {
                   min={0}
                   max={2}
                   step={1}
-                  value={replyLength}
-                  onValueChange={setReplyLength}
+                  value={[replyLength]}
+                  onValueChange={(value) => setReplyLength(value[0])}
                 />
               </div>
 
@@ -419,7 +407,7 @@ function AppContent() {
 
               {aiIsLoading && (
                 <div className="space-y-4">
-                  {[...Array(replyCount[0])].map((_, i) => (
+                  {[...Array(replyCount)].map((_, i) => (
                     <Skeleton key={i} className="h-12 w-full" />
                   ))}
                 </div>
@@ -580,7 +568,7 @@ function AppContent() {
               </div>
 
               <Button onClick={handleGenerate} disabled={isLoading}>
-                {isLoading ? "Generating..." : "Generate"}
+                {isLoading ? "Generating..." : "Generate & Copy"}
               </Button>
 
               <div className="flex flex-col space-y-2">
@@ -630,12 +618,12 @@ function AppContent() {
           <h3 className="text-2xl font-bold tracking-tight mb-4">How to Use This Tool</h3>
           <div className="space-y-4 text-muted-foreground">
             <ol className="list-decimal list-inside space-y-2">
-              <li><span className="font-semibold">AI Reply Generator:</span> Use the "MsgCham AI" to create perfect replies. Just enter the message you received, provide optional context, and select the tone, length, and number of replies you want. The AI does the rest!</li>
+              <li><span className="font-semibold">AI Reply Generator:</span> Use the "AI Reply Generator" to create perfect replies. Just enter the message you received, provide optional context, and select the tone, length, and number of replies you want. The AI does the rest!</li>
               <li><span className="font-semibold">Text Repeater:</span> Need to make a point or hit a character limit? Scroll down to the "Text Repeater" tool.</li>
               <li><span className="font-semibold">Enter Your Text:</span> Type the text you want to repeat into the "Your Text" field.</li>
               <li><span className="font-semibold">Choose a Platform:</span> Select a platform to auto-set the character limit, or choose "Custom".</li>
               <li><span className="font-semibold">Set Formatting Options:</span> Repeat your text in a "Row" or "Column".</li>
-              <li><span className="font-semibold">Generate and Copy:</span> Click "Generate" and then copy the resulting text.</li>
+              <li><span className="font-semibold">Generate and Copy:</span> Click "Generate & Copy" and then copy the resulting text.</li>
             </ol>
           </div>
         </div>
@@ -887,3 +875,5 @@ export default function MsgReplierPage() {
     </SidebarProvider>
   )
 }
+
+    
