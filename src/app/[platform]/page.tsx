@@ -62,7 +62,12 @@ function AppContent() {
   const { setOpenMobile, open: sidebarOpen, toggleSidebar } = useSidebar();
 
   const initialPlatform = useMemo(() => {
-    return PLATFORMS.find((p) => p.slug === platformSlug) || PLATFORMS[0];
+    const platformFromSlug = PLATFORMS.find((p) => p.slug === platformSlug);
+    // If slug is for AI generator or not found, default to instagram for repeater
+    if (!platformFromSlug || platformFromSlug.id === 'ai-reply') {
+      return PLATFORMS.find(p => p.id === 'instagram')!;
+    }
+    return platformFromSlug;
   }, [platformSlug]);
 
   const [platformId, setPlatformId] = useState<Platform["id"]>(initialPlatform.id);
@@ -94,17 +99,13 @@ function AppContent() {
     const currentPlatform = PLATFORMS.find(p => p.slug === platformSlug);
     if (!currentPlatform) {
       router.replace(`/ai-reply-generator`);
-    } else {
-      setPlatformId(currentPlatform.id);
-    }
+    } 
   }, [platformSlug, router]);
   
   const handlePlatformChange = (newPlatformId: Platform["id"]) => {
     const platform = PLATFORMS.find((p) => p.id === newPlatformId);
     if (platform) {
       setPlatformId(newPlatformId);
-      // The router push is now mainly for URL consistency if we decide to use it later
-      // but the main repeater functionality is on one page.
       if (platform.slug !== platformSlug) {
          router.push(`/${platform.slug}`);
       }
@@ -225,7 +226,7 @@ function AppContent() {
       
 
     }, 300);
-  }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast, platformId, selectedPlatform.charLimit]);
+  }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast, platformId, selectedPlatform]);
 
   const handleCopy = () => {
     if (!generatedText) return;
@@ -893,3 +894,5 @@ export default function MsgReplierPage() {
     </SidebarProvider>
   )
 }
+
+    
