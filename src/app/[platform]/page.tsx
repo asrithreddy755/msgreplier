@@ -21,7 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare, Menu, X, Bot, BookText, ShieldCheck, Sparkles } from "lucide-react";
+import { Copy, Check, MessageSquare, Menu, X, Bot, BookText, ShieldCheck, Sparkles, Mail } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -273,7 +273,7 @@ function AppContent() {
       <main className="flex flex-1 w-full flex-col items-center justify-center p-4">
         <div className="text-center mb-8">
           <h2 className="font-headline text-4xl font-bold tracking-tight">
-            AI Replies & Text Tools (no login needed)
+            AI Replies & Text Tools for Everyone
           </h2>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
             Use our AI to craft the perfect reply, or use the text repeater to meet character limits. Your complete messaging toolkit.
@@ -651,7 +651,7 @@ function AppContent() {
               <MessageSquare className="h-5 w-5" />
               <span>© {new Date().getFullYear()} MsgReplier. All rights reserved.</span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center flex-wrap justify-center gap-x-4 gap-y-2">
                <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground">Terms and Conditions</Button>
@@ -688,6 +688,11 @@ function AppContent() {
                   </DialogDescriptionPrimitive>
                 </DialogContent>
               </Dialog>
+              <Button asChild variant="link" className="p-0 h-auto text-sm text-muted-foreground flex items-center gap-1">
+                <a href="mailto:care.msgreplier@gmail.com">
+                  <Mail className="h-4 w-4" /> Suggestions & Feedback
+                </a>
+              </Button>
             </div>
           </div>
         </footer>
@@ -724,6 +729,14 @@ function MobileSidebarMenu() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <hr className="my-2"/>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                        <a href="mailto:care.msgreplier@gmail.com">
+                            <Mail className="h-5 w-5" />
+                            Suggestions & Feedback
+                        </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <Dialog>
                         <DialogTrigger asChild>
@@ -806,6 +819,14 @@ function DesktopSidebarMenu() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <hr className="my-2"/>
+               <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                        <a href="mailto:care.msgreplier@gmail.com">
+                            <Mail className="h-5 w-5" />
+                            <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Suggestions & Feedback</span>
+                        </a>
+                    </SidebarMenuButton>
+              </SidebarMenuItem>
                <SidebarMenuItem>
                     <Dialog>
                         <DialogTrigger asChild>
