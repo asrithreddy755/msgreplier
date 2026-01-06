@@ -275,6 +275,7 @@ function AppContent() {
           <h2 className="font-headline text-4xl font-bold tracking-tight">
             Your Complete Messaging Toolkit
           </h2>
+          <p className="text-muted-foreground mt-2 font-semibold">(no login required)</p>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
             Use our AI to craft the perfect reply, or use the text repeater to meet character limits.
           </p>
