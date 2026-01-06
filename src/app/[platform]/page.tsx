@@ -774,7 +774,7 @@ function MobileSidebarMenu() {
                         <DialogContent>
                         <DialogHeader>
                            <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
-                        </Header>
+                        </DialogHeader>
                         <DialogDescriptionPrimitive asChild>
                             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                                 <div>Your privacy is important to us. It is MsgReplier's policy to respect your privacy regarding any information we may collect from you across our website.</div>
@@ -855,7 +855,7 @@ function DesktopSidebarMenu() {
                         </DialogTrigger>
                         <DialogContent>
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
+                           <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
                         </DialogHeader>
                         <DialogDescriptionPrimitive asChild>
                             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
