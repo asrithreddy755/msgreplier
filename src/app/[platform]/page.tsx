@@ -21,7 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare, Menu, X, RotateCcw, Bot, BookText, ShieldCheck } from "lucide-react";
+import { Copy, Check, MessageSquare, Menu, X, RotateCcw, Bot, BookText, ShieldCheck, Sparkles } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -51,9 +51,11 @@ import {
 } from "@/components/ui/sidebar";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
+import { generateReplies } from "@/ai/flows/reply-generator";
 
 
 type RepetitionType = "row" | "column";
+type ReplyLength = "short" | "medium" | "long";
 
 function AppContent() {
   const router = useRouter();
@@ -84,13 +86,26 @@ function AppContent() {
   const { toast } = useToast();
 
   // AI assistant state
+  const [aiIsLoading, setAiIsLoading] = useState(false);
   const [aiInputText, setAiInputText] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [userGender, setUserGender] = useState("male");
   const [replyCount, setReplyCount] = useState([5]);
   const [replyTone, setReplyTone] = useState("friendly-casual");
   const [replyLength, setReplyLength] = useState([1]);
-  const replyLengthLabels = ["Short (~5-15 words)", "Medium (~15-30 words)", "Long (~30-50 words)"];
+  const [generatedReplies, setGeneratedReplies] = useState<string[]>([]);
+  const [copiedReplies, setCopiedReplies] = useState<boolean[]>([]);
+  
+  const replyLengthMap: { [key: number]: ReplyLength } = {
+    0: "short",
+    1: "medium",
+    2: "long",
+  };
+  const replyLengthLabels: { [key: number]: string } = {
+    0: "Short (~5-15 words)",
+    1: "Medium (~15-30 words)",
+    2: "Long (~30-50 words)",
+  };
 
   useEffect(() => {
     const currentPlatform = PLATFORMS.find(p => p.slug === platformSlug);
@@ -107,6 +122,58 @@ function AppContent() {
          router.push(`/${platform.slug}`);
       }
     }
+  };
+  
+  const handleAiGenerate = async () => {
+    if (!aiInputText.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Input is empty",
+        description: "Please enter the message you received.",
+      });
+      return;
+    }
+    setAiIsLoading(true);
+    setGeneratedReplies([]);
+
+    try {
+      const result = await generateReplies({
+        message: aiInputText,
+        additionalInfo,
+        userGender,
+        replyCount: replyCount[0],
+        replyTone,
+        replyLength: replyLengthMap[replyLength[0]],
+      });
+      setGeneratedReplies(result.replies);
+      setCopiedReplies(new Array(result.replies.length).fill(false));
+    } catch (error) {
+      console.error("AI generation failed:", error);
+      toast({
+        variant: "destructive",
+        title: "AI Generation Failed",
+        description: "Something went wrong while generating replies. Please try again.",
+      });
+    } finally {
+      setAiIsLoading(false);
+    }
+  };
+
+  const handleCopyReply = (index: number, text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedReplies(prev => {
+        const newCopied = [...prev];
+        newCopied[index] = true;
+        return newCopied;
+      });
+      setTimeout(() => {
+        setCopiedReplies(prev => {
+          const newCopied = [...prev];
+          newCopied[index] = false;
+          return newCopied;
+        });
+      }, 2000);
+    });
   };
 
   const selectedPlatform = useMemo(
@@ -185,7 +252,7 @@ function AppContent() {
         }
       setIsLoading(false);
     }, 300);
-  }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast, platformId, selectedPlatform]);
+  }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast]);
 
   const handleCopy = () => {
     if (!generatedText) return;
@@ -219,10 +286,10 @@ function AppContent() {
       <main className="flex flex-1 w-full flex-col items-center justify-center p-4">
         <div className="text-center mb-8">
           <h2 className="font-headline text-4xl font-bold tracking-tight">
-            Generate perfect replies for any message
+            Generate perfect replies for any message (no login needed)
           </h2>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-            Use our AI to craft the perfect reply (no login needed), or use the text repeater to meet character limits. Your complete messaging toolkit.
+            Use our AI to craft the perfect reply, or use the text repeater to meet character limits. Your complete messaging toolkit.
           </p>
         </div>
 
@@ -233,7 +300,7 @@ function AppContent() {
               MsgCham AI
             </CardTitle>
             <CardDescription>
-              Craft the perfect reply for any situation. Describe the context and let our AI generate responses for you.
+              Craft the perfect reply for any situation. Just paste the message you received and let our AI generate responses for you.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -282,12 +349,12 @@ function AppContent() {
                     <SelectValue placeholder="Select a tone" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="formal-polite">Formal / Polite</SelectItem>
-                    <SelectItem value="friendly-casual">Friendly / Casual</SelectItem>
-                    <SelectItem value="caring-supportive">Caring / Supportive</SelectItem>
-                    <SelectItem value="playful-fun">Playful / Fun</SelectItem>
-                    <SelectItem value="romantic-affectionate">Romantic / Affectionate</SelectItem>
-                    <SelectItem value="serious-honest">Serious / Honest</SelectItem>
+                    <SelectItem value="Witty and Humorous">Witty and Humorous</SelectItem>
+                    <SelectItem value="Friendly and Casual">Friendly and Casual</SelectItem>
+                    <SelectItem value="Caring and Supportive">Caring and Supportive</SelectItem>
+                    <SelectItem value="Playful and Fun">Playful and Fun</SelectItem>
+                    <SelectItem value="Romantic and Affectionate">Romantic and Affectionate</SelectItem>
+                    <SelectItem value="Direct and Straightforward">Direct and Straightforward</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -310,7 +377,7 @@ function AppContent() {
               </div>
 
                <div className="flex flex-col space-y-2">
-                <Label htmlFor="ai-input-text">Message Received</Label>
+                <Label htmlFor="ai-input-text">Message You Received</Label>
                 <Textarea
                   id="ai-input-text"
                   placeholder="e.g., 'hey what's up?'"
@@ -332,14 +399,58 @@ function AppContent() {
               </div>
 
               <div>
-                <Button className="w-full">
-                  <Bot className="mr-2 h-5 w-5" />
-                  Generate Replies
+                <Button className="w-full" onClick={handleAiGenerate} disabled={aiIsLoading}>
+                  {aiIsLoading ? (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5 animate-pulse" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Bot className="mr-2 h-5 w-5" />
+                      Generate Replies
+                    </>
+                  )}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   MsgCham AI may give misinformation. Please check important info.
                 </p>
               </div>
+
+              {aiIsLoading && (
+                <div className="space-y-4">
+                  {[...Array(replyCount[0])].map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              )}
+
+              {!aiIsLoading && generatedReplies.length > 0 && (
+                <div className="space-y-4">
+                   <h3 className="text-lg font-medium text-center">AI Generated Replies</h3>
+                   {generatedReplies.map((reply, index) => (
+                     <div key={index} className="relative flex items-center">
+                       <p className="flex-1 p-3 pr-12 text-sm bg-muted/50 rounded-md border">
+                         {reply}
+                       </p>
+                       <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:bg-accent/50"
+                          onClick={() => handleCopyReply(index, reply)}
+                          disabled={copiedReplies[index]}
+                          aria-label="Copy reply"
+                        >
+                          {copiedReplies[index] ? (
+                            <Check className="h-5 w-5 text-green-500" />
+                          ) : (
+                            <Copy className="h-5 w-5" />
+                          )}
+                        </Button>
+                     </div>
+                   ))}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -523,8 +634,8 @@ function AppContent() {
               <li><span className="font-semibold">Text Repeater:</span> Need to make a point or hit a character limit? Scroll down to the "Text Repeater" tool.</li>
               <li><span className="font-semibold">Enter Your Text:</span> Type the text you want to repeat into the "Your Text" field.</li>
               <li><span className="font-semibold">Choose a Platform:</span> Select a platform to auto-set the character limit, or choose "Custom".</li>
-              <li><span className="font-semibold">Set Formatting Options:</span> Repeat your text in a "Row", "Column", or as "Separate" messages. The "Separate" option is great for mobile, as it lets you copy each message one-by-one.</li>
-              <li><span className="font-semibold">Generate and Copy:</span> Click "Generate". For "Separate" mode, use the "Copy & Show Next" button to cycle through your messages.</li>
+              <li><span className="font-semibold">Set Formatting Options:</span> Repeat your text in a "Row" or "Column".</li>
+              <li><span className="font-semibold">Generate and Copy:</span> Click "Generate" and then copy the resulting text.</li>
             </ol>
           </div>
         </div>
@@ -534,7 +645,7 @@ function AppContent() {
           <div className="space-y-4 text-muted-foreground">
             <p>Our tool has two main features: an AI Reply Generator and a Text Repeater.</p>
             <p>The <span className="font-semibold">AI Reply Generator</span> uses advanced AI to understand the context you provide and craft replies in the tone you want. Just tell it who you are, what message you received, and how you want to sound.</p>
-            <p>The <span className="font-semibold">Text Repeater</span> is straightforward. You enter text, choose formatting, and it generates the repeated text. The "Separate" option is specially designed for mobile users. It adds a tiny, invisible character to each copied message, making it unique to your phone's clipboard. This allows you to copy multiple messages one after another without the clipboard ignoring duplicates.</p>
+            <p>The <span className="font-semibold">Text Repeater</span> is straightforward. You enter text, choose formatting, and it generates the repeated text.</p>
             <p className="font-semibold text-foreground border-l-4 border-primary pl-4">Your privacy is our priority. We do not require any login, and we do not save, store, or collect any of your data. All text processing is done in your browser.</p>
           </div>
         </div>
@@ -547,7 +658,6 @@ function AppContent() {
                 <li><span className="font-semibold">Finding the Right Tone:</span> Effortlessly switch between a formal, playful, or supportive tone depending on the situation.</li>
                 <li><span className="font-semibold">Meeting Character Minimums:</span> Use the Text Repeater to quickly pad your message to meet minimum length requirements on forums or forms.</li>
                 <li><span className="font-semibold">Creating Emphasis:</span> Repeating a word or phrase can be a powerful way to draw attention to your message.</li>
-                <li><span className="font-semibold">Spamming Comments (Responsibly!):</span> Use the "Separate" mode to quickly post multiple individual comments. The "Copy & Show Next" feature is perfect for this on mobile.</li>
             </ul>
           </div>
         </div>
@@ -664,7 +774,7 @@ function MobileSidebarMenu() {
                         <DialogContent>
                         <DialogHeader>
                            <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
-                        </DialogHeader>
+                        </Header>
                         <DialogDescriptionPrimitive asChild>
                             <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                                 <div>Your privacy is important to us. It is MsgReplier's policy to respect your privacy regarding any information we may collect from you across our website.</div>
@@ -777,3 +887,5 @@ export default function MsgReplierPage() {
     </SidebarProvider>
   )
 }
+
+    
