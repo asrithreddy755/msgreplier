@@ -11,6 +11,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { googleAI } from '@genkit-ai/google-genai';
 
 // 1. Define the input schema for the flow using Zod.
 // This provides validation and type safety.
@@ -48,6 +49,7 @@ const replyPrompt = ai.definePrompt({
   name: 'replyPrompt',
   input: { schema: ReplyGeneratorInputSchema },
   output: { schema: ReplyGeneratorOutputSchema },
+  model: googleAI.model('gemini-1.5-flash'),
   prompt: `
     You are an expert at crafting witty, engaging, and natural text message replies that sound human, not like an AI.
 
@@ -85,5 +87,3 @@ const replyGeneratorFlow = ai.defineFlow(
 export async function generateReplies(input: ReplyGeneratorInput): Promise<ReplyGeneratorOutput> {
   return await replyGeneratorFlow(input);
 }
-
-    
