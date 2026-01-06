@@ -91,7 +91,7 @@ function AppContent() {
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [userGender, setUserGender] = useState("male");
   const [replyCount, setReplyCount] = useState([5]);
-  const [replyTone, setReplyTone] = useState("friendly-casual");
+  const [replyTone, setReplyTone] = useState("Friendly and Casual");
   const [replyLength, setReplyLength] = useState([1]);
   const [generatedReplies, setGeneratedReplies] = useState<string[]>([]);
   const [copiedReplies, setCopiedReplies] = useState<boolean[]>([]);
@@ -887,5 +887,3 @@ export default function MsgReplierPage() {
     </SidebarProvider>
   )
 }
-
-    
