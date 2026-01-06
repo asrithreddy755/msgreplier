@@ -75,7 +75,6 @@ function AppContent() {
   const [platformId, setPlatformId] = useState<Platform["id"]>(initialPlatform.id);
   const [inputText, setInputText] = useState("");
   const [generatedText, setGeneratedText] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [repetitionType, setRepetitionType] =
     useState<RepetitionType>("row");
@@ -285,7 +284,7 @@ function AppContent() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bot className="h-6 w-6" />
-              cham ai
+              cham AI
             </CardTitle>
             <CardDescription>
               Craft the perfect reply for any situation. Just paste the message you received and let our AI generate responses for you.
@@ -401,7 +400,7 @@ function AppContent() {
                   )}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center mt-2">
-                  cham ai may give misinformation. Please check important info.
+                  cham AI may give misinformation. Please check important info.
                 </p>
               </div>
 
@@ -582,9 +581,6 @@ function AppContent() {
                     {charCount} / {charLimit}
                   </div>
                 </div>
-                {isLoading ? (
-                    <Skeleton className="h-[120px] w-full" />
-                ) : (
                 <div className="relative">
                     <Textarea
                       id="generated-text"
@@ -598,7 +594,7 @@ function AppContent() {
                     size="icon"
                     className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:bg-accent/50"
                     onClick={handleCopy}
-                    disabled={isLoading || !generatedText || isCopied}
+                    disabled={!generatedText || isCopied}
                     aria-label="Copy to clipboard"
                   >
                     {isCopied ? (
@@ -608,7 +604,6 @@ function AppContent() {
                     )}
                   </Button>
                 </div>
-                )}
               </div>
             </div>
           </CardContent>
@@ -618,7 +613,7 @@ function AppContent() {
           <h3 className="text-2xl font-bold tracking-tight mb-4">How to Use This Tool</h3>
           <div className="space-y-4 text-muted-foreground">
             <ol className="list-decimal list-inside space-y-2">
-              <li><span className="font-semibold">cham ai:</span> Use the "cham ai" to create perfect replies. Just enter the message you received, provide optional context, and select the tone, length, and number of replies you want. The AI does the rest!</li>
+              <li><span className="font-semibold">cham AI:</span> Use the "cham AI" to create perfect replies. Just enter the message you received, provide optional context, and select the tone, length, and number of replies you want. The AI does the rest!</li>
               <li><span className="font-semibold">Text Repeater:</span> Need to make a point or hit a character limit? Scroll down to the "Text Repeater" tool.</li>
               <li><span className="font-semibold">Enter Your Text:</span> Type the text you want to repeat into the "Your Text" field.</li>
               <li><span className="font-semibold">Choose a Platform:</span> Select a platform to auto-set the character limit, or choose "Custom".</li>
@@ -632,7 +627,7 @@ function AppContent() {
           <h3 className="text-2xl font-bold tracking-tight mb-4">How Does MsgReplier Work?</h3>
           <div className="space-y-4 text-muted-foreground">
             <p>Our tool has two main features: an AI Reply Generator and a Text Repeater.</p>
-            <p>The <span className="font-semibold">cham ai</span> uses advanced AI to understand the context you provide and craft replies in the tone you want. Just tell it who you are, what message you received, and how you want to sound.</p>
+            <p>The <span className="font-semibold">cham AI</span> uses advanced AI to understand the context you provide and craft replies in the tone you want. Just tell it who you are, what message you received, and how you want to sound.</p>
             <p>The <span className="font-semibold">Text Repeater</span> is straightforward. You enter text, choose formatting, and it generates the repeated text.</p>
             <p className="font-semibold text-foreground border-l-4 border-primary pl-4">Your privacy is our priority. We do not require any login, and we do not save, store, or collect any of your data. All text processing is done in your browser.</p>
           </div>
@@ -716,7 +711,7 @@ function MobileSidebarMenu() {
                     <SidebarMenuButton asChild>
                       <Link href={`/cham-ai`}>
                         <Bot className="h-5 w-5" />
-                        cham ai
+                        cham AI
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -798,7 +793,7 @@ function DesktopSidebarMenu() {
                 <SidebarMenuButton asChild>
                   <Link href={`/cham-ai`}>
                     <Bot className="h-5 w-5" />
-                    <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">cham ai</span>
+                    <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">cham AI</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
