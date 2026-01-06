@@ -53,7 +53,7 @@ import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 
 
-type RepetitionType = "row" | "column" | "separate";
+type RepetitionType = "row" | "column";
 
 function AppContent() {
   const router = useRouter();
@@ -73,7 +73,6 @@ function AppContent() {
   const [platformId, setPlatformId] = useState<Platform["id"]>(initialPlatform.id);
   const [inputText, setInputText] = useState("");
   const [generatedText, setGeneratedText] = useState("");
-  const [generatedItems, setGeneratedItems] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [repetitionType, setRepetitionType] =
@@ -82,8 +81,6 @@ function AppContent() {
   const [customCharLimit, setCustomCharLimit] = useState(initialPlatform.charLimit);
   const [useRepetitionCount, setUseRepetitionCount] = useState(false);
   const [repetitionCount, setRepetitionCount] = useState(10);
-  const [currentItemIndex, setCurrentItemIndex] = useState(0);
-  const [isCycleCopied, setIsCycleCopied] = useState(false);
   const { toast } = useToast();
 
   // AI assistant state
@@ -129,102 +126,64 @@ function AppContent() {
         description: "Please enter some text to generate.",
       });
       setGeneratedText("");
-      setGeneratedItems([]);
       return;
     }
     setIsLoading(true);
     setGeneratedText("");
-    setGeneratedItems([]);
-    setCurrentItemIndex(0);
 
 
     setTimeout(() => {
-      if (repetitionType === 'separate') {
-          const count = useRepetitionCount ? repetitionCount : Math.floor(charLimit / (inputText.length + 1)) || 1;
-          if (inputText) {
-              // Add invisible characters to make each item unique for clipboard
-              let items = Array.from({ length: count }, (_, i) => inputText + '\u200B'.repeat(i));
-              
-              const totalLengthWithNewlines = items.reduce((acc, item) => acc + item.length + 1, -1);
+        let separator = "";
+        if (repetitionType === "column") {
+          separator = "\n";
+        } else if (addSpace) {
+          separator = " ";
+        }
+        
+        const textWithSeparator = inputText + separator;
+        let repeatedText = "";
 
-              if (useRepetitionCount && totalLengthWithNewlines > charLimit) {
-                  toast({
-                      variant: "destructive",
-                      title: "Content may exceed some limits",
-                      description: "The total length of messages for your specified count is high. Ensure it fits within platform limits if pasting all at once.",
-                  });
-              } else if (!useRepetitionCount && totalLengthWithNewlines > charLimit) {
-                  const singleItemLength = inputText.length + 1; // +1 for newline
-                  const newCount = Math.floor(charLimit / singleItemLength);
-                  if (newCount > 0) {
-                      items = Array.from({ length: newCount }, (_, i) => inputText + '\u200B'.repeat(i));
-                  } else {
-                      toast({
-                          variant: "destructive",
-                          title: "Could not generate within limit",
-                          description: "Even one repetition is over the character limit.",
-                      });
-                      items = [];
-                  }
-              }
-              setGeneratedItems(items);
-          }
-      } else {
-          let separator = "";
-          if (repetitionType === "column") {
-            separator = "\n";
-          } else if (addSpace) {
-            separator = " ";
-          }
-          
-          const textWithSeparator = inputText + separator;
-          let repeatedText = "";
-
-          if (useRepetitionCount) {
-            if (repetitionCount > 0 && inputText) {
-              const result = Array(repetitionCount).fill(inputText).join(separator);
-              if (result.length > charLimit) {
-                toast({
-                  variant: "destructive",
-                  title: "Character limit exceeded",
-                  description: `The generated text is longer than the platform's limit of ${charLimit} characters and has been truncated.`,
-                });
-              }
-              repeatedText = result.slice(0, charLimit);
+        if (useRepetitionCount) {
+          if (repetitionCount > 0 && inputText) {
+            const result = Array(repetitionCount).fill(inputText).join(separator);
+            if (result.length > charLimit) {
+              toast({
+                variant: "destructive",
+                title: "Character limit exceeded",
+                description: `The generated text is longer than the platform's limit of ${charLimit} characters and has been truncated.`,
+              });
             }
-          } else {
-            if (textWithSeparator.length > 0) {
-              let tempText = "";
-               // To avoid infinite loops with just a separator
-              if (inputText.length > 0) {
-                while ((tempText + textWithSeparator).length <= charLimit) {
-                  tempText += textWithSeparator;
-                }
+            repeatedText = result.slice(0, charLimit);
+          }
+        } else {
+          if (textWithSeparator.length > 0) {
+            let tempText = "";
+             // To avoid infinite loops with just a separator
+            if (inputText.length > 0) {
+              while ((tempText + textWithSeparator).length <= charLimit) {
+                tempText += textWithSeparator;
               }
-              
-              if (tempText.endsWith(separator) && separator) {
-                  repeatedText = tempText.slice(0, -separator.length);
-              } else {
-                repeatedText = tempText;
-              }
+            }
             
-              if (repeatedText.length === 0 && inputText.length <= charLimit) {
-                  repeatedText = inputText;
-              }
+            if (tempText.endsWith(separator) && separator) {
+                repeatedText = tempText.slice(0, -separator.length);
+            } else {
+              repeatedText = tempText;
+            }
+          
+            if (repeatedText.length === 0 && inputText.length <= charLimit) {
+                repeatedText = inputText;
             }
           }
-          setGeneratedText(repeatedText);
-           if (repeatedText) {
-            navigator.clipboard.writeText(repeatedText).then(() => {
-              setIsCopied(true);
-              setTimeout(() => setIsCopied(false), 2000);
-            });
-          }
-      }
-
+        }
+        setGeneratedText(repeatedText);
+         if (repeatedText) {
+          navigator.clipboard.writeText(repeatedText).then(() => {
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+          });
+        }
       setIsLoading(false);
-      
-
     }, 300);
   }, [inputText, charLimit, repetitionType, addSpace, useRepetitionCount, repetitionCount, toast, platformId, selectedPlatform]);
 
@@ -236,27 +195,8 @@ function AppContent() {
     });
   };
 
-  const handleCopyCycle = () => {
-    if (generatedItems.length === 0 || currentItemIndex >= generatedItems.length) return;
-    
-    const currentText = generatedItems[currentItemIndex];
-    navigator.clipboard.writeText(currentText).then(() => {
-        setIsCycleCopied(true);
-        setTimeout(() => {
-            setIsCycleCopied(false);
-            if (currentItemIndex < generatedItems.length - 1) {
-                setCurrentItemIndex(prev => prev + 1);
-            }
-        }, 1000);
-    });
-  };
-
-  const resetCycle = () => {
-    setCurrentItemIndex(0);
-  };
-
   const charCount = generatedText.length;
-  const isOverLimit = charCount > charLimit && repetitionType !== 'separate';
+  const isOverLimit = charCount > charLimit;
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-body">
@@ -485,10 +425,6 @@ function AppContent() {
                       <RadioGroupItem value="column" id="r2" />
                       <Label htmlFor="r2">Column</Label>
                     </div>
-                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="separate" id="r3" />
-                      <Label htmlFor="r3">Separate</Label>
-                    </div>
                   </RadioGroup>
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -539,7 +475,6 @@ function AppContent() {
               <div className="flex flex-col space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="generated-text">Generated Text</Label>
-                  {repetitionType !== 'separate' && (
                   <div
                     className={`text-sm ${
                       isOverLimit ? "text-destructive font-bold" : "text-muted-foreground"
@@ -547,61 +482,9 @@ function AppContent() {
                   >
                     {charCount} / {charLimit}
                   </div>
-                  )}
                 </div>
                 {isLoading ? (
                     <Skeleton className="h-[120px] w-full" />
-                ) : repetitionType === 'separate' ? (
-                  <div className="space-y-3">
-                    {generatedItems.length > 0 ? (
-                      <>
-                        <div className="relative">
-                          <Input
-                            readOnly
-                            value={generatedItems[currentItemIndex]}
-                            className="pr-12 bg-muted/50 text-lg h-12"
-                            placeholder="Your message will appear here"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                           <Button
-                            onClick={handleCopyCycle}
-                            className="flex-1"
-                            disabled={isCycleCopied || currentItemIndex >= generatedItems.length}
-                          >
-                            {isCycleCopied ? (
-                              <>
-                                <Check className="h-5 w-5 mr-2" />
-                                Copied!
-                              </>
-                            ) : currentItemIndex < generatedItems.length -1 ? (
-                              <>
-                                <Copy className="h-5 w-5 mr-2" />
-                                Copy & Show Next
-                              </>
-                            ) : (
-                               <>
-                                <Copy className="h-5 w-5 mr-2" />
-                                Copy Last Message
-                              </>
-                            )}
-                          </Button>
-                          <Button variant="outline" size="icon" onClick={resetCycle} aria-label="Reset">
-                              <RotateCcw className="h-5 w-5" />
-                          </Button>
-                        </div>
-                        <div className="text-center text-sm text-muted-foreground">
-                          {currentItemIndex >= generatedItems.length
-                            ? `All ${generatedItems.length} messages copied!`
-                            : `Message ${currentItemIndex + 1} of ${generatedItems.length}`}
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex items-center justify-center h-24 text-sm text-muted-foreground">
-                        Separated messages will appear here...
-                      </div>
-                    )}
-                  </div>
                 ) : (
                 <div className="relative">
                     <Textarea
@@ -894,5 +777,3 @@ export default function MsgReplierPage() {
     </SidebarProvider>
   )
 }
-
-    
