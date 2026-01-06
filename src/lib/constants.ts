@@ -6,7 +6,7 @@ export type Platform = {
 };
 
 export const PLATFORMS: Platform[] = [
-  { id: 'ai-reply', name: 'AI Reply Generator', charLimit: 0, slug: 'ai-reply-generator' },
+  { id: 'ai-reply', name: 'cham ai', charLimit: 0, slug: 'cham-ai' },
   { id: 'instagram', name: 'Instagram', charLimit: 2200, slug: 'instagram-text-repeater' },
   { id: 'x', name: 'X (Twitter)', charLimit: 280, slug: 'x-text-repeater' },
   { id: 'facebook', name: 'Facebook', charLimit: 8000, slug: 'facebook-text-repeater' },
