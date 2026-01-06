@@ -109,7 +109,7 @@ function AppContent() {
   useEffect(() => {
     const currentPlatform = PLATFORMS.find(p => p.slug === platformSlug);
     if (!currentPlatform) {
-      router.replace(`/cham-ai`);
+      router.replace(`/cham-AI`);
     } 
   }, [platformSlug, router]);
   
@@ -273,10 +273,10 @@ function AppContent() {
       <main className="flex flex-1 w-full flex-col items-center justify-center p-4">
         <div className="text-center mb-8">
           <h2 className="font-headline text-4xl font-bold tracking-tight">
-            AI Replies & Text Tools for Everyone
+            Your Complete Messaging Toolkit
           </h2>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-            Use our AI to craft the perfect reply, or use the text repeater to meet character limits. Your complete messaging toolkit.
+            Use our AI to craft the perfect reply, or use the text repeater to meet character limits.
           </p>
         </div>
 
@@ -336,8 +336,8 @@ function AppContent() {
                     <SelectValue placeholder="Select a tone" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Witty and Humorous">Witty and Humorous</SelectItem>
                     <SelectItem value="Friendly and Casual">Friendly and Casual</SelectItem>
+                    <SelectItem value="Witty and Humorous">Witty and Humorous</SelectItem>
                     <SelectItem value="Caring and Supportive">Caring and Supportive</SelectItem>
                     <SelectItem value="Playful and Fun">Playful and Fun</SelectItem>
                     <SelectItem value="Romantic and Affectionate">Romantic and Affectionate</SelectItem>
@@ -688,11 +688,9 @@ function AppContent() {
                   </DialogDescriptionPrimitive>
                 </DialogContent>
               </Dialog>
-              <Button asChild variant="link" className="p-0 h-auto text-sm text-muted-foreground flex items-center gap-1">
-                <a href="mailto:care.msgreplier@gmail.com">
-                  <Mail className="h-4 w-4" /> Suggestions & Feedback
-                </a>
-              </Button>
+              <a href="mailto:care.msgreplier@gmail.com" className="inline-flex items-center justify-center gap-1 text-sm text-muted-foreground hover:underline underline-offset-4">
+                <Mail className="h-4 w-4" /> Suggestions & Feedback
+              </a>
             </div>
           </div>
         </footer>
@@ -714,7 +712,7 @@ function MobileSidebarMenu() {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <Link href={`/cham-ai`}>
+                      <Link href={`/cham-AI`}>
                         <Bot className="h-5 w-5" />
                         cham AI
                       </Link>
@@ -804,7 +802,7 @@ function DesktopSidebarMenu() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href={`/cham-ai`}>
+                  <Link href={`/cham-AI`}>
                     <Bot className="h-5 w-5" />
                     <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">cham AI</span>
                   </Link>
@@ -820,12 +818,10 @@ function DesktopSidebarMenu() {
               </SidebarMenuItem>
               <hr className="my-2"/>
                <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                        <a href="mailto:care.msgreplier@gmail.com">
-                            <Mail className="h-5 w-5" />
-                            <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Suggestions & Feedback</span>
-                        </a>
-                    </SidebarMenuButton>
+                  <a href="mailto:care.msgreplier@gmail.com" className="inline-flex items-center gap-2 w-full p-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground">
+                      <Mail className="h-5 w-5" />
+                      <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Suggestions & Feedback</span>
+                  </a>
               </SidebarMenuItem>
                <SidebarMenuItem>
                     <Dialog>
