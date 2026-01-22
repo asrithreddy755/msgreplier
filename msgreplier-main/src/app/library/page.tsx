@@ -65,30 +65,40 @@ export default function LibraryPage() {
   return (
     <div className="min-h-screen bg-background font-body p-4 md:p-8">
       <div className="max-w-5xl mx-auto space-y-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <Button asChild variant="outline" size="icon">
+        {/* Professional Header Section */}
+        <div className="bg-card rounded-xl border shadow-sm p-6 space-y-6 md:space-y-0 md:flex md:items-start md:justify-between md:gap-6">
+          <div className="flex gap-4">
+             <Button asChild variant="ghost" size="icon" className="shrink-0 rounded-full h-10 w-10 bg-secondary/50 hover:bg-secondary">
               <Link href="/shortcutpedia">
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-5 w-5" />
               </Link>
             </Button>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Shortcutpedia Library</h1>
-              <p className="text-muted-foreground">Browse all text abbreviations and slang.</p>
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold tracking-tight">Shortcutpedia Library</h1>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">
+                The complete dictionary of internet slang, abbreviations, and acronyms. Browse the full collection or search to find meanings instantly.
+              </p>
             </div>
           </div>
           
-          <div className="w-full md:w-72 search-container relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input 
-                placeholder="Search library..." 
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setVisibleCount(50);
-                }}
-                className="pl-9"
-            />
+          <div className="w-full md:w-80 search-container relative shrink-0">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input 
+                  placeholder="Search 500+ terms..." 
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setVisibleCount(50);
+                  }}
+                  className="pl-9 h-11 bg-background/50 focus:bg-background transition-colors"
+              />
+            </div>
+            {query && (
+               <div className="absolute top-full left-0 right-0 mt-2 text-xs text-muted-foreground text-right px-1">
+                 Found {filteredShortcuts.length} results
+               </div>
+            )}
           </div>
         </div>
 

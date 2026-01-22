@@ -67,6 +67,39 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = "Chart"
 
+const escapeCssAttrValue = (value: string) => {
+  if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+    return CSS.escape(value)
+  }
+  return value.replace(/[^a-zA-Z0-9_-]/g, "_")
+}
+
+const sanitizeCssVarKey = (key: string) => key.replace(/[^a-zA-Z0-9_-]/g, "")
+
+const sanitizeCssColor = (value: string) => {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  if (/[;{}<>]/.test(trimmed)) return null
+
+  if (/^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(trimmed)) {
+    return trimmed
+  }
+
+  if (/^(rgb|rgba|hsl|hsla)\([0-9.,%\s/]+\)$/.test(trimmed)) {
+    return trimmed
+  }
+
+  if (/^var\(--[a-zA-Z0-9_-]+\)$/.test(trimmed)) {
+    return trimmed
+  }
+
+  if (/^[a-zA-Z]+$/.test(trimmed)) {
+    return trimmed
+  }
+
+  return null
+}
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([, config]) => config.theme || config.color
@@ -76,19 +109,25 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
+  const safeChartId = escapeCssAttrValue(id)
+
   return (
     <style
       dangerouslySetInnerHTML={{
         __html: Object.entries(THEMES)
           .map(
             ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
+${prefix} [data-chart="${safeChartId}"] {
 ${colorConfig
   .map(([key, itemConfig]) => {
+    const safeKey = sanitizeCssVarKey(key)
+    if (!safeKey) return null
     const color =
       itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
       itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
+    if (!color) return null
+    const safeColor = sanitizeCssColor(color)
+    return safeColor ? `  --color-${safeKey}: ${safeColor};` : null
   })
   .join("\n")}
 }

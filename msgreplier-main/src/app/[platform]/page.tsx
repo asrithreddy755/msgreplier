@@ -48,7 +48,7 @@ import {
   useSidebar,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 
 
@@ -289,35 +289,39 @@ function AppContent() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-body">
-      <header className="flex flex-wrap items-center justify-between p-4 border-b bg-card shadow-sm gap-2 md:gap-4">
+      <header className="sticky top-0 z-50 flex flex-wrap items-center justify-between p-4 border-b bg-background/80 backdrop-blur-md shadow-sm gap-2 md:gap-4 transition-all duration-200">
         <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-3">
-            <MessageSquare className="h-8 w-8 text-primary" />
-            <h1 className="font-headline text-xl md:text-2xl font-bold tracking-tight">
+            <Link href="/" className="flex items-center gap-3 group">
+            <div className="bg-primary/10 p-2 rounded-xl group-hover:bg-primary/20 transition-colors">
+                <MessageSquare className="h-6 w-6 text-primary" />
+            </div>
+            <h1 className="font-headline text-xl md:text-2xl font-bold tracking-tight text-foreground/90">
                 MsgReplier
             </h1>
             </Link>
         </div>
         <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
           <ThemeToggle />
-          <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="hover:bg-primary/10 hover:text-primary">
             {isOpen ? <X /> : <Menu />}
           </Button>
         </div>
       </header>
-      <main id="main-content" className="flex flex-1 w-full flex-col items-center justify-center p-4">
-        <div className="text-center mb-8">
-          <h2 className="font-headline text-2xl md:text-4xl font-bold tracking-tight">
+      <main id="main-content" className="flex flex-1 w-full flex-col items-center justify-start p-6 md:p-12 max-w-5xl mx-auto space-y-8">
+        <div className="text-center mb-4 md:mb-8 space-y-4">
+          <h2 className="font-headline text-3xl md:text-5xl font-bold tracking-tight text-foreground/90">
             Your Complete Messaging Toolkit
           </h2>
-          <p className="text-muted-foreground mt-2 font-semibold">(no login required)</p>
-          <p className="text-muted-foreground mt-4 max-w-full md:max-w-xl mx-auto">
+          <p className="text-sm font-medium text-primary/80 uppercase tracking-wide bg-primary/5 px-3 py-1 rounded-full inline-block">
+            No login required
+          </p>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
             Decode slang with Shortcutpedia, craft replies with AI, or use the text repeater to meet character limits.
           </p>
         </div>
 
         {isShortcutpediaPage && (
-        <Card id="shortcutpedia" className="w-full max-w-2xl shadow-lg">
+        <Card id="shortcutpedia" className="w-full max-w-3xl shadow-sm hover:shadow-md transition-all duration-300 border-border/60 bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="space-y-1.5">
@@ -383,7 +387,7 @@ function AppContent() {
         </Card>
         )}
 
-        <Card id="text-repeater" className="w-full max-w-2xl shadow-lg mt-8">
+        <Card id="text-repeater" className="w-full max-w-3xl shadow-sm hover:shadow-md transition-all duration-300 border-border/60 bg-card/50 backdrop-blur-sm mt-8">
           <CardHeader>
               <CardTitle>Text Repeater</CardTitle>
               <CardDescription>
@@ -551,12 +555,12 @@ function AppContent() {
         </Card>
 
         {(isAiPage || isShortcutpediaPage) && (
-        <Card id="cham-ai" className="w-full max-w-2xl shadow-lg mt-8 relative overflow-hidden">
-          <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center gap-4">
-             <div className="bg-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-lg text-lg animate-in fade-in zoom-in duration-500">
+        <Card id="cham-ai" className="w-full max-w-3xl shadow-sm hover:shadow-md transition-all duration-300 border-border/60 bg-card/50 backdrop-blur-sm mt-8 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-background/40 backdrop-blur-[4px] z-10 flex flex-col items-center justify-center gap-4 transition-all duration-300 group-hover:bg-background/30 group-hover:backdrop-blur-[2px]">
+             <div className="bg-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-lg text-lg animate-in fade-in zoom-in duration-500 hover:scale-105 transition-transform cursor-default">
               Coming Soon
             </div>
-            <p className="text-base font-semibold text-foreground/90 text-center bg-background/60 px-4 py-1 rounded-full">
+            <p className="text-base font-medium text-foreground/80 text-center bg-background/80 px-6 py-2 rounded-full border border-border/50 shadow-sm">
               We are actively working on cham AI
             </p>
           </div>
@@ -593,59 +597,84 @@ function AppContent() {
         </Card>
         )}
 
-        <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-bold tracking-tight mb-4">Why MsgReplier?</h3>
-          <div className="grid gap-4 sm:grid-cols-2">
+        <div className="w-full max-w-3xl mt-12 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+          <h3 className="text-2xl font-bold tracking-tight mb-6 text-foreground/90">Why MsgReplier?</h3>
+          <div className="grid gap-6 sm:grid-cols-2">
             <div className="space-y-2">
-              <h4 className="font-semibold flex items-center gap-2">🚀 Instant & Free</h4>
-              <p className="text-sm text-muted-foreground">No sign-ups, no paywalls, no hassle. Get straight to the point with our free tools designed for speed.</p>
+              <h4 className="font-semibold flex items-center gap-2 text-primary">
+                <span className="bg-primary/10 p-1.5 rounded-md">🚀</span> Instant & Free
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">No sign-ups, no paywalls, no hassle. Get straight to the point with our free tools designed for speed.</p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-semibold flex items-center gap-2">🔒 100% Private</h4>
-              <p className="text-sm text-muted-foreground">Your conversations stay yours. We process everything locally in your browser—no data is ever stored or sent to a server.</p>
+              <h4 className="font-semibold flex items-center gap-2 text-primary">
+                <span className="bg-primary/10 p-1.5 rounded-md">🔒</span> 100% Private
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">Your conversations stay yours. We process everything locally in your browser—no data is ever stored or sent to a server.</p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-semibold flex items-center gap-2">📚 Ever-Growing Library</h4>
-              <p className="text-sm text-muted-foreground">Stay current with the latest internet slang. Our Shortcutpedia is constantly updated with trending terms and abbreviations.</p>
+              <h4 className="font-semibold flex items-center gap-2 text-primary">
+                <span className="bg-primary/10 p-1.5 rounded-md">📚</span> Ever-Growing Library
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">Stay current with the latest internet slang. Our Shortcutpedia is constantly updated with trending terms and abbreviations.</p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-semibold flex items-center gap-2">✨ All-in-One Toolkit</h4>
-              <p className="text-sm text-muted-foreground">From decoding slang to repeating text for emphasis, we have everything you need to master digital communication.</p>
+              <h4 className="font-semibold flex items-center gap-2 text-primary">
+                <span className="bg-primary/10 p-1.5 rounded-md">✨</span> All-in-One Toolkit
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">From decoding slang to repeating text for emphasis, we have everything you need to master digital communication.</p>
             </div>
           </div>
         </div>
 
-        <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-bold tracking-tight mb-4">How to Use This Tool</h3>
-          <div className="space-y-4 text-muted-foreground">
-            <ol className="list-decimal list-inside space-y-2">
-              <li><span className="font-semibold">Shortcutpedia:</span> The ultimate slang dictionary. Use the search bar to find meanings for "rizz", "no cap", "POV", and more. Click "Library" to browse our full collection alphabetically.</li>
-              <li><span className="font-semibold">cham AI (Coming Soon):</span> An intelligent assistant to help you craft the perfect response for any situation—whether professional, casual, or flirty.</li>
-              <li><span className="font-semibold">Text Repeater:</span> Need to spam (playfully!) or hit a word count? Enter your text, choose a repetition count, and generate instant copies. Perfect for emphasizing a point.</li>
+        <div className="w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+          <h3 className="text-2xl font-bold tracking-tight mb-6 text-foreground/90">How to Use This Tool</h3>
+          <div className="space-y-4 text-muted-foreground leading-relaxed">
+            <ol className="list-decimal list-inside space-y-3 marker:text-primary marker:font-semibold">
+              <li className="pl-2"><span className="font-semibold text-foreground">Shortcutpedia:</span> The ultimate slang dictionary. Use the search bar to find meanings for "rizz", "no cap", "POV", and more. Click "Library" to browse our full collection alphabetically.</li>
+              <li className="pl-2"><span className="font-semibold text-foreground">cham AI (Coming Soon):</span> An intelligent assistant to help you craft the perfect response for any situation—whether professional, casual, or flirty.</li>
+              <li className="pl-2"><span className="font-semibold text-foreground">Text Repeater:</span> Need to spam (playfully!) or hit a word count? Enter your text, choose a repetition count, and generate instant copies. Perfect for emphasizing a point.</li>
             </ol>
           </div>
         </div>
 
-        <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-bold tracking-tight mb-4">How Does MsgReplier Work?</h3>
-          <div className="space-y-4 text-muted-foreground">
+        <div className="w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+          <h3 className="text-2xl font-bold tracking-tight mb-6 text-foreground/90">How Does MsgReplier Work?</h3>
+          <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>Our tool has three main features: an AI Reply Generator, a Text Repeater, and Shortcutpedia.</p>
-            <p>The <span className="font-semibold">cham AI</span> uses advanced AI to understand the context you provide and craft replies in the tone you want. Just tell it who you are, what message you received, and how you want to sound.</p>
-            <p>The <span className="font-semibold">Text Repeater</span> is straightforward. You enter text, choose formatting, and it generates the repeated text.</p>
-            <p><span className="font-semibold">Shortcutpedia</span> helps you quickly look up chat shortcuts and emojis so you always understand the message and can reply in the right way.</p>
-            <p className="font-semibold text-foreground border-l-4 border-primary pl-4">Your privacy is our priority. We do not require any login, and we do not save, store, or collect any of your data. All text processing is done in your browser.</p>
+            <p>The <span className="font-semibold text-foreground">cham AI</span> uses advanced AI to understand the context you provide and craft replies in the tone you want. Just tell it who you are, what message you received, and how you want to sound.</p>
+            <p>The <span className="font-semibold text-foreground">Text Repeater</span> is straightforward. You enter text, choose formatting, and it generates the repeated text.</p>
+            <p><span className="font-semibold text-foreground">Shortcutpedia</span> helps you quickly look up chat shortcuts and emojis so you always understand the message and can reply in the right way.</p>
+            <p className="font-medium text-primary bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
+              Your privacy is our priority. We do not require any login, and we do not save, store, or collect any of your data. All text processing is done in your browser.
+            </p>
           </div>
         </div>
 
-        <div className="w-full max-w-2xl mt-12 text-left bg-card p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-bold tracking-tight mb-4">Common Uses</h3>
-          <div className="space-y-4 text-muted-foreground">
-            <ul className="list-disc list-inside space-y-2">
-                <li><span className="font-semibold">Breaking the Ice:</span> Not sure how to reply to &quot;hey&quot; or &quot;what&apos;s up&quot;? Let the AI give you a creative and engaging start.</li>
-                <li><span className="font-semibold">Finding the Right Tone:</span> Effortlessly switch between a formal, playful, or supportive tone depending on the situation.</li>
-                <li><span className="font-semibold">Understanding Shortcuts:</span> Use Shortcutpedia to decode chat slang, abbreviations, and emojis so you never get confused by a shortcut again.</li>
-                <li><span className="font-semibold">Meeting Character Minimums:</span> Use the Text Repeater to quickly pad your message to meet minimum length requirements on forums or forms.</li>
-                <li><span className="font-semibold">Creating Emphasis:</span> Repeating a word or phrase can be a powerful way to draw attention to your message.</li>
+        <div className="w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+          <h3 className="text-2xl font-bold tracking-tight mb-6 text-foreground/90">Common Uses</h3>
+          <div className="space-y-4 text-muted-foreground leading-relaxed">
+            <ul className="space-y-3">
+                <li className="flex gap-3">
+                  <span className="bg-primary/10 text-primary p-1 h-fit rounded mt-0.5">💬</span>
+                  <div><span className="font-semibold text-foreground">Breaking the Ice:</span> Not sure how to reply to &quot;hey&quot; or &quot;what&apos;s up&quot;? Let the AI give you a creative and engaging start.</div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="bg-primary/10 text-primary p-1 h-fit rounded mt-0.5">🎭</span>
+                  <div><span className="font-semibold text-foreground">Finding the Right Tone:</span> Effortlessly switch between a formal, playful, or supportive tone depending on the situation.</div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="bg-primary/10 text-primary p-1 h-fit rounded mt-0.5">🔍</span>
+                  <div><span className="font-semibold text-foreground">Understanding Shortcuts:</span> Use Shortcutpedia to decode chat slang, abbreviations, and emojis so you never get confused by a shortcut again.</div>
+                </li>
+                <li className="flex gap-3">
+                   <span className="bg-primary/10 text-primary p-1 h-fit rounded mt-0.5">📝</span>
+                  <div><span className="font-semibold text-foreground">Meeting Character Minimums:</span> Use the Text Repeater to quickly pad your message to meet minimum length requirements on forums or forms.</div>
+                </li>
+                <li className="flex gap-3">
+                   <span className="bg-primary/10 text-primary p-1 h-fit rounded mt-0.5">📢</span>
+                  <div><span className="font-semibold text-foreground">Creating Emphasis:</span> Repeating a word or phrase can be a powerful way to draw attention to your message.</div>
+                </li>
             </ul>
           </div>
         </div>
@@ -709,41 +738,56 @@ function MobileSidebarMenu() {
     
     return (
         <>
-            <SheetHeader className="p-4 border-b">
-                <SheetTitle>Menu</SheetTitle>
+            <SheetHeader className="px-6 py-4 border-b flex flex-row items-center justify-between space-y-0">
+                <div className="flex items-center gap-2">
+                    <MessageSquare className="h-6 w-6 text-primary" />
+                    <SheetTitle className="text-xl font-bold">MsgReplier</SheetTitle>
+                </div>
+                <SheetClose className="rounded-md border bg-background p-2 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
+                </SheetClose>
             </SheetHeader>
             <SidebarContent>
-              <div className="p-4">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href={`/shortcutpedia`} onClick={() => setOpenMobile(false)}>
-                    <BookText className="h-5 w-5" />
-                    Shortcutpedia
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <div className="px-4 py-6">
+                <SidebarMenu className="gap-2">
+                  <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Features
+                  </div>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
+                      <Link href={`/shortcutpedia`} onClick={() => setOpenMobile(false)}>
+                        <BookText className="h-5 w-5 mr-2 text-blue-500" />
+                        Shortcutpedia
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                    <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
                        <a href="#text-repeater" onClick={() => setOpenMobile(false)}>
-                          <Copy className="h-5 w-5" />
+                          <Copy className="h-5 w-5 mr-2 text-orange-500" />
                           Text Repeater
                        </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
                        <Link href={`/cham-ai`} onClick={() => setOpenMobile(false)}>
-                          <Bot className="h-5 w-5" />
+                          <Bot className="h-5 w-5 mr-2 text-purple-500" />
                           cham AI
                        </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                  <hr className="my-2"/>
+                  
+                  <div className="my-4 border-t border-border" />
+                  
+                  <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Support & Legal
+                  </div>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
                         <a href="mailto:care.msgreplier@gmail.com">
-                            <Mail className="h-5 w-5" />
+                            <Mail className="h-5 w-5 mr-2 text-red-500" />
                             Suggestions & Feedback
                         </a>
                     </SidebarMenuButton>
@@ -751,8 +795,8 @@ function MobileSidebarMenu() {
                   <SidebarMenuItem>
                     <Dialog>
                         <DialogTrigger asChild>
-                            <SidebarMenuButton>
-                                <BookText className="h-5 w-5" />
+                            <SidebarMenuButton size="lg" className="w-full justify-start font-medium text-base">
+                                <BookText className="h-5 w-5 mr-2 text-slate-500" />
                                 Terms & Conditions
                             </SidebarMenuButton>
                         </DialogTrigger>
@@ -773,8 +817,8 @@ function MobileSidebarMenu() {
                   <SidebarMenuItem>
                      <Dialog>
                         <DialogTrigger asChild>
-                            <SidebarMenuButton>
-                                <ShieldCheck className="h-5 w-5" />
+                            <SidebarMenuButton size="lg" className="w-full justify-start font-medium text-base">
+                                <ShieldCheck className="h-5 w-5 mr-2 text-green-500" />
                                 Privacy Policy
                             </SidebarMenuButton>
                         </DialogTrigger>
@@ -801,92 +845,106 @@ function MobileSidebarMenu() {
 
 
 function DesktopSidebarMenu() {
-    const { toggleSidebar, setOpenMobile } = useSidebar();
+    const { toggleSidebar } = useSidebar();
     return (
       <>
-        <SidebarHeader className="flex items-center justify-between p-4 border-b">
-            <h2 className="text-xl font-semibold transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Menu</h2>
-            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">
-              <X />
+        <SidebarHeader className="px-6 py-4 border-b flex flex-row items-center justify-between space-y-0">
+            <div className="flex items-center gap-2 transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">
+                <MessageSquare className="h-6 w-6 text-primary" />
+                <h2 className="text-xl font-bold">MsgReplier</h2>
+            </div>
+            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
             </Button>
         </SidebarHeader>
         <SidebarContent>
-          <div className="p-4">
-            <SidebarMenu>
+          <div className="px-4 py-6">
+            <SidebarMenu className="gap-2">
+              <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">
+              Features
+              </div>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
                   <Link href={`/shortcutpedia`}>
-                    <BookText className="h-5 w-5" />
+                    <BookText className="h-5 w-5 mr-2 text-blue-500" />
                     <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Shortcutpedia</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+               <SidebarMenuItem>
+                <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
+                   <a href="#text-repeater">
+                      <Copy className="h-5 w-5 mr-2 text-orange-500" />
+                      <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Text Repeater</span>
+                   </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                    <a href="#text-repeater" onClick={() => setOpenMobile(false)}>
-                        <Copy className="h-5 w-5" />
-                        <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Text Repeater</span>
+                <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
+                   <Link href={`/cham-ai`}>
+                      <Bot className="h-5 w-5 mr-2 text-purple-500" />
+                      <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">cham AI</span>
+                   </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <div className="my-4 border-t border-border transition-opacity duration-200 group-data-[state=collapsed]:opacity-0" />
+              
+              <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">
+                  Support & Legal
+              </div>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
+                    <a href="mailto:care.msgreplier@gmail.com">
+                        <Mail className="h-5 w-5 mr-2 text-red-500" />
+                        <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Suggestions & Feedback</span>
                     </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                    <Link href={`/cham-ai`}>
-                        <Bot className="h-5 w-5" />
-                        <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">cham AI</span>
-                    </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <hr className="my-2"/>
-               <SidebarMenuItem>
-                  <a href="mailto:care.msgreplier@gmail.com" className="inline-flex items-center gap-2 w-full p-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground">
-                      <Mail className="h-5 w-5" />
-                      <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Suggestions & Feedback</span>
-                  </a>
-              </SidebarMenuItem>
-               <SidebarMenuItem>
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <SidebarMenuButton>
-                                <BookText className="h-5 w-5" />
-                                <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Terms & Conditions</span>
-                            </SidebarMenuButton>
-                        </DialogTrigger>
-                        <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Terms and Conditions</DialogTitle>
-                        </DialogHeader>
-                        <DialogDescriptionPrimitive asChild>
-                            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                            <div>Welcome to MsgReplier. By using our service, including features like cham AI, the Text Repeater, and Shortcutpedia, you agree to these terms. You must be at least 13 years old to use this service.</div>
-                            <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
-                            <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
-                            </div>
-                        </DialogDescriptionPrimitive>
-                        </DialogContent>
-                    </Dialog>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <SidebarMenuButton size="lg" className="w-full justify-start font-medium text-base">
+                            <BookText className="h-5 w-5 mr-2 text-slate-500" />
+                            <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Terms & Conditions</span>
+                        </SidebarMenuButton>
+                    </DialogTrigger>
+                    <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Terms and Conditions</DialogTitle>
+                    </DialogHeader>
+                    <DialogDescriptionPrimitive asChild>
+                        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                        <div>Welcome to MsgReplier. By using our service, including features like cham AI, the Text Repeater, and Shortcutpedia, you agree to these terms. You must be at least 13 years old to use this service.</div>
+                        <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
+                        <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
+                        </div>
+                    </DialogDescriptionPrimitive>
+                    </DialogContent>
+                </Dialog>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <SidebarMenuButton>
-                                <ShieldCheck className="h-5 w-5" />
-                                <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Privacy Policy</span>
-                            </SidebarMenuButton>
-                        </DialogTrigger>
-                        <DialogContent>
-                        <DialogHeader>
-                           <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
-                        </DialogHeader>
-                        <DialogDescriptionPrimitive asChild>
-                            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                                <div>Your privacy is important to us. It is MsgReplier&apos;s policy to respect your privacy regarding any information we may collect from you across our website.</div>
-                                <div className="font-bold p-3 bg-green-100 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-800">This website does not require any login, and we do not save, store, or collect any of your data. All processing is done in your browser.</div>
-                                <div>We don&apos;t share any personally identifying information publicly or with third-parties, simply because we don&apos;t collect it in the first place.</div>
-                            </div>
-                        </DialogDescriptionPrimitive>
-                        </DialogContent>
-                    </Dialog>
+                 <Dialog>
+                    <DialogTrigger asChild>
+                        <SidebarMenuButton size="lg" className="w-full justify-start font-medium text-base">
+                            <ShieldCheck className="h-5 w-5 mr-2 text-green-500" />
+                            <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Privacy Policy</span>
+                        </SidebarMenuButton>
+                    </DialogTrigger>
+                    <DialogContent>
+                    <DialogHeader>
+                       <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
+                    </DialogHeader>
+                    <DialogDescriptionPrimitive asChild>
+                        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                            <div>Your privacy is important to us. It is MsgReplier&apos;s policy to respect your privacy regarding any information we may collect from you across our website.</div>
+                            <div className="font-bold p-3 bg-green-100 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-800">This website does not require any login, and we do not save, store, or collect any of your data. All processing is done in your browser.</div>
+                            <div>We don&apos;t share any personally identifying information publicly or with third-parties, simply because we don&apos;t collect it in the first place.</div>
+                        </div>
+                    </DialogDescriptionPrimitive>
+                    </DialogContent>
+                </Dialog>
               </SidebarMenuItem>
             </SidebarMenu>
           </div>
