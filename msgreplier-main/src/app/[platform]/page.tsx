@@ -295,9 +295,9 @@ function AppContent() {
             <div className="bg-primary/10 p-2 rounded-xl group-hover:bg-primary/20 transition-colors">
                 <MessageSquare className="h-6 w-6 text-primary" />
             </div>
-            <h1 className="font-headline text-xl md:text-2xl font-bold tracking-tight text-foreground/90">
+            <span className="font-headline text-xl md:text-2xl font-bold tracking-tight text-foreground/90">
                 MsgReplier
-            </h1>
+            </span>
             </Link>
         </div>
         <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
@@ -309,9 +309,9 @@ function AppContent() {
       </header>
       <main id="main-content" className="flex flex-1 w-full flex-col items-center justify-start p-6 md:p-12 max-w-5xl mx-auto space-y-8">
         <div className="text-center mb-4 md:mb-8 space-y-4">
-          <h2 className="font-headline text-3xl md:text-5xl font-bold tracking-tight text-foreground/90">
+          <h1 className="font-headline text-3xl md:text-5xl font-bold tracking-tight text-foreground/90">
             Your Complete Messaging Toolkit
-          </h2>
+          </h1>
           <p className="text-sm font-medium text-primary/80 uppercase tracking-wide bg-primary/5 px-3 py-1 rounded-full inline-block">
             No login required
           </p>

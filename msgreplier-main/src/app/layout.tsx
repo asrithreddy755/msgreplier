@@ -1,11 +1,50 @@
-import type {Metadata, Viewport} from 'next';
-import './globals.css';
+import type { Metadata, Viewport } from "next";
+import "./globals.css";
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider";
 
+const getSiteUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
+  const base = envUrl?.trim() || "https://msgreplier.com";
+  return base.startsWith("https://") ? base : `https://${base.replace(/^http:\/\//, "")}`;
+};
+
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
-  title: 'MsgReplier',
-  description: 'Generate perfect replies for any message.',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "MsgReplier – Shortcut Meanings & Text Repeater",
+    template: "%s | MsgReplier",
+  },
+  description:
+    "Understand chat shortcuts and slang meanings, and repeat text easily for any platform character limit. Simple, fast, and privacy-friendly.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName: "MsgReplier",
+    title: "MsgReplier – Shortcut Meanings & Text Repeater",
+    description:
+      "Understand chat shortcuts and slang meanings, and repeat text easily for any platform character limit. Simple, fast, and privacy-friendly.",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "MsgReplier",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MsgReplier – Shortcut Meanings & Text Repeater",
+    description:
+      "Understand chat shortcuts and slang meanings, and repeat text easily for any platform character limit. Simple, fast, and privacy-friendly.",
+    images: ["/twitter-image"],
+  },
 };
 
 export const viewport: Viewport = {
