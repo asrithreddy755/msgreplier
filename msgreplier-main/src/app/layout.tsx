@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import Script from "next/script";
 
 const getSiteUrl = () => {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
   const base = envUrl?.trim() || "https://msgreplier.com";
-  return base.startsWith("https://") ? base : `https://${base.replace(/^http:\/\//, "")}`;
+  return base.startsWith("https://")
+    ? base
+    : `https://${base.replace(/^http:\/\//, "")}`;
 };
 
 const siteUrl = getSiteUrl();
@@ -50,7 +52,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
@@ -65,8 +67,17 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
+
+        {/* Google AdSense verification script */}
         {process.env.NODE_ENV === "production" && (
           <script
             async
@@ -87,6 +98,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', '${gaId}');`}
         </Script>
+
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
