@@ -23,6 +23,11 @@ export const metadata: Metadata = {
   },
   description:
     "Understand chat shortcuts and slang meanings, and repeat text easily for any platform character limit. Simple, fast, and privacy-friendly.",
+   icons: {
+    icon: "/favicon-32x32.png",
+    shortcut: "/favicon-32x32.png",
+    apple: "/favicon-32x32.png",
+  },
   alternates: {
     canonical: "/",
   },

@@ -22,10 +22,11 @@ const aiDescription =
 export async function generateMetadata({
   params,
 }: {
-  params: { platform: string };
+  params: Promise<{ platform: string }>;
 }): Promise<Metadata> {
   const siteUrl = getSiteUrl();
-  const { platform: slug } = params;
+  const { platform: slug } = await params;
+
 
   const platformConfig = PLATFORMS.find((p) => p.slug === slug);
 
