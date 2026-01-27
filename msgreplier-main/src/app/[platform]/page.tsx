@@ -186,7 +186,8 @@ function AppContent() {
   );
   
   const charLimit = useMemo(() => {
-    return platformId === 'custom' ? customCharLimit : selectedPlatform.charLimit;
+    const limit = platformId === 'custom' ? customCharLimit : selectedPlatform.charLimit;
+    return Math.min(limit, 500);
   }, [platformId, customCharLimit, selectedPlatform]);
 
   const handleGenerate = useCallback(() => {
@@ -217,7 +218,7 @@ function AppContent() {
           toast({
             variant: "destructive",
             title: "Character limit exceeded",
-            description: `The generated text is longer than the platform's limit of ${charLimit} characters and has been truncated.`,
+            description: `The generated text exceeds the limit of ${charLimit} characters and has been truncated.`,
           });
         }
         repeatedText = result.slice(0, charLimit);
