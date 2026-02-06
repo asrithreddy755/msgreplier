@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import shortcutsData from "@/lib/shortcuts.json";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare, Menu, X, Bot, BookText, ShieldCheck, Mail } from "lucide-react";
+import { Copy, Check, MessageSquare, Menu, X, Bot, BookText, ShieldCheck, Mail, Flame } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -309,7 +309,15 @@ function AppContent() {
       </header>
       <main id="main-content" className="flex flex-1 w-full flex-col items-center justify-start p-6 md:p-12 max-w-5xl mx-auto space-y-8">
         <div className="text-center mb-4 md:mb-8 space-y-4">
-          <h1 className="font-headline text-3xl md:text-5xl font-bold tracking-tight text-foreground/90">
+          
+          {/* New FLAMES Promo CTA */}
+          <Link href="/flames" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white font-bold shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300 animate-pulse">
+            <span>🔥</span>
+            <span>Valentine&apos;s Special: Check your FLAMES Destiny!</span>
+            <span>❤️</span>
+          </Link>
+
+          <h1 className="font-headline text-3xl md:text-5xl font-bold tracking-tight text-foreground/90 pt-4">
             Your Complete Messaging Toolkit
           </h1>
           <p className="text-sm font-medium text-primary/80 uppercase tracking-wide bg-primary/5 px-3 py-1 rounded-full inline-block">
@@ -772,6 +780,14 @@ function MobileSidebarMenu() {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
+                      <Link href="/flames" onClick={() => setOpenMobile(false)}>
+                        <Flame className="h-5 w-5 mr-2 text-rose-500" />
+                        FLAMES
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
                        <Link href={`/cham-ai`} onClick={() => setOpenMobile(false)}>
                           <Bot className="h-5 w-5 mr-2 text-purple-500" />
                           cham AI
@@ -878,6 +894,14 @@ function DesktopSidebarMenu() {
                       <Copy className="h-5 w-5 mr-2 text-orange-500" />
                       <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Text Repeater</span>
                    </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
+                  <Link href="/flames">
+                    <Flame className="h-5 w-5 mr-2 text-rose-500" />
+                    <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">FLAMES</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
