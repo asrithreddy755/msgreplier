@@ -19,7 +19,7 @@ export default function ContactPage() {
         </h1>
         
         <p className="text-lg text-slate-600 dark:text-slate-400">
-          Have a question, suggestion, or just want to say hello? We'd love to hear from you.
+          Have a question, suggestion, or just want to say hello? We&apos;d love to hear from you.
         </p>
         
         <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm mt-8">

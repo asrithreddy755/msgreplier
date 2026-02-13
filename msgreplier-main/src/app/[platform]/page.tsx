@@ -694,7 +694,7 @@ function AppContent() {
           <h3 className="text-2xl font-bold tracking-tight mb-6 text-foreground/90">How to Use This Tool</h3>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <ol className="list-decimal list-inside space-y-3 marker:text-primary marker:font-semibold">
-              <li className="pl-2"><span className="font-semibold text-foreground">Shortcutpedia:</span> The ultimate slang dictionary. Use the search bar to find meanings for "rizz", "no cap", "POV", and more. Click "Library" to browse our full collection alphabetically.</li>
+              <li className="pl-2"><span className="font-semibold text-foreground">Shortcutpedia:</span> The ultimate slang dictionary. Use the search bar to find meanings for &quot;rizz&quot;, &quot;no cap&quot;, &quot;POV&quot;, and more. Click &quot;Library&quot; to browse our full collection alphabetically.</li>
               <li className="pl-2"><span className="font-semibold text-foreground">cham AI (Coming Soon):</span> An intelligent assistant to help you craft the perfect response for any situation—whether professional, casual, or flirty.</li>
               <li className="pl-2"><span className="font-semibold text-foreground">Text Repeater:</span> Need to spam (playfully!) or hit a word count? Enter your text, choose a repetition count, and generate instant copies. Perfect for emphasizing a point.</li>
             </ol>

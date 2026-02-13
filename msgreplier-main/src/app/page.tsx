@@ -16,17 +16,17 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative py-16 px-4 md:py-32 overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-background">
         <div className="container relative z-10 mx-auto">
-          <div className="flex flex-col items-center text-center space-y-8">
+          <div className="flex flex-col items-center text-center space-y-6 sm:space-y-8">
             <Badge variant="secondary" className="px-4 py-1 text-sm font-medium rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
               🚀 The Ultimate Messaging Toolkit
             </Badge>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 max-w-4xl">
               Upgrade Your Chat Game Instantly
             </h1>
-            <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
               From spamming friends with our <strong className="text-foreground">Text Repeater</strong> to decoding Gen Z slang with <strong className="text-foreground">Shortcutpedia</strong>, we have the tools you need.
             </p>
-            <div className="flex flex-col sm:flex-row md:flex-row gap-4 w-full justify-center pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center pt-4">
               <Button asChild size="lg" className="h-12 px-8 text-lg rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 w-full sm:w-auto">
                 <Link href="/text-repeater">
                   Start Repeating Text <ArrowRight className="ml-2 h-4 w-4" />
@@ -56,7 +56,7 @@ export default function HomePage() {
             <p className="text-base md:text-lg text-slate-600 dark:text-slate-400">Everything you need to master messaging apps.</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {/* Tool 1: Text Repeater */}
             <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
               <CardHeader>
@@ -67,7 +67,7 @@ export default function HomePage() {
                 <CardDescription>WhatsApp & Instagram Bomber</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
                   Repeat text 10,000+ times instantly. Perfect for pranks, spamming (friends only!), or testing apps.
                 </p>
               </CardContent>
@@ -88,7 +88,7 @@ export default function HomePage() {
                 <CardDescription>Love Compatibility Test</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
                   Check your relationship destiny with the famous childhood algorithm. Friendship, Love, or Enemy?
                 </p>
               </CardContent>
@@ -109,8 +109,8 @@ export default function HomePage() {
                 <CardDescription>Slang Dictionary</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 dark:text-slate-400">
-                  Decode Gen Z slang, chat abbreviations, and acronyms like "GYAT", "Rizz", and "IYKYK".
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                  Decode Gen Z slang, chat abbreviations, and acronyms like &quot;GYAT&quot;, &quot;Rizz&quot;, and &quot;IYKYK&quot;.
                 </p>
               </CardContent>
               <CardFooter>
@@ -130,7 +130,7 @@ export default function HomePage() {
                 <CardDescription>Reply Generator</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
                   Draft the perfect witty, professional, or flirty reply instantly using AI. (Coming Soon)
                 </p>
               </CardContent>
@@ -157,7 +157,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Link href="/blog" className="group block w-full">
               <div className="border rounded-xl overflow-hidden hover:shadow-md transition-all h-full">
-                <div className="p-6">
+                <div className="p-5 sm:p-6">
                   <div className="text-xs font-semibold text-primary mb-2">TIPS & TRICKS</div>
                   <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">How to Send a Blank Message</h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-3">
@@ -169,11 +169,11 @@ export default function HomePage() {
             
             <Link href="/blog" className="group block w-full">
               <div className="border rounded-xl overflow-hidden hover:shadow-md transition-all h-full">
-                <div className="p-6">
+                <div className="p-5 sm:p-6">
                   <div className="text-xs font-semibold text-primary mb-2">INTERNET CULTURE</div>
                   <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">Top 5 Gen Z Slang Terms (2026)</h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-3">
-                    Confused by "Rizz" or "No Cap"? We decode the most popular internet slang you need to know this year.
+                    Confused by &quot;Rizz&quot; or &quot;No Cap&quot;? We decode the most popular internet slang you need to know this year.
                   </p>
                 </div>
               </div>
@@ -181,11 +181,11 @@ export default function HomePage() {
 
             <Link href="/blog" className="group block w-full">
               <div className="border rounded-xl overflow-hidden hover:shadow-md transition-all h-full">
-                <div className="p-6">
+                <div className="p-5 sm:p-6">
                   <div className="text-xs font-semibold text-primary mb-2">DATING & SOCIAL</div>
-                  <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">The Art of the 'Dry Text'</h3>
+                  <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">The Art of the &apos;Dry Text&apos;</h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-3">
-                    How to reply to one-word answers like "K" and "Lol" without killing the conversation.
+                    How to reply to one-word answers like &quot;K&quot; and &quot;Lol&quot; without killing the conversation.
                   </p>
                 </div>
               </div>
@@ -205,13 +205,13 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div className="flex gap-4">
                 <div className="bg-primary/10 p-3 rounded-lg h-fit flex-shrink-0">
                   <Zap className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-xl mb-2">Instant Productivity Tools</h3>
+                  <h3 className="font-bold text-lg md:text-xl mb-2">Instant Productivity Tools</h3>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                     Whether you need an Instagram caption helper or a quick way to spam text for fun, our tools load instantly and work on any device.
                   </p>
@@ -223,7 +223,7 @@ export default function HomePage() {
                   <Shield className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-xl mb-2">Safe and Private</h3>
+                  <h3 className="font-bold text-lg md:text-xl mb-2">Safe and Private</h3>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                     We do not store your personal messages or data. All calculations for our Relationship tester and text generation happen locally or securely.
                   </p>
@@ -235,7 +235,7 @@ export default function HomePage() {
                   <CheckCircle className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-xl mb-2">Always Free</h3>
+                  <h3 className="font-bold text-lg md:text-xl mb-2">Always Free</h3>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                     Access our entire suite of tools without paywalls. We are supported by ads, keeping the core experience free for everyone.
                   </p>
@@ -247,7 +247,7 @@ export default function HomePage() {
                   <Bot className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-xl mb-2">AI Powered</h3>
+                  <h3 className="font-bold text-lg md:text-xl mb-2">AI Powered</h3>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                     Leveraging the latest in AI to help you draft better replies and understand complex internet culture nuances.
                   </p>

@@ -64,7 +64,7 @@ export default function BlogPage() {
             <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-6">
               <p>
                 Have you ever wanted to confuse your friends by sending a message that contains... absolutely nothing? 
-                If you try to type a "Space" on WhatsApp or Instagram and hit send, the platform usually blocks you.
+                If you try to type a &quot;Space&quot; on WhatsApp or Instagram and hit send, the platform usually blocks you.
               </p>
 
               <div>
@@ -75,7 +75,7 @@ export default function BlogPage() {
               </div>
 
               <div>
-                <h4 className="text-lg font-semibold text-foreground mb-2">Method 1: The "Invisible Character"</h4>
+                <h4 className="text-lg font-semibold text-foreground mb-2">Method 1: The &quot;Invisible Character&quot;</h4>
                 <p>Computers use standard codes like the Zero Width Space.</p>
                 <ol className="list-decimal pl-5 space-y-1 mt-2">
                   <li>Copy the text inside these brackets: [ ⠀ ]</li>
@@ -91,10 +91,10 @@ export default function BlogPage() {
                 </p>
                 <ol className="list-decimal pl-5 space-y-1 mt-2">
                   <li>Go to the <Link href="/text-repeater" className="text-primary hover:underline font-medium">MsgReplier Text Repeater</Link>.</li>
-                  <li>Select "Blank Text".</li>
+                  <li>Select &quot;Blank Text&quot;.</li>
                   <li>Click Generate.</li>
                 </ol>
-                <p className="mt-2">Now you've sent a massive empty bubble!</p>
+                <p className="mt-2">Now you&apos;ve sent a massive empty bubble!</p>
               </div>
             </div>
           </article>
@@ -129,8 +129,8 @@ export default function BlogPage() {
                     <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span> 
                     Rizz
                   </h4>
-                  <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> Short for "Charisma." It’s your ability to flirt.</p>
-                  <p className="text-sm italic mt-1">Example: "He has unspoken rizz."</p>
+                  <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> Short for &quot;Charisma.&quot; It&apos;s your ability to flirt.</p>
+                  <p className="text-sm italic mt-1">Example: &quot;He has unspoken rizz.&quot;</p>
                 </div>
 
                 <div className="bg-muted/30 p-4 rounded-lg border border-border/30">
@@ -138,8 +138,8 @@ export default function BlogPage() {
                     <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span> 
                     No Cap
                   </h4>
-                  <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> "No lie" or "for real."</p>
-                  <p className="text-sm italic mt-1">Example: "That exam was hard, no cap."</p>
+                  <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> &quot;No lie&quot; or &quot;for real.&quot;</p>
+                  <p className="text-sm italic mt-1">Example: &quot;That exam was hard, no cap.&quot;</p>
                 </div>
 
                 <div className="bg-muted/30 p-4 rounded-lg border border-border/30">
@@ -147,7 +147,7 @@ export default function BlogPage() {
                     <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span> 
                     GYAT
                   </h4>
-                  <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> An exclamation used when seeing someone attractive. Short for "God Damn."</p>
+                  <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> An exclamation used when seeing someone attractive. Short for &quot;God Damn.&quot;</p>
                 </div>
 
                 <div className="bg-muted/30 p-4 rounded-lg border border-border/30">
@@ -155,7 +155,7 @@ export default function BlogPage() {
                     <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span> 
                     Delulu
                   </h4>
-                  <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> Short for "Delusional." Being unrealistically optimistic about dating.</p>
+                  <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> Short for &quot;Delusional.&quot; Being unrealistically optimistic about dating.</p>
                 </div>
               </div>
 
@@ -181,26 +181,26 @@ export default function BlogPage() {
                   </span>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
-                  The Art of the 'Dry Text': How to Reply to 'K' and 'Lol'
+                  The Art of the &apos;Dry Text&apos;: How to Reply to &apos;K&apos; and &apos;Lol&apos;
                 </h3>
               </div>
             </div>
 
             <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-6">
               <p>
-                Getting a one-word reply like "K" or "lol" is painful. It usually kills the conversation.
+                Getting a one-word reply like &quot;K&quot; or &quot;lol&quot; is painful. It usually kills the conversation.
               </p>
               
               <ul className="list-disc pl-5 space-y-2">
                 <li><strong className="text-foreground">Why it happens:</strong> They might be busy, bored, or just bad at texting.</li>
-                <li><strong className="text-foreground">How to fix it:</strong> Don't just say "wyd". Ask an open-ended question.</li>
+                <li><strong className="text-foreground">How to fix it:</strong> Don&apos;t just say &quot;wyd&quot;. Ask an open-ended question.</li>
               </ul>
 
               <div className="bg-primary/5 p-6 rounded-xl border border-primary/10">
                 <h4 className="text-lg font-bold text-foreground mb-2">Use AI</h4>
                 <p>
                   If you are stuck, use our <Link href="/cham-ai" className="text-primary hover:underline font-medium">Cham AI Reply Generator</Link>. 
-                  Select "Witty" tone and paste their dry text. The AI will give you a comeback that demands a response.
+                  Select &quot;Witty&quot; tone and paste their dry text. The AI will give you a comeback that demands a response.
                 </p>
               </div>
             </div>
@@ -238,7 +238,7 @@ export default function BlogPage() {
                 <h4 className="text-lg font-semibold text-foreground mb-2">How to do it:</h4>
                 <ol className="list-decimal pl-5 space-y-2">
                   <li>Write your caption in your notes app first.</li>
-                  <li>Use the <Link href="/text-repeater" className="text-primary hover:underline font-medium">MsgReplier Text Repeater</Link> to generate a "Blank Text" character.</li>
+                  <li>Use the <Link href="/text-repeater" className="text-primary hover:underline font-medium">MsgReplier Text Repeater</Link> to generate a &quot;Blank Text&quot; character.</li>
                   <li>Paste this character between your lines.</li>
                   <li>Post to Instagram. Your paragraphs will stay perfectly separated.</li>
                 </ol>
@@ -271,10 +271,10 @@ export default function BlogPage() {
               
               <ol className="list-decimal pl-5 space-y-4">
                 <li>
-                  <strong className="text-foreground">The "Glitch" Prank:</strong> Repeat the word "Loading..." 500 times.
+                  <strong className="text-foreground">The &quot;Glitch&quot; Prank:</strong> Repeat the word &quot;Loading...&quot; 500 times.
                 </li>
                 <li>
-                  <strong className="text-foreground">The Emoji Wall:</strong> Send 1000 "❤️" emojis to show aggressive love.
+                  <strong className="text-foreground">The Emoji Wall:</strong> Send 1000 &quot;❤️&quot; emojis to show aggressive love.
                 </li>
                 <li>
                   <strong className="text-foreground">The Void:</strong> Send a blank message so long they have to scroll for 10 seconds.
@@ -283,7 +283,7 @@ export default function BlogPage() {
 
               <div className="bg-destructive/10 p-4 rounded-lg border border-destructive/20 mt-2">
                 <p className="text-sm font-medium text-destructive">
-                  <strong>Warning:</strong> Don't do this to strangers or businesses. Keep it to friends who can take a joke!
+                  <strong>Warning:</strong> Don&apos;t do this to strangers or businesses. Keep it to friends who can take a joke!
                 </p>
               </div>
             </div>

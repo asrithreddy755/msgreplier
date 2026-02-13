@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import html2canvas from "html2canvas";
-import { Calculator, Heart, Share2, Download, RefreshCcw, Sparkles } from "lucide-react";
+import { Calculator, Heart, Download, RefreshCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -47,9 +47,9 @@ export default function FlamesCalculator() {
       const n1 = name1.toLowerCase().replace(/\s/g, "").split("");
       const n2 = name2.toLowerCase().replace(/\s/g, "").split("");
 
-      let count1 = n1.filter(char => !n2.includes(char)).length;
-      let count2 = n2.filter(char => !n1.includes(char)).length;
-      let totalRemaining = count1 + count2;
+      const count1 = n1.filter((char) => !n2.includes(char)).length;
+      const count2 = n2.filter((char) => !n1.includes(char)).length;
+      const totalRemaining = count1 + count2;
 
       const flames = ["F", "L", "A", "M", "E", "S"];
       let index = 0;
@@ -74,13 +74,14 @@ export default function FlamesCalculator() {
   const downloadResult = async () => {
     if (resultRef.current) {
       try {
-        const canvas = await html2canvas(resultRef.current, { backgroundColor: null, scale: 2 });
+        const options = { backgroundColor: null, scale: 2 } as unknown as Parameters<typeof html2canvas>[1];
+        const canvas = await html2canvas(resultRef.current, options);
         const link = document.createElement("a");
         link.download = `flames-result.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
         toast({ title: "Saved!", description: "Image downloaded successfully." });
-      } catch (err) {
+      } catch {
         toast({ title: "Error", description: "Failed to download.", variant: "destructive" });
       }
     }

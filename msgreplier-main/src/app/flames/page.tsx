@@ -95,7 +95,7 @@ export default function FlamesPage() {
               Unlike random generators, the FLAMES calculator uses a specific mathematical logic:
             </p>
             <ul className="list-disc pl-6 space-y-2 mb-8">
-              <li><strong>Step 1:</strong> Take two names (e.g., "TOM" and "EMILY").</li>
+              <li><strong>Step 1:</strong> Take two names (e.g., &quot;TOM&quot; and &quot;EMILY&quot;).</li>
               <li><strong>Step 2:</strong> Remove all common letters found in both names.</li>
               <li><strong>Step 3:</strong> Count the remaining characters.</li>
               <li><strong>Step 4:</strong> Count through F-L-A-M-E-S repeatedly using that number until one letter remains.</li>

@@ -21,7 +21,7 @@ export default function AboutPage() {
       <div className="space-y-4 text-muted-foreground leading-relaxed">
         <p>
           MsgReplier is a free, privacy-first messaging toolkit designed to help you navigate the complexities of modern digital communication. 
-          Whether you're trying to decode Gen Z slang, create emphasis in your messages, or draft the perfect reply, our tools are here to assist.
+          Whether you&apos;re trying to decode Gen Z slang, create emphasis in your messages, or draft the perfect reply, our tools are here to assist.
         </p>
         <p>
           Our mission is to provide simple, fast, and effective tools that enhance your messaging experience without compromising your privacy.
@@ -50,13 +50,13 @@ export default function AboutPage() {
 
         <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">Privacy Commitment</h2>
         <p>
-          We believe your conversations should remain private. That's why MsgReplier is built with a privacy-first architecture. 
+          We believe your conversations should remain private. That&apos;s why MsgReplier is built with a privacy-first architecture. 
           We do not require any login, and we do not save, store or collect your message data. All processing happens directly in your browser.
         </p>
 
         <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">Contact Us</h2>
         <p>
-          Have questions, suggestions, or feedback? We'd love to hear from you. Reach out to us at:
+          Have questions, suggestions, or feedback? We&apos;d love to hear from you. Reach out to us at:
           <br />
           <a href="mailto:care.msgreplier@gmail.com" className="text-primary hover:underline font-medium">
             care.msgreplier@gmail.com
