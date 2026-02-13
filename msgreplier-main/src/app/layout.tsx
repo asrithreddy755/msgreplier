@@ -3,6 +3,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CookieConsent } from "@/components/cookie-consent";
+import { Navbar } from "@/components/navbar";
 import Script from "next/script";
 
 const getSiteUrl = () => {
@@ -111,6 +112,7 @@ gtag('config', '${gaId}');`}
           enableSystem
           disableTransitionOnChange
         >
+          <Navbar />
           {children}
           <Toaster />
           <CookieConsent />
