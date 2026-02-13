@@ -17,7 +17,7 @@ const siteUrl = getSiteUrl();
 const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-1XPYWEPPGJ";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL('https://msgreplier.com'),
   title: {
     default: "MsgReplier - Free Text Repeater, Slang Dictionary & AI Reply Generator",
     template: "%s | MsgReplier",

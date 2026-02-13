@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { Metadata } from "next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,11 @@ import { Label } from "@/components/ui/label";
 import { RefreshCcw, Sparkles, Heart, FastForward, Share2, Download, ArrowLeft, Info, Shield, CircleDollarSign, Smile, Mail } from "lucide-react";
 import html2canvas from "html2canvas";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "FLAMES Calculator - Real Love Compatibility Test (2026)",
+  description: "Calculate your relationship destiny with the classic FLAMES game. Check Friendship, Love, Affection, Marriage, Enemy, or Sister status instantly.",
+};
 
 // --- Logic Types & Function ---
 
@@ -242,6 +248,19 @@ export default function FlamesPage() {
   const isSkippingRef = useRef(false);
   const captureRef = useRef<HTMLDivElement>(null);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Game",
+    "name": "FLAMES Calculator",
+    "description": "A classic relationship compatibility game predicting Friendship, Love, Affection, Marriage, Enemy, or Sibling status.",
+    "url": "https://msgreplier.com/flames",
+    "genre": "Love Calculator",
+    "audience": {
+      "@type": "PeopleAudience",
+      "suggestedMinAge": "13"
+    }
+  };
+
   const start = () => {
     const res = getFlamesResult(name1, name2);
     if (res === "Invalid") return;
@@ -378,6 +397,10 @@ export default function FlamesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-100 font-body p-4 flex flex-col items-center justify-start pt-16 md:pt-20 gap-8 text-slate-900 light">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       
       {/* 1. Back Navigation Button */}
       <div className="absolute top-4 left-4 z-50">
@@ -564,7 +587,7 @@ export default function FlamesPage() {
       </Card>
 
       {/* 2. Info Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl mb-8">
         
         {/* Card 1: How to Use */}
         <div className="bg-white/60 backdrop-blur-md p-6 rounded-xl border border-rose-100 shadow-sm flex items-start gap-4">
@@ -619,6 +642,27 @@ export default function FlamesPage() {
         </div>
 
       </div>
+
+      {/* SEO Content Section */}
+      <section className="w-full max-w-3xl text-left bg-white/60 backdrop-blur-md border border-rose-100 p-8 rounded-xl shadow-sm mb-12">
+        <h2 className="text-2xl font-bold mb-4 text-rose-700">How Does the FLAMES Calculator Work?</h2>
+        <div className="text-slate-600 leading-relaxed space-y-4">
+          <p>
+            FLAMES is a childhood classic game used to predict the relationship between two people. The acronym stands for:
+          </p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li><strong>F</strong> - Friendship</li>
+            <li><strong>L</strong> - Love</li>
+            <li><strong>A</strong> - Affection</li>
+            <li><strong>M</strong> - Marriage</li>
+            <li><strong>E</strong> - Enemy</li>
+            <li><strong>S</strong> - Sister (Sibling)</li>
+          </ul>
+          <p>
+            <strong>Algorithm:</strong> Our tool uses the authentic algorithm: it removes common letters between two names and counts the remaining characters to predict your future.
+          </p>
+        </div>
+      </section>
 
       {/* Footer */}
       <div className="w-full max-w-2xl text-center pb-8">

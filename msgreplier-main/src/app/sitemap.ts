@@ -36,6 +36,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteUrl}/terms-conditions`,
       lastModified,
     },
+    {
+      url: `${siteUrl}/flames`,
+      lastModified,
+    },
   ];
 
   const platformRoutes: MetadataRoute.Sitemap = PLATFORMS.map((p) => ({
