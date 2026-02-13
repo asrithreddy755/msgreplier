@@ -315,75 +315,7 @@ function AppContent() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <header className="sticky top-0 z-50 flex flex-wrap items-center justify-between p-4 border-b bg-background/80 backdrop-blur-md shadow-sm gap-2 md:gap-4 transition-all duration-200">
-        <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-3 group">
-            <div className="bg-primary/10 p-2 rounded-xl group-hover:bg-primary/20 transition-colors">
-                <MessageSquare className="h-6 w-6 text-primary" />
-            </div>
-            <span className="font-headline text-xl md:text-2xl font-bold tracking-tight text-foreground/90">
-                MsgReplier
-            </span>
-            </Link>
-        </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
-          <Link href="/" className="hover:text-primary transition-colors">Home</Link>
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors focus:outline-none">
-              Tools <ChevronDown className="h-4 w-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel>Messaging Tools</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/text-repeater" className="cursor-pointer w-full">Text Repeater</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/shortcutpedia" className="cursor-pointer w-full">Shortcutpedia</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/cham-ai" className="cursor-pointer w-full">Cham AI</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/flames" className="cursor-pointer w-full flex items-center gap-2">FLAMES <span className="text-[10px] bg-red-100 text-red-600 px-1 rounded-sm font-bold">HOT</span></Link>
-              </DropdownMenuItem>
-              
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Platform Specific</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link href="/instagram-text-repeater" className="cursor-pointer w-full">Instagram</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/whatsapp-text-repeater" className="cursor-pointer w-full">WhatsApp</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/telegram-text-repeater" className="cursor-pointer w-full">Telegram</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/facebook-text-repeater" className="cursor-pointer w-full">Facebook</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/x-text-repeater" className="cursor-pointer w-full">X (Twitter)</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/youtube-text-repeater" className="cursor-pointer w-full">YouTube</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Link href="/shortcutpedia" className="hover:text-primary transition-colors">Shortcutpedia</Link>
-          <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
-          <Link href="/about" className="hover:text-primary transition-colors">About</Link>
-        </nav>
-
-        <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-          <ThemeToggle />
-          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="hover:bg-primary/10 hover:text-primary">
-            {isOpen ? <X /> : <Menu />}
-          </Button>
-        </div>
-      </header>
       <main id="main-content" className="flex flex-1 w-full flex-col items-center justify-start p-6 md:p-12 max-w-5xl mx-auto space-y-8">
         <div className="text-center mb-4 md:mb-8 space-y-4">
           
