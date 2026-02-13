@@ -7,9 +7,9 @@ const getSiteUrl = () => {
   return base.startsWith("https://") ? base : `https://${base.replace(/^http:\/\//, "")}`;
 };
 
-const homeTitle = "MsgReplier – Shortcut Meanings, Slang Dictionary & Text Repeater";
+const homeTitle = "MsgReplier - Free Text Repeater, Slang Dictionary & AI Reply Generator";
 const homeDescription =
-  "MsgReplier helps you understand chat shortcuts and slang meanings, and repeat text easily to match platform character limits. Fast, simple, and privacy-first.";
+  "The ultimate messaging toolkit. distinct features include a Text Repeater for WhatsApp/Instagram, a Gen Z Slang Dictionary (Shortcutpedia), and an AI Reply Generator. No login required.";
 
 const repeaterTitle = "Text Repeater Tool – Repeat Text for Any Character Limit";
 const repeaterDescription =

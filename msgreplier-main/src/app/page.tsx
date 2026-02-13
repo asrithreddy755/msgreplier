@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import { PLATFORMS } from "@/lib/constants";
 
 export const metadata = {
-  title: "MsgReplier – Shortcut Meanings, Slang Dictionary & Text Repeater",
+  title: "MsgReplier - Free Text Repeater, Slang Dictionary & AI Reply Generator",
   description:
-    "MsgReplier helps you understand chat shortcuts and slang meanings, and repeat text easily to match platform character limits. Fast, simple, and privacy-first.",
+    "The ultimate messaging toolkit. distinct features include a Text Repeater for WhatsApp/Instagram, a Gen Z Slang Dictionary (Shortcutpedia), and an AI Reply Generator. No login required.",
 };
 
 export default function HomePage() {

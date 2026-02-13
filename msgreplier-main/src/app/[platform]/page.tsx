@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import shortcutsData from "@/lib/shortcuts.json";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare, Menu, X, Bot, BookText, ShieldCheck, Mail, Flame } from "lucide-react";
+import { Copy, Check, MessageSquare, Menu, X, Bot, BookText, ShieldCheck, Mail, Flame, ChevronDown } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,14 @@ import {
   DialogTrigger,
   DialogDescription as DialogDescriptionPrimitive,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
@@ -257,6 +265,20 @@ function AppContent() {
   const charCount = generatedText.length;
   const isOverLimit = charCount > charLimit;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "MsgReplier",
+    "applicationCategory": "CommunicationApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": "Text Repeater, Slang Dictionary, AI Reply Generator"
+  };
+
   const ShortcutCardItem = ({ item }: { item: Shortcut }) => {
     const isItemCopied = copiedShortcut === item.shortcut;
 
@@ -289,6 +311,10 @@ function AppContent() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-body">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="sticky top-0 z-50 flex flex-wrap items-center justify-between p-4 border-b bg-background/80 backdrop-blur-md shadow-sm gap-2 md:gap-4 transition-all duration-200">
         <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-3 group">
@@ -300,6 +326,57 @@ function AppContent() {
             </span>
             </Link>
         </div>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
+          <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors focus:outline-none">
+              Tools <ChevronDown className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuLabel>Messaging Tools</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/text-repeater" className="cursor-pointer w-full">Text Repeater</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/shortcutpedia" className="cursor-pointer w-full">Shortcutpedia</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/cham-ai" className="cursor-pointer w-full">Cham AI</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/flames" className="cursor-pointer w-full flex items-center gap-2">FLAMES <span className="text-[10px] bg-red-100 text-red-600 px-1 rounded-sm font-bold">HOT</span></Link>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Platform Specific</DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <Link href="/instagram-text-repeater" className="cursor-pointer w-full">Instagram</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/whatsapp-text-repeater" className="cursor-pointer w-full">WhatsApp</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/telegram-text-repeater" className="cursor-pointer w-full">Telegram</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/facebook-text-repeater" className="cursor-pointer w-full">Facebook</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/x-text-repeater" className="cursor-pointer w-full">X (Twitter)</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/youtube-text-repeater" className="cursor-pointer w-full">YouTube</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Link href="/shortcutpedia" className="hover:text-primary transition-colors">Shortcutpedia</Link>
+          <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
+          <Link href="/about" className="hover:text-primary transition-colors">About</Link>
+        </nav>
+
         <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
           <ThemeToggle />
           <Button variant="ghost" size="icon" onClick={toggleSidebar} className="hover:bg-primary/10 hover:text-primary">
@@ -318,7 +395,7 @@ function AppContent() {
           </Link>
 
           <h1 className="font-headline text-3xl md:text-5xl font-bold tracking-tight text-foreground/90 pt-4">
-            Your Complete Messaging Toolkit
+            The Ultimate Message Replier & Text Tools Hub
           </h1>
           <p className="text-sm font-medium text-primary/80 uppercase tracking-wide bg-primary/5 px-3 py-1 rounded-full inline-block">
             No login required
@@ -329,6 +406,7 @@ function AppContent() {
         </div>
 
         {isShortcutpediaPage && (
+        <>
         <Card id="shortcutpedia" className="w-full max-w-3xl shadow-sm hover:shadow-md transition-all duration-300 border-border/60 bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -393,6 +471,22 @@ function AppContent() {
             </div>
           </CardContent>
         </Card>
+        
+        <section id="shortcutpedia-info" className="seo-content w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm">
+            <h3 className="text-2xl font-bold mb-4">Decode Gen Z Slang with Shortcutpedia</h3>
+            <p className="text-muted-foreground leading-relaxed mb-4">
+              Stop asking &quot;what does that mean?&quot; and start understanding. Shortcutpedia is your 2026 <strong>Internet Slang Dictionary</strong>.
+              We decode the most popular chat abbreviations used on TikTok, Snapchat, and Discord.
+            </p>
+            <p className="font-bold mb-2">Trending Searches:</p>
+            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <li><strong>What does &apos;Rizz&apos; mean?</strong> Short for charisma; your ability to flirt.</li>
+              <li><strong>Meaning of &apos;No Cap&apos;:</strong> Being serious, not lying.</li>
+              <li><strong>IYKYK:</strong> &quot;If You Know You Know&quot; - inside jokes.</li>
+              <li><strong>TFW vs. MFW:</strong> &quot;That Feel When&quot; vs &quot;My Face When.&quot;</li>
+            </ul>
+        </section>
+        </>
         )}
 
         <Card id="text-repeater" className="w-full max-w-3xl shadow-sm hover:shadow-md transition-all duration-300 border-border/60 bg-card/50 backdrop-blur-sm mt-8">
@@ -562,7 +656,22 @@ function AppContent() {
           </CardContent>
         </Card>
 
+        <section id="text-repeater-info" className="seo-content w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm">
+            <h3 className="text-2xl font-bold mb-4">Why Use the MsgReplier Text Repeater?</h3>
+            <p className="text-muted-foreground leading-relaxed mb-4">
+              Need to send a message 10,000 times? Our <strong>Free Text Repeater</strong> is the perfect tool for
+              creating emphasis or playing harmless pranks on friends. Whether you need a <strong>WhatsApp text bomber</strong>
+              (use responsibly!) or want to spam comments on Instagram to get noticed, this tool handles it instantly.
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <li><strong>Instagram & TikTok:</strong> generate long blocks of text to space out your bio or captions.</li>
+              <li><strong>Blank Message Generator:</strong> Send empty messages on WhatsApp to confuse your friends.</li>
+              <li><strong>Testing & Dev:</strong> Developers can use this to generate dummy text strings for stress testing apps.</li>
+            </ul>
+        </section>
+
         {(isAiPage || isShortcutpediaPage) && (
+          <>
         <Card id="cham-ai" className="w-full max-w-3xl shadow-sm hover:shadow-md transition-all duration-300 border-border/60 bg-card/50 backdrop-blur-sm mt-8 relative overflow-hidden group">
           <div className="absolute inset-0 bg-background/40 backdrop-blur-[4px] z-10 flex flex-col items-center justify-center gap-4 transition-all duration-300 group-hover:bg-background/30 group-hover:backdrop-blur-[2px]">
              <div className="bg-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-lg text-lg animate-in fade-in zoom-in duration-500 hover:scale-105 transition-transform cursor-default">
@@ -603,6 +712,20 @@ function AppContent() {
             <Button className="w-full">Generate Reply</Button>
           </CardContent>
         </Card>
+
+        <section id="cham-ai-info" className="seo-content w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm">
+            <h3 className="text-2xl font-bold mb-4">Cham AI: Your Personal Message Assistant</h3>
+            <p className="text-muted-foreground leading-relaxed mb-4">
+              Struggling to find the right words? <strong>Cham AI</strong> is a privacy-first <strong>AI reply generator</strong>
+              that runs locally in your browser. It analyzes the tone of the message you received and drafts the perfect response instantly.
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+              <li><strong>For Dating:</strong> Generate witty or flirty replies for Tinder, Hinge, and Bumble.</li>
+              <li><strong>For Business:</strong> Create professional email responses in seconds.</li>
+              <li><strong>100% Private:</strong> Your chats never leave your device.</li>
+            </ul>
+        </section>
+          </>
         )}
 
         <div className="w-full max-w-3xl mt-12 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
@@ -693,46 +816,14 @@ function AppContent() {
               <MessageSquare className="h-5 w-5" />
               <span>© {new Date().getFullYear()} MsgReplier. All rights reserved.</span>
             </div>
-            <div className="flex items-center flex-wrap justify-center gap-x-4 gap-y-2">
-               <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground">Terms and Conditions</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Terms and Conditions</DialogTitle>
-                  </DialogHeader>
-                  <DialogDescriptionPrimitive asChild>
-                    <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                      <div>Welcome to MsgReplier. By using our service, including features like cham AI, the Text Repeater, and Shortcutpedia, you agree to these terms. You must be at least 13 years old to use this service.</div>
-                      <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
-                      <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
-                    </div>
-                  </DialogDescriptionPrimitive>
-                </DialogContent>
-              </Dialog>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="link" className="p-0 h-auto text-sm text-muted-foreground flex items-center gap-1">
-                    <ShieldCheck className="h-4 w-4" /> Privacy Policy
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
-                  </DialogHeader>
-                  <DialogDescriptionPrimitive asChild>
-                      <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                        <div>Your privacy is important to us. It is MsgReplier&apos;s policy to respect your privacy regarding any information we may collect from you across our website.</div>
-                        <div className="font-bold p-3 bg-green-100 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-800">This website does not require any login, and we do not save, store, or collect any of your data. All processing is done in your browser, including your use of cham AI, the Text Repeater, and Shortcutpedia.</div>
-                        <div>We don&apos;t share any personally identifying information publicly or with third-parties, simply because we don&apos;t collect it in the first place.</div>
-                      </div>
-                  </DialogDescriptionPrimitive>
-                </DialogContent>
-              </Dialog>
-              <a href="mailto:care.msgreplier@gmail.com" className="inline-flex items-center justify-center gap-1 text-sm text-muted-foreground hover:underline underline-offset-4">
-                <Mail className="h-4 w-4" /> Suggestions & Feedback
-              </a>
+            <div className="flex items-center flex-wrap justify-center gap-x-6 gap-y-2">
+               <Link href="/privacy-policy" className="text-sm text-muted-foreground hover:underline underline-offset-4">Privacy Policy</Link>
+               <Link href="/terms-conditions" className="text-sm text-muted-foreground hover:underline underline-offset-4">Terms & Conditions</Link>
+               <Link href="/about" className="text-sm text-muted-foreground hover:underline underline-offset-4">About Us</Link>
+               <a href="mailto:care.msgreplier@gmail.com" className="inline-flex items-center justify-center gap-1 text-sm text-muted-foreground hover:underline underline-offset-4">
+                <Mail className="h-4 w-4" /> Contact Us
+               </a>
+               <Link href="/sitemap.xml" className="text-sm text-muted-foreground hover:underline underline-offset-4">Sitemap</Link>
             </div>
           </div>
         </footer>
@@ -809,48 +900,20 @@ function MobileSidebarMenu() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <SidebarMenuButton size="lg" className="w-full justify-start font-medium text-base">
-                                <BookText className="h-5 w-5 mr-2 text-slate-500" />
-                                Terms & Conditions
-                            </SidebarMenuButton>
-                        </DialogTrigger>
-                        <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Terms and Conditions</DialogTitle>
-                        </DialogHeader>
-                        <DialogDescriptionPrimitive asChild>
-                            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                            <div>Welcome to MsgReplier. By using our service, including features like cham AI, the Text Repeater, and Shortcutpedia, you agree to these terms. You must be at least 13 years old to use this service.</div>
-                            <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
-                            <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
-                            </div>
-                        </DialogDescriptionPrimitive>
-                        </DialogContent>
-                    </Dialog>
+                    <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
+                        <Link href="/terms-conditions" onClick={() => setOpenMobile(false)}>
+                            <BookText className="h-5 w-5 mr-2 text-slate-500" />
+                            Terms & Conditions
+                        </Link>
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                     <Dialog>
-                        <DialogTrigger asChild>
-                            <SidebarMenuButton size="lg" className="w-full justify-start font-medium text-base">
-                                <ShieldCheck className="h-5 w-5 mr-2 text-green-500" />
-                                Privacy Policy
-                            </SidebarMenuButton>
-                        </DialogTrigger>
-                        <DialogContent>
-                        <DialogHeader>
-                           <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
-                        </DialogHeader>
-                        <DialogDescriptionPrimitive asChild>
-                            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                                <div>Your privacy is important to us. It is MsgReplier&apos;s policy to respect your privacy regarding any information we may collect from you across our website.</div>
-                                <div className="font-bold p-3 bg-green-100 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-800">This website does not require any login, and we do not save, store, or collect any of your data. All processing is done in your browser, including your use of cham AI, the Text Repeater, and Shortcutpedia.</div>
-                                <div>We don&apos;t share any personally identifying information publicly or with third-parties, simply because we don&apos;t collect it in the first place.</div>
-                            </div>
-                        </DialogDescriptionPrimitive>
-                        </DialogContent>
-                    </Dialog>
+                    <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
+                        <Link href="/privacy-policy" onClick={() => setOpenMobile(false)}>
+                            <ShieldCheck className="h-5 w-5 mr-2 text-green-500" />
+                            Privacy Policy
+                        </Link>
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
               </div>
@@ -927,48 +990,20 @@ function DesktopSidebarMenu() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <SidebarMenuButton size="lg" className="w-full justify-start font-medium text-base">
-                            <BookText className="h-5 w-5 mr-2 text-slate-500" />
-                            <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Terms & Conditions</span>
-                        </SidebarMenuButton>
-                    </DialogTrigger>
-                    <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Terms and Conditions</DialogTitle>
-                    </DialogHeader>
-                    <DialogDescriptionPrimitive asChild>
-                        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                        <div>Welcome to MsgReplier. By using our service, including features like cham AI, the Text Repeater, and Shortcutpedia, you agree to these terms. You must be at least 13 years old to use this service.</div>
-                        <div>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</div>
-                        <div>We reserve the right to modify or terminate the service for any reason, without notice, at any time. We also reserve the right to refuse service to anyone for any reason at any time.</div>
-                        </div>
-                    </DialogDescriptionPrimitive>
-                    </DialogContent>
-                </Dialog>
+                <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
+                    <Link href="/terms-conditions">
+                        <BookText className="h-5 w-5 mr-2 text-slate-500" />
+                        <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Terms & Conditions</span>
+                    </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                 <Dialog>
-                    <DialogTrigger asChild>
-                        <SidebarMenuButton size="lg" className="w-full justify-start font-medium text-base">
-                            <ShieldCheck className="h-5 w-5 mr-2 text-green-500" />
-                            <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Privacy Policy</span>
-                        </SidebarMenuButton>
-                    </DialogTrigger>
-                    <DialogContent>
-                    <DialogHeader>
-                       <DialogTitle className="flex items-center gap-2"><ShieldCheck className="h-6 w-6 text-green-600" /> Privacy Policy</DialogTitle>
-                    </DialogHeader>
-                    <DialogDescriptionPrimitive asChild>
-                        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-                            <div>Your privacy is important to us. It is MsgReplier&apos;s policy to respect your privacy regarding any information we may collect from you across our website.</div>
-                            <div className="font-bold p-3 bg-green-100 dark:bg-green-900/50 rounded-md border border-green-200 dark:border-green-800">This website does not require any login, and we do not save, store, or collect any of your data. All processing is done in your browser.</div>
-                            <div>We don&apos;t share any personally identifying information publicly or with third-parties, simply because we don&apos;t collect it in the first place.</div>
-                        </div>
-                    </DialogDescriptionPrimitive>
-                    </DialogContent>
-                </Dialog>
+                 <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
+                    <Link href="/privacy-policy">
+                        <ShieldCheck className="h-5 w-5 mr-2 text-green-500" />
+                        <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Privacy Policy</span>
+                    </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </div>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
+import { CookieConsent } from "@/components/cookie-consent";
 import Script from "next/script";
 
 const getSiteUrl = () => {
@@ -18,11 +19,11 @@ const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-1XPYWEPPGJ";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "MsgReplier – Shortcut Meanings & Text Repeater",
+    default: "MsgReplier - Free Text Repeater, Slang Dictionary & AI Reply Generator",
     template: "%s | MsgReplier",
   },
   description:
-    "Understand chat shortcuts and slang meanings, and repeat text easily for any platform character limit. Simple, fast, and privacy-friendly.",
+    "The ultimate messaging toolkit. distinct features include a Text Repeater for WhatsApp/Instagram, a Gen Z Slang Dictionary (Shortcutpedia), and an AI Reply Generator. No login required.",
    icons: {
     icon: "/favicon-32x32.png",
     shortcut: "/favicon-32x32.png",
@@ -112,6 +113,7 @@ gtag('config', '${gaId}');`}
         >
           {children}
           <Toaster />
+          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>

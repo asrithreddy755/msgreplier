@@ -20,6 +20,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteUrl}/library`,
       lastModified,
     },
+    {
+      url: `${siteUrl}/about`,
+      lastModified,
+    },
+    {
+      url: `${siteUrl}/blog`,
+      lastModified,
+    },
+    {
+      url: `${siteUrl}/privacy-policy`,
+      lastModified,
+    },
+    {
+      url: `${siteUrl}/terms-conditions`,
+      lastModified,
+    },
   ];
 
   const platformRoutes: MetadataRoute.Sitemap = PLATFORMS.map((p) => ({
