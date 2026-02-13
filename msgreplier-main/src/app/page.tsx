@@ -14,13 +14,13 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-12 px-4 md:py-32 overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-background">
+      <section className="relative py-16 px-4 md:py-32 overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-background">
         <div className="container relative z-10 mx-auto">
           <div className="flex flex-col items-center text-center space-y-8">
             <Badge variant="secondary" className="px-4 py-1 text-sm font-medium rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
               🚀 The Ultimate Messaging Toolkit
             </Badge>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 max-w-4xl">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 max-w-4xl">
               Upgrade Your Chat Game Instantly
             </h1>
             <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
@@ -49,11 +49,11 @@ export default function HomePage() {
       </section>
 
       {/* Tools Grid Section */}
-      <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
+      <section className="py-12 md:py-20 bg-slate-50 dark:bg-slate-900/50">
         <div className="container px-4 md:px-6 mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Our Free Tools</h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400">Everything you need to master messaging apps.</p>
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4">Our Free Tools</h2>
+            <p className="text-base md:text-lg text-slate-600 dark:text-slate-400">Everything you need to master messaging apps.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -145,10 +145,10 @@ export default function HomePage() {
       </section>
 
       {/* Latest Blog Posts Section */}
-      <section className="py-20 bg-background">
+      <section className="py-12 md:py-20 bg-background">
         <div className="container px-4 md:px-6 mx-auto">
-          <div className="flex justify-between items-center mb-10">
-            <h2 className="text-3xl font-bold tracking-tight">Latest from the Blog</h2>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Latest from the Blog</h2>
             <Link href="/blog" className="text-primary font-medium hover:underline flex items-center">
               View All <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
@@ -195,12 +195,12 @@ export default function HomePage() {
       </section>
 
       {/* SEO Content / Why Use MsgReplier */}
-      <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
+      <section className="py-12 md:py-20 bg-slate-50 dark:bg-slate-900/50">
         <div className="container px-4 md:px-6 max-w-4xl mx-auto">
           <div className="space-y-12">
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-6">Why Use MsgReplier?</h2>
-              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+              <h2 className="text-2xl md:text-3xl font-bold mb-6">Why Use MsgReplier?</h2>
+              <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
                 We build simple, privacy-focused productivity tools for your daily digital life.
               </p>
             </div>
