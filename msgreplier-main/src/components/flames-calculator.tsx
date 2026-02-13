@@ -1,511 +1,135 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import React, { useState, useRef } from "react";
+import html2canvas from "html2canvas";
+import { Calculator, Heart, Share2, Download, RefreshCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RefreshCcw, Sparkles, Heart, FastForward, Share2, Download } from "lucide-react";
-import html2canvas from "html2canvas";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
-// --- Logic Types & Function ---
+type FlameResult = "Friendship" | "Love" | "Affection" | "Marriage" | "Enemy" | "Sister" | null;
 
-interface Match {
-  n1Idx: number;
-  n2Idx: number;
-  char: string;
+interface FlameData {
+  meaning: string;
+  color: string;
+  emoji: string;
+  description: string;
 }
 
-interface EliminationStep {
-  currentFlames: string[];
-  removeIndex: number;
-  removeChar: string;
-}
-
-interface FlamesData {
-  name1Chars: string[];
-  name2Chars: string[];
-  matches: Match[];
-  totalCount: number;
-  eliminationHistory: EliminationStep[];
-  result: string;
-}
-
-function getFlamesResult(name1: string, name2: string): FlamesData | "Invalid" {
-  // 1. Safety Checks
-  if (!name1 || !name2) return "Invalid";
-
-  // 2. Strict Sanitization (Lowercase + remove non-a-z)
-  const a = name1.toLowerCase().replace(/[^a-z]/g, "").split("");
-  const b = name2.toLowerCase().replace(/[^a-z]/g, "").split("");
-
-  if (a.length === 0 || b.length === 0) return "Invalid";
-
-  // UI State Tracking (Mirror of logic arrays)
-  const originalN1 = [...a];
-  const originalN2 = [...b];
-  const aObjs = a.map((c, i) => ({ char: c, originalIndex: i }));
-  const bObjs = b.map((c, i) => ({ char: c, originalIndex: i }));
-  const matches: Match[] = [];
-
-  // 3. 1-for-1 Cancellation Logic
-  for (let i = 0; i < a.length; i++) {
-    const index = b.indexOf(a[i]);
-    if (index !== -1) {
-      // UI Capture
-      matches.push({ 
-        n1Idx: aObjs[i].originalIndex, 
-        n2Idx: bObjs[index].originalIndex, 
-        char: a[i] 
-      });
-      aObjs.splice(i, 1);
-      bObjs.splice(index, 1);
-
-      // EXACT Logic
-      a.splice(i, 1);      // Remove from a
-      b.splice(index, 1);  // Remove from b
-      i--;                 // Adjust index since array shrank
-    }
-  }
-
-  // 4. Calculate Remaining Count
-  const count = a.length + b.length;
-
-  const eliminationHistory: EliminationStep[] = [];
-
-  // 5. The "Zero Trap" Guard Clause
-  if (count === 0) {
-    return {
-      name1Chars: originalN1,
-      name2Chars: originalN2,
-      matches,
-      totalCount: 0,
-      eliminationHistory: [],
-      result: "Lovers",
-    };
-  }
-
-  // 6. Circular Elimination (The FLAMES Loop)
-  let flames = ["Friends", "Lovers", "Affection", "Marriage", "Enemy", "Siblings"];
-  let index = 0;
-
-  while (flames.length > 1) {
-    index = (index + count - 1) % flames.length;
-    
-    // UI Capture
-    eliminationHistory.push({
-      currentFlames: [...flames],
-      removeIndex: index,
-      removeChar: flames[index],
-    });
-
-    flames.splice(index, 1); // Remove the item
-  }
-
-  // 7. Return Final Result
-  return {
-    name1Chars: originalN1,
-    name2Chars: originalN2,
-    matches,
-    totalCount: count,
-    eliminationHistory,
-    result: flames[0],
-  };
-}
-
-// --- Sub-Components ---
-
-function LetterBox({ char, status }: { char: string; status: "normal" | "highlight" | "removed" }) {
-  let styles = "w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-xl font-bold rounded-lg border-2 transition-all duration-500 uppercase ";
-  
-  if (status === "normal") {
-    styles += "bg-white border-gray-200 text-slate-900";
-  } else if (status === "highlight") {
-    styles += "bg-rose-100 border-rose-500 text-rose-600 scale-110 shadow-[0_0_15px_rgba(225,29,72,0.4)] z-10";
-  } else if (status === "removed") {
-    styles += "bg-gray-100 border-gray-200 text-gray-300 grayscale opacity-40 scale-90";
-  }
-
-  return (
-    <div className={styles}>
-      {char}
-      {status === "removed" && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-full h-0.5 bg-rose-500/50 rotate-45" />
-          <div className="w-full h-0.5 bg-rose-500/50 -rotate-45" />
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface ResultCardProps {
-  result: string;
-  name1: string;
-  name2: string;
-  onReset: () => void;
-  onShare: () => void;
-  captureRef: React.RefObject<HTMLDivElement | null>;
-}
-
-function ResultCard({ result, name1, name2, onReset, onShare, captureRef }: ResultCardProps) {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    setTimeout(() => setShow(true), 100);
-  }, []);
-
-  const getMessage = (r: string) => {
-    switch (r) {
-      case "Friends": return "Besties for life! 🤝";
-      case "Lovers": return "It's true love! ❤️";
-      case "Affection": return "Something sweet is brewing... 🌸";
-      case "Marriage": return "Wedding bells are ringing! 💍";
-      case "Enemy": return "Uh oh... keep your distance! ⚔️";
-      case "Siblings": return "Like brother and sister! 👯";
-      default: return "Destiny awaits!";
-    }
-  };
-
-  return (
-    <div className={`flex flex-col items-center gap-6 text-center transition-all duration-1000 ${show ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-      <div ref={captureRef} className="flex flex-col items-center gap-6 p-6 rounded-xl bg-white border border-rose-100 shadow-sm">
-        <div className="text-xl font-bold text-slate-500 uppercase tracking-widest">
-          {name1} <span className="text-rose-500 mx-2">+</span> {name2}
-        </div>
-        
-        <div className="relative">
-          <div className="absolute inset-0 animate-ping rounded-full bg-rose-400 opacity-20 duration-1000" />
-          <div className="relative rounded-full bg-gradient-to-br from-rose-100 to-orange-100 p-8 shadow-xl border border-rose-200">
-            <Heart className="h-16 w-16 text-rose-600 animate-pulse fill-rose-600/20" />
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <h2 className="relative z-50 text-5xl md:text-6xl font-black uppercase tracking-widest mt-4 mb-2 text-red-600 drop-shadow-md">
-            {result}
-          </h2>
-          <p className="text-xl text-slate-500 font-medium">
-            {getMessage(result)}
-          </p>
-        </div>
-        
-        <div className="text-[10px] text-slate-400 font-medium">
-          Check yours at msgreplier.com/flames
-        </div>
-      </div>
-
-      <div className="flex gap-3 mt-4">
-        <Button onClick={onShare} variant="outline" size="lg" className="rounded-full px-6">
-          <Share2 className="mr-2 h-4 w-4" /> Share
-        </Button>
-        <Button onClick={onReset} size="lg" className="rounded-full px-8 bg-rose-600 hover:bg-rose-700">
-          <RefreshCcw className="mr-2 h-4 w-4" /> Try Again
-        </Button>
-      </div>
-    </div>
-  );
-}
+const FLAMES_DATA: Record<string, FlameData> = {
+  F: { meaning: "Friendship", color: "text-blue-500", emoji: "🤝", description: "Best friends forever! A bond that stands the test of time." },
+  L: { meaning: "Love", color: "text-red-500", emoji: "❤️", description: "True romance is in the air. You are destined for each other." },
+  A: { meaning: "Affection", color: "text-pink-500", emoji: "🥰", description: "Sweet and fond feelings. A cute relationship is blossoming." },
+  M: { meaning: "Marriage", color: "text-purple-500", emoji: "💍", description: "The ultimate commitment. Wedding bells might be ringing soon!" },
+  E: { meaning: "Enemy", color: "text-orange-500", emoji: "⚔️", description: "Uh oh! Sparks will fly, but maybe not the good kind." },
+  S: { meaning: "Sister", color: "text-teal-500", emoji: "👯", description: "A protective, sibling-like bond. You care deeply like family." },
+};
 
 export default function FlamesCalculator() {
   const [name1, setName1] = useState("");
   const [name2, setName2] = useState("");
-  
-  const [view, setView] = useState<"input" | "process" | "result">("input");
-  const [data, setData] = useState<FlamesData | null>(null);
-  
-  const [animStage, setAnimStage] = useState<"striking" | "counting" | "eliminating">("striking");
-  
-  const [struck1, setStruck1] = useState<Set<number>>(new Set());
-  const [struck2, setStruck2] = useState<Set<number>>(new Set());
-  const [activeMatch, setActiveMatch] = useState<Match | null>(null);
-  
-  const [elimFlames, setElimFlames] = useState<string[]>([]);
-  const [elimRemoved, setElimRemoved] = useState<string | null>(null);
-  const [elimHighlight, setElimHighlight] = useState<number | null>(null);
+  const [result, setResult] = useState<FlameResult>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
-  const isSkippingRef = useRef(false);
-  const captureRef = useRef<HTMLDivElement>(null);
-
-  const start = () => {
-    const res = getFlamesResult(name1, name2);
-    if (res === "Invalid") return;
-    
-    setData(res);
-    setView("process");
-    setAnimStage("striking");
-    setStruck1(new Set());
-    setStruck2(new Set());
-    setActiveMatch(null);
-    setElimFlames(["Friends", "Lovers", "Affection", "Marriage", "Enemy", "Siblings"]);
-    setElimRemoved(null);
-    setElimHighlight(null);
-    isSkippingRef.current = false;
-    
-    runSequence(res);
-  };
-
-  const skipAnimation = () => {
-    isSkippingRef.current = true;
-    setView("result");
-  };
-
-  const handleShare = async () => {
-    if (!captureRef.current) return;
-    
-    try {
-      const canvas = await html2canvas(captureRef.current, {
-        background: undefined,
-        scale: 2,
-      } as any);
-      
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], "flames-result.png", { type: "image/png" })] })) {
-          try {
-            const file = new File([blob], "flames-result.png", { type: "image/png" });
-            await navigator.share({
-              title: "My FLAMES Result",
-              text: `Check out our FLAMES result! 🔥\n${name1} + ${name2} = ${data?.result}\n\nCheck yours here: https://msgreplier.com/flames`,
-              files: [file],
-            });
-          } catch (err) {
-            console.error("Share failed", err);
-            downloadImage(blob);
-          }
-        } else {
-          downloadImage(blob);
-        }
-      }, "image/png");
-    } catch (err) {
-      console.error("Capture failed", err);
-    }
-  };
-
-  const downloadImage = (blob: Blob) => {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `flames-${name1}-${name2}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
-  const runSequence = async (d: FlamesData) => {
-    const checkSkip = () => isSkippingRef.current;
-
-    await wait(800);
-    if (checkSkip()) return;
-    
-    for (const m of d.matches) {
-      if (checkSkip()) return;
-      setActiveMatch(m);
-      await wait(600);
-      if (checkSkip()) return;
-      setStruck1(prev => new Set(prev).add(m.n1Idx));
-      setStruck2(prev => new Set(prev).add(m.n2Idx));
-      setActiveMatch(null);
-      await wait(300);
-    }
-    
-    if (checkSkip()) return;
-    await wait(800);
-    setAnimStage("counting");
-    await wait(2000);
-
-    if (d.totalCount === 0) {
-      setView("result");
+  const calculateFlames = () => {
+    if (!name1.trim() || !name2.trim()) {
+      toast({ title: "Error", description: "Please enter both names!", variant: "destructive" });
       return;
     }
 
-    if (checkSkip()) return;
-    setAnimStage("eliminating");
-    await wait(1000);
+    setIsCalculating(true);
+    setResult(null);
 
-    for (const step of d.eliminationHistory) {
-      if (checkSkip()) return;
-      setElimFlames(step.currentFlames);
-      setElimRemoved(null);
-      
-      const idxToRemove = step.removeIndex;
-      setElimHighlight(idxToRemove);
-      await wait(600);
-      
-      if (checkSkip()) return;
-      setElimRemoved(step.removeChar);
-      setElimHighlight(null);
-      await wait(800);
-    }
-    
-    if (checkSkip()) return;
-    await wait(500);
-    setView("result");
+    setTimeout(() => {
+      const n1 = name1.toLowerCase().replace(/\s/g, "").split("");
+      const n2 = name2.toLowerCase().replace(/\s/g, "").split("");
+
+      let count1 = n1.filter(char => !n2.includes(char)).length;
+      let count2 = n2.filter(char => !n1.includes(char)).length;
+      let totalRemaining = count1 + count2;
+
+      const flames = ["F", "L", "A", "M", "E", "S"];
+      let index = 0;
+
+      while (flames.length > 1) {
+        index = (index + totalRemaining - 1) % flames.length;
+        flames.splice(index, 1);
+      }
+
+      const finalLetter = flames[0];
+      setResult(FLAMES_DATA[finalLetter].meaning as FlameResult);
+      setIsCalculating(false);
+    }, 1500);
   };
 
-  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-  const reset = () => {
+  const resetCalculator = () => {
     setName1("");
     setName2("");
-    setView("input");
-    setData(null);
+    setResult(null);
+  };
+
+  const downloadResult = async () => {
+    if (resultRef.current) {
+      try {
+        const canvas = await html2canvas(resultRef.current, { backgroundColor: null, scale: 2 });
+        const link = document.createElement("a");
+        link.download = `flames-result.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        toast({ title: "Saved!", description: "Image downloaded successfully." });
+      } catch (err) {
+        toast({ title: "Error", description: "Failed to download.", variant: "destructive" });
+      }
+    }
   };
 
   return (
-    <Card className="w-full max-w-2xl shadow-xl border-rose-200 bg-white/80 backdrop-blur-md transition-all duration-500 overflow-hidden">
-      {view === "input" && (
-        <CardHeader className="text-center space-y-2 pb-8">
-          <CardTitle className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-rose-500 to-violet-600 bg-clip-text text-transparent">
-            FLAMES
+    <div className="w-full max-w-md mx-auto">
+      <Card className="border-2 shadow-lg bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+        <CardHeader className="text-center space-y-2">
+          <div className="mx-auto bg-red-100 dark:bg-red-900/30 p-3 rounded-full w-fit mb-2">
+            <Heart className="w-8 h-8 text-red-500 fill-red-500 animate-pulse" />
+          </div>
+          <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-pink-600">
+            FLAMES Calculator
           </CardTitle>
-          <CardDescription className="text-lg">
-            The classic love calculator, reimagined.
-          </CardDescription>
+          <CardDescription>Discover the destiny of your relationship!</CardDescription>
         </CardHeader>
-      )}
-
-      <CardContent className="p-6 md:p-10 min-h-[400px] flex flex-col justify-center relative">
-        {view === "input" && (
-          <div className="space-y-8 animate-in fade-in zoom-in duration-500">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name1" className="text-base font-medium text-slate-700">Your Name</Label>
-                <Input
-                  id="name1"
-                  value={name1}
-                  onChange={e => setName1(e.target.value)}
-                  placeholder="Enter name..."
-                  className="h-12 text-lg bg-white border-rose-200 text-slate-900 placeholder:text-slate-400"
-                  autoComplete="off"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="name2" className="text-base font-medium text-slate-700">Partner's Name</Label>
-                <Input
-                  id="name2"
-                  value={name2}
-                  onChange={e => setName2(e.target.value)}
-                  placeholder="Enter name..."
-                  className="h-12 text-lg bg-white border-rose-200 text-slate-900 placeholder:text-slate-400"
-                  autoComplete="off"
-                />
-              </div>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <Input placeholder="Your Name" value={name1} onChange={(e) => setName1(e.target.value)} className="text-lg py-6" />
+            <div className="flex justify-center -my-2 relative z-10">
+               <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-full border">
+                 <Sparkles className="w-5 h-5 text-yellow-500" />
+               </div>
             </div>
-
-            <Button 
-              onClick={start} 
-              disabled={!name1 || !name2}
-              className="w-full h-12 text-lg rounded-full bg-gradient-to-r from-rose-600 to-violet-600 hover:from-rose-700 hover:to-violet-700 shadow-lg shadow-rose-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Sparkles className="mr-2 h-5 w-5" /> Calculate Relationship
-            </Button>
+            <Input placeholder="Partner's Name" value={name2} onChange={(e) => setName2(e.target.value)} className="text-lg py-6" />
           </div>
-        )}
 
-        {view === "process" && data && (
-          <div className="flex flex-col items-center justify-center space-y-12 animate-in fade-in duration-700 w-full relative">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={skipAnimation}
-              className="absolute -top-4 right-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-            >
-              <FastForward className="mr-2 h-4 w-4" /> Skip
-            </Button>
-
-            {animStage === "striking" && (
-              <div className="space-y-8 w-full text-center">
-                 <h3 className="text-xl font-semibold text-slate-500 animate-pulse">Canceling common letters...</h3>
-                 <div className="flex flex-col gap-6 items-center">
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      {data.name1Chars.map((char, idx) => (
-                        <LetterBox 
-                          key={`n1-${idx}`} 
-                          char={char} 
-                          status={
-                            activeMatch?.n1Idx === idx ? "highlight" :
-                            struck1.has(idx) ? "removed" : "normal"
-                          } 
-                        />
-                      ))}
-                    </div>
-                    <div className="text-2xl text-slate-300 rotate-90 md:rotate-0">×</div>
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      {data.name2Chars.map((char, idx) => (
-                        <LetterBox 
-                          key={`n2-${idx}`} 
-                          char={char} 
-                          status={
-                            activeMatch?.n2Idx === idx ? "highlight" :
-                            struck2.has(idx) ? "removed" : "normal"
-                          } 
-                        />
-                      ))}
-                    </div>
-                 </div>
-              </div>
-            )}
-
-            {animStage === "counting" && (
-              <div className="text-center space-y-6 animate-in zoom-in duration-500">
-                <h3 className="text-xl font-semibold text-slate-500">Remaining Letters</h3>
-                <div className="relative flex items-center justify-center">
-                  <div className="text-8xl font-black bg-gradient-to-br from-rose-500 to-violet-600 bg-clip-text text-transparent drop-shadow-2xl">
-                    {data.totalCount}
-                  </div>
-                  <div className="absolute inset-0 animate-ping opacity-20 bg-rose-500 rounded-full scale-150" />
-                </div>
-                <p className="text-sm text-slate-400">Matches removed. Counting what's left.</p>
-              </div>
-            )}
-
-            {animStage === "eliminating" && (
-              <div className="space-y-8 w-full text-center">
-                <h3 className="text-xl font-semibold text-slate-500">Eliminating...</h3>
-                <div className="flex flex-wrap justify-center gap-3 md:gap-4">
-                  {elimFlames.map((word, idx) => (
-                    <div 
-                      key={word}
-                      className={`
-                        px-4 py-2 rounded-full border-2 text-lg font-bold transition-all duration-500
-                        ${elimRemoved === word ? 'opacity-0 scale-50' : 'opacity-100 scale-100'}
-                        ${elimHighlight === idx ? 'border-rose-500 bg-rose-50 text-rose-600 scale-110' : 'border-gray-200 bg-white text-slate-700'}
-                      `}
-                    >
-                      {word}
-                    </div>
-                  ))}
-                </div>
-                <div className="text-sm text-slate-400 pt-4">
-                  Count: {data.totalCount}
-                </div>
-              </div>
-            )}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+             <Button size="lg" className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white font-bold" onClick={calculateFlames} disabled={isCalculating}>
+               {isCalculating ? "Calculating..." : <><Calculator className="mr-2 h-5 w-5" /> Calculate</>}
+             </Button>
+             <Button size="lg" variant="outline" className="w-full" onClick={resetCalculator}>
+               <RefreshCcw className="mr-2 h-5 w-5" /> Reset
+             </Button>
           </div>
-        )}
 
-        {view === "result" && data && (
-          <ResultCard 
-            result={data.result} 
-            name1={name1} 
-            name2={name2} 
-            onReset={reset} 
-            onShare={handleShare}
-            captureRef={captureRef}
-          />
-        )}
-      </CardContent>
-      
-      {view !== "input" && (
-        <CardFooter className="justify-center py-4 bg-rose-50/50">
-          <p className="text-xs text-slate-400 uppercase tracking-widest opacity-50">
-            {view === "process" ? "Calculating Destiny..." : "Calculation Complete"}
-          </p>
-        </CardFooter>
-      )}
-    </Card>
+          {result && (
+            <div className="animate-in fade-in zoom-in duration-500 pt-4">
+              <div ref={resultRef} className="relative overflow-hidden rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 p-6 text-center">
+                 <div className="mb-4"><span className="text-6xl">{Object.values(FLAMES_DATA).find(d => d.meaning === result)?.emoji}</span></div>
+                 <h3 className={`text-4xl font-black mb-2 ${Object.values(FLAMES_DATA).find(d => d.meaning === result)?.color}`}>{result.toUpperCase()}</h3>
+                 <p className="text-slate-600 dark:text-slate-300 font-medium">{Object.values(FLAMES_DATA).find(d => d.meaning === result)?.description}</p>
+              </div>
+              <Button variant="secondary" className="w-full mt-4" onClick={downloadResult}><Download className="mr-2 h-4 w-4" /> Save Image</Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
