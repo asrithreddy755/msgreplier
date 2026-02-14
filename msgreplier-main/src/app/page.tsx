@@ -20,7 +20,7 @@ export default function HomePage() {
             <Badge variant="secondary" className="px-4 py-1 text-sm font-medium rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
               🚀 The Ultimate Messaging Toolkit
             </Badge>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 max-w-4xl">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 max-w-[320px] sm:max-w-4xl mx-auto">
               Upgrade Your Chat Game Instantly
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
