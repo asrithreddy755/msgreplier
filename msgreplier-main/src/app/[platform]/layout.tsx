@@ -15,7 +15,7 @@ const repeaterTitle = "Text Repeater Tool – Repeat Text for Any Character Limi
 const repeaterDescription =
   "Repeat text instantly for WhatsApp, Instagram, Twitter, and other platforms. Match maximum character limits easily.";
 
-const aiTitle = "AI Reply Generator – Smart Replies for Chats (ComingSoon)";
+const aiTitle = "AI Reply Generator – Smart Replies for Chats (Coming Soon)";
 const aiDescription =
   "Generate smart replies for chats, social media, and work conversations in different tones. Coming soon on MsgReplier.";
 
