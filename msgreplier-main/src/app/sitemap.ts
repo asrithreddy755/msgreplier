@@ -40,6 +40,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteUrl}/flames`,
       lastModified,
     },
+    {
+      url: `${siteUrl}/prompt`,
+      lastModified,
+    },
   ];
 
   const platformRoutes: MetadataRoute.Sitemap = PLATFORMS.map((p) => ({

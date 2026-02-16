@@ -197,10 +197,10 @@ export default function BlogPage() {
               </ul>
 
               <div className="bg-primary/5 p-6 rounded-xl border border-primary/10">
-                <h4 className="text-lg font-bold text-foreground mb-2">Use AI</h4>
+                <h4 className="text-lg font-bold text-foreground mb-2">Use Msg Prompt</h4>
                 <p>
-                  If you are stuck, use our <Link href="/cham-ai" className="text-primary hover:underline font-medium">Cham AI Reply Generator</Link>. 
-                  Select &quot;Witty&quot; tone and paste their dry text. The AI will give you a comeback that demands a response.
+                  If you are stuck, use our <Link href="/prompt" className="text-primary hover:underline font-medium">Msg Prompt library</Link>. 
+                  Copy a prompt, paste their dry text, and generate a comeback that demands a response.
                 </p>
               </div>
             </div>

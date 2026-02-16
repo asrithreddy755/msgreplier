@@ -606,59 +606,37 @@ function AppContent() {
 
         {(isAiPage || isShortcutpediaPage) && (
           <>
-        <Card id="cham-ai" className="w-full max-w-3xl shadow-sm hover:shadow-md transition-all duration-300 border-border/60 bg-card/50 backdrop-blur-sm mt-8 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-background/40 backdrop-blur-[4px] z-10 flex flex-col items-center justify-center gap-4 transition-all duration-300 group-hover:bg-background/30 group-hover:backdrop-blur-[2px]">
-             <div className="bg-primary text-primary-foreground font-bold px-8 py-3 rounded-full shadow-lg text-lg animate-in fade-in zoom-in duration-500 hover:scale-105 transition-transform cursor-default">
-              Coming Soon
-            </div>
-            <p className="text-base font-medium text-foreground/80 text-center bg-background/80 px-6 py-2 rounded-full border border-border/50 shadow-sm">
-              We are actively working on cham AI
-            </p>
-          </div>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bot className="h-6 w-6 text-primary" />
-              cham AI
-            </CardTitle>
-            <CardDescription>
-              Your personal AI assistant for crafting the perfect reply.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 opacity-40 pointer-events-none select-none">
-            <div className="space-y-2">
-              <Label>Message received</Label>
-              <Textarea placeholder="Paste the message you received..." rows={3} />
-            </div>
-             <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label>Tone</Label>
-                    <Select disabled>
-                        <SelectTrigger><SelectValue placeholder="Casual" /></SelectTrigger>
-                    </Select>
-                </div>
-                 <div className="space-y-2">
-                    <Label>Length</Label>
-                    <Select disabled>
-                        <SelectTrigger><SelectValue placeholder="Short" /></SelectTrigger>
-                    </Select>
-                </div>
-             </div>
-            <Button className="w-full">Generate Reply</Button>
-          </CardContent>
-        </Card>
+            <Card id="msg-prompt" className="w-full max-w-3xl shadow-sm hover:shadow-md transition-all duration-300 border-border/60 bg-card/50 backdrop-blur-sm mt-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bot className="h-6 w-6 text-primary" />
+                  Msg Prompt
+                </CardTitle>
+                <CardDescription>
+                  A scrollable prompt library with one-tap copy.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground leading-relaxed">
+                  Copy a prompt, paste your context, and generate a better reply in any AI tool. Prompts work great for dating, work, and everyday chats.
+                </p>
+                <Button asChild className="w-full">
+                  <Link href="/prompt">Open Msg Prompt</Link>
+                </Button>
+              </CardContent>
+            </Card>
 
-        <section id="cham-ai-info" className="seo-content w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm">
-            <h3 className="text-2xl font-bold mb-4">Cham AI: Your Personal Message Assistant</h3>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Struggling to find the right words? <strong>Cham AI</strong> is a privacy-first <strong>AI reply generator</strong>
-              that runs locally in your browser. It analyzes the tone of the message you received and drafts the perfect response instantly.
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li><strong>For Dating:</strong> Generate witty or flirty replies for Tinder, Hinge, and Bumble.</li>
-              <li><strong>For Business:</strong> Create professional email responses in seconds.</li>
-              <li><strong>100% Private:</strong> Your chats never leave your device.</li>
-            </ul>
-        </section>
+            <section id="msg-prompt-info" className="seo-content w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm">
+              <h3 className="text-2xl font-bold mb-4">Msg Prompt: Copy-Paste Prompts for Better Replies</h3>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Msg Prompt is a curated list of ready-to-copy prompts. Use placeholders like <strong>{"{{message}}"}</strong> to quickly plug in your chat and generate a response.
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <li><strong>Fast:</strong> Scroll, copy, paste—done.</li>
+                <li><strong>Flexible:</strong> Works with ChatGPT, Gemini, and any AI tool.</li>
+                <li><strong>Private:</strong> Nothing is stored on our servers.</li>
+              </ul>
+            </section>
           </>
         )}
 
@@ -697,7 +675,7 @@ function AppContent() {
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <ol className="list-decimal list-inside space-y-3 marker:text-primary marker:font-semibold">
               <li className="pl-2"><span className="font-semibold text-foreground">Shortcutpedia:</span> The ultimate slang dictionary. Use the search bar to find meanings for &quot;rizz&quot;, &quot;no cap&quot;, &quot;POV&quot;, and more. Click &quot;Library&quot; to browse our full collection alphabetically.</li>
-              <li className="pl-2"><span className="font-semibold text-foreground">cham AI (Coming Soon):</span> An intelligent assistant to help you craft the perfect response for any situation—whether professional, casual, or flirty.</li>
+              <li className="pl-2"><span className="font-semibold text-foreground">Msg Prompt:</span> Open the prompt list, copy a template, paste your message, and get a better reply in seconds.</li>
               <li className="pl-2"><span className="font-semibold text-foreground">Text Repeater:</span> Need to spam (playfully!) or hit a word count? Enter your text, choose a repetition count, and generate instant copies. Perfect for emphasizing a point.</li>
             </ol>
           </div>
@@ -706,8 +684,8 @@ function AppContent() {
         <div className="w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
           <h3 className="text-2xl font-bold tracking-tight mb-6 text-foreground/90">How Does MsgReplier Work?</h3>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
-            <p>Our tool has three main features: an AI Reply Generator, a Text Repeater, and Shortcutpedia.</p>
-            <p>The <span className="font-semibold text-foreground">cham AI</span> uses advanced AI to understand the context you provide and craft replies in the tone you want. Just tell it who you are, what message you received, and how you want to sound.</p>
+            <p>Our tool has three main features: Msg Prompt, a Text Repeater, and Shortcutpedia.</p>
+            <p><span className="font-semibold text-foreground">Msg Prompt</span> gives you copyable prompt templates. Paste your message into a prompt and use any AI tool to generate a response in the tone you want.</p>
             <p>The <span className="font-semibold text-foreground">Text Repeater</span> is straightforward. You enter text, choose formatting, and it generates the repeated text.</p>
             <p><span className="font-semibold text-foreground">Shortcutpedia</span> helps you quickly look up chat shortcuts and emojis so you always understand the message and can reply in the right way.</p>
             <p className="font-medium text-primary bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
@@ -722,7 +700,7 @@ function AppContent() {
             <ul className="space-y-3">
                 <li className="flex gap-3">
                   <span className="bg-primary/10 text-primary p-1 h-fit rounded mt-0.5">💬</span>
-                  <div><span className="font-semibold text-foreground">Breaking the Ice:</span> Not sure how to reply to &quot;hey&quot; or &quot;what&apos;s up&quot;? Let the AI give you a creative and engaging start.</div>
+                  <div><span className="font-semibold text-foreground">Breaking the Ice:</span> Not sure how to reply to &quot;hey&quot; or &quot;what&apos;s up&quot;? Copy a Msg Prompt template and generate a creative opener.</div>
                 </li>
                 <li className="flex gap-3">
                   <span className="bg-primary/10 text-primary p-1 h-fit rounded mt-0.5">🎭</span>
@@ -813,9 +791,9 @@ function MobileSidebarMenu() {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
-                       <Link href={`/cham-ai`} onClick={() => setOpenMobile(false)}>
+                       <Link href="/prompt" onClick={() => setOpenMobile(false)}>
                           <Bot className="h-5 w-5 mr-2 text-purple-500" />
-                          cham AI
+                          Msg Prompt
                        </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -903,9 +881,9 @@ function DesktopSidebarMenu() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
-                   <Link href={`/cham-ai`}>
+                   <Link href="/prompt">
                       <Bot className="h-5 w-5 mr-2 text-purple-500" />
-                      <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">cham AI</span>
+                      <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Msg Prompt</span>
                    </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -15,9 +15,9 @@ const repeaterTitle = "Text Repeater Tool – Repeat Text for Any Character Limi
 const repeaterDescription =
   "Repeat text instantly for WhatsApp, Instagram, Twitter, and other platforms. Match maximum character limits easily.";
 
-const aiTitle = "AI Reply Generator – Smart Replies for Chats (Coming Soon)";
+const aiTitle = "Msg Prompt – Copyable Prompts for Better Replies";
 const aiDescription =
-  "Generate smart replies for chats, social media, and work conversations in different tones. Coming soon on MsgReplier.";
+  "Browse a scrollable prompt library and copy templates for chats, emails, and replies. Use with any AI tool.";
 
 export async function generateMetadata({
   params,
@@ -36,7 +36,7 @@ export async function generateMetadata({
   if (slug === "custom-text-repeater") {
     title = repeaterTitle;
     description = repeaterDescription;
-  } else if (slug === "cham-ai") {
+  } else if (slug === "prompt") {
     title = aiTitle;
     description = aiDescription;
   } else if (platformConfig && platformConfig.id !== "shortcutpedia") {

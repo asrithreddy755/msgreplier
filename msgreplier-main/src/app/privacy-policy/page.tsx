@@ -24,7 +24,7 @@ export default function PrivacyPolicyPage() {
         <div className="p-4 bg-muted/50 rounded-lg border border-border/50 my-6">
           <p className="font-medium text-foreground">
             This website does not require any login, and we do not save, store, or collect any of your data. 
-            All processing is done in your browser, including your use of cham AI, the Text Repeater, and Shortcutpedia.
+            All processing is done in your browser, including your use of Msg Prompt, the Text Repeater, and Shortcutpedia.
           </p>
         </div>
 

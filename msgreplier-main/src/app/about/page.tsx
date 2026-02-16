@@ -44,7 +44,7 @@ export default function AboutPage() {
             </ul>
           </li>
           <li>
-            <strong><Link href="/cham-ai" className="text-primary hover:underline">Cham AI</Link>:</strong> (Coming Soon) An AI-powered reply generator that runs locally in your browser.
+            <strong><Link href="/prompt" className="text-primary hover:underline">Msg Prompt</Link>:</strong> A curated library of copyable prompts for replies, emails, and chats.
           </li>
         </ul>
 

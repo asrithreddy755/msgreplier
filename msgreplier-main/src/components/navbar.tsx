@@ -52,7 +52,7 @@ export function Navbar() {
                 <Link href="/shortcutpedia">Shortcutpedia</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/cham-ai">Cham AI (Coming Soon)</Link>
+                <Link href="/prompt">Msg Prompt</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

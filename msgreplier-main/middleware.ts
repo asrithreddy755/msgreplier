@@ -25,6 +25,10 @@ export function middleware(request: NextRequest) {
 
   normalized = normalized.toLowerCase();
 
+  if (normalized === "/cham-ai") {
+    normalized = "/prompt";
+  }
+
   if (normalized !== original) {
     url.pathname = normalized;
     return NextResponse.redirect(url, 308);
