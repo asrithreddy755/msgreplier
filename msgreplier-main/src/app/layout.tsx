@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     siteName: "MsgReplier",
     title: "MsgReplier – Shortcut Meanings & Text Repeater",
     description:
-      "Understand chat shortcuts and slang meanings, and repeat text easily for any platform character limit. Simple, fast, and privacy-friendly.",
+      "Understand chat shortcuts and slang meanings, and repeat text easily for any platform. Simple, fast, and privacy-friendly.",
     images: [
       {
         url: "/opengraph-image",
