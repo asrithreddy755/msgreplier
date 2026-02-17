@@ -8,9 +8,9 @@ const getSiteUrl = () => {
 };
 
 export const metadata: Metadata = {
-  title: "Msg Prompt – Ready-to-use AI prompts for chats | MsgReplier",
+  title: "Msg Prompt – Creative prompts for couple photos | MsgReplier",
   description:
-    "Browse a library of copyable prompts for ChatGPT, Gemini, and other AI tools. Copy, paste, and customize prompts to craft better replies for dating, work, and everyday chats.",
+    "Scroll a curated library of copyable couple prompts. Copy, paste, and use them in any AI image tool to generate better couple pictures and photoshoot ideas.",
   alternates: {
     canonical: `${getSiteUrl()}/prompt`,
   },

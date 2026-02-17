@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, Repeat, Flame, BookOpen, Bot, CheckCircle, Shield, Zap } from "lucide-react";
+import { ArrowRight, Repeat, Flame, BookOpen, Camera, CheckCircle, Shield, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Footer } from "@/components/footer";
 
 export const metadata = {
   title: "MsgReplier - Free Text Repeater, Slang Dictionary & AI Reply Generator",
@@ -124,19 +125,25 @@ export default function HomePage() {
             <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
               <CardHeader>
                 <div className="w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Bot className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                  <Camera className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <CardTitle>Msg Prompt</CardTitle>
                 <CardDescription>Copyable Prompts</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-                  Scroll a prompt library, copy, and paste into any AI tool to generate better replies.
+                  Scroll a prompt library, copy, and paste into any AI tool to generate better couple pictures.
                 </p>
               </CardContent>
               <CardFooter>
-                <Button asChild variant="ghost" className="w-full group-hover:bg-purple-50 dark:group-hover:bg-purple-900/20 group-hover:text-purple-600 dark:group-hover:text-purple-400">
-                  <Link href="/prompt">Open Prompts <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="w-full group-hover:bg-purple-50 dark:group-hover:bg-purple-900/20 group-hover:text-purple-600 dark:group-hover:text-purple-400"
+                >
+                  <Link href="/prompt">
+                    Open Prompts <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -244,12 +251,12 @@ export default function HomePage() {
 
               <div className="flex gap-4">
                 <div className="bg-primary/10 p-3 rounded-lg h-fit flex-shrink-0">
-                  <Bot className="h-6 w-6 text-primary" />
+                  <Camera className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg md:text-xl mb-2">AI Powered</h3>
+                  <h3 className="font-bold text-lg md:text-xl mb-2">Msg Prompts</h3>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Leveraging the latest in AI to help you draft better replies and understand complex internet culture nuances.
+                    Use Msg Prompt to copy proven prompt templates for dating, work, and everyday chats. Paste them into any AI tool to get clearer, more confident replies without overthinking every message.
                   </p>
                 </div>
               </div>
@@ -257,6 +264,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }

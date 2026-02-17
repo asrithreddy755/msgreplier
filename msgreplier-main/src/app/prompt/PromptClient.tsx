@@ -2,7 +2,9 @@
 
 import { useCallback } from "react";
 import Image from "next/image";
-import { Copy, Download } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Copy, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { prompts, type PromptItem } from "@/lib/prompts-data";
 
@@ -35,13 +37,22 @@ export default function PromptClient() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
       <div className="container mx-auto px-4 py-8 max-w-md">
+        <div className="flex justify-start mb-4">
+          <Link href="/" className="inline-flex">
+            <Button variant="ghost" className="gap-2 -ml-4">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </Button>
+          </Link>
+        </div>
+
         <div className="mb-6 text-center space-y-2">
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">
             Msg Prompt
           </h1>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Copy high-quality prompts for replies, bios, and messages. Paste them into your
-            favorite AI (ChatGPT, Gemini, etc.) and customize.
+            Scroll a prompt library, copy, and paste into any AI tool to generate
+            better couple pictures and photoshoot ideas.
           </p>
         </div>
 
@@ -95,8 +106,18 @@ export default function PromptClient() {
             </div>
           ))}
         </div>
+
+        <div className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400">
+          For any enquiries, contact{" "}
+          <a
+            href="mailto:care.msgreplier@gmail.com"
+            className="font-medium text-slate-700 dark:text-slate-200 underline underline-offset-2"
+          >
+            care.msgreplier@gmail.com
+          </a>
+          .
+        </div>
       </div>
     </div>
   );
 }
-

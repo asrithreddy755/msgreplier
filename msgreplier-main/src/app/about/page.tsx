@@ -44,7 +44,7 @@ export default function AboutPage() {
             </ul>
           </li>
           <li>
-            <strong><Link href="/prompt" className="text-primary hover:underline">Msg Prompt</Link>:</strong> A curated library of copyable prompts for replies, emails, and chats.
+            <strong><Link href="/prompt" className="text-primary hover:underline">Msg Prompt</Link>:</strong> A curated library of copyable prompts for couples. Copy a prompt, paste it into any AI image tool, and generate matching couple pictures or creative photoshoot ideas in seconds.
           </li>
         </ul>
 

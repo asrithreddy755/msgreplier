@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PLATFORMS, type Platform } from "@/lib/constants";
 import shortcutsData from "@/lib/shortcuts.json";
 import PlatformIcon from "@/components/platform-icon";
-import { Copy, Check, MessageSquare, Menu, X, Bot, BookText, ShieldCheck, Mail, Flame, ChevronDown } from "lucide-react";
+import { Copy, Check, MessageSquare, Menu, X, Camera, BookText, ShieldCheck, Mail, Flame, ChevronDown } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -606,10 +606,13 @@ function AppContent() {
 
         {(isAiPage || isShortcutpediaPage) && (
           <>
-            <Card id="msg-prompt" className="w-full max-w-3xl shadow-sm hover:shadow-md transition-all duration-300 border-border/60 bg-card/50 backdrop-blur-sm mt-8">
+            <Card
+              id="msg-prompt"
+              className="w-full max-w-3xl shadow-sm hover:shadow-md transition-all duration-300 border-border/60 bg-card/50 backdrop-blur-sm mt-8"
+            >
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Bot className="h-6 w-6 text-primary" />
+                  <Camera className="h-6 w-6 text-primary" />
                   Msg Prompt
                 </CardTitle>
                 <CardDescription>
@@ -618,7 +621,7 @@ function AppContent() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground leading-relaxed">
-                  Copy a prompt, paste your context, and generate a better reply in any AI tool. Prompts work great for dating, work, and everyday chats.
+                  Scroll a prompt library, copy, and paste into any AI tool to generate better couple pictures and photoshoot ideas.
                 </p>
                 <Button asChild className="w-full">
                   <Link href="/prompt">Open Msg Prompt</Link>
@@ -792,7 +795,7 @@ function MobileSidebarMenu() {
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
                        <Link href="/prompt" onClick={() => setOpenMobile(false)}>
-                          <Bot className="h-5 w-5 mr-2 text-purple-500" />
+                          <Camera className="h-5 w-5 mr-2 text-purple-500" />
                           Msg Prompt
                        </Link>
                     </SidebarMenuButton>
@@ -881,10 +884,10 @@ function DesktopSidebarMenu() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild size="lg" className="w-full justify-start font-medium text-base">
-                   <Link href="/prompt">
-                      <Bot className="h-5 w-5 mr-2 text-purple-500" />
+                  <Link href="/prompt">
+                      <Camera className="h-5 w-5 mr-2 text-purple-500" />
                       <span className="transition-opacity duration-200 group-data-[state=collapsed]:opacity-0">Msg Prompt</span>
-                   </Link>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Tag, ArrowRight } from "lucide-react";
+import { ArrowLeft, Calendar, Tag, ArrowRight, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "MsgReplier Blog - Messaging Tips, Tricks & Slang",
@@ -42,6 +42,40 @@ export default function BlogPage() {
           <div className="flex items-center gap-4 pb-2 border-b border-border/40">
             <h2 className="text-2xl font-bold tracking-tight">Recent Articles</h2>
           </div>
+
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Product Update
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> Feb 18, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 3 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  New Feature: Creative AI Prompts for Couple Photos
+                </h3>
+              </div>
+            </div>
+
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4">
+              <p>
+                We&apos;ve pivoted! Discover how our new prompt tool helps couples create the perfect AI images and photoshoot ideas.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/perfect-couple-prompts" className="inline-flex items-center gap-2">
+                    Read the Announcement <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
 
           {/* Article 1 */}
           <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md">
