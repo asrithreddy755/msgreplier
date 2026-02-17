@@ -43,6 +43,146 @@ export default function BlogPage() {
             <h2 className="text-2xl font-bold tracking-tight">Recent Articles</h2>
           </div>
 
+          {/* New Article 1: Psychology of Crushes */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Psychology
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> Feb 26, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 4 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  Why Do We Have Crushes? The Psychology of Attraction
+                </h3>
+              </div>
+            </div>
+
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4">
+              <p>
+                It starts with a glance, then a thought, and soon you&apos;re checking their Instagram every hour. Why do our brains obsess over someone we barely know?
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/psychology-of-crushes" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article 2: Text Repeater Tricks */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Tech Tips
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> Feb 24, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 3 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  5 Creative Ways to Use a Text Repeater on WhatsApp
+                </h3>
+              </div>
+            </div>
+
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4">
+              <p>
+                A text repeater isn&apos;t just for spamming. Discover clever ways to use this tool to make your messages stand out, from apologies to note-taking.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/text-repeater-tricks" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article 3: FLAMES Science */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Love & Fun
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> Feb 22, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 5 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  The Science Behind the FLAMES Game: Is It Accurate?
+                </h3>
+              </div>
+            </div>
+
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4">
+              <p>
+                We&apos;ve all played it in the back of a notebook. But how does FLAMES actually work, and why has it stood the test of time? Let&apos;s dive into the algorithm of childhood love.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/how-flames-works" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article 4: 100 Cute Nicknames */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Relationships
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> Feb 20, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 6 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  100+ Cute Nicknames for Your Partner (2026 Edition)
+                </h3>
+              </div>
+            </div>
+
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4">
+              <p>
+                Stuck on what to call your significant other? We&apos;ve compiled the ultimate list of nicknames, from the classic &quot;Babe&quot; to the unique and hilarious.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/100-cute-nicknames" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
           <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
               <div className="space-y-2">

@@ -56,6 +56,9 @@ export const metadata: Metadata = {
       "Understand chat shortcuts and slang meanings, and repeat text easily for any platform character limit. Simple, fast, and privacy-friendly.",
     images: ["/twitter-image"],
   },
+  verification: {
+    google: "REPLACE_WITH_ACTUAL_CODE",
+  },
 };
 
 export const viewport: Viewport = {

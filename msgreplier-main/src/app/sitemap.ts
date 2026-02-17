@@ -1,56 +1,93 @@
 import type { MetadataRoute } from "next";
-import { PLATFORMS } from "@/lib/constants";
-
-const getSiteUrl = () => {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
-  const base = envUrl?.trim() || "https://msgreplier.com";
-  return base.startsWith("https://") ? base : `https://${base.replace(/^http:\/\//, "")}`;
-};
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = getSiteUrl();
-  const lastModified = new Date();
+  const baseUrl = "https://msgreplier.com";
 
-  const staticRoutes: MetadataRoute.Sitemap = [
+  return [
     {
-      url: `${siteUrl}/`,
-      lastModified,
+      url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 1,
     },
     {
-      url: `${siteUrl}/library`,
-      lastModified,
+      url: `${baseUrl}/flames`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
-      url: `${siteUrl}/about`,
-      lastModified,
+      url: `${baseUrl}/text-repeater`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
-      url: `${siteUrl}/blog`,
-      lastModified,
+      url: `${baseUrl}/shortcutpedia`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
-      url: `${siteUrl}/privacy-policy`,
-      lastModified,
+      url: `${baseUrl}/prompt`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
-      url: `${siteUrl}/terms-conditions`,
-      lastModified,
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
-      url: `${siteUrl}/flames`,
-      lastModified,
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
     },
     {
-      url: `${siteUrl}/prompt`,
-      lastModified,
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/privacy-policy`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    // Blog Posts
+    {
+      url: `${baseUrl}/blog/perfect-couple-prompts`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/100-cute-nicknames`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/how-flames-works`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/text-repeater-tricks`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/blog/psychology-of-crushes`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
     },
   ];
-
-  const platformRoutes: MetadataRoute.Sitemap = PLATFORMS.map((p) => ({
-    url: `${siteUrl}/${p.slug}`,
-    lastModified,
-  }));
-
-  return [...staticRoutes, ...platformRoutes];
 }
-
