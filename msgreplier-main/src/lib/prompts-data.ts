@@ -1,3 +1,5 @@
+import { PROMPT_ORDER } from "./prompts-order";
+
 export interface PromptItem {
   id: string;
   image: string;
@@ -7,7 +9,7 @@ export interface PromptItem {
   author: string;
 }
 
-export const prompts: PromptItem[] = [
+const promptsList: PromptItem[] = [
   {
     id: "1",
     image: "/1.webp",
@@ -97,3 +99,14 @@ export const prompts: PromptItem[] = [
     author: "@msg replier"
   }
 ];
+
+export const prompts: PromptItem[] = [...promptsList].sort((a, b) => {
+  const indexA = PROMPT_ORDER.indexOf(a.id);
+  const indexB = PROMPT_ORDER.indexOf(b.id);
+
+  if (indexA === -1 && indexB === -1) return 0;
+  if (indexA === -1) return 1;
+  if (indexB === -1) return -1;
+
+  return indexA - indexB;
+});
