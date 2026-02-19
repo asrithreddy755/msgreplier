@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Copy, Download } from "lucide-react";
@@ -10,6 +10,7 @@ import { prompts, type PromptItem } from "@/lib/prompts-data";
 
 export default function PromptClient() {
   const { toast } = useToast();
+  const [visibleCount, setVisibleCount] = useState(5);
 
   const handleCopy = useCallback(
     async (text: string) => {
@@ -34,6 +35,10 @@ export default function PromptClient() {
     [toast]
   );
 
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + 5);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
       <div className="container mx-auto px-4 py-8 max-w-md">
@@ -57,7 +62,7 @@ export default function PromptClient() {
         </div>
 
         <div className="space-y-6">
-          {prompts.map((item: PromptItem) => (
+          {prompts.slice(0, visibleCount).map((item: PromptItem) => (
             <div
               key={item.id}
               className="group relative w-full aspect-[4/5] rounded-[32px] overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-black/50"
@@ -106,6 +111,18 @@ export default function PromptClient() {
             </div>
           ))}
         </div>
+
+        {visibleCount < prompts.length && (
+          <div className="mt-8 text-center">
+            <Button
+              onClick={handleLoadMore}
+              variant="outline"
+              className="w-full sm:w-auto min-w-[200px] rounded-full shadow-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              Load More
+            </Button>
+          </div>
+        )}
 
         <div className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400">
           For any enquiries, contact{" "}
