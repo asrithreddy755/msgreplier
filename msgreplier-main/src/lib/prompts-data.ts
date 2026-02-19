@@ -97,6 +97,38 @@ const promptsList: PromptItem[] = [
     likes: 912,
     text: "A soft, romantic hand-drawn digital illustration of an Indian couple standing close together, smiling lovingly at each other. The man has natural curly hair, light stubble, and a warm, joyful expression. He is wearing a casual light olive-green T-shirt and a black wristwatch, gentlytouching the woman’s shoulder. The woman has expressive eyes, long dark hair tied back loo",
     author: "@msg replier"
+  },
+  {
+    id: "12",
+    image: "/12.webp",
+    tag: "LAY OUT",
+    likes: 690,
+    text: "A vertical three-panel collage (triptych) of a stylish young South Asian couple on a romantic date in a cozy, dimly lit restaurant with a textured cream-colored stone wall.Top Panel: The woman, with long dark hair and a red floral dress, takes a happy mirror selfie with her phone while the man in a black shirt and glasses smiles beside her.Middle Panel: A candid, romantic close-up of the couple looking deeply into each other's eyes, smiling warmly. Bottom Panel:Another joyful selfie of the couple laughing together. The table features elegant glasses of red cocktails and a pink polka-dot bouquet of flowers. Warm, cinematic lighting, aesthetic lifestyle photography.100% my face same, I need this prompt picture,",
+    author: "@msg replier"
+  },
+  {
+    id: "13",
+    image: "/13.webp",
+    tag: "ARTISTIC",
+    likes: 890,
+    text: "Marriage suits-8K Hyper realistic,romantic Indian couple portrait in traditional wedding outfits, woman gently holding the man who is resting in her arms, soft smiling expressions, rich green and pink embroidered lehenga and sherwani, elegant jewelry details, marigold floral decor in background, natural daylight, shallow depth of field, cinematic DSLR photo, realistic skin texture, candid emotional moment, no AI look.Ratio 9:16, keep my face 100% same as in the reference image.",
+    author: "@msg replier"
+  },
+  {
+    id: "14",
+    image: "/14.webp",
+    tag: "ARTISTIC",
+    likes: 20,
+    text: "Create a cinematic, photorealistic image formatted for an Instagram Story (4:5 aspect ratio, 1080x1920 resolution) featuring a vertical composition. Apply a strict identity lock based on the reference photo: faces must remain exactly identical with no beautification, no facial reshaping, and no generic AI model look. Preserve real facial proportions, natural skin texture, pores, and exact skin tones.The subjects are a couple in a romantic, intimate hug, centered in an eye-level medium shot showing their upper bodies. The boy is standing and facing the camera, with his right arm wrapped around the girl's waist and his left hand resting on her back. He has glowing skin matching the reference photo, and short-to-medium, thick, slightly wavy dark black hair styled upward with volume. His facial features match the reference, and he wears a soft, relaxed, and content happy smile. He is dressed in a regular-fit, olive green cotton twill casual shirt with the sleeves rolled down, and wears a metal wristwatch on his left wrist.The girl is embracing him from the front, with her arms wrapped tightly around his shoulders and her body leaning into him, her cheek resting close to his face. She has a light-medium warm beige skin tone, a soft oval face with natural brows and minimal makeup, and long, dark brown hair with loose, natural waves parted to the side and looking slightly wind-blown. She wears a warm, affectionate smile. Her outfit consists of a rust brown soft cotton casual top and blue denim jeans, with no visible accessories.The scene is set outdoors at a beachside during evening twilight, creating a calm and romantic atmosphere. The background features an ocean shoreline with gentle waves, distant city lights on a low horizon, and a dramatic cloudy sunset sky in purple, blue, and pink tones occupying the upper frame. The lighting mimics a smartphone camera look in a low-light dusk setting, using an on-camera flash to keep sharp focus on the subjects while maintaining a balanced exposure with the slightly darker background.Negative Prompt :- Face alteration, beauty filter, smooth plastic skin, AI model face, incorrect skin tone, hair color change, hairstyle change, extra fingers, distorted hands, deformed anatomy, blur, cartoon style, painting style, overexposed flash, harsh shadows, background artifacts, text, watermark.",
+    author: "@msg replier"
+  },
+  {
+    id: "15",
+    image: "/15.webp",
+    tag: "ARTISTIC",
+    likes: 57,
+    text: "A photorealistic three-panel vertical collage featuring a stylish young couple in a cozy, dimly lit bedroom setting. In the top panel, the couple poses for a playful selfie; the girl, wearing a pink tank top, pokes her cheek with her finger while making a cute pout, and the boy, in a black hoodie, smiles warmly next to her. In the middle panel, the girl looks softly at the camera with a digital filter crown of floating pink hearts above her head, while the boy looks at her affectionately from the side. In the bottom panel, an intimate close-up shows the girl touching her lip with her fingers, and the boy leaning in close behind her, looking into the lens. The lighting is warm and soft, capturing a romantic, candid, and authentic Gen Z social media aesthetic. 100% my face same I need this prompt picture,",
+    author: "@msg replier"
   }
 ];
 
