@@ -14,7 +14,8 @@ body {
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 210 100% 50%; /* Brighter, more pro blue */
+    --primary: 210 100% 50%;
+    /* Brighter, more pro blue */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222 47% 11%;
@@ -34,6 +35,7 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -66,6 +68,7 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -73,6 +76,7 @@ body {
 
 /* Mobile Responsiveness Overrides */
 @media (max-width: 768px) {
+
   /* Main Container adjustments */
   main {
     width: 100% !important;
@@ -92,24 +96,34 @@ body {
     margin-left: 0 !important;
     margin-right: 0 !important;
     border-radius: 0.75rem !important;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
   }
 
   /* Adjust Typography for Mobile */
-  h1 { font-size: 1.5rem !important; line-height: 2rem !important; }
-  h2 { font-size: 1.25rem !important; line-height: 1.75rem !important; }
-  
+  h1 {
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+
+  h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.75rem !important;
+  }
+
   /* Improve Form Elements Touch Targets */
-  input:not([type="checkbox"]):not([type="radio"]), 
-  select, 
-  textarea, 
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea,
   button:not([role="checkbox"]):not([role="radio"]):not([data-variant="ghost"]) {
-    font-size: 16px !important; /* Prevents auto-zoom on iOS */
-    min-height: 44px !important; /* Standard touch target size */
+    font-size: 16px !important;
+    /* Prevents auto-zoom on iOS */
+    min-height: 44px !important;
+    /* Standard touch target size */
   }
 
   /* Make Library button filled on mobile */
-  .library-btn, .load-more-btn {
+  .library-btn,
+  .load-more-btn {
     background-color: hsl(var(--primary)) !important;
     color: hsl(var(--primary-foreground)) !important;
     border-color: hsl(var(--primary)) !important;
@@ -119,11 +133,143 @@ body {
   .search-container input {
     border: 2px solid hsl(var(--primary) / 0.2) !important;
     background-color: hsl(var(--background)) !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
     transition: all 0.2s ease-in-out;
   }
+
   .search-container input:focus {
     border-color: hsl(var(--primary)) !important;
     box-shadow: 0 0 0 4px hsl(var(--primary) / 0.1) !important;
   }
+}
+
+/* --- FLAMES Calculator Animations --- */
+
+/* Phase 1: Canceling Common Letters */
+.strike-through {
+  position: relative;
+  /* Option for text color change: color: rgba(148, 163, 184, 0.5); */
+  /* Tailwind text-slate-400 opacity-50 */
+}
+
+.strike-through::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  border-radius: 2px;
+  background-color: #ef4444;
+  /* Tailwind red-500 */
+  transform: translateY(-50%) rotate(25deg);
+  transform-origin: left center;
+  animation: strike-anim 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  animation-delay: var(--strike-delay, 0s);
+}
+
+@keyframes strike-anim {
+  0% {
+    width: 0%;
+    transform: translateY(-50%) rotate(25deg) scale(0.8);
+  }
+
+  50% {
+    transform: translateY(-50%) rotate(25deg) scale(1.2);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+  }
+
+  100% {
+    width: 120%;
+    /* Slightly past the box for full cross */
+    transform: translateY(-50%) rotate(25deg) scale(1);
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.2);
+  }
+}
+
+.fade-collapse {
+  animation: fade-collapse-anim 3s ease-in forwards;
+}
+
+@keyframes fade-collapse-anim {
+  0% {
+    opacity: 1;
+    max-width: 40px;
+    /* Assuming w-10 (40px) from the tailwind class */
+    margin: 0.25rem;
+    /* gap-2 (0.5rem) / 2 */
+  }
+
+  100% {
+    opacity: 0;
+    max-width: 0;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-width: 0;
+    transform: scale(0);
+    overflow: hidden;
+  }
+}
+
+/* Phase 2: Number Reveal Pop */
+.pop-bounce {
+  animation: pop-bounce-anim 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes pop-bounce-anim {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Phase 3: Elimination Pill */
+.eliminate-pill {
+  animation: eliminate-sleek 0.8s ease forwards;
+  /* Ensure it leaves the DOM seamlessly alongside the animation */
+  transition: max-height 0.3s ease 0.7s, margin 0.3s ease 0.7s, padding 0.3s ease 0.7s;
+  max-height: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0 !important;
+  overflow: hidden;
+}
+
+@keyframes eliminate-sleek {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  20% {
+    transform: translateX(-5px);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: translateX(30px);
+    opacity: 0;
+    filter: blur(2px);
+  }
+}
+
+/* html2canvas Export Fallbacks */
+.export-mode,
+.export-mode * {
+  animation: none !important;
+  filter: none !important;
 }
