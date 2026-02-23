@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
+export const runtime = 'edge';
+
 export const metadata: Metadata = {
   title: "Terms and Conditions - MsgReplier",
   description: "Terms and conditions for using MsgReplier services.",

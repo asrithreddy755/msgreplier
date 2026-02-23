@@ -13,6 +13,8 @@ import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 
+export const runtime = 'edge';
+
 export default function LoveScoreTaker({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const [quiz, setQuiz] = useState<LoveQuiz | null>(null);
