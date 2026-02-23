@@ -1,0 +1,252 @@
+[
+    {
+        "text": "What is my favorite food?",
+        "options": [
+            "Pizza",
+            "Sushi",
+            "Burger",
+            "Pasta"
+        ],
+        "correctOptionIndex": 0
+    },
+    {
+        "text": "What is the one thing I can never stay mad at you for?",
+        "options": [
+            "Your smile",
+            "Your late replies",
+            "Your jokes",
+            "Your attitude"
+        ],
+        "correctOptionIndex": 0
+    },
+    {
+        "text": "What time do I miss you the most?",
+        "options": [
+            "Morning",
+            "Afternoon",
+            "Late night",
+            "When I’m bored"
+        ],
+        "correctOptionIndex": 2
+    },
+    {
+        "text": "What is my biggest fear in this relationship?",
+        "options": [
+            "Losing you",
+            "Fights",
+            "Long distance",
+            "Overthinking"
+        ],
+        "correctOptionIndex": 0
+    },
+    {
+        "text": "What do I usually overthink about?",
+        "options": [
+            "Your tone",
+            "Your friends",
+            "Our future",
+            "Everything"
+        ],
+        "correctOptionIndex": 3
+    },
+    {
+        "text": "What emoji do I secretly love receiving from you?",
+        "options": [
+            "❤️",
+            "🥺",
+            "😘",
+            "😂"
+        ],
+        "correctOptionIndex": 1
+    },
+    {
+        "text": "If we go on a dream date, where would I choose?",
+        "options": [
+            "Beach at sunset",
+            "Late night drive",
+            "Movie marathon",
+            "Cafe hangout"
+        ],
+        "correctOptionIndex": 1
+    },
+    {
+        "text": "What do I want the most from you?",
+        "options": [
+            "Money",
+            "Time",
+            "Gifts",
+            "Attention"
+        ],
+        "correctOptionIndex": 1
+    },
+    {
+        "text": "When I say ‘I’m fine’, what do I actually mean?",
+        "options": [
+            "I’m okay",
+            "I’m upset",
+            "I need attention",
+            "Nothing"
+        ],
+        "correctOptionIndex": 2
+    },
+    {
+        "text": "What makes me instantly jealous?",
+        "options": [
+            "You ignoring me",
+            "You talking to someone new",
+            "Late replies",
+            "All of these"
+        ],
+        "correctOptionIndex": 3
+    },
+    {
+        "text": "What was the moment I started liking you?",
+        "options": [
+            "First call",
+            "First chat",
+            "First fight",
+            "First compliment"
+        ],
+        "correctOptionIndex": 1
+    },
+    {
+        "text": "What do I replay in my mind the most?",
+        "options": [
+            "Our first conversation",
+            "Your voice notes",
+            "Our fights",
+            "Your compliments"
+        ],
+        "correctOptionIndex": 0
+    },
+    {
+        "text": "What is my love language?",
+        "options": [
+            "Physical touch",
+            "Words of affirmation",
+            "Quality time",
+            "Gifts"
+        ],
+        "correctOptionIndex": 2
+    },
+    {
+        "text": "What do I secretly expect after a fight?",
+        "options": [
+            "You ignore me",
+            "You apologize first",
+            "You fight back",
+            "You leave"
+        ],
+        "correctOptionIndex": 1
+    },
+    {
+        "text": "What kind of calls do I love the most?",
+        "options": [
+            "Morning calls",
+            "Late night sleepy calls",
+            "Video calls",
+            "Random short calls"
+        ],
+        "correctOptionIndex": 1
+    },
+    {
+        "text": "What hurts me the most?",
+        "options": [
+            "Dry replies",
+            "Cancelled plans",
+            "Being ignored",
+            "All of these"
+        ],
+        "correctOptionIndex": 3
+    },
+    {
+        "text": "What do I imagine about our future?",
+        "options": [
+            "Traveling together",
+            "Living together",
+            "Marriage",
+            "Growing old together"
+        ],
+        "correctOptionIndex": 3
+    },
+    {
+        "text": "What makes my mood instantly better?",
+        "options": [
+            "Your ‘I love you’ text",
+            "Memes",
+            "Food",
+            "Sleep"
+        ],
+        "correctOptionIndex": 0
+    },
+    {
+        "text": "If I’m quiet suddenly, what is usually the reason?",
+        "options": [
+            "Overthinking",
+            "Angry",
+            "Busy",
+            "Sad"
+        ],
+        "correctOptionIndex": 0
+    },
+    {
+        "text": "What nickname do I love the most?",
+        "options": [
+            "Baby",
+            "Babe",
+            "Cutie",
+            "Love"
+        ],
+        "correctOptionIndex": 0
+    },
+    {
+        "text": "What is my biggest green flag?",
+        "options": [
+            "Loyalty",
+            "Caring nature",
+            "Funny personality",
+            "Patience"
+        ],
+        "correctOptionIndex": 0
+    },
+    {
+        "text": "What do I check first when I wake up?",
+        "options": [
+            "Instagram",
+            "WhatsApp",
+            "Your message",
+            "Time"
+        ],
+        "correctOptionIndex": 2
+    },
+    {
+        "text": "What is something I never get tired of?",
+        "options": [
+            "Talking to you",
+            "Compliments",
+            "Memes",
+            "Food"
+        ],
+        "correctOptionIndex": 0
+    },
+    {
+        "text": "What makes me feel most loved?",
+        "options": [
+            "Long texts",
+            "Random surprises",
+            "Consistent effort",
+            "Public posts"
+        ],
+        "correctOptionIndex": 2
+    },
+    {
+        "text": "If I had to choose one forever, what would it be?",
+        "options": [
+            "You",
+            "Money",
+            "Career",
+            "Fame"
+        ],
+        "correctOptionIndex": 0
+    }
+]

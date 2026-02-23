@@ -22,7 +22,7 @@ export function Footer() {
             <h3 className="font-bold text-lg text-foreground">Features</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
-                <Link href="/text-repeater" className="hover:text-primary transition-colors">Text Repeater</Link>
+                <Link href="/love-score" className="hover:text-primary transition-colors">Love Score Quiz</Link>
               </li>
               <li>
                 <Link href="/prompt" className="hover:text-primary transition-colors">Msg Prompt</Link>

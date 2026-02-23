@@ -8,15 +8,20 @@ export const metadata: Metadata = {
   description: "Get in touch with the MsgReplier team for support, feedback, or inquiries.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
+  const resolvedSearchParams = await searchParams;
+  const fromLoveScore = resolvedSearchParams?.from === "love-score";
+  const backHref = fromLoveScore ? "/love-score" : "/";
+  const backText = fromLoveScore ? "Back to Love Score" : "Back to Home";
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-16 px-4">
       <div className="max-w-2xl mx-auto text-center space-y-8">
         <div className="flex justify-start mb-4">
-          <Link href="/" className="inline-flex">
-            <Button variant="ghost" className="gap-2 -ml-4">
+          <Link href={backHref} className="inline-flex">
+            <Button variant="ghost" className="gap-2 -ml-4 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
-              Back to Home
+              {backText}
             </Button>
           </Link>
         </div>

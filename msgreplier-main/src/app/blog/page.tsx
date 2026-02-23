@@ -32,7 +32,7 @@ export default function BlogPage() {
             Decoding the internet, one text at a time.
           </p>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground/80 leading-relaxed">
-            Welcome to the official MsgReplier blog. In the digital age, communication is evolving faster than ever. 
+            Welcome to the official MsgReplier blog. In the digital age, communication is evolving faster than ever.
             From mastering WhatsApp formatting tricks to decoding the latest Gen Z slang, we break it all down.
           </p>
         </section>
@@ -42,6 +42,47 @@ export default function BlogPage() {
           <div className="flex items-center gap-4 pb-2 border-b border-border/40">
             <h2 className="text-2xl font-bold tracking-tight">Recent Articles</h2>
           </div>
+
+          {/* New Article 0: Love Score Guide */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="currentColor" stroke="none" className="text-rose-500">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+              </svg>
+            </div>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Love & Fun
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> Feb 24, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 5 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                  The Ultimate Guide to the Love Score Quiz
+                </h3>
+              </div>
+            </div>
+
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>
+                Want to know if your partner was actually listening when you told them your favorite movie? Put them to the test with our custom countdown trivia game.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white">
+                  <Link href="/blog/love-score-guide" className="inline-flex items-center gap-2">
+                    Read the Guide <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
 
           {/* New Article 1: Psychology of Crushes */}
           <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md">
@@ -237,7 +278,7 @@ export default function BlogPage() {
 
             <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-6">
               <p>
-                Have you ever wanted to confuse your friends by sending a message that contains... absolutely nothing? 
+                Have you ever wanted to confuse your friends by sending a message that contains... absolutely nothing?
                 If you try to type a &quot;Space&quot; on WhatsApp or Instagram and hit send, the platform usually blocks you.
               </p>
 
@@ -293,14 +334,14 @@ export default function BlogPage() {
 
             <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-6">
               <p>
-                If you’ve opened TikTok recently and felt like you were reading a different language, you aren’t alone. 
+                If you’ve opened TikTok recently and felt like you were reading a different language, you aren’t alone.
                 Here is your cheat sheet from our <Link href="/shortcutpedia" className="text-primary hover:underline font-medium">Shortcutpedia Library</Link>.
               </p>
 
               <div className="space-y-4">
                 <div className="bg-muted/30 p-4 rounded-lg border border-border/30">
                   <h4 className="text-lg font-bold text-foreground flex items-center gap-2">
-                    <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span> 
+                    <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
                     Rizz
                   </h4>
                   <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> Short for &quot;Charisma.&quot; It&apos;s your ability to flirt.</p>
@@ -309,7 +350,7 @@ export default function BlogPage() {
 
                 <div className="bg-muted/30 p-4 rounded-lg border border-border/30">
                   <h4 className="text-lg font-bold text-foreground flex items-center gap-2">
-                    <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span> 
+                    <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
                     No Cap
                   </h4>
                   <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> &quot;No lie&quot; or &quot;for real.&quot;</p>
@@ -318,7 +359,7 @@ export default function BlogPage() {
 
                 <div className="bg-muted/30 p-4 rounded-lg border border-border/30">
                   <h4 className="text-lg font-bold text-foreground flex items-center gap-2">
-                    <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span> 
+                    <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>
                     GYAT
                   </h4>
                   <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> An exclamation used when seeing someone attractive. Short for &quot;God Damn.&quot;</p>
@@ -326,7 +367,7 @@ export default function BlogPage() {
 
                 <div className="bg-muted/30 p-4 rounded-lg border border-border/30">
                   <h4 className="text-lg font-bold text-foreground flex items-center gap-2">
-                    <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span> 
+                    <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">4</span>
                     Delulu
                   </h4>
                   <p className="mt-1"><span className="font-semibold text-foreground">Definition:</span> Short for &quot;Delusional.&quot; Being unrealistically optimistic about dating.</p>
@@ -364,7 +405,7 @@ export default function BlogPage() {
               <p>
                 Getting a one-word reply like &quot;K&quot; or &quot;lol&quot; is painful. It usually kills the conversation.
               </p>
-              
+
               <ul className="list-disc pl-5 space-y-2">
                 <li><strong className="text-foreground">Why it happens:</strong> They might be busy, bored, or just bad at texting.</li>
                 <li><strong className="text-foreground">How to fix it:</strong> Don&apos;t just say &quot;wyd&quot;. Ask an open-ended question.</li>
@@ -373,7 +414,7 @@ export default function BlogPage() {
               <div className="bg-primary/5 p-6 rounded-xl border border-primary/10">
                 <h4 className="text-lg font-bold text-foreground mb-2">Use Msg Prompt</h4>
                 <p>
-                  If you are stuck, use our <Link href="/prompt" className="text-primary hover:underline font-medium">Msg Prompt library</Link>. 
+                  If you are stuck, use our <Link href="/prompt" className="text-primary hover:underline font-medium">Msg Prompt library</Link>.
                   Copy a prompt, paste their dry text, and generate a comeback that demands a response.
                 </p>
               </div>
@@ -402,7 +443,7 @@ export default function BlogPage() {
               <p>
                 Instagram is notorious for ruining caption formatting. You write a nice list, hit post, and it becomes a giant wall of text.
               </p>
-              
+
               <div>
                 <h4 className="text-lg font-semibold text-foreground mb-2">The Fix</h4>
                 <p>You need an invisible separator.</p>
@@ -442,7 +483,7 @@ export default function BlogPage() {
               <p>
                 Want to mess with your best friend? Here are harmless pranks using repeated text:
               </p>
-              
+
               <ol className="list-decimal pl-5 space-y-4">
                 <li>
                   <strong className="text-foreground">The &quot;Glitch&quot; Prank:</strong> Repeat the word &quot;Loading...&quot; 500 times.

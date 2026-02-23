@@ -1,6 +1,12 @@
 import { Metadata } from "next";
 import { Mail } from "lucide-react";
 import FlamesCalculator from "@/components/flames-calculator";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export const metadata: Metadata = {
   title: "FLAMES Calculator - Real Love Compatibility Test (2026)",
@@ -27,7 +33,7 @@ export default function FlamesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      
+
       {/* Header Title */}
       <div className="max-w-4xl mx-auto space-y-12">
         <div className="text-center space-y-4">
@@ -48,14 +54,14 @@ export default function FlamesPage() {
             <h2 className="text-3xl font-bold mb-6 text-slate-900 dark:text-white">
               The Ultimate FLAMES Calculator: Love, Friendship, or Enemies?
             </h2>
-            
+
             <p className="text-lg leading-relaxed mb-6">
-              Remember scribbling names on the back of your school notebook to see if your crush liked you back? 
-              The <strong>FLAMES Game</strong> is a classic childhood compatibility test used to predict the 
-              future relationship between two people. Whether you are checking compatibility with a crush, 
+              Remember scribbling names on the back of your school notebook to see if your crush liked you back?
+              The <strong>FLAMES Game</strong> is a classic childhood compatibility test used to predict the
+              future relationship between two people. Whether you are checking compatibility with a crush,
               a best friend, or even a celebrity, our tool uses the authentic algorithm to reveal your destiny.
             </p>
-        
+
             <h3 className="text-2xl font-semibold mt-8 mb-4">What Does F.L.A.M.E.S. Stand For?</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
@@ -89,7 +95,7 @@ export default function FlamesPage() {
                 <p className="text-sm mt-2 text-slate-600 dark:text-slate-300">A caring, protective relationship, but definitely not romantic.</p>
               </div>
             </div>
-        
+
             <h3 className="text-2xl font-semibold mt-8 mb-4">How the Algorithm Works</h3>
             <p className="mb-4">
               Unlike random generators, the FLAMES calculator uses a specific mathematical logic:
@@ -100,7 +106,7 @@ export default function FlamesPage() {
               <li><strong>Step 3:</strong> Count the remaining characters.</li>
               <li><strong>Step 4:</strong> Count through F-L-A-M-E-S repeatedly using that number until one letter remains.</li>
             </ul>
-        
+
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-4 my-6">
               <h4 className="font-bold text-yellow-800 dark:text-yellow-200">💡 Pro Tip</h4>
               <p className="text-sm text-yellow-700 dark:text-yellow-300">
@@ -110,10 +116,49 @@ export default function FlamesPage() {
           </article>
         </section>
 
+        {/* FAQ Section */}
+        <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm w-full max-w-none prose prose-slate dark:prose-invert">
+          <h2 className="text-3xl font-bold mb-6 text-slate-900 dark:text-white mt-0">
+            Frequently Asked Questions
+          </h2>
+          <Accordion type="single" collapsible className="w-full not-prose">
+            <AccordionItem value="faq-1">
+              <AccordionTrigger className="text-left">What is the FLAMES calculator?</AccordionTrigger>
+              <AccordionContent className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
+                The FLAMES calculator is a nostalgic relationship game from childhood that predicts the potential romantic or platonic dynamic between two people based solely on their names. FLAMES is an acronym that stands for Friendship, Love, Affection, Marriage, Enemy, and Sister (Sibling).
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-2">
+              <AccordionTrigger className="text-left">Is the FLAMES test accurate?</AccordionTrigger>
+              <AccordionContent className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
+                The FLAMES test is purely for fun and entertainment! While the mathematical algorithm is consistent every time for the exact same names, its predictions shouldn&apos;t be taken as serious relationship or destiny advice.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-3">
+              <AccordionTrigger className="text-left">How do you calculate FLAMES manually?</AccordionTrigger>
+              <AccordionContent className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
+                Write down both names and cross out the letters they share in common. Count the remaining uncrossed letters from both names. Then, count off the letters in the word F-L-A-M-E-S repeatedly using that tally until you land on one final letter!
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-4">
+              <AccordionTrigger className="text-left">Does the order of the names matter in FLAMES?</AccordionTrigger>
+              <AccordionContent className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
+                No, the order of the names does not matter! Because the algorithm simply tallies up the combined total of unmatched letters from both names, &quot;Tom vs Emily&quot; will always yield the exact same remaining count as &quot;Emily vs Tom&quot;.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-5">
+              <AccordionTrigger className="text-left">What should I do if my result is &quot;Enemy&quot;?</AccordionTrigger>
+              <AccordionContent className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
+                Don&apos;t worry at all! &quot;Enemy&quot; just means there might be some fiery friction, banter, or competitive rivalry between you two. Remember, the game is meant for nostalgia and laughs, not genuine destiny tracking!
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </section>
+
         {/* Footer */}
         <div className="text-center pb-8 border-t border-slate-200 dark:border-slate-800 pt-8">
           <a href="mailto:care.msgreplier@gmail.com" className="inline-flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
-            <Mail className="h-4 w-4" /> 
+            <Mail className="h-4 w-4" />
             Suggestions & Feedback
           </a>
         </div>

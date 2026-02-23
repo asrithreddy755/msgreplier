@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Repeat, Flame, BookOpen, Camera, CheckCircle, Shield, Zap } from "lucide-react";
+import { ArrowRight, HeartPulse, Flame, BookOpen, Camera, CheckCircle, Shield, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +41,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        
+
         {/* Background Decorative Elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
           <div className="absolute top-1/4 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse" />
@@ -56,51 +56,30 @@ export default function HomePage() {
             <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4">Our Free Tools</h2>
             <p className="text-base md:text-lg text-slate-600 dark:text-slate-400">Everything you need to master messaging apps.</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {/* Tool 1: Text Repeater */}
+            {/* Tool 1: Love Score */}
             <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Repeat className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="w-12 h-12 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <HeartPulse className="h-6 w-6 text-pink-600 dark:text-pink-400" />
                 </div>
-                <CardTitle>Text Repeater</CardTitle>
-                <CardDescription>WhatsApp & Instagram Bomber</CardDescription>
+                <CardTitle>Love Score Quiz</CardTitle>
+                <CardDescription>Test Your Partner</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-                  Repeat text 10,000+ times instantly. Perfect for pranks, spamming (friends only!), or testing apps.
+                  Build a custom quiz, set a trap timer, and see how well your partner really knows you.
                 </p>
               </CardContent>
               <CardFooter>
-                <Button asChild variant="ghost" className="w-full group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                  <Link href="/text-repeater">Use Tool <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Button asChild variant="ghost" className="w-full group-hover:bg-pink-50 dark:group-hover:bg-pink-900/20 group-hover:text-pink-600 dark:group-hover:text-pink-400">
+                  <Link href="/love-score">Create Quiz <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardFooter>
             </Card>
 
-            {/* Tool 2: FLAMES */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Flame className="h-6 w-6 text-rose-600 dark:text-rose-400" />
-                </div>
-                <CardTitle>FLAMES Calculator</CardTitle>
-                <CardDescription>Love Compatibility Test</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-                  Check your relationship destiny with the famous childhood algorithm. Friendship, Love, or Enemy?
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button asChild variant="ghost" className="w-full group-hover:bg-rose-50 dark:group-hover:bg-rose-900/20 group-hover:text-rose-600 dark:group-hover:text-rose-400">
-                  <Link href="/flames">Check Love <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </Button>
-              </CardFooter>
-            </Card>
-
-            {/* Tool 3: Shortcutpedia */}
+            {/* Tool 2: Shortcutpedia */}
             <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
               <CardHeader>
                 <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -117,6 +96,27 @@ export default function HomePage() {
               <CardFooter>
                 <Button asChild variant="ghost" className="w-full group-hover:bg-green-50 dark:group-hover:bg-green-900/20 group-hover:text-green-600 dark:group-hover:text-green-400">
                   <Link href="/shortcutpedia">Search Slang <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </CardFooter>
+            </Card>
+
+            {/* Tool 3: FLAMES */}
+            <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Flame className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+                </div>
+                <CardTitle>FLAMES Calculator</CardTitle>
+                <CardDescription>Love Compatibility Test</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                  Check your relationship destiny with the famous childhood algorithm. Friendship, Love, or Enemy?
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button asChild variant="ghost" className="w-full group-hover:bg-rose-50 dark:group-hover:bg-rose-900/20 group-hover:text-rose-600 dark:group-hover:text-rose-400">
+                  <Link href="/flames">Check Love <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -173,7 +173,7 @@ export default function HomePage() {
                 </div>
               </div>
             </Link>
-            
+
             <Link href="/blog" className="group block w-full">
               <div className="border rounded-xl overflow-hidden hover:shadow-md transition-all h-full">
                 <div className="p-5 sm:p-6">

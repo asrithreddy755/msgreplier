@@ -36,14 +36,14 @@ export function Navbar() {
           <Link href="/blog" className="transition-colors hover:text-foreground/80 text-foreground/60">
             Blog
           </Link>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-1 transition-colors hover:text-foreground/80 text-foreground/60 focus:outline-none">
               Tools <ChevronDown className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center">
               <DropdownMenuItem asChild>
-                <Link href="/text-repeater">Text Repeater</Link>
+                <Link href="/love-score">Love Score Quiz</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/flames">FLAMES Calculator</Link>
@@ -69,7 +69,7 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-2">
           <ThemeToggle />
           <Button asChild size="sm">
-            <Link href="/text-repeater">Get Started</Link>
+            <Link href="/love-score">Get Started</Link>
           </Button>
         </div>
 
@@ -86,15 +86,15 @@ export function Navbar() {
       {isOpen && (
         <div className="md:hidden border-t bg-background">
           <div className="container flex flex-col gap-4 p-4">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="text-sm font-medium transition-colors hover:text-primary"
               onClick={() => setIsOpen(false)}
             >
               Home
             </Link>
-            <Link 
-              href="/blog" 
+            <Link
+              href="/blog"
               className="text-sm font-medium transition-colors hover:text-primary"
               onClick={() => setIsOpen(false)}
             >
@@ -102,44 +102,44 @@ export function Navbar() {
             </Link>
             <div className="flex flex-col gap-2 pl-4 border-l-2 border-muted">
               <span className="text-xs font-semibold text-muted-foreground uppercase">Tools</span>
-              <Link 
-                href="/text-repeater" 
+              <Link
+                href="/love-score"
                 className="text-sm font-medium transition-colors hover:text-primary"
                 onClick={() => setIsOpen(false)}
               >
-                Text Repeater
+                Love Score Quiz
               </Link>
-              <Link 
-                href="/flames" 
+              <Link
+                href="/flames"
                 className="text-sm font-medium transition-colors hover:text-primary"
                 onClick={() => setIsOpen(false)}
               >
                 FLAMES Calculator
               </Link>
-              <Link 
-                href="/shortcutpedia" 
+              <Link
+                href="/shortcutpedia"
                 className="text-sm font-medium transition-colors hover:text-primary"
                 onClick={() => setIsOpen(false)}
               >
                 Shortcutpedia
               </Link>
             </div>
-            <Link 
-              href="/about" 
+            <Link
+              href="/about"
               className="text-sm font-medium transition-colors hover:text-primary"
               onClick={() => setIsOpen(false)}
             >
               About
             </Link>
-            <Link 
-              href="/contact" 
+            <Link
+              href="/contact"
               className="text-sm font-medium transition-colors hover:text-primary"
               onClick={() => setIsOpen(false)}
             >
               Contact
             </Link>
             <Button asChild className="w-full mt-2">
-              <Link href="/text-repeater" onClick={() => setIsOpen(false)}>Get Started</Link>
+              <Link href="/love-score" onClick={() => setIsOpen(false)}>Get Started</Link>
             </Button>
           </div>
         </div>
