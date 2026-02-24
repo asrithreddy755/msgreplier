@@ -3,6 +3,7 @@ export interface QuizQuestion {
     text: string;
     options: string[];
     correctOptionIndex: number;
+    hint?: string;
 }
 
 export interface LoveQuiz {

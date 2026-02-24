@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { HeartPulse, Clock, FileWarning, Trophy, RefreshCcw, Heart, Share2, Download, Home } from "lucide-react";
+import { HeartPulse, Clock, FileWarning, Trophy, RefreshCcw, Heart, Share2, Download, Home, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
@@ -365,6 +365,12 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
                         <CardHeader className="pb-4 bg-slate-50/50 dark:bg-slate-800/20 border-b dark:border-slate-800">
                             <span className="text-xs font-bold text-rose-500 tracking-wider uppercase mb-1 drop-shadow-sm">Question {index + 1} of {quiz.questions.length}</span>
                             <CardTitle className="text-xl leading-relaxed text-slate-800 dark:text-slate-100">{q.text}</CardTitle>
+                            {q.hint && (
+                                <p className="text-sm font-medium text-amber-600 dark:text-amber-500 mt-2 flex items-center bg-amber-50 dark:bg-amber-950/30 p-3 rounded-md border border-amber-100 dark:border-amber-900/50">
+                                    <Lightbulb className="w-4 h-4 mr-2" />
+                                    Hint: {q.hint}
+                                </p>
+                            )}
                         </CardHeader>
                         <CardContent className="pt-6">
                             <RadioGroup
