@@ -25,11 +25,7 @@ export const metadata: Metadata = {
   },
   description:
     "The ultimate messaging toolkit. distinct features include a Text Repeater for WhatsApp/Instagram, a Gen Z Slang Dictionary (Shortcutpedia), and an AI Reply Generator. No login required.",
-   icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/icon.png",
-  },
+  // Icons are automatically handled by Next.js since we added favicon.png to the app directory
   alternates: {
     canonical: "/",
   },
@@ -86,9 +82,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap"
           rel="stylesheet"
         />
-        <link rel="icon" href="/icon.png" type="image/png" />
-        <link rel="shortcut icon" href="/icon.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/icon.png" />
 
         {/* Google AdSense verification script */}
         {process.env.NODE_ENV === "production" && (
