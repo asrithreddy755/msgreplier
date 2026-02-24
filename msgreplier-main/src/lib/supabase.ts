@@ -11,13 +11,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const url = supabaseUrl || 'https://placeholder.supabase.co';
 const key = supabaseAnonKey || 'placeholder-key';
 
-// Check if we are in the browser
-const isClient = typeof window !== 'undefined';
-
-// Use proxy on the client to avoid ISP DNS blocks in India (like Jio), use real URL on server
-const clientUrl = isClient ? `${window.location.origin}/api/supabase` : url;
-
-export const supabase = createClient(clientUrl, key, {
+export const supabase = createClient(url, key, {
     auth: {
         persistSession: false,
         autoRefreshToken: false,
