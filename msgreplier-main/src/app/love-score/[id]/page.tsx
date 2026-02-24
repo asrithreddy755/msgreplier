@@ -327,6 +327,39 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
                         )}
                     </CardFooter>
                 </Card>
+                <div className="w-full max-w-2xl mt-8 space-y-4">
+                    <div className="text-center">
+                        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Your Answers</h2>
+                        <p className="text-slate-500">See what you picked and the correct answers.</p>
+                    </div>
+                    {quiz.questions.map((q, index) => {
+                        const selectedIndex = answers[q.id];
+                        const correctIndex = q.correctOptionIndex;
+                        const selectedText = selectedIndex !== undefined ? q.options[selectedIndex] : "No answer selected";
+                        const correctText = q.options[correctIndex];
+                        const isCorrect = selectedIndex === correctIndex;
+
+                        return (
+                            <Card key={q.id} className="border-2 border-slate-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900">
+                                <CardHeader className="pb-3">
+                                    <span className="text-xs font-semibold text-rose-500 tracking-wider uppercase">Question {index + 1}</span>
+                                    <CardTitle className="text-lg leading-relaxed text-slate-800 dark:text-slate-100">{q.text}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-2 pt-0">
+                                    <div className={`text-sm font-semibold ${isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                                        {isCorrect ? "Correct" : "Incorrect"}
+                                    </div>
+                                    <div className="text-sm text-slate-600 dark:text-slate-300">
+                                        Your answer: <span className="font-semibold text-slate-900 dark:text-slate-100">{selectedText}</span>
+                                    </div>
+                                    <div className="text-sm text-slate-600 dark:text-slate-300">
+                                        Correct answer: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{correctText}</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </div>
             </div>
         );
     }
