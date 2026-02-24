@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useEffect, useState, use, useRef } from "react";
+import React, { useEffect, useState, use, useRef, useCallback } from "react";
 import { toBlob } from "html-to-image";
 import { supabase } from "@/lib/supabase";
-import { LoveQuiz } from "@/types/quiz";
+import { LoveQuiz, DetailedQuizResult } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { HeartPulse, Clock, FileWarning, Trophy, RefreshCcw, Heart, Share2, Download, Home, Lightbulb } from "lucide-react";
+import { HeartPulse, Clock, FileWarning, Trophy, RefreshCcw, Heart, Share2, Download, Home, Lightbulb, CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
@@ -29,10 +29,33 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
     // Quiz state
     const [answers, setAnswers] = useState<Record<string, number>>({});
     const [score, setScore] = useState<number>(0);
+    const [detailedResult, setDetailedResult] = useState<DetailedQuizResult | null>(null);
+    const [resultLoading, setResultLoading] = useState(false);
 
     const [showShareOptions, setShowShareOptions] = useState(false);
     const resultRef = useRef<HTMLDivElement>(null);
     const { toast } = useToast();
+
+    const startQuiz = () => {
+        setStep("active");
+    };
+
+    const fetchDetailedResult = useCallback(async (quizId: string) => {
+        setResultLoading(true);
+        try {
+            const res = await fetch(`/api/love-score-result?id=${quizId}`);
+            if (!res.ok) {
+                return;
+            }
+            const data = await res.json();
+            setDetailedResult(data);
+            if (typeof data?.scorePercentage === "number") {
+                setScore(data.scorePercentage);
+            }
+        } finally {
+            setResultLoading(false);
+        }
+    }, []);
 
     // 1. Fetch the Quiz
     useEffect(() => {
@@ -59,33 +82,19 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
                     if (fetchedQuiz.score !== null && fetchedQuiz.score !== undefined) {
                         setScore(fetchedQuiz.score);
                         setStep("result");
+                        fetchDetailedResult(fetchedQuiz.id);
                     }
                 }
-            } catch (err) {
+            } catch {
                 setError("Failed to load the quiz.");
             } finally {
                 setLoading(false);
             }
         };
         fetchQuiz();
-    }, [id]);
+    }, [id, fetchDetailedResult]);
 
-    // 2. Timer Logic
-    useEffect(() => {
-        if (step === "active" && timeLeft > 0) {
-            const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
-            return () => clearTimeout(timer);
-        } else if (step === "active" && timeLeft === 0) {
-            // Auto-submit when time runs out
-            handleSubmitQuiz();
-        }
-    }, [step, timeLeft]);
-
-    const startQuiz = () => {
-        setStep("active");
-    };
-
-    const calculateScore = () => {
+    const calculateScore = useCallback(() => {
         if (!quiz) return 0;
         let correct = 0;
         quiz.questions.forEach((q) => {
@@ -94,32 +103,50 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
             }
         });
         return Math.round((correct / quiz.questions.length) * 100);
-    };
+    }, [quiz, answers]);
 
-    const handleSubmitQuiz = async () => {
-        const finalScore = calculateScore();
-        setScore(finalScore);
+    const handleSubmitQuiz = useCallback(async () => {
+        const localScore = calculateScore();
+        setScore(localScore);
         setStep("result");
 
-        // Save result to DB asynchronously by calling our Server API
+        setResultLoading(true);
         try {
-            const res = await fetch('/api/save-score', {
+            const res = await fetch('/api/love-score-result', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ id, score: finalScore })
+                body: JSON.stringify({ id: quiz?.id ?? id, answers })
             });
 
             if (!res.ok) {
                 const data = await res.json();
                 throw new Error(data.error || 'Failed to save score');
             }
-        } catch (err: any) {
-            console.error("Failed to save result to DB:", err);
-            toast({ title: "Save Failed", description: "Could not save your score to the database. " + (err?.message || ""), variant: "destructive" });
+            const data = await res.json();
+            setDetailedResult(data);
+            if (typeof data?.scorePercentage === "number") {
+                setScore(data.scorePercentage);
+            }
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "";
+            console.error("Failed to save result to DB:", message);
+            toast({ title: "Save Failed", description: "Could not save your score to the database. " + message, variant: "destructive" });
+        } finally {
+            setResultLoading(false);
         }
-    };
+    }, [answers, calculateScore, id, toast]);
+
+    // 2. Timer Logic
+    useEffect(() => {
+        if (step === "active" && timeLeft > 0) {
+            const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
+            return () => clearTimeout(timer);
+        } else if (step === "active" && timeLeft === 0) {
+            handleSubmitQuiz();
+        }
+    }, [step, timeLeft, handleSubmitQuiz]);
 
     const formatTime = (seconds: number) => {
         const m = Math.floor(seconds / 60);
@@ -278,8 +305,11 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
         else if (score >= 50) message = "Getting There! 💕";
         else message = "We Need To Talk... 💔";
 
+        const totalCorrect = detailedResult?.totalCorrect ?? Math.round((score / 100) * quiz.questions.length);
+        const totalQuestions = detailedResult?.totalQuestions ?? quiz.questions.length;
+
         return (
-            <div className="min-h-screen bg-rose-50 dark:bg-slate-950 flex flex-col py-12 px-4 items-center justify-center">
+            <div className="min-h-screen bg-rose-50 dark:bg-slate-950 flex flex-col py-12 px-4 items-center">
                 <Card className="w-full max-w-md border-2 border-rose-200 dark:border-rose-900/50 shadow-2xl text-center overflow-hidden animate-in slide-in-from-bottom-8 duration-700">
                     <div ref={resultRef} className="bg-white dark:bg-slate-950 flex flex-col items-center">
                         <CardHeader className="bg-gradient-to-b from-rose-100/50 to-transparent dark:from-rose-900/20 pb-2 w-full pt-8">
@@ -294,7 +324,7 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
                             </h1>
                             <p className="text-2xl font-bold text-slate-800 dark:text-slate-200 mt-4">{message}</p>
                             <p className="text-slate-500 pb-2">
-                                {calculateScore() === 100 ? "all" : Math.round((score / 100) * quiz.questions.length)} out of {quiz.questions.length} questions correctly.
+                                {totalCorrect} out of {totalQuestions} questions correctly.
                             </p>
                             <p className="text-[10px] text-slate-400/80 font-medium tracking-wide mt-2">
                                 tested in www.msgreplier.com
@@ -327,38 +357,53 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
                         )}
                     </CardFooter>
                 </Card>
-                <div className="w-full max-w-2xl mt-8 space-y-4">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Your Answers</h2>
-                        <p className="text-slate-500">See what you picked and the correct answers.</p>
-                    </div>
-                    {quiz.questions.map((q, index) => {
-                        const selectedIndex = answers[q.id];
-                        const correctIndex = q.correctOptionIndex;
-                        const selectedText = selectedIndex !== undefined ? q.options[selectedIndex] : "No answer selected";
-                        const correctText = q.options[correctIndex];
-                        const isCorrect = selectedIndex === correctIndex;
-
-                        return (
-                            <Card key={q.id} className="border-2 border-slate-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900">
-                                <CardHeader className="pb-3">
-                                    <span className="text-xs font-semibold text-rose-500 tracking-wider uppercase">Question {index + 1}</span>
-                                    <CardTitle className="text-lg leading-relaxed text-slate-800 dark:text-slate-100">{q.text}</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-2 pt-0">
-                                    <div className={`text-sm font-semibold ${isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-                                        {isCorrect ? "Correct" : "Incorrect"}
-                                    </div>
-                                    <div className="text-sm text-slate-600 dark:text-slate-300">
-                                        Your answer: <span className="font-semibold text-slate-900 dark:text-slate-100">{selectedText}</span>
-                                    </div>
-                                    <div className="text-sm text-slate-600 dark:text-slate-300">
-                                        Correct answer: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{correctText}</span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                <div className="w-full max-w-3xl mt-8 space-y-6">
+                    {resultLoading && (
+                        <div className="flex items-center justify-center py-6">
+                            <HeartPulse className="w-8 h-8 text-rose-500 animate-pulse" />
+                        </div>
+                    )}
+                    {detailedResult?.questions?.map((item, index) => (
+                        <Card key={item.questionId} className="border-2 border-slate-100 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900">
+                            <CardHeader className="pb-4 bg-slate-50/50 dark:bg-slate-800/20 border-b dark:border-slate-800">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-rose-500 tracking-wider uppercase drop-shadow-sm">Question {index + 1} of {totalQuestions}</span>
+                                    {item.isCorrect ? (
+                                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                                    ) : (
+                                        <XCircle className="w-5 h-5 text-rose-500" />
+                                    )}
+                                </div>
+                                <CardTitle className="text-lg sm:text-xl leading-relaxed text-slate-800 dark:text-slate-100 mt-2">{item.questionText}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-5 space-y-2">
+                                {item.options.map((option, optionIndex) => {
+                                    const isCorrect = option === item.correctAnswer;
+                                    const isUser = option === item.userAnswer;
+                                    const isWrongUser = isUser && !item.isCorrect;
+                                    const baseClass = "flex items-center justify-between rounded-lg border px-3 py-2 text-sm sm:text-base";
+                                    const statusClass = isCorrect
+                                        ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
+                                        : isWrongUser
+                                            ? "border-rose-400 bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300"
+                                            : "border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-950";
+                                    return (
+                                        <div key={`${item.questionId}-${optionIndex}`} className={`${baseClass} ${statusClass}`}>
+                                            <span>{option}</span>
+                                            {isCorrect ? (
+                                                <CheckCircle2 className="w-4 h-4" />
+                                            ) : isWrongUser ? (
+                                                <XCircle className="w-4 h-4" />
+                                            ) : null}
+                                        </div>
+                                    );
+                                })}
+                                <div className="pt-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                                    Your answer: <span className="font-semibold text-slate-700 dark:text-slate-200">{item.userAnswer}</span>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
             </div>
         );
