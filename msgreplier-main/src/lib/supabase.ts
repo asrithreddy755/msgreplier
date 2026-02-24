@@ -1,12 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Initialize the Supabase client
-// If the keys are missing (e.g., user hasn't set them up yet), this will throw a helpful error instead of silently failing.
 if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('Missing Supabase environment variables. Please check your .env.local file. Quiz functionality will not work without them.');
 }
 
-export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder-key');
+// Ensure we don't crash on build or if env vars are missing, but warn loudly
+const url = supabaseUrl || 'https://placeholder.supabase.co';
+const key = supabaseAnonKey || 'placeholder-key';
+
+export const supabase = createClient(url, key, {
+    auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+    }
+});

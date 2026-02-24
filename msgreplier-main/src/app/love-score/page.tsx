@@ -13,6 +13,7 @@ import { Trash2, PlusCircle, Copy, Check, HeartPulse, Send, Wand2, Home } from "
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import presetQuestions from "@/data/love-questions.json";
+import { v4 as uuidv4 } from "uuid";
 
 export default function LoveScoreCreator() {
     const { toast } = useToast();
@@ -63,7 +64,7 @@ export default function LoveScoreCreator() {
                 receiver_name: data.receiver_name,
                 time_limit_seconds: parseInt(data.time_limit_seconds, 10) * 60,
                 questions: data.questions.map((q) => ({
-                    id: self.crypto.randomUUID(),
+                    id: uuidv4(),
                     text: q.text,
                     options: q.options,
                     correctOptionIndex: q.correctOptionIndex,
