@@ -15,7 +15,7 @@ const key = supabaseAnonKey || 'placeholder-key';
 const isClient = typeof window !== 'undefined';
 
 // Use proxy on the client to avoid ISP DNS blocks in India (like Jio), use real URL on server
-const clientUrl = isClient ? '/api/supabase' : url;
+const clientUrl = isClient ? `${window.location.origin}/api/supabase` : url;
 
 export const supabase = createClient(clientUrl, key, {
     auth: {
