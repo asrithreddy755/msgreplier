@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, use, useRef, useCallback } from "react";
 import { toBlob } from "html-to-image";
-import { supabase } from "@/lib/supabase";
 import { LoveQuiz, DetailedQuizResult } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -61,29 +60,20 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
     useEffect(() => {
         const fetchQuiz = async () => {
             try {
-                if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-                    setError("Database keys missing. Quiz cannot be loaded.");
+                const res = await fetch(`/api/love-quiz?id=${encodeURIComponent(id)}`);
+                if (!res.ok) {
+                    setError("This quiz does not exist or has been deleted.");
                     return;
                 }
+                const data = await res.json();
+                const fetchedQuiz = data as LoveQuiz;
+                setQuiz(fetchedQuiz);
+                setTimeLeft(fetchedQuiz.time_limit_seconds);
 
-                const { data, error } = await supabase
-                    .from("love_quizzes")
-                    .select("*")
-                    .eq("id", id)
-                    .single();
-
-                if (error || !data) {
-                    setError("This quiz does not exist or has been deleted.");
-                } else {
-                    const fetchedQuiz = data as LoveQuiz;
-                    setQuiz(fetchedQuiz);
-                    setTimeLeft(fetchedQuiz.time_limit_seconds);
-
-                    if (fetchedQuiz.score !== null && fetchedQuiz.score !== undefined) {
-                        setScore(fetchedQuiz.score);
-                        setStep("result");
-                        fetchDetailedResult(fetchedQuiz.id);
-                    }
+                if (fetchedQuiz.score !== null && fetchedQuiz.score !== undefined) {
+                    setScore(fetchedQuiz.score);
+                    setStep("result");
+                    fetchDetailedResult(fetchedQuiz.id);
                 }
             } catch {
                 setError("Failed to load the quiz.");
@@ -112,12 +102,16 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
 
         setResultLoading(true);
         try {
-            const res = await fetch('/api/love-score-result', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ id: quiz?.id ?? id, answers })
+            const dataToSave = {
+                quiz_id: quiz?.id ?? id,
+                score: localScore,
+                answers
+            };
+
+            const res = await fetch("/api/save-score", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dataToSave)
             });
 
             if (!res.ok) {

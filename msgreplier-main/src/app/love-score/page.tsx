@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useFieldArray, useForm, SubmitHandler } from "react-hook-form";
 import { quizFormSchema, QuizFormValues } from "@/lib/love-schema";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,13 +72,20 @@ export default function LoveScoreCreator() {
             };
 
             // 3. Insert into Supabase
-            const { data: insertedData, error } = await supabase
-                .from("love_quizzes")
-                .insert([payload])
-                .select("id")
-                .single();
+            const fetchUrl = "/api/love-quiz";
+            console.log("Fetch URL:", fetchUrl);
+            const res = await fetch(fetchUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
 
-            if (error) throw error;
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => null);
+                throw new Error(errorData?.error || "Failed to create quiz.");
+            }
+
+            const insertedData = await res.json();
 
             // 4. Generate the link
             const origin = typeof window !== "undefined" && window.location.origin ? window.location.origin : "";
