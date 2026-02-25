@@ -43,7 +43,7 @@ export async function GET() {
     }
 
     const { data, error } = await supabaseAdmin
-        .from("scores")
+        .from("love_quizzes")
         .select("id")
         .limit(1);
 

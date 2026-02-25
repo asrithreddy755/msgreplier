@@ -108,7 +108,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         if (!body || typeof body !== "object" || Array.isArray(body)) {
             console.error("save-score: invalid payload", { payloadType: typeof body });
-            return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
+            return NextResponse.json({ error: "Invalid payload.", stage: "validate" }, { status: 400 });
         }
 
         const { quiz_id, score, answers } = body as {
@@ -119,22 +119,13 @@ export async function POST(request: Request) {
 
         if (!quiz_id || typeof score !== "number") {
             console.error("save-score: missing fields", { hasQuizId: Boolean(quiz_id), scoreType: typeof score });
-            return NextResponse.json({ error: "Missing quiz_id or valid score." }, { status: 400 });
+            return NextResponse.json({ error: "Missing quiz_id or valid score.", stage: "validate" }, { status: 400 });
         }
 
         const supabaseAdmin = getSupabaseAdmin();
         if (!supabaseAdmin) {
             console.error("save-score: missing supabase admin", envStatus);
-            return NextResponse.json({ error: "Server misconfiguration: missing Supabase config." }, { status: 500 });
-        }
-
-        const { error: insertError } = await supabaseAdmin
-            .from("scores")
-            .insert([body]);
-
-        if (insertError) {
-            console.error("save-score: insert failed", summarizeSupabaseError(insertError));
-            return NextResponse.json({ error: insertError.message }, { status: 500 });
+            return NextResponse.json({ error: "Server misconfiguration: missing Supabase config.", stage: "init", env: envStatus }, { status: 500 });
         }
 
         const normalizedAnswers = typeof answers === "object" && !Array.isArray(answers)
@@ -151,7 +142,7 @@ export async function POST(request: Request) {
 
         if (quizError || !quizData) {
             console.error("save-score: quiz lookup failed", summarizeSupabaseError(quizError));
-            return NextResponse.json({ error: quizError?.message || "Quiz not found." }, { status: 500 });
+            return NextResponse.json({ error: quizError?.message || "Quiz not found.", stage: "lookup", details: summarizeSupabaseError(quizError) }, { status: 500 });
         }
 
         const quiz = quizData as LoveQuiz;
@@ -168,13 +159,13 @@ export async function POST(request: Request) {
 
         if (updateError) {
             console.error("save-score: quiz update failed", summarizeSupabaseError(updateError));
-            return NextResponse.json({ error: updateError.message }, { status: 500 });
+            return NextResponse.json({ error: updateError.message, stage: "update", details: summarizeSupabaseError(updateError) }, { status: 500 });
         }
 
         return NextResponse.json(result);
     } catch (error) {
         console.error("save-score: unexpected error", summarizeSupabaseError(error));
         const message = error instanceof Error ? error.message : "An unexpected error occurred.";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return NextResponse.json({ error: message, stage: "unexpected" }, { status: 500 });
     }
 }
