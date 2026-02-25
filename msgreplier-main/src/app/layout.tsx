@@ -26,9 +26,11 @@ export const metadata: Metadata = {
   description:
     "The ultimate messaging toolkit. distinct features include a Text Repeater for WhatsApp/Instagram, a Gen Z Slang Dictionary (Shortcutpedia), and an AI Reply Generator. No login required.",
   icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/icon.png",
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: ["/icon.png"],
+    apple: [{ url: "/icon.png", sizes: "180x180" }],
   },
   alternates: {
     canonical: "/",
@@ -87,8 +89,8 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <link rel="icon" href="/icon.png" type="image/png" />
-        <link rel="shortcut icon" href="/icon.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="shortcut icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon.png" sizes="180x180" />
 
         {/* Google AdSense verification script */}
         {process.env.NODE_ENV === "production" && (
