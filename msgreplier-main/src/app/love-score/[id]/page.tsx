@@ -108,25 +108,42 @@ export default function LoveScoreTaker({ params }: { params: Promise<{ id: strin
                 answers
             };
 
+            console.log("save-score: request payload", dataToSave);
             const res = await fetch("/api/save-score", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(dataToSave)
             });
 
+            console.log("save-score: response status", res.status);
             if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || 'Failed to save score');
+                const text = await res.text().catch(() => "");
+                console.error("save-score: non-OK response", { status: res.status, body: text });
+                try {
+                    const data = text ? JSON.parse(text) : null;
+                    throw new Error(data?.error || `Failed to save score (${res.status})`);
+                } catch {
+                    throw new Error(`Failed to save score (${res.status})`);
+                }
             }
-            const data = await res.json();
-            setDetailedResult(data);
-            if (typeof data?.scorePercentage === "number") {
-                setScore(data.scorePercentage);
+            const text = await res.text();
+            console.log("save-score: response body", text);
+            try {
+                const data = text ? JSON.parse(text) : null;
+                setDetailedResult(data);
+                if (typeof data?.scorePercentage === "number") {
+                    setScore(data.scorePercentage);
+                }
+            } catch (e) {
+                console.error("save-score: JSON parse error", e);
+                // Fallback: keep the locally computed score and proceed without detailed breakdown
             }
         } catch (error) {
             const message = error instanceof Error ? error.message : "";
             console.error("Failed to save result to DB:", message);
-            toast({ title: "Save Failed", description: "Could not save your score to the database. " + message, variant: "destructive" });
+            if (!detailedResult) {
+                toast({ title: "Save Failed", description: "Could not save your score to the database. " + message, variant: "destructive" });
+            }
         } finally {
             setResultLoading(false);
         }
