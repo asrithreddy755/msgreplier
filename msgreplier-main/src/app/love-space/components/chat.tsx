@@ -78,11 +78,11 @@ export function Chat({ roomId, currentMember }: { roomId: string, currentMember:
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#fffefe] relative">
+        <div className="flex flex-col h-full bg-[#fffefe] dark:bg-slate-800 relative">
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2 opacity-60">
-                        <Heart className="w-12 h-12 text-pink-300" />
+                    <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-2 opacity-60">
+                        <Heart className="w-12 h-12 text-pink-300 dark:text-pink-800" />
                         <p>No messages yet.</p>
                         <p className="text-sm">Send the first romantic text!</p>
                     </div>
@@ -94,16 +94,16 @@ export function Chat({ roomId, currentMember }: { roomId: string, currentMember:
                                 key={msg.id}
                                 className={`flex flex-col max-w-[80%] ${isMe ? 'items-end ml-auto' : 'items-start'}`}
                             >
-                                <div className={`text-xs text-gray-400 mb-1 px-1 flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                                <div className={`text-xs text-gray-400 dark:text-gray-500 mb-1 px-1 flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
                                     <span>{msg.sender_nickname}</span>
                                     <span className="opacity-50 text-[10px] self-center">
-                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
                                     </span>
                                 </div>
                                 <div
                                     className={`px-4 py-2 rounded-2xl ${isMe
-                                            ? 'bg-gradient-to-br from-pink-500 to-purple-500 text-white rounded-tr-sm shadow-md'
-                                            : 'bg-gray-100 text-gray-800 rounded-tl-sm shadow-sm'
+                                        ? 'bg-gradient-to-br from-pink-500 to-purple-500 text-white rounded-tr-sm shadow-md'
+                                        : 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200 rounded-tl-sm shadow-sm'
                                         }`}
                                     style={{ wordBreak: 'break-word' }}
                                 >
@@ -116,13 +116,13 @@ export function Chat({ roomId, currentMember }: { roomId: string, currentMember:
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-3 bg-white border-t border-pink-100 z-10 sticky bottom-0">
+            <div className="p-3 bg-white dark:bg-slate-900/50 border-t border-pink-100 dark:border-pink-900/50 z-10 sticky bottom-0">
                 <form onSubmit={handleSendMessage} className="flex gap-2">
                     <Input
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a sweet message..."
-                        className="flex-1 rounded-full bg-pink-50 border-transparent focus-visible:ring-pink-300 shadow-inner"
+                        className="flex-1 rounded-full bg-pink-50 border-transparent focus-visible:ring-pink-300 dark:bg-slate-800 dark:text-white dark:placeholder:text-gray-500 shadow-inner"
                         maxLength={500}
                     />
                     <Button

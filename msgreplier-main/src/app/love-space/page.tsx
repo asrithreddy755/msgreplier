@@ -23,6 +23,7 @@ export default function LoveSpacePage() {
         setError(null);
 
         try {
+            // First attempt: API Route (best for security and edge cases)
             const response = await fetch('/api/love-space/create-room', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -31,71 +32,93 @@ export default function LoveSpacePage() {
 
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to create room.");
+            if (response.ok && data.room && data.room.id) {
+                localStorage.setItem(`loveRoom_${data.room.id}`, JSON.stringify(data.member));
+                router.push(`/love-space/${data.room.id}`);
+                return;
             }
 
-            if (data.room && data.room.id) {
-                // Save member locally so they are auto-joined and don't need to re-enter nickname
-                localStorage.setItem(`loveRoom_${data.room.id}`, JSON.stringify(data.member));
-                // Redirect to the new room
-                router.push(`/love-space/${data.room.id}`);
-            } else {
-                throw new Error("Failed to create room.");
+            throw new Error(data.error || "API Route failed.");
+
+        } catch (apiErr: any) {
+            console.warn("API route failed, falling back to direct Supabase call:", apiErr);
+
+            // Fallback: Direct Supabase Call (handles Cloudflare Edge networking issues)
+            try {
+                const { data: room, error: insertError } = await supabase
+                    .from('love_rooms')
+                    .insert([{ status: 'active', created_by: creatorName.trim() }])
+                    .select()
+                    .single();
+
+                if (insertError) throw new Error(insertError.message);
+                if (!room) throw new Error("Failed to create room directly.");
+
+                const { data: member, error: memberError } = await supabase
+                    .from('love_room_members')
+                    .insert([{ room_id: room.id, nickname: creatorName.trim() }])
+                    .select()
+                    .single();
+
+                if (memberError) throw new Error(memberError.message);
+
+                localStorage.setItem(`loveRoom_${room.id}`, JSON.stringify(member));
+                router.push(`/love-space/${room.id}`);
+
+            } catch (fallbackErr: any) {
+                console.error("Direct Supabase fallback also failed:", fallbackErr);
+                setError(fallbackErr.message || "Something went wrong.");
             }
-        } catch (err: any) {
-            console.error("Error creating room:", err);
-            setError(err.message || "Something went wrong.");
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-pink-100 flex flex-col items-center justify-center p-4">
-            <div className="absolute top-10 left-10 text-pink-300 opacity-50 animate-pulse">
+        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-pink-100 dark:from-pink-950 dark:via-purple-950 dark:to-pink-950 flex flex-col items-center justify-center p-4">
+            <div className="absolute top-10 left-10 text-pink-300 dark:text-pink-700 opacity-50 animate-pulse">
                 <Heart size={48} />
             </div>
-            <div className="absolute bottom-20 right-10 text-purple-300 opacity-50 animate-pulse delay-1000">
+            <div className="absolute bottom-20 right-10 text-purple-300 dark:text-purple-700 opacity-50 animate-pulse delay-1000">
                 <Sparkles size={48} />
             </div>
 
-            <Card className="w-full max-w-md shadow-xl border-pink-200 bg-white/80 backdrop-blur-sm z-10">
+            <Card className="w-full max-w-md shadow-xl border-pink-200 dark:border-pink-900/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10">
                 <CardHeader className="text-center pb-2">
-                    <div className="mx-auto bg-pink-100 w-16 h-16 rounded-full flex items-center justify-center mb-4 text-pink-500 shadow-inner">
+                    <div className="mx-auto bg-pink-100 dark:bg-pink-900/30 w-16 h-16 rounded-full flex items-center justify-center mb-4 text-pink-500 dark:text-pink-400 shadow-inner">
                         <Heart className="w-8 h-8 fill-current" />
                     </div>
-                    <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600">
+                    <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 dark:from-pink-400 dark:to-purple-400">
                         Love Space
                     </CardTitle>
-                    <CardDescription className="text-gray-600 text-lg mt-2">
+                    <CardDescription className="text-gray-600 dark:text-gray-300 text-lg mt-2">
                         A private room for just the two of you. Play games, chat, and connect.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-6 pt-4">
-                    <div className="space-y-4 text-sm text-gray-500 text-center">
+                    <div className="space-y-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                         <p className="flex items-center justify-center gap-2">
-                            <span className="bg-pink-100 text-pink-600 rounded-full w-6 h-6 flex items-center justify-center font-bold">1</span>
+                            <span className="bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">1</span>
                             Create a private room
                         </p>
                         <p className="flex items-center justify-center gap-2">
-                            <span className="bg-purple-100 text-purple-600 rounded-full w-6 h-6 flex items-center justify-center font-bold">2</span>
+                            <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">2</span>
                             Share the secret link
                         </p>
                         <p className="flex items-center justify-center gap-2">
-                            <span className="bg-pink-100 text-pink-600 rounded-full w-6 h-6 flex items-center justify-center font-bold">3</span>
+                            <span className="bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">3</span>
                             Play, chat & bond in real-time
                         </p>
                     </div>
 
                     {error && (
-                        <div className="p-3 bg-red-50 text-red-500 text-sm rounded-md text-center border border-red-100">
+                        <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 text-sm rounded-md text-center border border-red-100 dark:border-red-900/50">
                             {error}
                         </div>
                     )}
 
                     <div className="space-y-2">
-                        <label htmlFor="creatorName" className="text-sm font-medium text-pink-700 ml-1">Your Nickname</label>
+                        <label htmlFor="creatorName" className="text-sm font-medium text-pink-700 dark:text-pink-300 ml-1">Your Nickname</label>
                         <input
                             id="creatorName"
                             type="text"
@@ -103,7 +126,7 @@ export default function LoveSpacePage() {
                             value={creatorName}
                             onChange={(e) => setCreatorName(e.target.value)}
                             maxLength={20}
-                            className="flex h-12 w-full rounded-xl border border-pink-200 bg-white px-3 py-2 text-sm text-center font-medium ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-pink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="flex h-12 w-full rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-center font-medium ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-pink-300 dark:placeholder:text-pink-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
                         />
                     </div>
 
@@ -122,7 +145,7 @@ export default function LoveSpacePage() {
                 </CardContent>
             </Card>
 
-            <p className="mt-8 text-sm text-gray-400 text-center z-10">
+            <p className="mt-8 text-sm text-gray-400 dark:text-gray-500 text-center z-10">
                 Rooms automatically expire after 24 hours.
             </p>
         </div>

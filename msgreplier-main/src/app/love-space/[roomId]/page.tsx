@@ -30,30 +30,48 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 const response = await fetch(`/api/love-space/get-room?roomId=${roomId}`);
                 const data = await response.json();
 
-                if (!response.ok || !data.room) {
-                    setError(data.error || "Room not found or expired.");
-                    setLoading(false);
+                if (response.ok && data.room) {
+                    setRoom(data.room as LoveRoom);
+                    checkSavedMember(roomId);
                     return;
                 }
+                throw new Error(data.error || "Room not found via API.");
 
-                setRoom(data.room as LoveRoom);
+            } catch (apiErr) {
+                console.warn("API Error fetching room, falling back safely:", apiErr);
 
-                // Check if user already joined this room using localStorage
-                const savedMember = localStorage.getItem(`loveRoom_${roomId}`);
-                if (savedMember) {
-                    try {
-                        const parsed = JSON.parse(savedMember) as LoveRoomMember;
-                        // Ideally verify they still exist in the DB
-                        setCurrentMember(parsed);
-                    } catch (e) {
-                        console.error("Parse error:", e);
+                try {
+                    const { data, error: fetchError } = await supabase
+                        .from('love_rooms')
+                        .select('*')
+                        .eq('id', roomId)
+                        .single();
+
+                    if (fetchError || !data) {
+                        setError("Room not found or expired.");
+                    } else {
+                        setRoom(data as LoveRoom);
+                        checkSavedMember(roomId);
                     }
+                } catch (fallbackErr) {
+                    console.error("Direct fetch failed:", fallbackErr);
+                    setError("Failed to load room details.");
                 }
-            } catch (err) {
-                console.error("Error fetching room:", err);
-                setError("Failed to load room details.");
             } finally {
                 setLoading(false);
+            }
+        };
+
+        // Helper function to handle local storage check after a successful room fetch
+        const checkSavedMember = (id: string) => {
+            const savedMember = localStorage.getItem(`loveRoom_${id}`);
+            if (savedMember) {
+                try {
+                    const parsed = JSON.parse(savedMember) as LoveRoomMember;
+                    setCurrentMember(parsed);
+                } catch (e) {
+                    console.error("Parse error:", e);
+                }
             }
         };
 
@@ -96,20 +114,20 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     }
 
     return (
-        <div className="min-h-[100dvh] bg-gradient-to-b from-pink-50 to-purple-50 flex flex-col overflow-hidden max-w-md mx-auto shadow-lg relative sm:my-4 sm:rounded-3xl sm:h-[calc(100vh-2rem)] sm:border sm:border-pink-200">
+        <div className="min-h-[100dvh] h-[100dvh] sm:h-[calc(100vh-2rem)] bg-gradient-to-b from-pink-50 to-purple-50 dark:from-pink-950 dark:to-purple-950 flex flex-col overflow-hidden max-w-md mx-auto shadow-lg relative sm:my-4 sm:rounded-3xl sm:border sm:border-pink-200 dark:sm:border-pink-900/50">
 
             {/* Header Area */}
-            <header className="px-4 py-3 bg-white/60 backdrop-blur-md border-b border-pink-100 flex items-center justify-between z-20 sticky top-0">
+            <header className="px-4 py-3 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-b border-pink-100 dark:border-pink-900/50 flex items-center justify-between z-20 sticky top-0">
                 <div className="flex items-center gap-2">
                     <Heart className="w-6 h-6 text-pink-500 fill-pink-500" />
-                    <h1 className="font-bold text-lg text-gray-800 tracking-tight">Love Space</h1>
+                    <h1 className="font-bold text-lg text-gray-800 dark:text-pink-100 tracking-tight">Love Space</h1>
                 </div>
 
                 <Button
                     variant="outline"
                     size="sm"
                     onClick={copyLink}
-                    className="text-xs h-8 border-pink-200 text-pink-600 hover:bg-pink-50 rounded-full px-3"
+                    className="text-xs h-8 border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-300 hover:bg-pink-50 dark:hover:bg-pink-900/30 rounded-full px-3"
                 >
                     {copied ? <CheckCircle2 className="w-4 h-4 mr-1 text-green-500" /> : <Copy className="w-4 h-4 mr-1" />}
                     {copied ? "Copied" : "Invite"}
@@ -117,9 +135,9 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             </header>
 
             {/* Main Content Area Using Tabs */}
-            <div className="flex-1 overflow-hidden flex flex-col z-10">
+            <div className="flex-1 overflow-hidden flex flex-col z-10 w-full">
                 <Tabs defaultValue="chat" className="flex-1 flex flex-col h-full w-full">
-                    <TabsList className="grid grid-cols-4 w-full bg-white/40 p-1 m-2 mx-4 rounded-xl backdrop-blur-sm self-center w-[calc(100%-2rem)] h-12 border border-pink-100 shadow-sm overflow-x-auto hide-scrollbar">
+                    <TabsList className="grid grid-cols-4 w-full bg-white/40 dark:bg-slate-900/40 p-1 mx-0 sm:mx-4 my-2 rounded-none sm:rounded-xl backdrop-blur-sm self-center sm:w-[calc(100%-2rem)] h-12 border-y sm:border border-pink-100 dark:border-pink-900/50 shadow-sm overflow-x-auto hide-scrollbar flex-shrink-0">
                         <TabsTrigger value="chat" className="rounded-lg data-[state=active]:bg-pink-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">Chat</TabsTrigger>
                         <TabsTrigger value="xox" className="rounded-lg data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">XOX</TabsTrigger>
                         <TabsTrigger value="truth" className="rounded-lg data-[state=active]:bg-rose-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">Truth/Dare</TabsTrigger>
@@ -127,24 +145,24 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     </TabsList>
 
 
-                    <div className="flex-1 overflow-hidden relative">
-                        <TabsContent value="chat" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
-                            <div className="h-full bg-white rounded-2xl shadow-inner border border-pink-100 overflow-hidden">
+                    <div className="flex-1 overflow-hidden relative flex flex-col">
+                        <TabsContent value="chat" className="flex-1 h-full mt-0 data-[state=inactive]:hidden px-0 sm:px-4 pb-0 sm:pb-4 flex flex-col">
+                            <div className="flex-1 h-full bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-inner border-t sm:border border-pink-100 dark:border-pink-900/50 flex flex-col overflow-hidden">
                                 <Chat roomId={roomId} currentMember={currentMember} />
                             </div>
                         </TabsContent>
                         <TabsContent value="xox" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
-                            <div className="h-full bg-white rounded-2xl shadow-inner border border-purple-100 overflow-hidden flex items-center justify-center">
+                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-purple-100 dark:border-purple-900/50 overflow-hidden flex items-center justify-center">
                                 <XOX roomId={roomId} currentMember={currentMember} />
                             </div>
                         </TabsContent>
                         <TabsContent value="truth" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
-                            <div className="h-full bg-white rounded-2xl shadow-inner border border-rose-100 overflow-hidden flex items-center justify-center p-4">
+                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-rose-100 dark:border-rose-900/50 overflow-hidden flex items-center justify-center p-4">
                                 <TruthOrDare roomId={roomId} currentMember={currentMember} />
                             </div>
                         </TabsContent>
                         <TabsContent value="snake" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
-                            <div className="h-full bg-white rounded-2xl shadow-inner border border-orange-100 overflow-hidden flex items-center justify-center p-4 overflow-y-auto">
+                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-orange-100 dark:border-orange-900/50 overflow-hidden flex items-center justify-center p-4 overflow-y-auto">
                                 <SnakeLadder roomId={roomId} currentMember={currentMember} />
                             </div>
                         </TabsContent>

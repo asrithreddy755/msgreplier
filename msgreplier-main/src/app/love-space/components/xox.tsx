@@ -125,7 +125,7 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
 
     const resetGame = async () => {
         // Both can reset
-        const newState = { ...INITIAL_STATE, currentTurn: gameState.winner === 'X' ? 'O' : 'X' }; // loser starts or alternate
+        const newState: XOXGameState = { ...INITIAL_STATE, currentTurn: gameState.winner === 'X' ? 'O' : 'X' }; // loser starts or alternate
         setGameState(newState);
 
         const channel = supabase.channel(`game:xox:${roomId}`);
@@ -136,30 +136,30 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         });
     };
 
-    if (loading) return <div className="text-gray-400 animate-pulse">Loading Game...</div>;
+    if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse">Loading Game...</div>;
 
     return (
         <div className="flex flex-col items-center w-full max-w-sm mx-auto">
             <div className="mb-6 text-center">
-                <h2 className="text-2xl font-bold text-purple-600 mb-2 flex items-center justify-center gap-2">
+                <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2 flex items-center justify-center gap-2">
                     Tic Tac Toe <Heart className="w-5 h-5 text-pink-500 fill-pink-500" />
                 </h2>
                 <div className="flex gap-4 justify-center text-sm">
-                    <div className={`px-4 py-1 rounded-full ${myPlayer === 'X' ? 'bg-pink-100 text-pink-700 font-bold border border-pink-300' : 'text-gray-500'}`}>You: {myPlayer}</div>
-                    <div className={`px-4 py-1 rounded-full ${gameState.currentTurn === myPlayer && !gameState.winner ? 'bg-purple-500 text-white shadow-md animate-pulse' : 'bg-gray-100 text-gray-400'}`}>
+                    <div className={`px-4 py-1 rounded-full ${myPlayer === 'X' ? 'bg-pink-100 text-pink-700 font-bold border border-pink-300 dark:bg-pink-900/40 dark:text-pink-300 dark:border-pink-800' : 'text-gray-500 dark:text-gray-400'}`}>You: {myPlayer}</div>
+                    <div className={`px-4 py-1 rounded-full ${gameState.currentTurn === myPlayer && !gameState.winner ? 'bg-purple-500 text-white shadow-md animate-pulse' : 'bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-gray-500'}`}>
                         {gameState.winner ? 'Game Over' : (gameState.currentTurn === myPlayer ? 'Your Turn' : 'Waiting...')}
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 bg-purple-100 p-4 rounded-3xl shadow-inner w-full aspect-square relative">
+            <div className="grid grid-cols-3 gap-3 bg-purple-100 dark:bg-purple-900/20 p-4 rounded-3xl shadow-inner w-full aspect-square relative">
                 {gameState.winner && (
-                    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-3xl flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-                        <Trophy className={`w-16 h-16 mb-2 ${gameState.winner === 'Draw' ? 'text-gray-400' : 'text-yellow-400'}`} />
-                        <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600">
+                    <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 rounded-3xl flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+                        <Trophy className={`w-16 h-16 mb-2 ${gameState.winner === 'Draw' ? 'text-gray-400 dark:text-gray-500' : 'text-yellow-400'}`} />
+                        <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 dark:from-pink-400 dark:to-purple-400">
                             {gameState.winner === 'Draw' ? "It's a draw!" : `${gameState.winner} wins!`}
                         </h3>
-                        <p className="text-gray-500 mb-6 mt-1">
+                        <p className="text-gray-500 dark:text-gray-400 mb-6 mt-1">
                             {gameState.winner === myPlayer ? "You won! 💖" : (gameState.winner !== 'Draw' ? "Better luck next time! 🥺" : "A perfect match! 🤝")}
                         </p>
                         <Button onClick={resetGame} className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-full shadow-md text-white px-8">
@@ -174,8 +174,8 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
                         onClick={() => handleMove(idx)}
                         disabled={!!cell || !!gameState.winner || gameState.currentTurn !== myPlayer}
                         className={`
-                bg-white rounded-2xl shadow-sm border border-purple-50 flex items-center justify-center text-5xl transition-all
-                ${!cell && !gameState.winner && gameState.currentTurn === myPlayer ? 'hover:scale-105 active:scale-95 cursor-pointer hover:bg-pink-50 hover:border-pink-200' : 'cursor-default'}
+                bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-purple-50 dark:border-purple-900/30 flex items-center justify-center text-5xl transition-all
+                ${!cell && !gameState.winner && gameState.currentTurn === myPlayer ? 'hover:scale-105 active:scale-95 cursor-pointer hover:bg-pink-50 hover:border-pink-200 dark:hover:bg-pink-900/20 dark:hover:border-pink-800' : 'cursor-default'}
                 ${cell === 'X' ? 'text-pink-500' : 'text-purple-500'}
             `}
                     >
@@ -186,7 +186,7 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
             </div>
 
             {!gameState.winner && (
-                <Button variant="ghost" className="mt-6 text-gray-400 hover:text-gray-600" onClick={resetGame}>
+                <Button variant="ghost" className="mt-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" onClick={resetGame}>
                     <RotateCcw className="w-4 h-4 mr-2" /> Restart Game
                 </Button>
             )}
