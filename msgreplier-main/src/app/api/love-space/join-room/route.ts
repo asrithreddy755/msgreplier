@@ -11,32 +11,22 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Room ID and nickname are required' }, { status: 400 });
         }
 
-        // Check if the room exists
-        const { data: room, error: roomError } = await supabase
-            .from('love_rooms')
-            .select('*')
-            .eq('id', roomId)
-            .single();
+        // Run checks in parallel to save time
+        const [roomRes, membersRes] = await Promise.all([
+            supabase.from('love_rooms').select('*').eq('id', roomId).single(),
+            supabase.from('love_room_members').select('*').eq('room_id', roomId)
+        ]);
+
+        const { data: room, error: roomError } = roomRes;
+        const { data: existingMembers, error: membersError } = membersRes;
 
         if (roomError || !room) {
             return NextResponse.json({ error: 'Room not found or expired' }, { status: 404 });
         }
 
-        // Check member count
-        const { count } = await supabase
-            .from('love_room_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('room_id', roomId);
-
-        if (count !== null && count >= 2) {
+        if (existingMembers && existingMembers.length >= 2) {
             return NextResponse.json({ error: 'Room is full! Only 2 people allowed.' }, { status: 403 });
         }
-
-        // Check if nickname is taken (must be unique per room)
-        const { data: existingMembers } = await supabase
-            .from('love_room_members')
-            .select('nickname')
-            .eq('room_id', roomId);
 
         if (existingMembers?.some(m => m.nickname.toLowerCase() === nickname.toLowerCase())) {
             return NextResponse.json({ error: 'That name is already taken in this room.' }, { status: 400 });

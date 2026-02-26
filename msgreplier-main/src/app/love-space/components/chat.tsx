@@ -28,18 +28,19 @@ export function Chat({ roomId, currentMember }: { roomId: string, currentMember:
         };
         fetchMessages();
 
-        // Subscribe to real-time additions
-        const channel = supabase.channel(`chat_${roomId}`)
+        // Subscribe to real-time additions via Broadcast
+        const channel = supabase.channel(`chat_broadcast_${roomId}`)
             .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'love_messages',
-                    filter: `room_id=eq.${roomId}`
-                },
-                (payload) => {
-                    setMessages((prev) => [...prev, payload.new as LoveMessage]);
+                'broadcast',
+                { event: 'new_message' },
+                (payload: { payload: LoveMessage }) => {
+                    setMessages((prev) => {
+                        // Prevent optimistic duplicates
+                        if (prev.some(m => m.id === payload.payload.id || (m.message === payload.payload.message && m.sender_nickname === payload.payload.sender_nickname && Math.abs(new Date(m.created_at).getTime() - new Date(payload.payload.created_at).getTime()) < 5000))) {
+                            return prev;
+                        }
+                        return [...prev, payload.payload];
+                    });
                 }
             )
             .subscribe();
@@ -59,21 +60,40 @@ export function Chat({ roomId, currentMember }: { roomId: string, currentMember:
         if (!newMessage.trim() || isLoading) return;
 
         setIsLoading(true);
-        const msgData = {
+        const tempId = crypto.randomUUID();
+        const msgData: LoveMessage = {
+            id: tempId,
             room_id: roomId,
             sender_nickname: currentMember.nickname,
             message: newMessage.trim(),
+            created_at: new Date().toISOString()
         };
 
+        // 1. Optimistic UI update (Instant for sender)
+        setMessages((prev) => [...prev, msgData]);
+        setNewMessage('');
+
+        // 2. Broadcast to other clients (Instant for receiver)
+        const channel = supabase.channel(`chat_broadcast_${roomId}`);
+        await channel.send({
+            type: 'broadcast',
+            event: 'new_message',
+            payload: msgData
+        });
+
+        // 3. Save to DB in background
         const { error } = await supabase
             .from('love_messages')
-            .insert([msgData]);
+            .insert([{
+                room_id: roomId,
+                sender_nickname: currentMember.nickname,
+                message: msgData.message
+            }]);
 
         if (error) {
-            console.error("Error sending message:", error);
-        } else {
-            setNewMessage('');
+            console.error("Error saving message:", error);
         }
+
         setIsLoading(false);
     };
 

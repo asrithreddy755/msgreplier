@@ -216,11 +216,24 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
             )}
 
             {/* The Board */}
-            <div className="w-full mt-6 bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-900 p-3 rounded-2xl border-4 border-emerald-300 dark:border-emerald-700/50 relative overflow-hidden shadow-xl ring-1 ring-black/5 dark:ring-white/10">
-                {/* Decorative snakes and ladders info */}
-                <div className="absolute top-1 left-2 text-[8px] text-emerald-700/60 dark:text-emerald-300/60 font-black tracking-widest uppercase">Start: 1 | Finish: 50</div>
+            <div
+                className="w-full mt-6 p-4 rounded-[2rem] border-[6px] border-white/40 dark:border-white/10 relative overflow-hidden shadow-2xl"
+                style={{
+                    backgroundImage: "url('https://images.unsplash.com/photo-1580136608260-4ebf15facdaf?q=80&w=1000&auto=format&fit=crop')",
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            >
+                {/* Overlay for readability */}
+                <div className="absolute inset-0 bg-white/30 dark:bg-black/40 backdrop-blur-[2px]"></div>
 
-                <div className="grid grid-cols-10 gap-[2px]">
+                {/* Decorative snakes and ladders info */}
+                <div className="absolute top-2 left-3 text-[9px] text-white font-black tracking-widest uppercase drop-shadow-md z-10 w-full flex justify-between pr-6">
+                    <span>Start: 1</span>
+                    <span>Finish: 50</span>
+                </div>
+
+                <div className="relative z-10 grid grid-cols-10 gap-1 mt-4">
                     {rows.flat().map((num) => {
                         const isP1 = state.player1Position === num;
                         const isP2 = state.player2Position === num;
@@ -233,33 +246,33 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                             <div
                                 key={num}
                                 className={`
-                            relative h-10 sm:h-12 flex items-center justify-center rounded-md text-[10px] sm:text-xs font-black border transition-colors
-                            ${num % 2 === 0 ? 'bg-emerald-100/80 border-emerald-200/50 dark:bg-emerald-900/40 dark:border-emerald-800/40' : 'bg-green-50/80 border-green-200/50 dark:bg-green-900/20 dark:border-green-800/20'}
-                            ${num === 50 ? 'bg-gradient-to-br from-yellow-200 to-amber-300 text-yellow-800 border-yellow-400 dark:from-yellow-900/60 dark:to-amber-800/60 dark:text-yellow-300 dark:border-yellow-700 shadow-inner' : 'text-emerald-700/70 dark:text-emerald-400/70'}
-                            hover:bg-white/50 dark:hover:bg-black/20
+                            relative h-10 sm:h-12 flex items-center justify-center rounded-lg text-[10px] sm:text-xs font-black transition-all backdrop-blur-md shadow-sm border
+                            ${num % 2 === 0 ? 'bg-white/40 border-white/50 dark:bg-black/40 dark:border-white/10' : 'bg-white/20 border-white/30 dark:bg-black/20 dark:border-white/5'}
+                            ${num === 50 ? 'bg-gradient-to-br from-yellow-300/80 to-amber-500/80 text-yellow-900 border-yellow-300 dark:from-yellow-500/80 dark:to-amber-700/80 dark:text-yellow-100 ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)]' : 'text-slate-800 dark:text-white/90 drop-shadow-sm'}
+                            hover:scale-105 z-0 hover:z-20
                         `}
                             >
-                                <span className={`opacity-50 ${num === 50 && 'animate-pulse'}`}>{num}</span>
+                                <span className={`opacity-70 ${num === 50 && 'animate-pulse'}`}>{num}</span>
 
                                 {/* Cell Features Markers */}
-                                {isLadderStart && <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-gradient-to-tr from-cyan-400 to-blue-500 rounded-sm shadow-sm ring-1 ring-white/50 dark:ring-black/50" title={`Ladder to ${LADDERS[num]}`} />}
-                                {isLadderEnd && <div className="absolute bottom-1 left-1 w-2.5 h-2.5 bg-cyan-200/80 dark:bg-cyan-800/80 rounded-sm" />}
-                                {isSnakeHead && <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-gradient-to-br from-red-500 to-rose-600 rounded-full shadow-sm ring-1 ring-white/50 dark:ring-black/50" title={`Snake to ${SNAKES[num]}`} />}
-                                {isSnakeTail && <div className="absolute bottom-1 left-1 w-2.5 h-2.5 bg-red-200/80 dark:bg-rose-900/80 rounded-full" />}
+                                {isLadderStart && <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-gradient-to-tr from-cyan-300 to-blue-500 rounded-sm shadow-md ring-1 ring-white/50" title={`Ladder to ${LADDERS[num]}`} />}
+                                {isLadderEnd && <div className="absolute top-1 left-1 w-2 h-2 bg-cyan-200/90 dark:bg-cyan-400/90 rounded-sm" />}
+                                {isSnakeHead && <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-gradient-to-br from-red-400 to-rose-600 rounded-full shadow-md ring-1 ring-white/50" title={`Snake to ${SNAKES[num]}`} />}
+                                {isSnakeTail && <div className="absolute top-1 left-1 w-2 h-2 bg-red-300/90 dark:bg-rose-400/90 rounded-full" />}
 
                                 {/* Players */}
                                 <div className="absolute inset-0 flex items-center justify-center gap-[2px]">
-                                    {isP1 && <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 shadow-[0_2px_4px_rgba(0,0,0,0.3)] border-[1.5px] border-white dark:border-slate-800 z-10 animate-in zoom-in spin-in-12" />}
-                                    {isP2 && <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 shadow-[0_2px_4px_rgba(0,0,0,0.3)] border-[1.5px] border-white dark:border-slate-800 z-10 animate-in zoom-in spin-in-12" />}
+                                    {isP1 && <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 shadow-[0_2px_5px_rgba(0,0,0,0.5)] border-2 border-white dark:border-white/80 z-20 animate-in zoom-in spin-in-12" />}
+                                    {isP2 && <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 shadow-[0_2px_5px_rgba(0,0,0,0.5)] border-2 border-white dark:border-white/80 z-20 animate-in zoom-in spin-in-12" />}
                                 </div>
                             </div>
                         );
                     })}
                 </div>
 
-                <div className="mt-3 flex justify-between text-[10px] sm:text-xs font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase">
-                    <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-gradient-to-tr from-cyan-400 to-blue-500 rounded-sm shadow-sm" /> Ladders go Up</span>
-                    <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-gradient-to-br from-red-500 to-rose-600 rounded-full shadow-sm" /> Snakes go Down</span>
+                <div className="relative z-10 mt-4 flex justify-between text-[11px] sm:text-xs font-bold text-white uppercase drop-shadow-md bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm mx-auto max-w-fit gap-4">
+                    <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-gradient-to-tr from-cyan-300 to-blue-500 rounded-sm shadow-sm border border-white/50" /> Ladders Up</span>
+                    <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-gradient-to-br from-red-400 to-rose-600 rounded-full shadow-sm border border-white/50" /> Snakes Down</span>
                 </div>
             </div>
         </div>
