@@ -30,49 +30,65 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         let channel: any;
 
         const init = async () => {
-            // 1. Determine player
-            const { data: members, error } = await supabase
-                .from('love_room_members')
-                .select('*')
-                .eq('room_id', roomId)
-                .order('joined_at', { ascending: true });
+            try {
+                // 1. Determine player with a fast timeout
+                const fetchPromise = supabase
+                    .from('love_room_members')
+                    .select('*')
+                    .eq('room_id', roomId)
+                    .order('joined_at', { ascending: true });
 
-            if (!error && members) {
-                // First to join is X, second is O
-                const pIndex = members.findIndex(m => m.id === currentMember.id);
-                if (pIndex === 0) setMyPlayer('X');
-                else if (pIndex === 1) setMyPlayer('O');
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("Supabase timeout")), 2000)
+                );
+
+                const response = await Promise.race([fetchPromise, timeoutPromise]) as any;
+                const members = response?.data;
+                const error = response?.error;
+
+                if (!error && members) {
+                    // First to join is X, second is O
+                    const pIndex = members.findIndex((m: any) => m.id === currentMember.id);
+                    if (pIndex === 0) setMyPlayer('X');
+                    else if (pIndex === 1) setMyPlayer('O');
+                }
+
+                // 2. Fetch latest game state from DB if any (to resume) or we rely on broadcast
+                // We will just start fresh since we might play multiple times, 
+                // but let's check if there's an active non-finished game.
+                const statePromise = supabase
+                    .from('love_games')
+                    .select('*')
+                    .eq('room_id', roomId)
+                    .eq('game_type', 'xox')
+                    .order('updated_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                const stateResponse = await Promise.race([statePromise, timeoutPromise]).catch(() => null) as any;
+                const lastGame = stateResponse?.data;
+
+                if (lastGame && lastGame.game_state) {
+                    const parsed = lastGame.game_state as XOXGameState;
+                    // If the game ended, we can show it, but usually people want to play again so we let them reset
+                    setGameState(parsed);
+                }
+
+                // 3. Subscribe to broadcast
+                channel = supabase.channel(`game:xox:${roomId}`, {
+                    config: { broadcast: { self: true } } // receive our own messages just in case, or handle locally
+                });
+
+                channel.on('broadcast', { event: 'xox_update' }, (payload: { payload: XOXGameState }) => {
+                    setGameState(payload.payload);
+                });
+
+                channel.subscribe();
+            } catch (err) {
+                console.error("Failed to init xox:", err);
+            } finally {
+                setLoading(false);
             }
-
-            // 2. Fetch latest game state from DB if any (to resume) or we rely on broadcast
-            // We will just start fresh since we might play multiple times, 
-            // but let's check if there's an active non-finished game.
-            const { data: lastGame } = await supabase
-                .from('love_games')
-                .select('*')
-                .eq('room_id', roomId)
-                .eq('game_type', 'xox')
-                .order('updated_at', { ascending: false })
-                .limit(1)
-                .single();
-
-            if (lastGame && lastGame.game_state) {
-                const parsed = lastGame.game_state as XOXGameState;
-                // If the game ended, we can show it, but usually people want to play again so we let them reset
-                setGameState(parsed);
-            }
-
-            // 3. Subscribe to broadcast
-            channel = supabase.channel(`game:xox:${roomId}`, {
-                config: { broadcast: { self: true } } // receive our own messages just in case, or handle locally
-            });
-
-            channel.on('broadcast', { event: 'xox_update' }, (payload: { payload: XOXGameState }) => {
-                setGameState(payload.payload);
-            });
-
-            channel.subscribe();
-            setLoading(false);
         };
 
         init();

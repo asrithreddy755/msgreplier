@@ -29,32 +29,46 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         let channel: any;
 
         const init = async () => {
-            const { data, error } = await supabase
-                .from('love_room_members')
-                .select('*')
-                .eq('room_id', roomId)
-                .order('joined_at', { ascending: true });
+            try {
+                // Implement a fast timeout so it doesn't hang the UI if Supabase is down
+                const fetchPromise = supabase
+                    .from('love_room_members')
+                    .select('*')
+                    .eq('room_id', roomId)
+                    .order('joined_at', { ascending: true });
 
-            if (!error && data) {
-                setMembers(data as LoveRoomMember[]);
-                if (data.length > 0 && !state.currentTurn) {
-                    setState(s => ({ ...s, currentTurn: data[0].nickname }));
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("Supabase timeout")), 2000)
+                );
+
+                const response = await Promise.race([fetchPromise, timeoutPromise]) as any;
+                const data = response?.data;
+                const error = response?.error;
+
+                if (!error && data) {
+                    setMembers(data as LoveRoomMember[]);
+                    if (data.length > 0 && !state.currentTurn) {
+                        setState(s => ({ ...s, currentTurn: data[0].nickname }));
+                    }
                 }
+
+                channel = supabase.channel(`game:snake:${roomId}`, {
+                    config: { broadcast: { self: true } }
+                });
+
+                channel.on('broadcast', { event: 'snake_update' }, (payload: { payload: { state: SnakeLadderState, roll?: number } }) => {
+                    setState(payload.payload.state);
+                    if (payload.payload.roll) {
+                        setLastRoll(payload.payload.roll);
+                    }
+                });
+
+                channel.subscribe();
+            } catch (err) {
+                console.error("Failed to init snake ladder:", err);
+            } finally {
+                setLoading(false);
             }
-
-            channel = supabase.channel(`game:snake:${roomId}`, {
-                config: { broadcast: { self: true } }
-            });
-
-            channel.on('broadcast', { event: 'snake_update' }, (payload: { payload: { state: SnakeLadderState, roll?: number } }) => {
-                setState(payload.payload.state);
-                if (payload.payload.roll) {
-                    setLastRoll(payload.payload.roll);
-                }
-            });
-
-            channel.subscribe();
-            setLoading(false);
         };
 
         init();
@@ -178,6 +192,14 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         return rows.flat();
     }, []);
 
+    const getCellCenter = (num: number) => {
+        const idx = flattenedRows.indexOf(num);
+        if (idx === -1) return { x: 0, y: 0 };
+        const r = Math.floor(idx / 10);
+        const c = idx % 10;
+        return { x: c * 10 + 5, y: r * 20 + 10 };
+    };
+
     if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse">Loading Game...</div>;
 
     // Get colors for players
@@ -293,37 +315,45 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
             )}
 
             {/* The Board */}
-            <div className="w-full mt-6 rounded-[1rem] border-[4px] border-green-800 dark:border-green-600 relative overflow-hidden shadow-2xl bg-green-50">
-                <div className="relative z-10 grid grid-cols-10 grid-rows-5 w-full aspect-[2/1] sm:aspect-[2.5/1]">
-                    {flattenedRows.map((num, idx) => {
-                        const isP1 = state.player1Position === num;
-                        const isP2 = state.player2Position === num;
-                        const rowIdx = Math.floor(idx / 10);
-                        const colIdx = idx % 10;
-                        const isGreen = (rowIdx + colIdx) % 2 === 0;
+            <div className="w-full mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-green-900 dark:border-green-600 bg-white aspect-[525/485]">
+                {/* Background Board Image */}
+                <img
+                    src="/snake.webp"
+                    alt="Snake and Ladder Board"
+                    className="absolute inset-0 w-full h-full object-fill pointer-events-none"
+                />
 
-                        let displayLabel = num.toString();
-                        if (num >= 31 && num <= 40) {
-                            const row4Quirk = [40, 32, 33, 34, 35, 36, 37, 38, 39, 40];
-                            displayLabel = row4Quirk[colIdx].toString();
-                        }
+                {/* Player Pins Mapping */}
+                {/* We map coordinates using exact percentages so they scale with the image aspect ratio */}
+                {flattenedRows.map((num, idx) => {
+                    const isP1 = state.player1Position === num;
+                    const isP2 = state.player2Position === num;
 
-                        return (
-                            <div
-                                key={`${num}-${idx}`}
-                                className={`relative flex items-center justify-center w-full h-full border border-black/5 ${isGreen ? 'bg-green-500/80 text-white' : 'bg-orange-50/90 text-green-900'} transition-colors shadow-inner`}
-                            >
-                                <span className="absolute top-1 left-1.5 text-[10px] sm:text-xs font-black opacity-60 pointer-events-none">{displayLabel}</span>
+                    if (!isP1 && !isP2) return null; // Only render active player cells
 
-                                {/* Players */}
-                                <div className="absolute flex items-center justify-center gap-[2px]">
-                                    {isP1 && <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-red-500 shadow-md border-2 border-white z-20" title="Player 1" />}
-                                    {isP2 && <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-500 shadow-md border-2 border-white z-20" title="Player 2" />}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                    // In a 10x5 grid, width per cell is 10%, height is 20%
+                    const r = Math.floor(idx / 10);
+                    const c = idx % 10;
+
+                    const leftPercent = c * 10;
+                    const topPercent = r * 20;
+
+                    return (
+                        <div
+                            key={`player-pos-${num}`}
+                            className="absolute pointer-events-none flex items-center justify-center gap-[2px]"
+                            style={{
+                                left: `${leftPercent}%`,
+                                top: `${topPercent}%`,
+                                width: '10%',
+                                height: '20%'
+                            }}
+                        >
+                            {isP1 && <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-pink-500 shadow-lg border-2 border-white z-20 animate-bounce" title="Player 1" />}
+                            {isP2 && <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 shadow-lg border-2 border-white z-20 animate-bounce" title="Player 2" style={isP1 ? { animationDelay: '0.2s' } : {}} />}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

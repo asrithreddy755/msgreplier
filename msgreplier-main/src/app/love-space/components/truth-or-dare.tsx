@@ -47,31 +47,44 @@ export function TruthOrDare({ roomId, currentMember }: { roomId: string, current
         let channel: any;
 
         const init = async () => {
-            // 1. Get members to know turns
-            const { data, error } = await supabase
-                .from('love_room_members')
-                .select('*')
-                .eq('room_id', roomId)
-                .order('joined_at', { ascending: true });
+            try {
+                // 1. Get members to know turns with a fast timeout
+                const fetchPromise = supabase
+                    .from('love_room_members')
+                    .select('*')
+                    .eq('room_id', roomId)
+                    .order('joined_at', { ascending: true });
 
-            if (!error && data) {
-                setMembers(data as LoveRoomMember[]);
-                if (data.length > 0 && !state.currentTurn) {
-                    setState(s => ({ ...s, currentTurn: data[0].nickname })); // First joiner starts
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("Supabase timeout")), 2000)
+                );
+
+                const response = await Promise.race([fetchPromise, timeoutPromise]) as any;
+                const data = response?.data;
+                const error = response?.error;
+
+                if (!error && data) {
+                    setMembers(data as LoveRoomMember[]);
+                    if (data.length > 0 && !state.currentTurn) {
+                        setState(s => ({ ...s, currentTurn: data[0].nickname })); // First joiner starts
+                    }
                 }
+
+                // 2. Setup Broadcast channel
+                channel = supabase.channel(`game:truth:${roomId}`, {
+                    config: { broadcast: { self: true } }
+                });
+
+                channel.on('broadcast', { event: 'truth_update' }, (payload: { payload: TruthOrDareState }) => {
+                    setState(payload.payload);
+                });
+
+                channel.subscribe();
+            } catch (err) {
+                console.error("Failed to init truth or dare:", err);
+            } finally {
+                setLoading(false);
             }
-
-            // 2. Setup Broadcast channel
-            channel = supabase.channel(`game:truth:${roomId}`, {
-                config: { broadcast: { self: true } }
-            });
-
-            channel.on('broadcast', { event: 'truth_update' }, (payload: { payload: TruthOrDareState }) => {
-                setState(payload.payload);
-            });
-
-            channel.subscribe();
-            setLoading(false);
         };
 
         init();
