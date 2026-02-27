@@ -99,7 +99,7 @@ export function Chat({ roomId, currentMember }: { roomId: string, currentMember:
 
     return (
         <div className="flex flex-col h-full bg-[#fffefe] dark:bg-slate-800 relative">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-4">
                 {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-2 opacity-60">
                         <Heart className="w-12 h-12 text-pink-300 dark:text-pink-800" />
@@ -136,21 +136,25 @@ export function Chat({ roomId, currentMember }: { roomId: string, currentMember:
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-3 bg-white dark:bg-slate-900/50 border-t border-pink-100 dark:border-pink-900/50 z-10 sticky bottom-0">
-                <form onSubmit={handleSendMessage} className="flex gap-2">
+            {/* Floating Gemini-style Chat Input */}
+            <div className="absolute bottom-4 left-0 right-0 px-4 z-10 pointer-events-none">
+                <form
+                    onSubmit={handleSendMessage}
+                    className="flex max-w-3xl mx-auto items-center gap-2 p-1.5 bg-white dark:bg-slate-900 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 dark:border-slate-700 pointer-events-auto transition-all focus-within:ring-2 focus-within:ring-pink-200 dark:focus-within:ring-pink-900"
+                >
                     <Input
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a sweet message..."
-                        className="flex-1 rounded-full bg-pink-50 border-transparent focus-visible:ring-pink-300 dark:bg-slate-800 dark:text-white dark:placeholder:text-gray-500 shadow-inner"
+                        className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-4 dark:text-white dark:placeholder:text-gray-500 shadow-none h-10"
                         maxLength={500}
                     />
                     <Button
                         type="submit"
                         disabled={!newMessage.trim() || isLoading}
-                        className="rounded-full w-10 h-10 p-0 bg-pink-500 hover:bg-pink-600 shadow-md text-white transition-transform active:scale-95 flex-shrink-0"
+                        className="rounded-full w-10 h-10 p-0 bg-pink-500 hover:bg-pink-600 shadow-md text-white transition-transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100"
                     >
-                        <Send className="w-4 h-4 ml-1" />
+                        <Send className="w-4 h-4 ml-0.5" />
                     </Button>
                 </form>
             </div>
