@@ -57,6 +57,7 @@ export interface SnakeLadderState {
     player2Position: number;
     currentTurn: string | null; // Nickname
     winner: string | null;
+    lastActionMessage?: string | null;
 }
 
 // Sync Payload for Broadcast
