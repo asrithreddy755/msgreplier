@@ -10,6 +10,8 @@ const INITIAL_STATE: XOXGameState = {
     board: Array(9).fill(null),
     currentTurn: 'X',
     winner: null,
+    scores: { X: 0, O: 0 },
+    roundStarter: 'X'
 };
 
 const WINNING_COMBOS = [
@@ -100,7 +102,18 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         const winner = checkWinner(newBoard);
         const nextTurn = gameState.currentTurn === 'X' ? 'O' : 'X';
 
-        const newState: XOXGameState = { board: newBoard, currentTurn: nextTurn, winner };
+        const newScores = { ...(gameState.scores || { X: 0, O: 0 }) };
+        if (winner && winner !== 'Draw') {
+            newScores[winner as 'X' | 'O'] += 1;
+        }
+
+        const newState: XOXGameState = {
+            board: newBoard,
+            currentTurn: nextTurn,
+            winner,
+            scores: newScores,
+            roundStarter: gameState.roundStarter || 'X'
+        };
 
         // Optimistic UI update
         setGameState(newState);
@@ -124,8 +137,14 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
     };
 
     const resetGame = async () => {
-        // Both can reset
-        const newState: XOXGameState = { ...INITIAL_STATE, currentTurn: gameState.winner === 'X' ? 'O' : 'X' }; // loser starts or alternate
+        // Alternate who starts the round
+        const nextStarter = gameState.roundStarter === 'X' ? 'O' : 'X';
+        const newState: XOXGameState = {
+            ...INITIAL_STATE,
+            currentTurn: nextStarter,
+            roundStarter: nextStarter,
+            scores: gameState.scores || { X: 0, O: 0 }
+        };
         setGameState(newState);
 
         const channel = supabase.channel(`game:xox:${roomId}`);
@@ -140,14 +159,31 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
 
     return (
         <div className="flex flex-col items-center w-full max-w-sm mx-auto">
-            <div className="mb-6 text-center">
+            <div className="mb-6 text-center w-full">
                 <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2 flex items-center justify-center gap-2">
                     Tic Tac Toe <Heart className="w-5 h-5 text-pink-500 fill-pink-500" />
                 </h2>
+
+                {/* Score Board */}
+                <div className="flex justify-center items-center gap-4 mb-3 bg-white dark:bg-slate-800 rounded-full px-4 py-2 shadow-sm border border-purple-100 dark:border-purple-900/30 w-fit mx-auto">
+                    <div className="flex items-center gap-2">
+                        <span className={`font-bold ${myPlayer === 'X' ? 'text-pink-600 dark:text-pink-400' : 'text-gray-500 dark:text-gray-400'}`}>Player X {myPlayer === 'X' && '(You)'}</span>
+                        <span className="bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-300 px-2.5 py-0.5 rounded-full font-bold text-sm">
+                            {gameState.scores?.X || 0}
+                        </span>
+                    </div>
+                    <div className="text-gray-300 dark:text-gray-600 font-bold">VS</div>
+                    <div className="flex items-center gap-2">
+                        <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 px-2.5 py-0.5 rounded-full font-bold text-sm">
+                            {gameState.scores?.O || 0}
+                        </span>
+                        <span className={`font-bold ${myPlayer === 'O' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'}`}>Player O {myPlayer === 'O' && '(You)'}</span>
+                    </div>
+                </div>
+
                 <div className="flex gap-4 justify-center text-sm">
-                    <div className={`px-4 py-1 rounded-full ${myPlayer === 'X' ? 'bg-pink-100 text-pink-700 font-bold border border-pink-300 dark:bg-pink-900/40 dark:text-pink-300 dark:border-pink-800' : 'text-gray-500 dark:text-gray-400'}`}>You: {myPlayer}</div>
                     <div className={`px-4 py-1 rounded-full ${gameState.currentTurn === myPlayer && !gameState.winner ? 'bg-purple-500 text-white shadow-md animate-pulse' : 'bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-gray-500'}`}>
-                        {gameState.winner ? 'Game Over' : (gameState.currentTurn === myPlayer ? 'Your Turn' : 'Waiting...')}
+                        {gameState.winner ? 'Game Over' : (gameState.currentTurn === myPlayer ? 'Your Turn' : "Opponent's Turn")}
                     </div>
                 </div>
             </div>

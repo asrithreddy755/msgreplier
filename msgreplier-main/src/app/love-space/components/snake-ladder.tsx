@@ -6,11 +6,12 @@ import { LoveRoomMember, SnakeLadderState } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw } from 'lucide-react';
 
-const SNAKES: Record<number, number> = { 40: 10, 47: 25, 32: 14, 28: 8 };
-const LADDERS: Record<number, number> = { 3: 15, 20: 35, 12: 26, 30: 44 };
+// Fallback snakes and ladders (board defaults)
+const SNAKES: Record<number, number> = { 16: 6, 46: 25, 49: 11, 62: 19, 64: 60, 74: 53, 89: 68, 92: 88, 95: 75, 99: 80 };
+const LADDERS: Record<number, number> = { 2: 38, 7: 14, 8: 31, 15: 26, 21: 42, 28: 84, 36: 44, 51: 67, 71: 91, 78: 98, 87: 94 };
 
-// 10x5 board logic
-const BOARDS_CELLS = Array.from({ length: 50 }, (_, i) => i + 1);
+// 10x10 board logic
+const BOARDS_CELLS = Array.from({ length: 100 }, (_, i) => i + 1);
 
 export function SnakeLadder({ roomId, currentMember }: { roomId: string, currentMember: LoveRoomMember }) {
     const [state, setState] = useState<SnakeLadderState>({
@@ -81,7 +82,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         const roll = Math.floor(Math.random() * 6) + 1;
         let newPos = myPlayerNum === 1 ? state.player1Position : state.player2Position;
 
-        if (newPos + roll <= 50) {
+        if (newPos + roll <= 100) {
             newPos += roll;
             // Check snakes and ladders
             if (SNAKES[newPos]) newPos = SNAKES[newPos];
@@ -89,7 +90,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         }
 
         let winner = null;
-        if (newPos === 50) {
+        if (newPos === 100) {
             winner = currentMember.nickname;
         }
 
@@ -146,7 +147,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
     // Board generation (bottom to top, alternating rows)
     const rows = [];
-    for (let i = 4; i >= 0; i--) {
+    for (let i = 9; i >= 0; i--) {
         const row = BOARDS_CELLS.slice(i * 10, (i + 1) * 10);
         if (i % 2 !== 0) row.reverse(); // Odd rows reverse for snake pattern
         rows.push(row);
@@ -217,62 +218,33 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
             {/* The Board */}
             <div
-                className="w-full mt-6 p-4 rounded-[2rem] border-[6px] border-white/40 dark:border-white/10 relative overflow-hidden shadow-2xl"
+                className="w-full mt-6 rounded-[1rem] border-[4px] border-gray-300 dark:border-gray-700 relative overflow-hidden shadow-2xl"
                 style={{
-                    backgroundImage: "url('https://images.unsplash.com/photo-1580136608260-4ebf15facdaf?q=80&w=1000&auto=format&fit=crop')",
-                    backgroundSize: 'cover',
+                    backgroundImage: "url('/snake.webp')",
+                    backgroundSize: '100% 100%',
                     backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    aspectRatio: '1',
                 }}
             >
-                {/* Overlay for readability */}
-                <div className="absolute inset-0 bg-white/30 dark:bg-black/40 backdrop-blur-[2px]"></div>
-
-                {/* Decorative snakes and ladders info */}
-                <div className="absolute top-2 left-3 text-[9px] text-white font-black tracking-widest uppercase drop-shadow-md z-10 w-full flex justify-between pr-6">
-                    <span>Start: 1</span>
-                    <span>Finish: 50</span>
-                </div>
-
-                <div className="relative z-10 grid grid-cols-10 gap-1 mt-4">
+                <div className="relative z-10 grid grid-cols-10 grid-rows-[10] w-full h-full" style={{ gridTemplateRows: 'repeat(10, minmax(0, 1fr))' }}>
                     {rows.flat().map((num) => {
                         const isP1 = state.player1Position === num;
                         const isP2 = state.player2Position === num;
-                        const isLadderStart = !!LADDERS[num];
-                        const isLadderEnd = Object.values(LADDERS).includes(num);
-                        const isSnakeHead = !!SNAKES[num];
-                        const isSnakeTail = Object.values(SNAKES).includes(num);
 
                         return (
                             <div
                                 key={num}
-                                className={`
-                            relative h-10 sm:h-12 flex items-center justify-center rounded-lg text-[10px] sm:text-xs font-black transition-all backdrop-blur-md shadow-sm border
-                            ${num % 2 === 0 ? 'bg-white/40 border-white/50 dark:bg-black/40 dark:border-white/10' : 'bg-white/20 border-white/30 dark:bg-black/20 dark:border-white/5'}
-                            ${num === 50 ? 'bg-gradient-to-br from-yellow-300/80 to-amber-500/80 text-yellow-900 border-yellow-300 dark:from-yellow-500/80 dark:to-amber-700/80 dark:text-yellow-100 ring-2 ring-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.6)]' : 'text-slate-800 dark:text-white/90 drop-shadow-sm'}
-                            hover:scale-105 z-0 hover:z-20
-                        `}
+                                className="relative flex items-center justify-center w-full h-full hover:bg-white/10 transition-colors"
                             >
-                                <span className={`opacity-70 ${num === 50 && 'animate-pulse'}`}>{num}</span>
-
-                                {/* Cell Features Markers */}
-                                {isLadderStart && <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-gradient-to-tr from-cyan-300 to-blue-500 rounded-sm shadow-md ring-1 ring-white/50" title={`Ladder to ${LADDERS[num]}`} />}
-                                {isLadderEnd && <div className="absolute top-1 left-1 w-2 h-2 bg-cyan-200/90 dark:bg-cyan-400/90 rounded-sm" />}
-                                {isSnakeHead && <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-gradient-to-br from-red-400 to-rose-600 rounded-full shadow-md ring-1 ring-white/50" title={`Snake to ${SNAKES[num]}`} />}
-                                {isSnakeTail && <div className="absolute top-1 left-1 w-2 h-2 bg-red-300/90 dark:bg-rose-400/90 rounded-full" />}
-
                                 {/* Players */}
-                                <div className="absolute inset-0 flex items-center justify-center gap-[2px]">
-                                    {isP1 && <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 shadow-[0_2px_5px_rgba(0,0,0,0.5)] border-2 border-white dark:border-white/80 z-20 animate-in zoom-in spin-in-12" />}
-                                    {isP2 && <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 shadow-[0_2px_5px_rgba(0,0,0,0.5)] border-2 border-white dark:border-white/80 z-20 animate-in zoom-in spin-in-12" />}
+                                <div className="absolute flex items-center justify-center gap-0 sm:gap-[2px]">
+                                    {isP1 && <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-pink-400 to-rose-600 shadow-[0_2px_5px_rgba(0,0,0,0.8)] border-2 border-white z-20 animate-in zoom-in spin-in-12" />}
+                                    {isP2 && <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 shadow-[0_2px_5px_rgba(0,0,0,0.8)] border-2 border-white z-20 animate-in zoom-in spin-in-12" />}
                                 </div>
                             </div>
                         );
                     })}
-                </div>
-
-                <div className="relative z-10 mt-4 flex justify-between text-[11px] sm:text-xs font-bold text-white uppercase drop-shadow-md bg-black/20 px-3 py-1.5 rounded-full backdrop-blur-sm mx-auto max-w-fit gap-4">
-                    <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-gradient-to-tr from-cyan-300 to-blue-500 rounded-sm shadow-sm border border-white/50" /> Ladders Up</span>
-                    <span className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-gradient-to-br from-red-400 to-rose-600 rounded-full shadow-sm border border-white/50" /> Snakes Down</span>
                 </div>
             </div>
         </div>

@@ -39,6 +39,8 @@ export interface XOXGameState {
     board: XOXPlayer[];
     currentTurn: 'X' | 'O';
     winner: 'X' | 'O' | 'Draw' | null;
+    scores?: { X: number; O: number };
+    roundStarter?: 'X' | 'O';
 }
 
 // Truth or Dare State
