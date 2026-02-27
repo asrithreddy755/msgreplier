@@ -167,8 +167,6 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         });
     };
 
-    if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse">Loading Game...</div>;
-
     // Board generation (memoized to avoid regenerating on every render/state update)
     const flattenedRows = useMemo(() => {
         const rows = [];
@@ -179,6 +177,8 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         }
         return rows.flat();
     }, []);
+
+    if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse">Loading Game...</div>;
 
     // Get colors for players
     const p1Color = "bg-pink-500";
