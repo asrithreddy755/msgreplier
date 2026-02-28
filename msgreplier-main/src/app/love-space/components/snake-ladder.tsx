@@ -310,26 +310,26 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
     const myColor = myPlayerNum === 1 ? p1Color : p2Color;
 
     return (
-        <div className="flex flex-col items-center w-full max-w-sm mx-auto h-full pb-8">
-            <div className="mb-4 text-center w-full">
-                <h2 className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2 flex items-center justify-center gap-2">
-                    Snake & Ladder <Dices className="w-5 h-5 text-orange-500" />
+        <div className="flex flex-col items-center w-full max-w-sm mx-auto pb-4 sm:pb-8 gap-2 sm:gap-3">
+            <div className="text-center w-full">
+                <h2 className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1 sm:mb-2 flex items-center justify-center gap-1.5 sm:gap-2">
+                    Snake & Ladder <Dices className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                 </h2>
-                <div className="flex gap-4 justify-center text-sm items-center">
-                    <div className={`px-4 py-1 rounded-full text-white shadow-sm flex items-center gap-2 ${myColor}`}>
-                        <div className="w-2 h-2 bg-white rounded-full" /> You
+                <div className="flex gap-3 sm:gap-4 justify-center text-xs sm:text-sm items-center">
+                    <div className={`px-3 sm:px-4 py-0.5 sm:py-1 rounded-full text-white shadow-sm flex items-center gap-1.5 sm:gap-2 ${myColor}`}>
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" /> You
                     </div>
-                    <div className={`px-4 py-1 rounded-full ${isMyTurn ? 'bg-orange-500 text-white shadow-md animate-pulse' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400'}`}>
+                    <div className={`px-3 sm:px-4 py-0.5 sm:py-1 rounded-full ${isMyTurn ? 'bg-orange-500 text-white shadow-md animate-pulse' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400'}`}>
                         {state.winner ? 'Game Over' : (isMyTurn ? 'Your Turn' : 'Waiting...')}
                     </div>
                 </div>
             </div>
 
             {state.winner ? (
-                <div className="bg-orange-50 dark:bg-orange-900/10 p-6 rounded-3xl text-center border border-orange-200 dark:border-orange-900/50 mt-4 shadow-inner mb-6 w-full animate-in zoom-in slide-in-from-bottom-4">
-                    <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-2" />
-                    <h3 className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">{state.winner} wins!</h3>
-                    <p className="text-gray-500 dark:text-gray-400 mb-4">{state.winner === currentMember.nickname ? 'You conquered the board! 🎉' : 'Better luck next time! 🥺'}</p>
+                <div className="bg-orange-50 dark:bg-orange-900/10 p-4 sm:p-6 rounded-2xl sm:rounded-3xl text-center border border-orange-200 dark:border-orange-900/50 shadow-inner w-full animate-in zoom-in slide-in-from-bottom-4">
+                    <Trophy className="w-10 h-10 sm:w-16 sm:h-16 text-yellow-500 mx-auto mb-1 sm:mb-2" />
+                    <h3 className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-0.5 sm:mb-1">{state.winner} wins!</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-3 sm:mb-4 text-sm">{state.winner === currentMember.nickname ? 'You conquered the board! 🎉' : 'Better luck next time! 🥺'}</p>
                     <Button
                         onClick={resetGame}
                         className={`w-full rounded-xl ${roomCreator && currentMember.id !== roomCreator.id ? 'bg-gray-400 cursor-not-allowed opacity-70' : 'bg-orange-500 hover:bg-orange-600 text-white'}`}
@@ -337,30 +337,30 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                         Play Again <RotateCcw className="w-4 h-4 ml-2" />
                     </Button>
                     {roomCreator && currentMember.id !== roomCreator.id && (
-                        <p className="text-xs text-gray-400 mt-2">Waiting for {roomCreator.nickname} to restart...</p>
+                        <p className="text-xs text-gray-400 mt-1.5">Waiting for {roomCreator.nickname} to restart...</p>
                     )}
                 </div>
             ) : (
-                <div className="flex flex-col items-center gap-6 w-full mt-2">
+                <div className="flex flex-col items-center gap-2 sm:gap-6 w-full">
                     {/* Interactive Player Hub */}
-                    <div className="flex gap-4 w-full justify-between items-stretch">
+                    <div className="flex gap-2 sm:gap-4 w-full justify-between items-stretch">
 
                         {/* Player 1 Box */}
                         <div
                             onClick={() => myPlayerNum === 1 && !rolling && !isAnimating && isMyTurn ? rollDice(1) : undefined}
-                            className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-4 rounded-3xl border ${myPlayerNum === 1 && isMyTurn && !rolling && !isAnimating ? 'border-pink-400 dark:border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] cursor-pointer hover:bg-pink-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all`}
+                            className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl border ${myPlayerNum === 1 && isMyTurn && !rolling && !isAnimating ? 'border-pink-400 dark:border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] cursor-pointer hover:bg-pink-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all`}
                         >
-                            <p className="text-sm font-bold text-pink-600 dark:text-pink-400 mb-2 whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
+                            <p className="text-xs sm:text-sm font-bold text-pink-600 dark:text-pink-400 mb-0.5 sm:mb-2 whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
                                 {members[0] ? (members[0].nickname === currentMember.nickname ? 'You (P1)' : members[0].nickname) : 'Player 1'}
                             </p>
-                            <div className="flex items-center justify-center w-full mt-2">
+                            <div className="flex items-center justify-center w-full sm:mt-2">
                                 <div className="flex flex-col items-center">
-                                    <span className="text-[10px] text-gray-400 uppercase font-black">Position</span>
-                                    <span className="text-3xl font-black text-slate-700 dark:text-slate-200">{state.player1Position}</span>
+                                    <span className="text-[9px] sm:text-[10px] text-gray-400 uppercase font-black">Position</span>
+                                    <span className="text-2xl sm:text-3xl font-black text-slate-700 dark:text-slate-200">{state.player1Position}</span>
                                 </div>
                             </div>
                             {state.currentTurn === (members[0]?.nickname || '') && !state.winner && (
-                                <div className="mt-3 text-[10px] font-bold text-white bg-pink-500 px-3 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-sm">
+                                <div className="mt-1 sm:mt-3 text-[9px] sm:text-[10px] font-bold text-white bg-pink-500 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-wider animate-pulse shadow-sm">
                                     Current Turn
                                 </div>
                             )}
@@ -369,19 +369,19 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                         {/* Player 2 Box */}
                         <div
                             onClick={() => myPlayerNum === 2 && !rolling && !isAnimating && isMyTurn ? rollDice(2) : undefined}
-                            className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-4 rounded-3xl border ${myPlayerNum === 2 && isMyTurn && !rolling && !isAnimating && !state.winner ? 'border-blue-400 dark:border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] cursor-pointer hover:bg-blue-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all`}
+                            className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl border ${myPlayerNum === 2 && isMyTurn && !rolling && !isAnimating && !state.winner ? 'border-blue-400 dark:border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] cursor-pointer hover:bg-blue-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all`}
                         >
-                            <p className="text-sm font-bold text-blue-600 dark:text-blue-400 mb-2 whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
+                            <p className="text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 mb-0.5 sm:mb-2 whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
                                 {members[1] ? (members[1].nickname === currentMember.nickname ? 'You (P2)' : members[1].nickname) : 'Player 2'}
                             </p>
-                            <div className="flex items-center justify-center w-full mt-2">
+                            <div className="flex items-center justify-center w-full sm:mt-2">
                                 <div className="flex flex-col items-center">
-                                    <span className="text-[10px] text-gray-400 uppercase font-black">Position</span>
-                                    <span className="text-3xl font-black text-slate-700 dark:text-slate-200">{state.player2Position}</span>
+                                    <span className="text-[9px] sm:text-[10px] text-gray-400 uppercase font-black">Position</span>
+                                    <span className="text-2xl sm:text-3xl font-black text-slate-700 dark:text-slate-200">{state.player2Position}</span>
                                 </div>
                             </div>
                             {state.currentTurn === (members[1]?.nickname || '') && !state.winner && (
-                                <div className="mt-3 text-[10px] font-bold text-white bg-blue-500 px-3 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-sm">
+                                <div className="mt-1 sm:mt-3 text-[9px] sm:text-[10px] font-bold text-white bg-blue-500 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-wider animate-pulse shadow-sm">
                                     Current Turn
                                 </div>
                             )}
@@ -390,15 +390,15 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                     </div>
 
                     {/* Central Single Dice */}
-                    <div className="flex flex-col items-center justify-center my-6 relative w-full">
+                    <div className="flex flex-col items-center justify-center my-2 sm:my-6 relative w-full">
                         {isMyTurn && !rolling && !isAnimating && !state.winner && (
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-r from-orange-400/30 to-rose-400/30 animate-pulse blur-xl z-0"></div>
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-r from-orange-400/30 to-rose-400/30 animate-pulse blur-xl z-0"></div>
                         )}
                         <button
                             onClick={() => isMyTurn && !rolling && !isAnimating && !state.winner ? rollDice(myPlayerNum) : undefined}
                             disabled={!isMyTurn || rolling || isAnimating || !!state.winner}
                             className={`
-                                relative dice-container w-28 h-28 rounded-3xl shadow-xl flex items-center justify-center border-4 border-white/90 dark:border-slate-700/90 backdrop-blur-md z-10 transition-all duration-300
+                                relative dice-container w-16 h-16 sm:w-28 sm:h-28 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl flex items-center justify-center border-3 sm:border-4 border-white/90 dark:border-slate-700/90 backdrop-blur-md z-10 transition-all duration-300
                                 ${rolling ? 'animate-dice-roll shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-gradient-to-br from-orange-400 to-rose-500' : ''}
                                 ${isMyTurn && !rolling && !isAnimating && !state.winner ? 'cursor-pointer hover:scale-105 active:scale-95 bg-gradient-to-br from-orange-400 to-rose-500 hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:-translate-y-1' : ''}
                                 ${(!isMyTurn || !!state.winner) && !rolling ? 'cursor-default bg-gray-100 dark:bg-slate-800 opacity-90' : ''}
@@ -406,15 +406,15 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                         >
                             {!rolling && lastRoll ? (
                                 <div className="flex flex-col items-center justify-center">
-                                    <span className={`font-black text-6xl drop-shadow-lg ${isMyTurn || rolling || state.winner ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>{lastRoll}</span>
+                                    <span className={`font-black text-3xl sm:text-6xl drop-shadow-lg ${isMyTurn || rolling || state.winner ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>{lastRoll}</span>
                                 </div>
                             ) : (
-                                <Dices className={`w-14 h-14 drop-shadow-md transition-colors ${isMyTurn || rolling ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`} />
+                                <Dices className={`w-8 h-8 sm:w-14 sm:h-14 drop-shadow-md transition-colors ${isMyTurn || rolling ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`} />
                             )}
                         </button>
 
                         {isMyTurn && !rolling && !isAnimating && !state.winner && (
-                            <div className="mt-4 text-sm font-bold text-orange-600 dark:text-orange-400 animate-bounce bg-orange-100 dark:bg-orange-900/30 px-4 py-1.5 rounded-full shadow-sm">
+                            <div className="mt-1.5 sm:mt-4 text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400 animate-bounce bg-orange-100 dark:bg-orange-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
                                 Tap to Roll!
                             </div>
                         )}
@@ -426,7 +426,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
                     {/* Event Log Window */}
                     {state.lastActionMessage && !rolling && (
-                        <div className="w-full text-center mt-2 p-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-lg text-sm font-medium animate-pulse border border-yellow-200 dark:border-yellow-700">
+                        <div className="w-full text-center p-1.5 sm:p-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-lg text-xs sm:text-sm font-medium animate-pulse border border-yellow-200 dark:border-yellow-700">
                             {state.lastActionMessage}
                         </div>
                     )}
@@ -434,7 +434,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
             )}
 
             {/* The Board */}
-            <div className="w-full mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-green-900 dark:border-green-600 bg-white aspect-[525/485]">
+            <div className="w-full mt-2 sm:mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-green-900 dark:border-green-600 bg-white aspect-[525/485]">
                 {/* Background Board Image */}
                 <img
                     src="/snake.webp"

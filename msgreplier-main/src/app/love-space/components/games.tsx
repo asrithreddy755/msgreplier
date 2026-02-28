@@ -1,4 +1,4 @@
 export * from './chat';
 export * from './xox';
-export * from './truth-or-dare';
+export { Ludo } from './ludo/ludo';
 export * from './snake-ladder';

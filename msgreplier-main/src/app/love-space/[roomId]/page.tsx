@@ -6,7 +6,7 @@ import { useEffect, useState, use } from 'react';
 import { supabase } from '@/lib/supabase';
 import { LoveRoom, LoveRoomMember } from '@/types/love-space';
 import { JoinRoom } from '../components/join-room';
-import { Chat, XOX, TruthOrDare, SnakeLadder } from '../components/games';
+import { Chat, XOX, Ludo, SnakeLadder } from '../components/games';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -209,9 +209,9 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                             XOX
                             {otherMemberTab === 'xox' && <div className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
                         </TabsTrigger>
-                        <TabsTrigger value="truth" className="relative rounded-lg data-[state=active]:bg-rose-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
-                            Truth/Dare
-                            {otherMemberTab === 'truth' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
+                        <TabsTrigger value="ludo" className="relative rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
+                            Ludo
+                            {otherMemberTab === 'ludo' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
                         </TabsTrigger>
                         <TabsTrigger value="snake" className="relative rounded-lg data-[state=active]:bg-orange-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
                             Snake
@@ -239,13 +239,13 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 <XOX roomId={roomId} currentMember={currentMember} />
                             </div>
                         </TabsContent>
-                        <TabsContent value="truth" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
-                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-rose-100 dark:border-rose-900/50 overflow-hidden flex items-center justify-center p-4">
-                                <TruthOrDare roomId={roomId} currentMember={currentMember} />
+                        <TabsContent value="ludo" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
+                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-emerald-100 dark:border-emerald-900/50 overflow-y-auto p-3">
+                                <Ludo roomId={roomId} currentMember={currentMember} />
                             </div>
                         </TabsContent>
                         <TabsContent value="snake" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
-                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-orange-100 dark:border-orange-900/50 overflow-hidden flex items-center justify-center p-4 overflow-y-auto">
+                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-orange-100 dark:border-orange-900/50 overflow-y-auto p-3">
                                 <SnakeLadder roomId={roomId} currentMember={currentMember} />
                             </div>
                         </TabsContent>

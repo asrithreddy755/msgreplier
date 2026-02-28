@@ -23,7 +23,7 @@ export interface LoveMessage {
 }
 
 // Games
-export type GameType = 'xox' | 'truth' | 'snake';
+export type GameType = 'xox' | 'ludo' | 'snake';
 
 export interface LoveGame {
     id: string;
@@ -43,13 +43,7 @@ export interface XOXGameState {
     roundStarter?: 'X' | 'O';
 }
 
-// Truth or Dare State
-export type TruthOrDareTurn = string; // Nickname of the player whose turn it is
-export interface TruthOrDareState {
-    currentTurn: string | null;
-    currentPrompt: string | null;
-    promptType: 'truth' | 'dare' | null;
-}
+// Ludo State — defined in src/app/love-space/components/ludo/types.ts
 
 // Snake and Ladder State
 export interface SnakeLadderState {
