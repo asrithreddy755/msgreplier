@@ -77,10 +77,20 @@ export default function LoveSpacePage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-pink-100 dark:from-pink-950 dark:via-purple-950 dark:to-pink-950 flex flex-col items-center justify-center p-4">
             <div className="absolute top-10 left-10 text-pink-300 dark:text-pink-700 opacity-50 animate-pulse">
-                <Heart size={48} />
+                <Heart size={48} className="fill-pink-200/50 dark:fill-pink-900/30" />
             </div>
             <div className="absolute bottom-20 right-10 text-purple-300 dark:text-purple-700 opacity-50 animate-pulse delay-1000">
                 <Sparkles size={48} />
+            </div>
+            {/* Additional romantic floating elements */}
+            <div className="absolute top-40 right-20 text-rose-300 dark:text-rose-800 opacity-40 animate-bounce" style={{ animationDuration: '3s' }}>
+                <Heart size={32} className="fill-rose-200/50 dark:fill-rose-900/30" />
+            </div>
+            <div className="absolute bottom-40 left-16 text-pink-400 dark:text-pink-600 opacity-30 animate-pulse delay-500">
+                <Heart size={24} className="rotate-12 fill-pink-300/50 dark:fill-pink-800/30" />
+            </div>
+            <div className="absolute top-1/2 left-8 text-purple-300 dark:text-purple-800 opacity-20 animate-bounce" style={{ animationDuration: '4s' }}>
+                <Sparkles size={24} />
             </div>
 
             <Card className="w-full max-w-md shadow-xl border-pink-200 dark:border-pink-900/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10">

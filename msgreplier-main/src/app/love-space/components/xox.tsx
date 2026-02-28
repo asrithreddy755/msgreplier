@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { LoveRoomMember, XOXGameState, XOXPlayer } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
     const [gameState, setGameState] = useState<XOXGameState>(INITIAL_STATE);
     const [myPlayer, setMyPlayer] = useState<XOXPlayer>(null);
     const [loading, setLoading] = useState(true);
+    const channelRef = useRef<any>(null);
 
     // Determine player assignment (X or O) and setup channel
     useEffect(() => {
@@ -84,6 +85,7 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
                 });
 
                 channel.subscribe();
+                channelRef.current = channel;
             } catch (err) {
                 console.error("Failed to init xox:", err);
             } finally {
@@ -94,7 +96,7 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         init();
 
         return () => {
-            if (channel) supabase.removeChannel(channel);
+            if (channelRef.current) supabase.removeChannel(channelRef.current);
         };
     }, [roomId, currentMember.id]);
 
@@ -135,12 +137,13 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         setGameState(newState);
 
         // Broadcast
-        const channel = supabase.channel(`game:xox:${roomId}`);
-        await channel.send({
-            type: 'broadcast',
-            event: 'xox_update',
-            payload: newState
-        });
+        if (channelRef.current) {
+            await channelRef.current.send({
+                type: 'broadcast',
+                event: 'xox_update',
+                payload: newState
+            });
+        }
 
         // If game ended, save to DB
         if (winner) {
@@ -163,12 +166,13 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         };
         setGameState(newState);
 
-        const channel = supabase.channel(`game:xox:${roomId}`);
-        await channel.send({
-            type: 'broadcast',
-            event: 'xox_update',
-            payload: newState
-        });
+        if (channelRef.current) {
+            await channelRef.current.send({
+                type: 'broadcast',
+                event: 'xox_update',
+                payload: newState
+            });
+        }
     };
 
     if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse">Loading Game...</div>;

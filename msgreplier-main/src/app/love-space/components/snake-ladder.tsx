@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { LoveRoomMember, SnakeLadderState } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
     const [loading, setLoading] = useState(true);
     const [rolling, setRolling] = useState(false);
     const [lastRoll, setLastRoll] = useState<number | null>(null);
+    const channelRef = useRef<any>(null);
 
     useEffect(() => {
         let channel: any;
@@ -64,6 +65,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                 });
 
                 channel.subscribe();
+                channelRef.current = channel;
             } catch (err) {
                 console.error("Failed to init snake ladder:", err);
             } finally {
@@ -74,7 +76,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         init();
 
         return () => {
-            if (channel) supabase.removeChannel(channel);
+            if (channelRef.current) supabase.removeChannel(channelRef.current);
         };
     }, [roomId]);
 
@@ -145,12 +147,13 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         setLastRoll(roll);
         setRolling(false);
 
-        const channel = supabase.channel(`game:snake:${roomId}`);
-        await channel.send({
-            type: 'broadcast',
-            event: 'snake_update',
-            payload: { state: newState, roll }
-        });
+        if (channelRef.current) {
+            await channelRef.current.send({
+                type: 'broadcast',
+                event: 'snake_update',
+                payload: { state: newState, roll }
+            });
+        }
 
         if (winner) {
             await supabase.from('love_games').insert([{
@@ -173,12 +176,13 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         setState(newState);
         setLastRoll(null);
 
-        const channel = supabase.channel(`game:snake:${roomId}`);
-        await channel.send({
-            type: 'broadcast',
-            event: 'snake_update',
-            payload: { state: newState }
-        });
+        if (channelRef.current) {
+            await channelRef.current.send({
+                type: 'broadcast',
+                event: 'snake_update',
+                payload: { state: newState }
+            });
+        }
     };
 
     // Board generation (memoized to avoid regenerating on every render/state update)
