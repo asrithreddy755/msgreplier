@@ -5,8 +5,8 @@ import { LoveQuiz, DetailedQuizResult } from '@/types/quiz';
 export const runtime = 'edge';
 
 const getEnvStatus = () => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
     return {
         supabaseUrl,
         supabaseServiceKey,
