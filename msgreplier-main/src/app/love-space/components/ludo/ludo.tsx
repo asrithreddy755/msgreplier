@@ -94,7 +94,11 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
                     if (data.awaitingSelect !== undefined) setAwaitingTokenSelect(data.awaitingSelect);
                 });
 
-                channel.subscribe();
+                channel.subscribe((status: string) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log('Ludo channel subscribed');
+                    }
+                });
                 channelRef.current = channel;
             } catch (err) {
                 console.error("Failed to init ludo:", err);

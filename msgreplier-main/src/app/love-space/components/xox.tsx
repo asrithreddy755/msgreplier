@@ -96,11 +96,17 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
                     config: { broadcast: { self: true } } // receive our own messages just in case, or handle locally
                 });
 
-                channel.on('broadcast', { event: 'xox_update' }, (payload: { payload: XOXGameState }) => {
-                    setGameState(payload.payload);
+                channel.on('broadcast', { event: 'xox_update' }, (payload: any) => {
+                    if (payload.payload?.sender === currentMember.id) return;
+                    const data = payload.payload?.state || payload.payload;
+                    if (data) setGameState(data);
                 });
 
-                channel.subscribe();
+                channel.subscribe((status: string) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log('XOX channel subscribed');
+                    }
+                });
                 channelRef.current = channel;
             } catch (err) {
                 console.error("Failed to init xox:", err);
@@ -157,7 +163,7 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
             await channelRef.current.send({
                 type: 'broadcast',
                 event: 'xox_update',
-                payload: newState
+                payload: { state: newState, sender: currentMember.id }
             });
         }
 
@@ -193,7 +199,7 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
             await channelRef.current.send({
                 type: 'broadcast',
                 event: 'xox_update',
-                payload: newState
+                payload: { state: newState, sender: currentMember.id }
             });
         }
     };

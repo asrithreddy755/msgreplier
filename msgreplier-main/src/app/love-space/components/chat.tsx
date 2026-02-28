@@ -12,6 +12,7 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const channelRef = useRef<any>(null);
 
     // Fetch initial messages and subscribe to new ones
     useEffect(() => {
@@ -48,10 +49,16 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
                     });
                 }
             )
-            .subscribe();
+            .subscribe((status: string) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('Chat channel subscribed');
+                }
+            });
+
+        channelRef.current = channel;
 
         return () => {
-            supabase.removeChannel(channel);
+            if (channelRef.current) supabase.removeChannel(channelRef.current);
         };
     }, [roomId]);
 
@@ -78,13 +85,14 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
         setMessages((prev) => [...prev, msgData]);
         setNewMessage('');
 
-        // 2. Broadcast to other clients (Instant for receiver)
-        const channel = supabase.channel(`chat_broadcast_${roomId}`);
-        await channel.send({
-            type: 'broadcast',
-            event: 'new_message',
-            payload: msgData
-        });
+        // 2. Broadcast to other clients using the SAME subscribed channel
+        if (channelRef.current) {
+            await channelRef.current.send({
+                type: 'broadcast',
+                event: 'new_message',
+                payload: msgData
+            });
+        }
 
         // 3. Save to DB in background
         const { error } = await supabase

@@ -123,7 +123,11 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                     }
                 });
 
-                channel.subscribe();
+                channel.subscribe((status: string) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log('Snake channel subscribed');
+                    }
+                });
                 channelRef.current = channel;
             } catch (err) {
                 console.error("Failed to init snake ladder:", err);
@@ -233,22 +237,6 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
             playAnimationAndSync(myPlayerNum, path, newState);
         } else {
             setState(newState);
-        }
-
-        if (channelRef.current) {
-            await channelRef.current.send({
-                type: 'broadcast',
-                event: 'snake_update',
-                payload: { state: newState, roll }
-            });
-        }
-
-        if (winner) {
-            await supabase.from('love_games').insert([{
-                room_id: roomId,
-                game_type: 'snake',
-                game_state: newState
-            }]);
         }
     };
 
