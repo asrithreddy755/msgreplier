@@ -20,7 +20,7 @@ export default function SnakeLadderTestPage() {
                 </h1>
 
                 {/* The game component expecting a roomId and a currentMember */}
-                <div className="h-[600px] w-full overflow-y-auto">
+                <div className="w-full">
                     <SnakeLadder roomId="sandbox-test-room" currentMember={dummyMember} />
                 </div>
             </div>

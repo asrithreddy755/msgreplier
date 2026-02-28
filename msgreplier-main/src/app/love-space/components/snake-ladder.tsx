@@ -27,6 +27,29 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
     const [lastRoll, setLastRoll] = useState<number | null>(null);
     const channelRef = useRef<any>(null);
 
+    const [visualP1, setVisualP1] = useState(1);
+    const [visualP2, setVisualP2] = useState(1);
+    const [isAnimating, setIsAnimating] = useState(false);
+
+    useEffect(() => {
+        if (!isAnimating) {
+            setVisualP1(state.player1Position);
+            setVisualP2(state.player2Position);
+        }
+    }, [state.player1Position, state.player2Position, isAnimating]);
+
+    const playAnimationAndSync = async (playerNum: number, path: number[], finalState: SnakeLadderState) => {
+        setIsAnimating(true);
+        const setVisual = playerNum === 1 ? setVisualP1 : setVisualP2;
+        await new Promise(r => setTimeout(r, 200));
+        for (const step of path) {
+            setVisual(step);
+            await new Promise(r => setTimeout(r, 400));
+        }
+        setState(finalState);
+        setIsAnimating(false);
+    };
+
     useEffect(() => {
         let channel: any;
 
@@ -87,10 +110,16 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                     config: { broadcast: { self: true } }
                 });
 
-                channel.on('broadcast', { event: 'snake_update' }, (payload: { payload: { state: SnakeLadderState, roll?: number } }) => {
-                    setState(payload.payload.state);
+                channel.on('broadcast', { event: 'snake_update' }, (payload: { payload: { state: SnakeLadderState, roll?: number, path?: number[], playerNum?: number, sender?: string } }) => {
+                    if (payload.payload.sender === currentMember.id) return;
+
                     if (payload.payload.roll) {
                         setLastRoll(payload.payload.roll);
+                    }
+                    if (payload.payload.path && payload.payload.playerNum) {
+                        playAnimationAndSync(payload.payload.playerNum, payload.payload.path, payload.payload.state);
+                    } else {
+                        setState(payload.payload.state);
                     }
                 });
 
@@ -120,7 +149,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
     const myPlayerNum = getPlayerIndex(currentMember.nickname);
 
     const rollDice = async (forPlayerNum: number) => {
-        if (!isMyTurn || state.winner || rolling || myPlayerNum !== forPlayerNum) return;
+        if (!isMyTurn || state.winner || rolling || isAnimating || myPlayerNum !== forPlayerNum) return;
 
         setRolling(true);
 
@@ -130,27 +159,33 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         const roll = Math.floor(Math.random() * 6) + 1;
         let newPos = myPlayerNum === 1 ? state.player1Position : state.player2Position;
         let actionMessage: string | null = null;
+        const path: number[] = [];
 
         if (newPos + roll <= 50) {
+            for (let i = newPos + 1; i <= newPos + roll; i++) path.push(i);
             newPos += roll;
 
             if (newPos === 26) {
                 const isLadder = Math.random() < 0.5;
                 if (isLadder) {
                     newPos = 47;
+                    path.push(47);
                     actionMessage = `${currentMember.nickname} reached square 26: Climbed the ladder to 47!`;
                 } else {
                     newPos = 5;
+                    path.push(5);
                     actionMessage = `${currentMember.nickname} reached square 26: Slid down the snake to 5!`;
                 }
             } else if (SNAKES[newPos]) {
                 const dest = SNAKES[newPos];
                 actionMessage = `${currentMember.nickname} hit a snake at ${newPos}, sliding to ${dest}!`;
                 newPos = dest;
+                path.push(newPos);
             } else if (LADDERS[newPos]) {
                 const dest = LADDERS[newPos];
                 actionMessage = `${currentMember.nickname} hit a ladder at ${newPos}, climbing to ${dest}!`;
                 newPos = dest;
+                path.push(newPos);
             } else {
                 actionMessage = `${currentMember.nickname} rolled ${roll} and moved to ${newPos}.`;
             }
@@ -175,9 +210,30 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
             lastActionMessage: actionMessage || (roll === 6 ? `${currentMember.nickname} rolled a 6 and gets another turn!` : undefined)
         };
 
-        setState(newState);
         setLastRoll(roll);
         setRolling(false);
+
+        if (channelRef.current) {
+            await channelRef.current.send({
+                type: 'broadcast',
+                event: 'snake_update',
+                payload: { state: newState, roll: roll, path, playerNum: myPlayerNum, sender: currentMember.id }
+            });
+        }
+
+        if (winner) {
+            await supabase.from('love_games').insert([{
+                room_id: roomId,
+                game_type: 'snake',
+                game_state: newState
+            }]);
+        }
+
+        if (path.length > 0) {
+            playAnimationAndSync(myPlayerNum, path, newState);
+        } else {
+            setState(newState);
+        }
 
         if (channelRef.current) {
             await channelRef.current.send({
@@ -217,7 +273,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
             await channelRef.current.send({
                 type: 'broadcast',
                 event: 'snake_update',
-                payload: { state: newState }
+                payload: { state: newState, sender: currentMember.id }
             });
         }
     };
@@ -235,10 +291,15 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
     const getCellCenter = (num: number) => {
         const idx = flattenedRows.indexOf(num);
-        if (idx === -1) return { x: 0, y: 0 };
+        if (idx === -1) return { left: '0%', top: '80%', width: '10%', height: '20%' };
         const r = Math.floor(idx / 10);
         const c = idx % 10;
-        return { x: c * 10 + 5, y: r * 20 + 10 };
+        return {
+            left: `${c * 10}%`,
+            top: `${r * 20}%`,
+            width: '10%',
+            height: '20%'
+        };
     };
 
     if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse">Loading Game...</div>;
@@ -286,8 +347,8 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
                         {/* Player 1 Box */}
                         <div
-                            onClick={() => myPlayerNum === 1 && !rolling && isMyTurn ? rollDice(1) : undefined}
-                            className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-4 rounded-3xl border ${myPlayerNum === 1 && isMyTurn && !rolling ? 'border-pink-400 dark:border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] cursor-pointer hover:bg-pink-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all`}
+                            onClick={() => myPlayerNum === 1 && !rolling && !isAnimating && isMyTurn ? rollDice(1) : undefined}
+                            className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-4 rounded-3xl border ${myPlayerNum === 1 && isMyTurn && !rolling && !isAnimating ? 'border-pink-400 dark:border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] cursor-pointer hover:bg-pink-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all`}
                         >
                             <p className="text-sm font-bold text-pink-600 dark:text-pink-400 mb-2 whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
                                 {members[0] ? (members[0].nickname === currentMember.nickname ? 'You (P1)' : members[0].nickname) : 'Player 1'}
@@ -307,8 +368,8 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
                         {/* Player 2 Box */}
                         <div
-                            onClick={() => myPlayerNum === 2 && !rolling && isMyTurn ? rollDice(2) : undefined}
-                            className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-4 rounded-3xl border ${myPlayerNum === 2 && isMyTurn && !rolling && !state.winner ? 'border-blue-400 dark:border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] cursor-pointer hover:bg-blue-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all`}
+                            onClick={() => myPlayerNum === 2 && !rolling && !isAnimating && isMyTurn ? rollDice(2) : undefined}
+                            className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-4 rounded-3xl border ${myPlayerNum === 2 && isMyTurn && !rolling && !isAnimating && !state.winner ? 'border-blue-400 dark:border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] cursor-pointer hover:bg-blue-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all`}
                         >
                             <p className="text-sm font-bold text-blue-600 dark:text-blue-400 mb-2 whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
                                 {members[1] ? (members[1].nickname === currentMember.nickname ? 'You (P2)' : members[1].nickname) : 'Player 2'}
@@ -330,16 +391,16 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
                     {/* Central Single Dice */}
                     <div className="flex flex-col items-center justify-center my-6 relative w-full">
-                        {isMyTurn && !rolling && !state.winner && (
+                        {isMyTurn && !rolling && !isAnimating && !state.winner && (
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-r from-orange-400/30 to-rose-400/30 animate-pulse blur-xl z-0"></div>
                         )}
                         <button
-                            onClick={() => isMyTurn && !rolling && !state.winner ? rollDice(myPlayerNum) : undefined}
-                            disabled={!isMyTurn || rolling || !!state.winner}
+                            onClick={() => isMyTurn && !rolling && !isAnimating && !state.winner ? rollDice(myPlayerNum) : undefined}
+                            disabled={!isMyTurn || rolling || isAnimating || !!state.winner}
                             className={`
                                 relative dice-container w-28 h-28 rounded-3xl shadow-xl flex items-center justify-center border-4 border-white/90 dark:border-slate-700/90 backdrop-blur-md z-10 transition-all duration-300
                                 ${rolling ? 'animate-dice-roll shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-gradient-to-br from-orange-400 to-rose-500' : ''}
-                                ${isMyTurn && !rolling && !state.winner ? 'cursor-pointer hover:scale-105 active:scale-95 bg-gradient-to-br from-orange-400 to-rose-500 hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:-translate-y-1' : ''}
+                                ${isMyTurn && !rolling && !isAnimating && !state.winner ? 'cursor-pointer hover:scale-105 active:scale-95 bg-gradient-to-br from-orange-400 to-rose-500 hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:-translate-y-1' : ''}
                                 ${(!isMyTurn || !!state.winner) && !rolling ? 'cursor-default bg-gray-100 dark:bg-slate-800 opacity-90' : ''}
                             `}
                         >
@@ -352,7 +413,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                             )}
                         </button>
 
-                        {isMyTurn && !rolling && !state.winner && (
+                        {isMyTurn && !rolling && !isAnimating && !state.winner && (
                             <div className="mt-4 text-sm font-bold text-orange-600 dark:text-orange-400 animate-bounce bg-orange-100 dark:bg-orange-900/30 px-4 py-1.5 rounded-full shadow-sm">
                                 Tap to Roll!
                             </div>
@@ -381,37 +442,21 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                     className="absolute inset-0 w-full h-full object-fill pointer-events-none"
                 />
 
-                {/* Player Pins Mapping */}
-                {/* We map coordinates using exact percentages so they scale with the image aspect ratio */}
-                {flattenedRows.map((num, idx) => {
-                    const isP1 = state.player1Position === num;
-                    const isP2 = state.player2Position === num;
+                {/* Player 1 Pin */}
+                <div
+                    className="absolute z-20 flex items-center justify-center transition-all duration-300 ease-in-out"
+                    style={getCellCenter(visualP1)}
+                >
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-pink-500 shadow-[0_4px_10px_rgba(236,72,153,0.5)] border-2 border-white animate-bounce" title={members[0] ? members[0].nickname : "Player 1"} />
+                </div>
 
-                    if (!isP1 && !isP2) return null; // Only render active player cells
-
-                    // In a 10x5 grid, width per cell is 10%, height is 20%
-                    const r = Math.floor(idx / 10);
-                    const c = idx % 10;
-
-                    const leftPercent = c * 10;
-                    const topPercent = r * 20;
-
-                    return (
-                        <div
-                            key={`player-pos-${num}`}
-                            className="absolute pointer-events-none flex items-center justify-center gap-[2px]"
-                            style={{
-                                left: `${leftPercent}%`,
-                                top: `${topPercent}%`,
-                                width: '10%',
-                                height: '20%'
-                            }}
-                        >
-                            {isP1 && <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-pink-500 shadow-lg border-2 border-white z-20 animate-bounce" title="Player 1" />}
-                            {isP2 && <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 shadow-lg border-2 border-white z-20 animate-bounce" title="Player 2" style={isP1 ? { animationDelay: '0.2s' } : {}} />}
-                        </div>
-                    );
-                })}
+                {/* Player 2 Pin */}
+                <div
+                    className="absolute z-20 flex items-center justify-center transition-all duration-300 ease-in-out"
+                    style={getCellCenter(visualP2)}
+                >
+                    <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 shadow-[0_4px_10px_rgba(59,130,246,0.5)] border-2 border-white animate-bounce ${visualP1 === visualP2 ? 'ml-6' : ''}`} title={members[1] ? members[1].nickname : "Player 2"} />
+                </div>
             </div>
         </div>
     );
