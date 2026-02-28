@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { LoveRoomMember, SnakeLadderState } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Collector's Edition snakes and ladders 
 const SNAKES: Record<number, number> = { 43: 24, 41: 39, 23: 22, 28: 34, 12: 9 };
@@ -31,26 +32,55 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
         const init = async () => {
             try {
-                // Implement a fast timeout so it doesn't hang the UI if Supabase is down
                 const fetchPromise = supabase
                     .from('love_room_members')
                     .select('*')
                     .eq('room_id', roomId)
                     .order('joined_at', { ascending: true });
 
-                const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error("Supabase timeout")), 2000)
+                const statePromise = supabase
+                    .from('love_games')
+                    .select('*')
+                    .eq('room_id', roomId)
+                    .eq('game_type', 'snake')
+                    .order('updated_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                const safeStatePromise = (async () => {
+                    try { return await statePromise; } catch { return null; }
+                })();
+
+                const timeoutPromise = new Promise<any[]>((_, reject) =>
+                    setTimeout(() => reject(new Error("Supabase timeout")), 1500)
                 );
 
-                const response = await Promise.race([fetchPromise, timeoutPromise]) as any;
-                const data = response?.data;
-                const error = response?.error;
+                try {
+                    const [membersRes, stateRes] = await Promise.race([
+                        Promise.all([fetchPromise, safeStatePromise]),
+                        timeoutPromise
+                    ]) as any;
 
-                if (!error && data) {
-                    setMembers(data as LoveRoomMember[]);
-                    if (data.length > 0 && !state.currentTurn) {
-                        setState(s => ({ ...s, currentTurn: data[0].nickname }));
+                    const membersData = membersRes?.data;
+                    const membersError = membersRes?.error;
+
+                    if (!membersError && membersData) {
+                        const sortedData = membersData.sort((a: any, b: any) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime());
+                        setMembers(sortedData as LoveRoomMember[]);
+
+                        // We set currentTurn but ONLY if state doesn't override it later
+                        if (sortedData.length > 0 && !state.currentTurn) {
+                            setState(s => ({ ...s, currentTurn: sortedData[0].nickname }));
+                        }
                     }
+
+                    const lastGame = stateRes?.data;
+                    if (lastGame && lastGame.game_state) {
+                        const parsed = lastGame.game_state as SnakeLadderState;
+                        setState(parsed);
+                    }
+                } catch (e) {
+                    console.warn("Init timeout/error:", e);
                 }
 
                 channel = supabase.channel(`game:snake:${roomId}`, {
@@ -84,6 +114,8 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         return members.findIndex(m => m.nickname === nickname) === 0 ? 1 : 2;
     };
 
+    const roomCreator = members.length > 0 ? members[0] : null;
+
     const isMyTurn = state.currentTurn === currentMember.nickname;
     const myPlayerNum = getPlayerIndex(currentMember.nickname);
 
@@ -93,7 +125,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         setRolling(true);
 
         // Simulate roll animation delay (longer to sync with CSS animation)
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 800));
 
         const roll = Math.floor(Math.random() * 6) + 1;
         let newPos = myPlayerNum === 1 ? state.player1Position : state.player2Position;
@@ -165,6 +197,11 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
     };
 
     const resetGame = async () => {
+        if (roomCreator && currentMember.id !== roomCreator.id) {
+            toast.error(`Only ${roomCreator.nickname} can restart the game!`);
+            return;
+        }
+
         const nextTurnNick = members[0]?.nickname || null;
         const newState: SnakeLadderState = {
             player1Position: 1,
@@ -232,12 +269,18 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                     <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-2" />
                     <h3 className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">{state.winner} wins!</h3>
                     <p className="text-gray-500 dark:text-gray-400 mb-4">{state.winner === currentMember.nickname ? 'You conquered the board! 🎉' : 'Better luck next time! 🥺'}</p>
-                    <Button onClick={resetGame} className="bg-orange-500 hover:bg-orange-600 text-white w-full rounded-xl">
+                    <Button
+                        onClick={resetGame}
+                        className={`w-full rounded-xl ${roomCreator && currentMember.id !== roomCreator.id ? 'bg-gray-400 cursor-not-allowed opacity-70' : 'bg-orange-500 hover:bg-orange-600 text-white'}`}
+                    >
                         Play Again <RotateCcw className="w-4 h-4 ml-2" />
                     </Button>
+                    {roomCreator && currentMember.id !== roomCreator.id && (
+                        <p className="text-xs text-gray-400 mt-2">Waiting for {roomCreator.nickname} to restart...</p>
+                    )}
                 </div>
             ) : (
-                <div className="flex flex-col items-center gap-4 w-full">
+                <div className="flex flex-col items-center gap-6 w-full mt-2">
                     {/* Interactive Player Hub */}
                     <div className="flex gap-4 w-full justify-between items-stretch">
 
@@ -249,20 +292,10 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                             <p className="text-sm font-bold text-pink-600 dark:text-pink-400 mb-2 whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
                                 {members[0] ? (members[0].nickname === currentMember.nickname ? 'You (P1)' : members[0].nickname) : 'Player 1'}
                             </p>
-                            <div className="flex items-end justify-between w-full h-full relative">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-gray-400 uppercase font-black">Pos</span>
-                                    <span className="text-2xl font-black text-slate-700 dark:text-slate-200">{state.player1Position}</span>
-                                </div>
-                                <div className={`relative dice-container w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-500 rounded-xl shadow-inner flex items-center justify-center border-2 border-white dark:border-slate-600 ${rolling && myPlayerNum === 1 ? 'animate-dice-roll' : ''}`}>
-                                    {(!rolling && state.currentTurn !== (members[0]?.nickname || '') && lastRoll) || (state.winner && myPlayerNum === 1 && lastRoll) ? (
-                                        <span className="text-white font-black text-xl">{lastRoll}</span>
-                                    ) : (
-                                        <Dices className="text-white w-6 h-6" />
-                                    )}
-                                    {myPlayerNum === 1 && isMyTurn && !rolling && !state.winner && (
-                                        <div className="absolute -inset-1 rounded-xl ring-2 ring-pink-400/50 animate-ping"></div>
-                                    )}
+                            <div className="flex items-center justify-center w-full mt-2">
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[10px] text-gray-400 uppercase font-black">Position</span>
+                                    <span className="text-3xl font-black text-slate-700 dark:text-slate-200">{state.player1Position}</span>
                                 </div>
                             </div>
                             {state.currentTurn === (members[0]?.nickname || '') && !state.winner && (
@@ -280,20 +313,10 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                             <p className="text-sm font-bold text-blue-600 dark:text-blue-400 mb-2 whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
                                 {members[1] ? (members[1].nickname === currentMember.nickname ? 'You (P2)' : members[1].nickname) : 'Player 2'}
                             </p>
-                            <div className="flex items-end justify-between w-full h-full relative">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-gray-400 uppercase font-black">Pos</span>
-                                    <span className="text-2xl font-black text-slate-700 dark:text-slate-200">{state.player2Position}</span>
-                                </div>
-                                <div className={`relative dice-container w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl shadow-inner flex items-center justify-center border-2 border-white dark:border-slate-600 ${rolling && myPlayerNum === 2 ? 'animate-dice-roll' : ''}`}>
-                                    {(!rolling && state.currentTurn !== (members[1]?.nickname || '') && lastRoll) || (state.winner && myPlayerNum === 2 && lastRoll) ? (
-                                        <span className="text-white font-black text-xl">{lastRoll}</span>
-                                    ) : (
-                                        <Dices className="text-white w-6 h-6" />
-                                    )}
-                                    {myPlayerNum === 2 && isMyTurn && !rolling && !state.winner && (
-                                        <div className="absolute -inset-1 rounded-xl ring-2 ring-blue-400/50 animate-ping"></div>
-                                    )}
+                            <div className="flex items-center justify-center w-full mt-2">
+                                <div className="flex flex-col items-center">
+                                    <span className="text-[10px] text-gray-400 uppercase font-black">Position</span>
+                                    <span className="text-3xl font-black text-slate-700 dark:text-slate-200">{state.player2Position}</span>
                                 </div>
                             </div>
                             {state.currentTurn === (members[1]?.nickname || '') && !state.winner && (
@@ -303,6 +326,37 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                             )}
                         </div>
 
+                    </div>
+
+                    {/* Central Single Dice */}
+                    <div className="flex flex-col items-center justify-center my-6 relative w-full">
+                        {isMyTurn && !rolling && !state.winner && (
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-to-r from-orange-400/30 to-rose-400/30 animate-pulse blur-xl z-0"></div>
+                        )}
+                        <button
+                            onClick={() => isMyTurn && !rolling && !state.winner ? rollDice(myPlayerNum) : undefined}
+                            disabled={!isMyTurn || rolling || !!state.winner}
+                            className={`
+                                relative dice-container w-28 h-28 rounded-3xl shadow-xl flex items-center justify-center border-4 border-white/90 dark:border-slate-700/90 backdrop-blur-md z-10 transition-all duration-300
+                                ${rolling ? 'animate-dice-roll shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-gradient-to-br from-orange-400 to-rose-500' : ''}
+                                ${isMyTurn && !rolling && !state.winner ? 'cursor-pointer hover:scale-105 active:scale-95 bg-gradient-to-br from-orange-400 to-rose-500 hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:-translate-y-1' : ''}
+                                ${(!isMyTurn || !!state.winner) && !rolling ? 'cursor-default bg-gray-100 dark:bg-slate-800 opacity-90' : ''}
+                            `}
+                        >
+                            {!rolling && lastRoll ? (
+                                <div className="flex flex-col items-center justify-center">
+                                    <span className={`font-black text-6xl drop-shadow-lg ${isMyTurn || rolling || state.winner ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>{lastRoll}</span>
+                                </div>
+                            ) : (
+                                <Dices className={`w-14 h-14 drop-shadow-md transition-colors ${isMyTurn || rolling ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`} />
+                            )}
+                        </button>
+
+                        {isMyTurn && !rolling && !state.winner && (
+                            <div className="mt-4 text-sm font-bold text-orange-600 dark:text-orange-400 animate-bounce bg-orange-100 dark:bg-orange-900/30 px-4 py-1.5 rounded-full shadow-sm">
+                                Tap to Roll!
+                            </div>
+                        )}
                     </div>
 
                     {lastRoll === 6 && !rolling && (

@@ -3,15 +3,21 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Heart, Sparkles, Loader2 } from 'lucide-react';
+import { Heart, Sparkles, Loader2, Copy, Share2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function LoveSpacePage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [creatorName, setCreatorName] = useState("");
+
+    // Modal State
+    const [createdRoomId, setCreatedRoomId] = useState<string | null>(null);
+    const [createdRoomUrl, setCreatedRoomUrl] = useState<string>("");
+    const [copied, setCopied] = useState(false);
 
     const createRoom = async () => {
         if (!creatorName.trim()) {
@@ -34,7 +40,9 @@ export default function LoveSpacePage() {
 
             if (response.ok && data.room && data.room.id) {
                 localStorage.setItem(`loveRoom_${data.room.id}`, JSON.stringify(data.member));
-                router.push(`/love-space/${data.room.id}`);
+                const url = `${window.location.origin}/love-space/${data.room.id}`;
+                setCreatedRoomUrl(url);
+                setCreatedRoomId(data.room.id);
                 return;
             }
 
@@ -63,7 +71,9 @@ export default function LoveSpacePage() {
                 if (memberError) throw new Error(memberError.message);
 
                 localStorage.setItem(`loveRoom_${room.id}`, JSON.stringify(member));
-                router.push(`/love-space/${room.id}`);
+                const url = `${window.location.origin}/love-space/${room.id}`;
+                setCreatedRoomUrl(url);
+                setCreatedRoomId(room.id);
 
             } catch (fallbackErr: any) {
                 console.error("Direct Supabase fallback also failed:", fallbackErr);
@@ -93,67 +103,141 @@ export default function LoveSpacePage() {
                 <Sparkles size={24} />
             </div>
 
-            <Card className="w-full max-w-md shadow-xl border-pink-200 dark:border-pink-900/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10">
-                <CardHeader className="text-center pb-2">
-                    <div className="mx-auto bg-pink-100 dark:bg-pink-900/30 w-16 h-16 rounded-full flex items-center justify-center mb-4 text-pink-500 dark:text-pink-400 shadow-inner">
-                        <Heart className="w-8 h-8 fill-current" />
-                    </div>
-                    <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 dark:from-pink-400 dark:to-purple-400">
-                        Love Space
-                    </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-300 text-lg mt-2">
-                        A private room for just the two of you. Play games, chat, and connect.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-6 pt-4">
-                    <div className="space-y-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-                        <p className="flex items-center justify-center gap-2">
-                            <span className="bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">1</span>
-                            Create a private room
-                        </p>
-                        <p className="flex items-center justify-center gap-2">
-                            <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">2</span>
-                            Share the secret link
-                        </p>
-                        <p className="flex items-center justify-center gap-2">
-                            <span className="bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">3</span>
-                            Play, chat & bond in real-time
-                        </p>
+            {createdRoomId ? (
+                <Card className="w-full max-w-md shadow-2xl border-pink-300 dark:border-pink-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-20 overflow-hidden relative">
+                    {/* Decorative Background Elements */}
+                    <div className="absolute -top-10 -right-10 text-pink-500/10 dark:text-pink-900/30">
+                        <Heart className="w-40 h-40 fill-current" />
                     </div>
 
-                    {error && (
-                        <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 text-sm rounded-md text-center border border-red-100 dark:border-red-900/50">
-                            {error}
+                    <CardHeader className="text-center pt-8 pb-2">
+                        <div className="mx-auto bg-green-100 dark:bg-green-900/30 w-20 h-20 rounded-full flex items-center justify-center mb-4 text-green-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+                            <CheckCircle2 className="w-10 h-10" />
                         </div>
-                    )}
+                        <CardTitle className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+                            Room Created!
+                        </CardTitle>
+                        <CardDescription className="text-gray-600 dark:text-gray-400 text-lg mt-2 px-4">
+                            Your Love Space is ready. Invite your partner using the link below before entering.
+                        </CardDescription>
+                    </CardHeader>
 
-                    <div className="space-y-2">
-                        <label htmlFor="creatorName" className="text-sm font-medium text-pink-700 dark:text-pink-300 ml-1">Your Nickname</label>
-                        <input
-                            id="creatorName"
-                            type="text"
-                            placeholder="e.g. Pookie, Hubby..."
-                            value={creatorName}
-                            onChange={(e) => setCreatorName(e.target.value)}
-                            maxLength={20}
-                            className="flex h-12 w-full rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-center font-medium ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-pink-300 dark:placeholder:text-pink-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
-                        />
-                    </div>
+                    <CardContent className="flex flex-col gap-4 mt-6">
+                        <div className="flex items-center gap-2 bg-pink-50 dark:bg-slate-800 border border-pink-200 dark:border-slate-700 p-3 rounded-xl overflow-hidden shadow-inner">
+                            <span className="flex-1 text-sm text-gray-500 dark:text-gray-400 truncate select-all px-2">
+                                {createdRoomUrl}
+                            </span>
+                            <Button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(createdRoomUrl);
+                                    setCopied(true);
+                                    toast.success("Link copied! Ready to send.");
+                                    setTimeout(() => setCopied(false), 2000);
+                                }}
+                                variant="secondary"
+                                size="sm"
+                                className="shrink-0 bg-white dark:bg-slate-700 hover:bg-pink-100 dark:hover:bg-slate-600 text-pink-600 dark:text-pink-300 shadow-sm"
+                            >
+                                {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                            </Button>
+                        </div>
 
-                    <Button
-                        onClick={createRoom}
-                        disabled={isLoading}
-                        className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white shadow-md text-lg h-14 rounded-xl transition-all hover:scale-105 active:scale-95"
-                    >
-                        {isLoading ? (
-                            <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                        ) : (
-                            <Heart className="w-5 h-5 mr-2" />
+                        <div className="flex gap-3">
+                            <Button
+                                variant="outline"
+                                className="flex-1 border-pink-200 dark:border-slate-700 hover:bg-pink-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 h-12 rounded-xl"
+                                onClick={() => {
+                                    if (navigator.share) {
+                                        navigator.share({
+                                            title: 'Join our Love Space 💖',
+                                            text: 'I created a private space for us to play games and chat! Join here:',
+                                            url: createdRoomUrl
+                                        }).catch(console.error);
+                                    } else {
+                                        navigator.clipboard.writeText(createdRoomUrl);
+                                        toast.success("Link copied!");
+                                    }
+                                }}
+                            >
+                                <Share2 className="w-4 h-4 mr-2 text-pink-500" />
+                                Share Link
+                            </Button>
+                        </div>
+                    </CardContent>
+
+                    <CardFooter className="pb-8 pt-4">
+                        <Button
+                            onClick={() => router.push(`/love-space/${createdRoomId}`)}
+                            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg shadow-pink-500/30 text-lg h-14 rounded-xl transition-all hover:scale-[1.02] active:scale-95 group"
+                        >
+                            Enter Love Space
+                            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                    </CardFooter>
+                </Card>
+            ) : (
+                <Card className="w-full max-w-md shadow-xl border-pink-200 dark:border-pink-900/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10">
+                    <CardHeader className="text-center pb-2">
+                        <div className="mx-auto bg-pink-100 dark:bg-pink-900/30 w-16 h-16 rounded-full flex items-center justify-center mb-4 text-pink-500 dark:text-pink-400 shadow-inner">
+                            <Heart className="w-8 h-8 fill-current" />
+                        </div>
+                        <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 dark:from-pink-400 dark:to-purple-400">
+                            Love Space
+                        </CardTitle>
+                        <CardDescription className="text-gray-600 dark:text-gray-300 text-lg mt-2">
+                            A private room for just the two of you. Play games, chat, and connect.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-6 pt-4">
+                        <div className="space-y-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+                            <p className="flex items-center justify-center gap-2">
+                                <span className="bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">1</span>
+                                Create a private room
+                            </p>
+                            <p className="flex items-center justify-center gap-2">
+                                <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">2</span>
+                                Share the secret link
+                            </p>
+                            <p className="flex items-center justify-center gap-2">
+                                <span className="bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">3</span>
+                                Play, chat & bond in real-time
+                            </p>
+                        </div>
+
+                        {error && (
+                            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 text-sm rounded-md text-center border border-red-100 dark:border-red-900/50">
+                                {error}
+                            </div>
                         )}
-                        {isLoading ? "Creating..." : "Create Love Space"}
-                    </Button>
-                </CardContent>
-            </Card>
+
+                        <div className="space-y-2">
+                            <label htmlFor="creatorName" className="text-sm font-medium text-pink-700 dark:text-pink-300 ml-1">Your Nickname</label>
+                            <input
+                                id="creatorName"
+                                type="text"
+                                placeholder="e.g. Pookie, Hubby..."
+                                value={creatorName}
+                                onChange={(e) => setCreatorName(e.target.value)}
+                                maxLength={20}
+                                className="flex h-12 w-full rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-center font-medium ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-pink-300 dark:placeholder:text-pink-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
+                            />
+                        </div>
+
+                        <Button
+                            onClick={createRoom}
+                            disabled={isLoading}
+                            className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white shadow-md text-lg h-14 rounded-xl transition-all hover:scale-105 active:scale-95"
+                        >
+                            {isLoading ? (
+                                <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                            ) : (
+                                <Heart className="w-5 h-5 mr-2" />
+                            )}
+                            {isLoading ? "Creating..." : "Create Love Space"}
+                        </Button>
+                    </CardContent>
+                </Card>
+            )}
 
             <p className="mt-8 text-sm text-gray-400 dark:text-gray-500 text-center z-10">
                 Rooms automatically expire after 24 hours.

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send, Heart } from 'lucide-react';
 
-export function Chat({ roomId, currentMember }: { roomId: string, currentMember: LoveRoomMember }) {
+export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, currentMember: LoveRoomMember, onNewMessage?: () => void }) {
     const [messages, setMessages] = useState<LoveMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -35,10 +35,15 @@ export function Chat({ roomId, currentMember }: { roomId: string, currentMember:
                 { event: 'new_message' },
                 (payload: { payload: LoveMessage }) => {
                     setMessages((prev) => {
-                        // Prevent optimistic duplicates
                         if (prev.some(m => m.id === payload.payload.id || (m.message === payload.payload.message && m.sender_nickname === payload.payload.sender_nickname && Math.abs(new Date(m.created_at).getTime() - new Date(payload.payload.created_at).getTime()) < 5000))) {
                             return prev;
                         }
+
+                        // Notify parent of new message if it's from the other person
+                        if (payload.payload.sender_nickname !== currentMember.nickname && onNewMessage) {
+                            onNewMessage();
+                        }
+
                         return [...prev, payload.payload];
                     });
                 }

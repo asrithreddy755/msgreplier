@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { LoveRoomMember, XOXGameState, XOXPlayer } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Heart, X as XIcon, Circle, RotateCcw, Trophy } from 'lucide-react';
+import { toast } from 'sonner';
 
 const INITIAL_STATE: XOXGameState = {
     board: Array(9).fill(null),
@@ -23,6 +24,7 @@ const WINNING_COMBOS = [
 export function XOX({ roomId, currentMember }: { roomId: string, currentMember: LoveRoomMember }) {
     const [gameState, setGameState] = useState<XOXGameState>(INITIAL_STATE);
     const [myPlayer, setMyPlayer] = useState<XOXPlayer>(null);
+    const [members, setMembers] = useState<LoveRoomMember[]>([]);
     const [loading, setLoading] = useState(true);
     const channelRef = useRef<any>(null);
 
@@ -32,31 +34,12 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
 
         const init = async () => {
             try {
-                // 1. Determine player with a fast timeout
                 const fetchPromise = supabase
                     .from('love_room_members')
                     .select('*')
                     .eq('room_id', roomId)
                     .order('joined_at', { ascending: true });
 
-                const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error("Supabase timeout")), 2000)
-                );
-
-                const response = await Promise.race([fetchPromise, timeoutPromise]) as any;
-                const members = response?.data;
-                const error = response?.error;
-
-                if (!error && members) {
-                    // First to join is X, second is O
-                    const pIndex = members.findIndex((m: any) => m.id === currentMember.id);
-                    if (pIndex === 0) setMyPlayer('X');
-                    else if (pIndex === 1) setMyPlayer('O');
-                }
-
-                // 2. Fetch latest game state from DB if any (to resume) or we rely on broadcast
-                // We will just start fresh since we might play multiple times, 
-                // but let's check if there's an active non-finished game.
                 const statePromise = supabase
                     .from('love_games')
                     .select('*')
@@ -66,13 +49,46 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
                     .limit(1)
                     .single();
 
-                const stateResponse = await Promise.race([statePromise, timeoutPromise]).catch(() => null) as any;
-                const lastGame = stateResponse?.data;
+                const safeStatePromise = (async () => {
+                    try { return await statePromise; } catch { return null; }
+                })();
 
-                if (lastGame && lastGame.game_state) {
-                    const parsed = lastGame.game_state as XOXGameState;
-                    // If the game ended, we can show it, but usually people want to play again so we let them reset
-                    setGameState(parsed);
+                const timeoutPromise = new Promise<any[]>((_, reject) =>
+                    setTimeout(() => reject(new Error("Supabase timeout")), 1500)
+                );
+
+                try {
+                    const [membersRes, stateRes] = await Promise.race([
+                        Promise.all([fetchPromise, safeStatePromise]),
+                        timeoutPromise
+                    ]) as any;
+
+                    const membersData = membersRes?.data;
+                    const error = membersRes?.error;
+
+                    if (!error && membersData) {
+                        const sortedMembers = membersData.sort((a: any, b: any) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime());
+                        setMembers(sortedMembers as LoveRoomMember[]);
+
+                        if (sortedMembers.length > 0 && sortedMembers[0].id === currentMember.id) {
+                            setMyPlayer('X');
+                        } else if (sortedMembers.length > 1 && sortedMembers[1].id === currentMember.id) {
+                            setMyPlayer('O');
+                        } else {
+                            setMyPlayer('X');
+                        }
+                    } else {
+                        setMyPlayer('X');
+                    }
+
+                    const lastGame = stateRes?.data;
+                    if (lastGame && lastGame.game_state) {
+                        const parsed = lastGame.game_state as XOXGameState;
+                        setGameState(parsed);
+                    }
+                } catch (e) {
+                    console.warn("Init timeout/error:", e);
+                    setMyPlayer('X'); // Fallback purely for local play
                 }
 
                 // 3. Subscribe to broadcast
@@ -155,7 +171,14 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         }
     };
 
+    const roomCreator = members.length > 0 ? members[0] : null;
+
     const resetGame = async () => {
+        if (roomCreator && currentMember.id !== roomCreator.id) {
+            toast.error(`Only ${roomCreator.nickname} can restart the game!`);
+            return;
+        }
+
         // Alternate who starts the round
         const nextStarter = gameState.roundStarter === 'X' ? 'O' : 'X';
         const newState: XOXGameState = {
@@ -175,7 +198,17 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         }
     };
 
-    if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse">Loading Game...</div>;
+    if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse w-full text-center">Loading Game...</div>;
+
+    if (!myPlayer) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 gap-4 p-8 text-center text-sm">
+                <div className="w-12 h-12 rounded-full border-4 border-purple-200 border-t-purple-500 animate-spin"></div>
+                <p>Waiting for the game to initialize...</p>
+                <p className="text-xs opacity-70">If this takes too long, try reloading the page.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col items-center w-full max-w-sm mx-auto">
@@ -215,12 +248,18 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
                         <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 dark:from-pink-400 dark:to-purple-400">
                             {gameState.winner === 'Draw' ? "It's a draw!" : `${gameState.winner} wins!`}
                         </h3>
-                        <p className="text-gray-500 dark:text-gray-400 mb-6 mt-1">
+                        <p className="text-gray-500 dark:text-gray-400 mb-6 mt-1 text-center">
                             {gameState.winner === myPlayer ? "You won! 💖" : (gameState.winner !== 'Draw' ? "Better luck next time! 🥺" : "A perfect match! 🤝")}
                         </p>
-                        <Button onClick={resetGame} className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-full shadow-md text-white px-8">
+                        <Button
+                            onClick={resetGame}
+                            className={`bg-gradient-to-r from-pink-500 to-purple-500 rounded-full shadow-md text-white px-8 ${roomCreator && currentMember.id !== roomCreator.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
                             Play Again <RotateCcw className="w-4 h-4 ml-2" />
                         </Button>
+                        {roomCreator && currentMember.id !== roomCreator.id && (
+                            <p className="text-xs text-slate-500 mt-3 absolute bottom-4">Waiting for {roomCreator.nickname} to restart...</p>
+                        )}
                     </div>
                 )}
 
@@ -242,9 +281,18 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
             </div>
 
             {!gameState.winner && (
-                <Button variant="ghost" className="mt-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" onClick={resetGame}>
-                    <RotateCcw className="w-4 h-4 mr-2" /> Restart Game
-                </Button>
+                <div className="mt-6 flex flex-col items-center">
+                    <Button
+                        variant="ghost"
+                        className={`text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 ${roomCreator && currentMember.id !== roomCreator.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={resetGame}
+                    >
+                        <RotateCcw className="w-4 h-4 mr-2" /> Restart Game
+                    </Button>
+                    {roomCreator && currentMember.id !== roomCreator.id && (
+                        <p className="text-[10px] text-gray-400 mt-1">Only {roomCreator.nickname} can restart</p>
+                    )}
+                </div>
             )}
         </div>
     );

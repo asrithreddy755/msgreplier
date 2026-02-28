@@ -23,6 +23,11 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
 
+    // Presence & Notification State
+    const [activeTab, setActiveTab] = useState('chat');
+    const [otherMemberTab, setOtherMemberTab] = useState<string | null>(null);
+    const [unreadCount, setUnreadCount] = useState(0);
+
     useEffect(() => {
         const fetchRoom = async () => {
             setLoading(true);
@@ -80,6 +85,59 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         }
     }, [roomId]);
 
+    // Presence tracking for tabs
+    useEffect(() => {
+        if (!roomId || !currentMember) return;
+
+        const presenceChannel = supabase.channel(`presence_${roomId}`, {
+            config: {
+                presence: {
+                    key: currentMember.id,
+                },
+            },
+        });
+
+        presenceChannel
+            .on('presence', { event: 'sync' }, () => {
+                const state = presenceChannel.presenceState();
+
+                // Find someone else in the room who is not me
+                let foundOtherTab: string | null = null;
+                for (const key in state) {
+                    if (key !== currentMember.id) {
+                        const presenceData = state[key][0] as any;
+                        if (presenceData && presenceData.tab) {
+                            foundOtherTab = presenceData.tab;
+                        }
+                    }
+                }
+                setOtherMemberTab(foundOtherTab);
+            })
+            .subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await presenceChannel.track({
+                        tab: activeTab,
+                        nickname: currentMember.nickname
+                    });
+                }
+            });
+
+        // Whenever activeTab changes, update presence tracking
+        presenceChannel.track({
+            tab: activeTab,
+            nickname: currentMember.nickname
+        });
+
+        // Reset unread count if we switch to chat
+        if (activeTab === 'chat') {
+            setUnreadCount(0);
+        }
+
+        return () => {
+            supabase.removeChannel(presenceChannel);
+        };
+    }, [roomId, currentMember, activeTab]);
+
     const copyLink = () => {
         const url = window.location.href;
         navigator.clipboard.writeText(url);
@@ -136,19 +194,44 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
             {/* Main Content Area Using Tabs */}
             <div className="flex-1 overflow-hidden flex flex-col z-10 w-full">
-                <Tabs defaultValue="chat" className="flex-1 flex flex-col h-full w-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full w-full">
                     <TabsList className="grid grid-cols-4 w-full bg-white/40 dark:bg-slate-900/40 p-1 mx-0 sm:mx-4 my-2 rounded-none sm:rounded-xl backdrop-blur-sm self-center sm:w-[calc(100%-2rem)] h-12 border-y sm:border border-pink-100 dark:border-pink-900/50 shadow-sm overflow-x-auto hide-scrollbar flex-shrink-0">
-                        <TabsTrigger value="chat" className="rounded-lg data-[state=active]:bg-pink-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">Chat</TabsTrigger>
-                        <TabsTrigger value="xox" className="rounded-lg data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">XOX</TabsTrigger>
-                        <TabsTrigger value="truth" className="rounded-lg data-[state=active]:bg-rose-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">Truth/Dare</TabsTrigger>
-                        <TabsTrigger value="snake" className="rounded-lg data-[state=active]:bg-orange-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">Snake</TabsTrigger>
+                        <TabsTrigger value="chat" className="relative rounded-lg data-[state=active]:bg-pink-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
+                            Chat
+                            {otherMemberTab === 'chat' && <div className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
+                            {unreadCount > 0 && (
+                                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow-md">
+                                    {unreadCount}
+                                </div>
+                            )}
+                        </TabsTrigger>
+                        <TabsTrigger value="xox" className="relative rounded-lg data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
+                            XOX
+                            {otherMemberTab === 'xox' && <div className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
+                        </TabsTrigger>
+                        <TabsTrigger value="truth" className="relative rounded-lg data-[state=active]:bg-rose-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
+                            Truth/Dare
+                            {otherMemberTab === 'truth' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
+                        </TabsTrigger>
+                        <TabsTrigger value="snake" className="relative rounded-lg data-[state=active]:bg-orange-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
+                            Snake
+                            {otherMemberTab === 'snake' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
+                        </TabsTrigger>
                     </TabsList>
 
 
                     <div className="flex-1 overflow-hidden relative flex flex-col">
                         <TabsContent value="chat" className="flex-1 h-full mt-0 data-[state=inactive]:hidden px-0 sm:px-4 pb-0 sm:pb-4 flex flex-col">
                             <div className="flex-1 h-full bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-inner border-t sm:border border-pink-100 dark:border-pink-900/50 flex flex-col overflow-hidden">
-                                <Chat roomId={roomId} currentMember={currentMember} />
+                                <Chat
+                                    roomId={roomId}
+                                    currentMember={currentMember}
+                                    onNewMessage={() => {
+                                        if (activeTab !== 'chat') {
+                                            setUnreadCount(prev => prev + 1);
+                                        }
+                                    }}
+                                />
                             </div>
                         </TabsContent>
                         <TabsContent value="xox" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
