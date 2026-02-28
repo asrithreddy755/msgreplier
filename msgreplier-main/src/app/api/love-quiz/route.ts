@@ -3,19 +3,31 @@ import { NextResponse } from "next/server";
 
 export const runtime = "edge";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const getEnvStatus = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    return {
+        supabaseUrl,
+        supabaseServiceKey,
+        hasSupabaseUrl: Boolean(supabaseUrl),
+        hasServiceRoleKey: Boolean(supabaseServiceKey)
+    };
+};
 
 const getSupabaseAdmin = () => {
-    if (!supabaseUrl || !supabaseServiceKey) {
-        return null;
+    const { supabaseUrl, supabaseServiceKey, hasSupabaseUrl, hasServiceRoleKey } = getEnvStatus();
+    if (!hasSupabaseUrl || !hasServiceRoleKey) {
+        return { client: null, envStatus: { hasSupabaseUrl, hasServiceRoleKey } };
     }
-    return createClient(supabaseUrl, supabaseServiceKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    });
+    return {
+        client: createClient(supabaseUrl, supabaseServiceKey, {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        }),
+        envStatus: { hasSupabaseUrl, hasServiceRoleKey }
+    };
 };
 
 export async function GET(request: Request) {
@@ -28,9 +40,9 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "Missing quiz ID." }, { status: 400 });
         }
 
-        const supabaseAdmin = getSupabaseAdmin();
+        const { client: supabaseAdmin, envStatus } = getSupabaseAdmin();
         if (!supabaseAdmin) {
-            return NextResponse.json({ error: "Server misconfiguration: missing Supabase config." }, { status: 500 });
+            return NextResponse.json({ error: "Server misconfiguration: missing Supabase config.", env: envStatus }, { status: 500 });
         }
 
         const { data, error } = await supabaseAdmin
@@ -58,9 +70,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
         }
 
-        const supabaseAdmin = getSupabaseAdmin();
+        const { client: supabaseAdmin, envStatus } = getSupabaseAdmin();
         if (!supabaseAdmin) {
-            return NextResponse.json({ error: "Server misconfiguration: missing Supabase config." }, { status: 500 });
+            return NextResponse.json({ error: "Server misconfiguration: missing Supabase config.", env: envStatus }, { status: 500 });
         }
 
         const { data, error } = await supabaseAdmin

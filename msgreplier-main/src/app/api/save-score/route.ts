@@ -3,19 +3,31 @@ import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const getEnvStatus = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+    return {
+        supabaseUrl,
+        supabaseServiceKey,
+        hasSupabaseUrl: Boolean(supabaseUrl),
+        hasServiceRoleKey: Boolean(supabaseServiceKey)
+    };
+};
 
 const getSupabaseAdmin = () => {
-    if (!supabaseUrl || !supabaseServiceKey) {
-        return null;
+    const { supabaseUrl, supabaseServiceKey, hasSupabaseUrl, hasServiceRoleKey } = getEnvStatus();
+    if (!hasSupabaseUrl || !hasServiceRoleKey) {
+        return { client: null, envStatus: { hasSupabaseUrl, hasServiceRoleKey } };
     }
-    return createClient(supabaseUrl, supabaseServiceKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    });
+    return {
+        client: createClient(supabaseUrl, supabaseServiceKey, {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        }),
+        envStatus: { hasSupabaseUrl, hasServiceRoleKey }
+    };
 };
 
 type QuizQuestion = {
@@ -96,11 +108,8 @@ const buildDetailedResult = (quiz: LoveQuiz, answers: Record<string, number>): D
 
 export async function POST(request: Request) {
     try {
-        const envStatus = {
-            hasSupabaseUrl: Boolean(supabaseUrl),
-            hasServiceRoleKey: Boolean(supabaseServiceKey)
-        };
-        console.info("save-score: env status", envStatus);
+        const envStatus = getEnvStatus();
+        console.info("save-score: env status", { hasSupabaseUrl: envStatus.hasSupabaseUrl, hasServiceRoleKey: envStatus.hasServiceRoleKey });
         const url = new URL(request.url);
         if (url.searchParams.get("debug") === "1") {
             return NextResponse.json({ envCheck: { hasUrl: envStatus.hasSupabaseUrl, hasServiceRole: envStatus.hasServiceRoleKey } });
@@ -122,10 +131,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Missing quiz_id or valid score.", stage: "validate" }, { status: 400 });
         }
 
-        const supabaseAdmin = getSupabaseAdmin();
+        const { client: supabaseAdmin, envStatus: runtimeEnv } = getSupabaseAdmin();
         if (!supabaseAdmin) {
-            console.error("save-score: missing supabase admin", envStatus);
-            return NextResponse.json({ error: "Server misconfiguration: missing Supabase config.", stage: "init", env: envStatus }, { status: 500 });
+            console.error("save-score: missing supabase admin", runtimeEnv);
+            return NextResponse.json({ error: "Server misconfiguration: missing Supabase config.", stage: "init", env: runtimeEnv }, { status: 500 });
         }
 
         const normalizedAnswers = typeof answers === "object" && !Array.isArray(answers)

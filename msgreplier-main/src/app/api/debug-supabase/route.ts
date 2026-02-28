@@ -3,19 +3,31 @@ import { NextResponse } from "next/server";
 
 export const runtime = "edge";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const getEnvStatus = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    return {
+        supabaseUrl,
+        supabaseServiceKey,
+        hasSupabaseUrl: Boolean(supabaseUrl),
+        hasServiceRoleKey: Boolean(supabaseServiceKey)
+    };
+};
 
 const getSupabaseAdmin = () => {
-    if (!supabaseUrl || !supabaseServiceKey) {
-        return null;
+    const { supabaseUrl, supabaseServiceKey, hasSupabaseUrl, hasServiceRoleKey } = getEnvStatus();
+    if (!hasSupabaseUrl || !hasServiceRoleKey) {
+        return { client: null, envStatus: { hasSupabaseUrl, hasServiceRoleKey } };
     }
-    return createClient(supabaseUrl, supabaseServiceKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    });
+    return {
+        client: createClient(supabaseUrl, supabaseServiceKey, {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        }),
+        envStatus: { hasSupabaseUrl, hasServiceRoleKey }
+    };
 };
 
 const summarizeSupabaseError = (error: unknown) => {
@@ -32,12 +44,13 @@ const summarizeSupabaseError = (error: unknown) => {
 };
 
 export async function GET() {
+    const envStatus = getEnvStatus();
     const envCheck = {
-        hasUrl: Boolean(supabaseUrl),
-        hasServiceRole: Boolean(supabaseServiceKey)
+        hasUrl: envStatus.hasSupabaseUrl,
+        hasServiceRole: envStatus.hasServiceRoleKey
     };
 
-    const supabaseAdmin = getSupabaseAdmin();
+    const { client: supabaseAdmin } = getSupabaseAdmin();
     if (!supabaseAdmin) {
         return NextResponse.json({ ok: false, envCheck, error: "Missing Supabase config." }, { status: 500 });
     }
