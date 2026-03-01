@@ -42,23 +42,29 @@ const nextConfig = {
       rule.test?.test?.('.svg'),
     );
 
+    if (fileLoaderRule) {
+      fileLoaderRule.exclude = /\.svg$/i;
+    }
+
     config.module.rules.push(
+      // Vite parity: *.svg WITHOUT ?react returns a static URL string
       {
-        ...fileLoaderRule,
         test: /\.svg$/i,
-        resourceQuery: /url/,
+        issuer: /\.[jt]sx?$/,
+        resourceQuery: { not: [/react/] },
+        type: 'asset/resource',
+        generator: {
+          filename: 'static/media/[name].[hash][ext]'
+        }
       },
+      // Vite parity: *.svg?react returns a React Component
       {
         test: /\.svg$/i,
-        issuer: fileLoaderRule.issuer,
+        issuer: /\.[jt]sx?$/,
         resourceQuery: /react/,
         use: ['@svgr/webpack'],
       }
     );
-
-    if (fileLoaderRule) {
-      fileLoaderRule.exclude = /\.svg$/i;
-    }
 
     return config;
   },
