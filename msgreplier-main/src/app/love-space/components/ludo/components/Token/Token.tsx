@@ -5,7 +5,8 @@ import { type TPlayer, type TPlayerColour, type TTokenClickData } from '../../ty
 import { type TToken } from '../../types';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../state/store';
-import TokenImage from '../../assets/token.svg?react';
+import TokenImageRaw from '../../assets/token.svg?react';
+const TokenImage = (TokenImageRaw as any).default || TokenImageRaw;
 import { useCoordsToPosition } from '../../hooks/useCoordsToPosition';
 import { setTokenTransitionTime } from '../../utils/setTokenTransitionTime';
 import { changeTurnThunk } from '../../state/thunks/changeTurnThunk';

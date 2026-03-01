@@ -1,5 +1,6 @@
 // @ts-nocheck
-import BoardImage from '../../assets/board.svg?react';
+import BoardImageRaw from '../../assets/board.svg?react';
+const BoardImage = (BoardImageRaw as any).default || BoardImageRaw;
 import Token from '../Token/Token';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../state/store';

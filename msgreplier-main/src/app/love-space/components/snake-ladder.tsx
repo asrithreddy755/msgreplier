@@ -7,8 +7,8 @@ import { Dices, Trophy, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Collector's Edition snakes and ladders 
-const SNAKES: Record<number, number> = { 43: 24, 41: 39, 23: 22, 28: 34, 12: 9 };
-const LADDERS: Record<number, number> = { 3: 21, 4: 17, 29: 49 }; // 26 handled dynamically
+const SNAKES: Record<number, number> = { 41: 39, 43: 24, 33: 27, 22: 19, 13: 9 };
+const LADDERS: Record<number, number> = { 3: 18, 6: 16, 14: 26, 32: 49 };
 
 // 5x10 board logic
 const BOARDS_CELLS = Array.from({ length: 50 }, (_, i) => i + 1);
@@ -217,18 +217,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
             for (let i = newPos + 1; i <= newPos + roll; i++) path.push(i);
             newPos += roll;
 
-            if (newPos === 26) {
-                const isLadder = Math.random() < 0.5;
-                if (isLadder) {
-                    newPos = 47;
-                    path.push(47);
-                    actionMessage = `${currentMember.nickname} reached square 26: Climbed the ladder to 47!`;
-                } else {
-                    newPos = 5;
-                    path.push(5);
-                    actionMessage = `${currentMember.nickname} reached square 26: Slid down the snake to 5!`;
-                }
-            } else if (SNAKES[newPos]) {
+            if (SNAKES[newPos]) {
                 const dest = SNAKES[newPos];
                 actionMessage = `${currentMember.nickname} hit a snake at ${newPos}, sliding to ${dest}!`;
                 newPos = dest;
