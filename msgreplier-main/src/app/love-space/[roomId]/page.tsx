@@ -28,6 +28,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [activeTab, setActiveTab] = useState('home');
     const [otherMemberTab, setOtherMemberTab] = useState<string | null>(null);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [showGameChat, setShowGameChat] = useState(false);
     const channelRef = useRef<RealtimeChannel | null>(null);
 
     useEffect(() => {
@@ -125,18 +126,17 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
     // Track activeTab changes
     useEffect(() => {
-        if (activeTab === 'chat') {
+        if (activeTab === 'chat' || showGameChat) {
             setUnreadCount(0);
         }
 
-        // Update presence when tab changes
         if (channelRef.current && currentMember) {
             channelRef.current.track({
                 activeTab: activeTab,
                 updatedAt: new Date().toISOString(),
             }).catch(console.error);
         }
-    }, [activeTab, currentMember]);
+    }, [activeTab, currentMember, showGameChat]);
 
     const copyLink = () => {
         const url = window.location.href;
@@ -296,7 +296,6 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
                         <TabsContent value="chat" className="flex-1 h-full mt-0 data-[state=inactive]:hidden px-0 sm:px-4 pb-0 sm:pb-4 flex flex-col">
                             <div className="flex-1 h-full bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-inner border-t sm:border border-pink-100 dark:border-pink-900/50 flex flex-col overflow-hidden relative">
-                                {/* Back button for mobile chat view since tab is hidden */}
                                 <div className="absolute top-2 left-2 z-10 w-full sm:hidden p-2 pointer-events-none">
                                     <Button
                                         variant="outline"
@@ -311,7 +310,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     roomId={roomId}
                                     currentMember={currentMember}
                                     onNewMessage={() => {
-                                        if (activeTab !== 'chat') {
+                                        if (activeTab !== 'chat' && !showGameChat) {
                                             setUnreadCount(prev => prev + 1);
                                         }
                                     }}
@@ -319,20 +318,90 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                             </div>
                         </TabsContent>
                         <TabsContent value="xox" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
-                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-purple-100 dark:border-purple-900/50 overflow-hidden flex items-center justify-center">
+                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-purple-100 dark:border-purple-900/50 overflow-hidden flex items-center justify-center relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowGameChat(true)}
+                                    className="absolute top-3 right-3 h-9 w-9 rounded-full bg-purple-500 hover:bg-purple-600 text-white flex items-center justify-center shadow-md border border-white/60"
+                                >
+                                    <MessageCircle className="w-4 h-4" />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[1.15rem] h-4 rounded-full flex items-center justify-center px-1 shadow-md border border-white">
+                                            {unreadCount}
+                                        </span>
+                                    )}
+                                </button>
                                 <XOX roomId={roomId} currentMember={currentMember} />
                             </div>
                         </TabsContent>
                         <TabsContent value="ludo" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
-                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-emerald-100 dark:border-emerald-900/50 overflow-y-auto p-3">
+                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-emerald-100 dark:border-emerald-900/50 overflow-y-auto p-3 relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowGameChat(true)}
+                                    className="absolute top-3 right-3 h-9 w-9 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-md border border-white/60"
+                                >
+                                    <MessageCircle className="w-4 h-4" />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[1.15rem] h-4 rounded-full flex items-center justify-center px-1 shadow-md border border-white">
+                                            {unreadCount}
+                                        </span>
+                                    )}
+                                </button>
                                 <Ludo roomId={roomId} currentMember={currentMember} />
                             </div>
                         </TabsContent>
                         <TabsContent value="snake" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
-                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-orange-100 dark:border-orange-900/50 overflow-y-auto p-3">
+                            <div className="h-full bg-white dark:bg-slate-800 rounded-2xl shadow-inner border border-orange-100 dark:border-orange-900/50 overflow-y-auto p-3 relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowGameChat(true)}
+                                    className="absolute top-3 right-3 h-9 w-9 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md border border-white/60"
+                                >
+                                    <MessageCircle className="w-4 h-4" />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[1.15rem] h-4 rounded-full flex items-center justify-center px-1 shadow-md border border-white">
+                                            {unreadCount}
+                                        </span>
+                                    )}
+                                </button>
                                 <SnakeLadder roomId={roomId} currentMember={currentMember} />
                             </div>
                         </TabsContent>
+                        {showGameChat && (
+                            <div className="absolute inset-0 z-30 flex flex-col bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm">
+                                <div className="flex items-center justify-between px-3 py-2 border-b border-pink-100 dark:border-pink-900/40 bg-white/90 dark:bg-slate-900/90">
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-8 w-8 rounded-full border-pink-200 text-pink-600 dark:border-pink-800 dark:text-pink-300 bg-white dark:bg-slate-900"
+                                            onClick={() => setShowGameChat(false)}
+                                        >
+                                            <ArrowLeft className="w-4 h-4" />
+                                        </Button>
+                                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                                            Back to game
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                        <MessageCircle className="w-4 h-4 text-pink-500" />
+                                        <span>Chat</span>
+                                    </div>
+                                </div>
+                                <div className="flex-1 flex flex-col overflow-hidden px-2 pb-2 pt-1">
+                                    <Chat
+                                        roomId={roomId}
+                                        currentMember={currentMember}
+                                        onNewMessage={() => {
+                                            if (!showGameChat && activeTab !== 'chat') {
+                                                setUnreadCount(prev => prev + 1);
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </Tabs>
             </div>

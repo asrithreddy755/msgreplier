@@ -1,4 +1,4 @@
-.game-finish-player-item {
+.gameFinishPlayerItem {
   --padding: calc(var(--board-tile-size) * 0.3);
   display: grid;
   grid-template-columns: 0.5fr 0.5fr 1.5fr 0.5fr;
@@ -8,22 +8,22 @@
   padding: var(--padding) 0 var(--padding) 0;
 }
 
-.game-finish-player-item > * {
+.gameFinishPlayerItem > * {
   justify-self: center;
   align-self: center;
 }
-.game-finish-player-item .game-finish-player-name {
+.gameFinishPlayerItem .gameFinishPlayerName {
   font-size: calc(var(--board-tile-size) * 0.65);
   font-weight: 400;
   word-break: break-all;
 }
 
-.game-finish-player-item .game-finish-time {
+.gameFinishPlayerItem .gameFinishTime {
   font-size: calc(var(--board-tile-size) * 0.5);
   font-weight: 400;
   color: #5f5f5f;
 }
-.game-finish-player-item .player-colour-dot {
+.gameFinishPlayerItem .playerColourDot {
   width: calc(var(--board-tile-size) * 0.55);
   border: 1px solid black;
   border-radius: 1000px;

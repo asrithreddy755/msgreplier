@@ -5,7 +5,7 @@
   height: var(--board-side-length);
   width: var(--board-side-length);
 }
-.board-image {
+.boardImage {
   height: var(--board-side-length);
   width: var(--board-side-length);
   background-color: white;
