@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
 import { LoveRoomMember, SnakeLadderState } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw } from 'lucide-react';
@@ -25,7 +24,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
     const [loading, setLoading] = useState(true);
     const [rolling, setRolling] = useState(false);
     const [lastRoll, setLastRoll] = useState<number | null>(null);
-    const channelRef = useRef<any>(null);
+    const lastStateRef = useRef<string | null>(null);
 
     const [visualP1, setVisualP1] = useState(1);
     const [visualP2, setVisualP2] = useState(1);
@@ -51,84 +50,27 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
     };
 
     useEffect(() => {
-        let channel: any;
-
         const init = async () => {
             try {
-                const fetchPromise = supabase
-                    .from('love_room_members')
-                    .select('*')
-                    .eq('room_id', roomId)
-                    .order('joined_at', { ascending: true });
+                const [membersRes, stateRes] = await Promise.all([
+                    fetch(`/api/love-space/members?roomId=${roomId}`).then(res => res.json()),
+                    fetch(`/api/love-space/games?roomId=${roomId}&gameType=snake`).then(res => res.json())
+                ]);
 
-                const statePromise = supabase
-                    .from('love_games')
-                    .select('*')
-                    .eq('room_id', roomId)
-                    .eq('game_type', 'snake')
-                    .order('updated_at', { ascending: false })
-                    .limit(1)
-                    .single();
+                const membersData = Array.isArray(membersRes?.members) ? membersRes.members : [];
+                const sortedData = membersData.sort((a: LoveRoomMember, b: LoveRoomMember) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime());
+                setMembers(sortedData as LoveRoomMember[]);
 
-                const safeStatePromise = (async () => {
-                    try { return await statePromise; } catch { return null; }
-                })();
-
-                const timeoutPromise = new Promise<any[]>((_, reject) =>
-                    setTimeout(() => reject(new Error("Supabase timeout")), 1500)
-                );
-
-                try {
-                    const [membersRes, stateRes] = await Promise.race([
-                        Promise.all([fetchPromise, safeStatePromise]),
-                        timeoutPromise
-                    ]) as any;
-
-                    const membersData = membersRes?.data;
-                    const membersError = membersRes?.error;
-
-                    if (!membersError && membersData) {
-                        const sortedData = membersData.sort((a: any, b: any) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime());
-                        setMembers(sortedData as LoveRoomMember[]);
-
-                        // We set currentTurn but ONLY if state doesn't override it later
-                        if (sortedData.length > 0 && !state.currentTurn) {
-                            setState(s => ({ ...s, currentTurn: sortedData[0].nickname }));
-                        }
-                    }
-
-                    const lastGame = stateRes?.data;
-                    if (lastGame && lastGame.game_state) {
-                        const parsed = lastGame.game_state as SnakeLadderState;
-                        setState(parsed);
-                    }
-                } catch (e) {
-                    console.warn("Init timeout/error:", e);
+                if (sortedData.length > 0 && !state.currentTurn) {
+                    setState(s => ({ ...s, currentTurn: sortedData[0].nickname }));
                 }
 
-                channel = supabase.channel(`game:snake:${roomId}`, {
-                    config: { broadcast: { self: true } }
-                });
-
-                channel.on('broadcast', { event: 'snake_update' }, (payload: { payload: { state: SnakeLadderState, roll?: number, path?: number[], playerNum?: number, sender?: string } }) => {
-                    if (payload.payload.sender === currentMember.id) return;
-
-                    if (payload.payload.roll) {
-                        setLastRoll(payload.payload.roll);
-                    }
-                    if (payload.payload.path && payload.payload.playerNum) {
-                        playAnimationAndSync(payload.payload.playerNum, payload.payload.path, payload.payload.state);
-                    } else {
-                        setState(payload.payload.state);
-                    }
-                });
-
-                channel.subscribe((status: string) => {
-                    if (status === 'SUBSCRIBED') {
-                        console.log('Snake channel subscribed');
-                    }
-                });
-                channelRef.current = channel;
+                const lastGame = stateRes?.game;
+                if (lastGame?.game_state) {
+                    const parsed = lastGame.game_state as SnakeLadderState;
+                    setState(parsed);
+                    lastStateRef.current = JSON.stringify(parsed);
+                }
             } catch (err) {
                 console.error("Failed to init snake ladder:", err);
             } finally {
@@ -138,8 +80,67 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
         init();
 
+    }, [roomId]);
+
+    useEffect(() => {
+        let isMounted = true;
+        let pollInterval: ReturnType<typeof setInterval> | null = null;
+        let eventSource: EventSource | null = null;
+
+        const poll = async () => {
+            try {
+                const data = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=snake`).then(res => res.json());
+                if (!isMounted) return;
+                const lastGame = data?.game;
+                if (lastGame?.game_state) {
+                    const nextState = lastGame.game_state as SnakeLadderState;
+                    const serialized = JSON.stringify(nextState);
+                    if (serialized !== lastStateRef.current) {
+                        lastStateRef.current = serialized;
+                        setState(nextState);
+                    }
+                }
+            } catch {
+                // ignore polling errors
+            }
+        };
+
+        const startPolling = () => {
+            if (pollInterval) return;
+            pollInterval = setInterval(poll, 2000);
+        };
+
+        try {
+            eventSource = new EventSource(`/api/love-space/games/stream?roomId=${roomId}&gameType=snake`);
+            eventSource.addEventListener('game', (event) => {
+                try {
+                    const payload = JSON.parse((event as MessageEvent).data) as { game_state?: SnakeLadderState };
+                    if (payload?.game_state) {
+                        const serialized = JSON.stringify(payload.game_state);
+                        if (serialized !== lastStateRef.current) {
+                            lastStateRef.current = serialized;
+                            setState(payload.game_state);
+                        }
+                    }
+                } catch {
+                    // ignore parse errors
+                }
+            });
+            eventSource.addEventListener('error', () => {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+                startPolling();
+            });
+        } catch {
+            startPolling();
+        }
+
         return () => {
-            if (channelRef.current) supabase.removeChannel(channelRef.current);
+            isMounted = false;
+            if (pollInterval) clearInterval(pollInterval);
+            if (eventSource) eventSource.close();
         };
     }, [roomId]);
 
@@ -217,21 +218,11 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         setLastRoll(roll);
         setRolling(false);
 
-        if (channelRef.current) {
-            await channelRef.current.send({
-                type: 'broadcast',
-                event: 'snake_update',
-                payload: { state: newState, roll: roll, path, playerNum: myPlayerNum, sender: currentMember.id }
-            });
-        }
-
-        if (winner) {
-            await supabase.from('love_games').insert([{
-                room_id: roomId,
-                game_type: 'snake',
-                game_state: newState
-            }]);
-        }
+        await fetch('/api/love-space/games', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, gameType: 'snake', gameState: newState })
+        });
 
         if (path.length > 0) {
             playAnimationAndSync(myPlayerNum, path, newState);
@@ -257,13 +248,11 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         setState(newState);
         setLastRoll(null);
 
-        if (channelRef.current) {
-            await channelRef.current.send({
-                type: 'broadcast',
-                event: 'snake_update',
-                payload: { state: newState, sender: currentMember.id }
-            });
-        }
+        await fetch('/api/love-space/games', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, gameType: 'snake', gameState: newState })
+        });
     };
 
     // Board generation (memoized to avoid regenerating on every render/state update)

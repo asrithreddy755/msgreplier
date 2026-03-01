@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, Sparkles, Loader2, Copy, Share2, CheckCircle2, ArrowRight } from 'lucide-react';
@@ -29,7 +28,6 @@ export default function LoveSpacePage() {
         setError(null);
 
         try {
-            // First attempt: API Route (best for security and edge cases)
             const response = await fetch('/api/love-space/create-room', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -38,47 +36,16 @@ export default function LoveSpacePage() {
 
             const data = await response.json();
 
-            if (response.ok && data.room && data.room.id) {
-                localStorage.setItem(`loveRoom_${data.room.id}`, JSON.stringify(data.member));
-                const url = `${window.location.origin}/love-space/${data.room.id}`;
-                setCreatedRoomUrl(url);
-                setCreatedRoomId(data.room.id);
-                return;
+            if (!response.ok || !data.room || !data.room.id) {
+                throw new Error(data.error || "Failed to create room.");
             }
 
-            throw new Error(data.error || "API Route failed.");
-
+            localStorage.setItem(`loveRoom_${data.room.id}`, JSON.stringify(data.member));
+            const url = `${window.location.origin}/love-space/${data.room.id}`;
+            setCreatedRoomUrl(url);
+            setCreatedRoomId(data.room.id);
         } catch (apiErr: any) {
-            console.warn("API route failed, falling back to direct Supabase call:", apiErr);
-
-            // Fallback: Direct Supabase Call (handles Cloudflare Edge networking issues)
-            try {
-                const { data: room, error: insertError } = await supabase
-                    .from('love_rooms')
-                    .insert([{ status: 'active', created_by: creatorName.trim() }])
-                    .select()
-                    .single();
-
-                if (insertError) throw new Error(insertError.message);
-                if (!room) throw new Error("Failed to create room directly.");
-
-                const { data: member, error: memberError } = await supabase
-                    .from('love_room_members')
-                    .insert([{ room_id: room.id, nickname: creatorName.trim() }])
-                    .select()
-                    .single();
-
-                if (memberError) throw new Error(memberError.message);
-
-                localStorage.setItem(`loveRoom_${room.id}`, JSON.stringify(member));
-                const url = `${window.location.origin}/love-space/${room.id}`;
-                setCreatedRoomUrl(url);
-                setCreatedRoomId(room.id);
-
-            } catch (fallbackErr: any) {
-                console.error("Direct Supabase fallback also failed:", fallbackErr);
-                setError(fallbackErr.message || "Something went wrong.");
-            }
+            setError(apiErr.message || "Something went wrong.");
         } finally {
             setIsLoading(false);
         }

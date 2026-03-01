@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { LoveRoom, LoveRoomMember } from '@/types/love-space';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,15 +18,15 @@ export function JoinRoom({ room, onJoined }: JoinRoomProps) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Check if the room already has 2 members
         const checkRoomFull = async () => {
-            const { count } = await supabase
-                .from('love_room_members')
-                .select('*', { count: 'exact', head: true })
-                .eq('room_id', room.id);
-
-            if (count !== null && count >= 2) {
-                setError("Room is full! Only 2 people allowed.");
+            try {
+                const res = await fetch(`/api/love-space/members?roomId=${room.id}`);
+                const data = await res.json();
+                if (res.ok && Array.isArray(data.members) && data.members.length >= 2) {
+                    setError("Room is full! Only 2 people allowed.");
+                }
+            } catch {
+                setError("Failed to check room capacity.");
             }
         };
         checkRoomFull();
@@ -54,49 +53,14 @@ export function JoinRoom({ room, onJoined }: JoinRoomProps) {
 
             const data = await response.json();
 
-            if (response.ok && data.member) {
-                localStorage.setItem(`loveRoom_${room.id}`, JSON.stringify(data.member));
-                onJoined(data.member as LoveRoomMember);
-                return;
+            if (!response.ok || !data.member) {
+                throw new Error(data.error || "Error joining room.");
             }
 
-            throw new Error(data.error || "Error joining room via API.");
-
+            localStorage.setItem(`loveRoom_${room.id}`, JSON.stringify(data.member));
+            onJoined(data.member as LoveRoomMember);
         } catch (apiErr: any) {
-            console.warn("API route failed, falling back to direct Supabase call:", apiErr);
-
-            try {
-                // Double check count before insert
-                const { count } = await supabase
-                    .from('love_room_members')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('room_id', room.id);
-
-                if (count !== null && count >= 2) {
-                    setError("Room is full! Only 2 people allowed.");
-                    setIsLoading(false);
-                    return;
-                }
-
-                // Insert new member
-                const { data, error: insertError } = await supabase
-                    .from('love_room_members')
-                    .insert([
-                        { room_id: room.id, nickname: nickname.trim() }
-                    ])
-                    .select()
-                    .single();
-
-                if (insertError) throw insertError;
-
-                if (data) {
-                    localStorage.setItem(`loveRoom_${room.id}`, JSON.stringify(data));
-                    onJoined(data as LoveRoomMember);
-                }
-            } catch (fallbackErr: any) {
-                console.error("Direct Supabase fallback failed:", fallbackErr);
-                setError(fallbackErr.message || "Failed to communicate with server.");
-            }
+            setError(apiErr.message || "Failed to communicate with server.");
         } finally {
             setIsLoading(false);
         }

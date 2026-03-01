@@ -17,22 +17,18 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Server misconfiguration: missing Supabase config.', env: envStatus }, { status: 500 });
         }
 
-        const { data: room, error: fetchError } = await supabaseAdmin
-            .from('love_rooms')
+        const { data, error } = await supabaseAdmin
+            .from('love_room_members')
             .select('*')
-            .eq('id', roomId)
-            .single();
+            .eq('room_id', roomId)
+            .order('joined_at', { ascending: true });
 
-        if (fetchError || !room) {
-            return NextResponse.json({ error: 'Room not found or expired' }, { status: 404 });
+        if (error) {
+            return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ room });
-    } catch (error) {
-        console.error('API Error /api/love-space/get-room:', error);
-        return NextResponse.json(
-            { error: 'Internal Server Error' },
-            { status: 500 }
-        );
+        return NextResponse.json({ members: data ?? [] });
+    } catch {
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

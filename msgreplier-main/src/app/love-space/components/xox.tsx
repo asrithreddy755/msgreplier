@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
 import { LoveRoomMember, XOXGameState, XOXPlayer } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Heart, X as XIcon, Circle, RotateCcw, Trophy } from 'lucide-react';
@@ -26,101 +25,107 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
     const [myPlayer, setMyPlayer] = useState<XOXPlayer>(null);
     const [members, setMembers] = useState<LoveRoomMember[]>([]);
     const [loading, setLoading] = useState(true);
-    const channelRef = useRef<any>(null);
+    const lastStateRef = useRef<string | null>(null);
 
-    // Determine player assignment (X or O) and setup channel
+    // Determine player assignment and load state
     useEffect(() => {
-        let channel: any;
-
         const init = async () => {
             try {
-                const fetchPromise = supabase
-                    .from('love_room_members')
-                    .select('*')
-                    .eq('room_id', roomId)
-                    .order('joined_at', { ascending: true });
+                const [membersRes, stateRes] = await Promise.all([
+                    fetch(`/api/love-space/members?roomId=${roomId}`).then(res => res.json()),
+                    fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`).then(res => res.json())
+                ]);
 
-                const statePromise = supabase
-                    .from('love_games')
-                    .select('*')
-                    .eq('room_id', roomId)
-                    .eq('game_type', 'xox')
-                    .order('updated_at', { ascending: false })
-                    .limit(1)
-                    .single();
+                const membersData = Array.isArray(membersRes?.members) ? membersRes.members : [];
+                const sortedMembers = membersData.sort((a: LoveRoomMember, b: LoveRoomMember) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime());
+                setMembers(sortedMembers as LoveRoomMember[]);
 
-                const safeStatePromise = (async () => {
-                    try { return await statePromise; } catch { return null; }
-                })();
-
-                const timeoutPromise = new Promise<any[]>((_, reject) =>
-                    setTimeout(() => reject(new Error("Supabase timeout")), 1500)
-                );
-
-                try {
-                    const [membersRes, stateRes] = await Promise.race([
-                        Promise.all([fetchPromise, safeStatePromise]),
-                        timeoutPromise
-                    ]) as any;
-
-                    const membersData = membersRes?.data;
-                    const error = membersRes?.error;
-
-                    if (!error && membersData) {
-                        const sortedMembers = membersData.sort((a: any, b: any) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime());
-                        setMembers(sortedMembers as LoveRoomMember[]);
-
-                        if (sortedMembers.length > 0 && sortedMembers[0].id === currentMember.id) {
-                            setMyPlayer('X');
-                        } else if (sortedMembers.length > 1 && sortedMembers[1].id === currentMember.id) {
-                            setMyPlayer('O');
-                        } else {
-                            setMyPlayer('X');
-                        }
-                    } else {
-                        setMyPlayer('X');
-                    }
-
-                    const lastGame = stateRes?.data;
-                    if (lastGame && lastGame.game_state) {
-                        const parsed = lastGame.game_state as XOXGameState;
-                        setGameState(parsed);
-                    }
-                } catch (e) {
-                    console.warn("Init timeout/error:", e);
-                    setMyPlayer('X'); // Fallback purely for local play
+                if (sortedMembers.length > 0 && sortedMembers[0].id === currentMember.id) {
+                    setMyPlayer('X');
+                } else if (sortedMembers.length > 1 && sortedMembers[1].id === currentMember.id) {
+                    setMyPlayer('O');
+                } else {
+                    setMyPlayer('X');
                 }
 
-                // 3. Subscribe to broadcast
-                channel = supabase.channel(`game:xox:${roomId}`, {
-                    config: { broadcast: { self: true } } // receive our own messages just in case, or handle locally
-                });
-
-                channel.on('broadcast', { event: 'xox_update' }, (payload: any) => {
-                    if (payload.payload?.sender === currentMember.id) return;
-                    const data = payload.payload?.state || payload.payload;
-                    if (data) setGameState(data);
-                });
-
-                channel.subscribe((status: string) => {
-                    if (status === 'SUBSCRIBED') {
-                        console.log('XOX channel subscribed');
-                    }
-                });
-                channelRef.current = channel;
+                const lastGame = stateRes?.game;
+                if (lastGame?.game_state) {
+                    const parsed = lastGame.game_state as XOXGameState;
+                    setGameState(parsed);
+                    lastStateRef.current = JSON.stringify(parsed);
+                }
             } catch (err) {
                 console.error("Failed to init xox:", err);
+                setMyPlayer('X');
             } finally {
                 setLoading(false);
             }
         };
 
         init();
+    }, [roomId, currentMember.id]);
+
+    useEffect(() => {
+        let isMounted = true;
+        let pollInterval: ReturnType<typeof setInterval> | null = null;
+        let eventSource: EventSource | null = null;
+
+        const poll = async () => {
+            try {
+                const data = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`).then(res => res.json());
+                if (!isMounted) return;
+                const lastGame = data?.game;
+                if (lastGame?.game_state) {
+                    const nextState = lastGame.game_state as XOXGameState;
+                    const serialized = JSON.stringify(nextState);
+                    if (serialized !== lastStateRef.current) {
+                        lastStateRef.current = serialized;
+                        setGameState(nextState);
+                    }
+                }
+            } catch {
+                // ignore polling errors
+            }
+        };
+
+        const startPolling = () => {
+            if (pollInterval) return;
+            pollInterval = setInterval(poll, 2000);
+        };
+
+        try {
+            eventSource = new EventSource(`/api/love-space/games/stream?roomId=${roomId}&gameType=xox`);
+            eventSource.addEventListener('game', (event) => {
+                try {
+                    const payload = JSON.parse((event as MessageEvent).data) as { game_state?: XOXGameState };
+                    if (payload?.game_state) {
+                        const serialized = JSON.stringify(payload.game_state);
+                        if (serialized !== lastStateRef.current) {
+                            lastStateRef.current = serialized;
+                            setGameState(payload.game_state);
+                        }
+                    }
+                } catch {
+                    // ignore parse errors
+                }
+            });
+            eventSource.addEventListener('error', () => {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+                startPolling();
+            });
+        } catch {
+            startPolling();
+        }
 
         return () => {
-            if (channelRef.current) supabase.removeChannel(channelRef.current);
+            isMounted = false;
+            if (pollInterval) clearInterval(pollInterval);
+            if (eventSource) eventSource.close();
         };
-    }, [roomId, currentMember.id]);
+    }, [roomId]);
 
     const checkWinner = (board: XOXPlayer[]): XOXGameState['winner'] => {
         for (let combo of WINNING_COMBOS) {
@@ -158,23 +163,11 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         // Optimistic UI update
         setGameState(newState);
 
-        // Broadcast
-        if (channelRef.current) {
-            await channelRef.current.send({
-                type: 'broadcast',
-                event: 'xox_update',
-                payload: { state: newState, sender: currentMember.id }
-            });
-        }
-
-        // If game ended, save to DB
-        if (winner) {
-            await supabase.from('love_games').insert([{
-                room_id: roomId,
-                game_type: 'xox',
-                game_state: newState
-            }]);
-        }
+        await fetch('/api/love-space/games', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, gameType: 'xox', gameState: newState })
+        });
     };
 
     const roomCreator = members.length > 0 ? members[0] : null;
@@ -195,13 +188,11 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         };
         setGameState(newState);
 
-        if (channelRef.current) {
-            await channelRef.current.send({
-                type: 'broadcast',
-                event: 'xox_update',
-                payload: { state: newState, sender: currentMember.id }
-            });
-        }
+        await fetch('/api/love-space/games', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, gameType: 'xox', gameState: newState })
+        });
     };
 
     if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse w-full text-center">Loading Game...</div>;

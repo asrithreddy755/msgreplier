@@ -3,7 +3,6 @@
 export const runtime = 'edge';
 
 import { useEffect, useState, use } from 'react';
-import { supabase } from '@/lib/supabase';
 import { LoveRoom, LoveRoomMember } from '@/types/love-space';
 import { JoinRoom } from '../components/join-room';
 import { Chat, XOX, Ludo, SnakeLadder } from '../components/games';
@@ -45,23 +44,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             } catch (apiErr) {
                 console.warn("API Error fetching room, falling back safely:", apiErr);
 
-                try {
-                    const { data, error: fetchError } = await supabase
-                        .from('love_rooms')
-                        .select('*')
-                        .eq('id', roomId)
-                        .single();
-
-                    if (fetchError || !data) {
-                        setError("Room not found or expired.");
-                    } else {
-                        setRoom(data as LoveRoom);
-                        checkSavedMember(roomId);
-                    }
-                } catch (fallbackErr) {
-                    console.error("Direct fetch failed:", fallbackErr);
-                    setError("Failed to load room details.");
-                }
+                setError("Room not found or expired.");
             } finally {
                 setLoading(false);
             }
@@ -85,58 +68,11 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         }
     }, [roomId]);
 
-    // Presence tracking for tabs
     useEffect(() => {
-        if (!roomId || !currentMember) return;
-
-        const presenceChannel = supabase.channel(`presence_${roomId}`, {
-            config: {
-                presence: {
-                    key: currentMember.id,
-                },
-            },
-        });
-
-        presenceChannel
-            .on('presence', { event: 'sync' }, () => {
-                const state = presenceChannel.presenceState();
-
-                // Find someone else in the room who is not me
-                let foundOtherTab: string | null = null;
-                for (const key in state) {
-                    if (key !== currentMember.id) {
-                        const presenceData = state[key][0] as any;
-                        if (presenceData && presenceData.tab) {
-                            foundOtherTab = presenceData.tab;
-                        }
-                    }
-                }
-                setOtherMemberTab(foundOtherTab);
-            })
-            .subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                    await presenceChannel.track({
-                        tab: activeTab,
-                        nickname: currentMember.nickname
-                    });
-                }
-            });
-
-        // Whenever activeTab changes, update presence tracking
-        presenceChannel.track({
-            tab: activeTab,
-            nickname: currentMember.nickname
-        });
-
-        // Reset unread count if we switch to chat
         if (activeTab === 'chat') {
             setUnreadCount(0);
         }
-
-        return () => {
-            supabase.removeChannel(presenceChannel);
-        };
-    }, [roomId, currentMember, activeTab]);
+    }, [activeTab]);
 
     const copyLink = () => {
         const url = window.location.href;

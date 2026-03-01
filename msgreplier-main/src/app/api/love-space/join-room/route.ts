@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '../_supabase';
 
 export const runtime = 'edge';
 
@@ -11,14 +11,18 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Room ID and nickname are required' }, { status: 400 });
         }
 
-        // Run checks in parallel to save time
+        const { client: supabaseAdmin, envStatus } = getSupabaseAdmin();
+        if (!supabaseAdmin) {
+            return NextResponse.json({ error: 'Server misconfiguration: missing Supabase config.', env: envStatus }, { status: 500 });
+        }
+
         const [roomRes, membersRes] = await Promise.all([
-            supabase.from('love_rooms').select('*').eq('id', roomId).single(),
-            supabase.from('love_room_members').select('*').eq('room_id', roomId)
+            supabaseAdmin.from('love_rooms').select('*').eq('id', roomId).single(),
+            supabaseAdmin.from('love_room_members').select('*').eq('room_id', roomId)
         ]);
 
         const { data: room, error: roomError } = roomRes;
-        const { data: existingMembers, error: membersError } = membersRes;
+        const { data: existingMembers } = membersRes;
 
         if (roomError || !room) {
             return NextResponse.json({ error: 'Room not found or expired' }, { status: 404 });
@@ -33,7 +37,7 @@ export async function POST(request: Request) {
         }
 
         // Insert new member
-        const { data: member, error: insertError } = await supabase
+        const { data: member, error: insertError } = await supabaseAdmin
             .from('love_room_members')
             .insert([{ room_id: roomId, nickname: nickname.trim() }])
             .select()

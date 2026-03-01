@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '../_supabase';
 
 export const runtime = 'edge';
 
@@ -14,7 +14,12 @@ export async function POST(request: Request) {
             );
         }
 
-        const { data: room, error: insertDbError } = await supabase
+        const { client: supabaseAdmin, envStatus } = getSupabaseAdmin();
+        if (!supabaseAdmin) {
+            return NextResponse.json({ error: 'Server misconfiguration: missing Supabase config.', env: envStatus }, { status: 500 });
+        }
+
+        const { data: room, error: insertDbError } = await supabaseAdmin
             .from('love_rooms')
             .insert([{ status: 'active', created_by: createdBy.trim() }])
             .select()
@@ -29,7 +34,7 @@ export async function POST(request: Request) {
         }
 
         // Automatically join the creator to the room
-        const { data: member, error: memberError } = await supabase
+        const { data: member, error: memberError } = await supabaseAdmin
             .from('love_room_members')
             .insert([{ room_id: room.id, nickname: createdBy.trim() }])
             .select()

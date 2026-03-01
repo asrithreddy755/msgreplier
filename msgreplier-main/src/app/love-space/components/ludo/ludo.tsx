@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
 import { LoveRoomMember } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw } from 'lucide-react';
@@ -32,7 +31,7 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
     const [lastRoll, setLastRoll] = useState<number | null>(null);
     const [consecutiveSixes, setConsecutiveSixes] = useState(0);
     const [awaitingTokenSelect, setAwaitingTokenSelect] = useState(false);
-    const channelRef = useRef<any>(null);
+    const lastStateRef = useRef<string | null>(null);
 
     // Determine my colour (first member = blue, second = green)
     const myColour: PlayerColour | null = members.length > 0
@@ -49,57 +48,24 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
 
     // Initialize game
     useEffect(() => {
-        let channel: any;
-
         const init = async () => {
             try {
-                const { data: membersData } = await supabase
-                    .from('love_room_members')
-                    .select('*')
-                    .eq('room_id', roomId)
-                    .order('joined_at', { ascending: true });
+                const [membersRes, gameRes] = await Promise.all([
+                    fetch(`/api/love-space/members?roomId=${roomId}`).then(res => res.json()),
+                    fetch(`/api/love-space/games?roomId=${roomId}&gameType=ludo`).then(res => res.json())
+                ]);
 
-                if (membersData) {
-                    const sorted = membersData.sort((a: any, b: any) =>
-                        new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
-                    );
-                    setMembers(sorted as LoveRoomMember[]);
-                }
+                const membersData = Array.isArray(membersRes?.members) ? membersRes.members : [];
+                const sorted = membersData.sort((a: LoveRoomMember, b: LoveRoomMember) =>
+                    new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
+                );
+                setMembers(sorted as LoveRoomMember[]);
 
-                // Check for existing game state
-                const { data: gameData } = await supabase
-                    .from('love_games')
-                    .select('*')
-                    .eq('room_id', roomId)
-                    .eq('game_type', 'ludo')
-                    .order('updated_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-
+                const gameData = gameRes?.game;
                 if (gameData?.game_state) {
                     setState(gameData.game_state as LudoGameState);
+                    lastStateRef.current = JSON.stringify(gameData.game_state);
                 }
-
-                // Set up real-time channel
-                channel = supabase.channel(`game:ludo:${roomId}`, {
-                    config: { broadcast: { self: true } }
-                });
-
-                channel.on('broadcast', { event: 'ludo_update' }, (payload: any) => {
-                    if (payload.payload.sender === currentMember.id) return;
-                    const data = payload.payload;
-
-                    if (data.state) setState(data.state);
-                    if (data.roll !== undefined) setLastRoll(data.roll);
-                    if (data.awaitingSelect !== undefined) setAwaitingTokenSelect(data.awaitingSelect);
-                });
-
-                channel.subscribe((status: string) => {
-                    if (status === 'SUBSCRIBED') {
-                        console.log('Ludo channel subscribed');
-                    }
-                });
-                channelRef.current = channel;
             } catch (err) {
                 console.error("Failed to init ludo:", err);
             } finally {
@@ -108,21 +74,88 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
         };
 
         init();
-        return () => {
-            if (channelRef.current) supabase.removeChannel(channelRef.current);
-        };
     }, [roomId, currentMember.id]);
 
-    // Broadcast state
-    const broadcast = useCallback(async (data: any) => {
-        if (channelRef.current) {
-            await channelRef.current.send({
-                type: 'broadcast',
-                event: 'ludo_update',
-                payload: { ...data, sender: currentMember.id },
+    useEffect(() => {
+        let isMounted = true;
+        let pollInterval: ReturnType<typeof setInterval> | null = null;
+        let eventSource: EventSource | null = null;
+
+        const poll = async () => {
+            try {
+                const data = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=ludo`).then(res => res.json());
+                if (!isMounted) return;
+                const gameData = data?.game;
+                if (gameData?.game_state) {
+                    const nextState = gameData.game_state as LudoGameState;
+                    const serialized = JSON.stringify(nextState);
+                    if (serialized !== lastStateRef.current) {
+                        lastStateRef.current = serialized;
+                        setState(nextState);
+                        setLastRoll(nextState.diceValue);
+                        if (nextState.currentTurn !== myColour) {
+                            setAwaitingTokenSelect(false);
+                            setConsecutiveSixes(0);
+                        }
+                    }
+                }
+            } catch {
+                // ignore polling errors
+            }
+        };
+
+        const startPolling = () => {
+            if (pollInterval) return;
+            pollInterval = setInterval(poll, 2000);
+        };
+
+        try {
+            eventSource = new EventSource(`/api/love-space/games/stream?roomId=${roomId}&gameType=ludo`);
+            eventSource.addEventListener('game', (event) => {
+                try {
+                    const payload = JSON.parse((event as MessageEvent).data) as { game_state?: LudoGameState };
+                    if (payload?.game_state) {
+                        const serialized = JSON.stringify(payload.game_state);
+                        if (serialized !== lastStateRef.current) {
+                            lastStateRef.current = serialized;
+                            setState(payload.game_state);
+                            setLastRoll(payload.game_state.diceValue);
+                            if (payload.game_state.currentTurn !== myColour) {
+                                setAwaitingTokenSelect(false);
+                                setConsecutiveSixes(0);
+                            }
+                        }
+                    }
+                } catch {
+                    // ignore parse errors
+                }
             });
+            eventSource.addEventListener('error', () => {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+                startPolling();
+            });
+        } catch {
+            startPolling();
         }
-    }, [currentMember.id]);
+
+        return () => {
+            isMounted = false;
+            if (pollInterval) clearInterval(pollInterval);
+            if (eventSource) eventSource.close();
+        };
+    }, [roomId, myColour]);
+
+    // Broadcast state
+    const persistState = useCallback(async (stateToSave: LudoGameState) => {
+        await fetch('/api/love-space/games', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, gameType: 'ludo', gameState: stateToSave })
+        });
+    }, [roomId]);
 
     // Start game
     const startGame = async () => {
@@ -146,7 +179,7 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
         setLastRoll(null);
         setConsecutiveSixes(0);
         setAwaitingTokenSelect(false);
-        await broadcast({ state: newState, roll: null, awaitingSelect: false });
+        await persistState(newState);
     };
 
     // Roll dice
@@ -180,7 +213,7 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
                 setState(newState);
                 setConsecutiveSixes(0);
                 setAwaitingTokenSelect(false);
-                await broadcast({ state: newState, roll, awaitingSelect: false });
+                await persistState(newState);
                 return;
             }
         } else {
@@ -200,7 +233,7 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
             setState(newState);
             setAwaitingTokenSelect(false);
             if (nextColour !== myColour) setConsecutiveSixes(0);
-            await broadcast({ state: newState, roll, awaitingSelect: false });
+            await persistState(newState);
             return;
         }
 
@@ -215,7 +248,7 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
         setAwaitingTokenSelect(true);
         const updatedState = { ...state, diceValue: roll, lastAction: `${player.nickname} rolled ${roll}. Pick a piece to move!` };
         setState(updatedState);
-        await broadcast({ state: updatedState, roll, awaitingSelect: true });
+        await persistState(updatedState);
     };
 
     // Handle token selection
@@ -236,16 +269,7 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
         setState(finalState);
         setAwaitingTokenSelect(false);
         if (nextColour !== myColour) setConsecutiveSixes(0);
-        await broadcast({ state: finalState, roll, awaitingSelect: false });
-
-        // Save to DB on win
-        if (finalState.winner) {
-            await supabase.from('love_games').insert([{
-                room_id: roomId,
-                game_type: 'ludo',
-                game_state: finalState,
-            }]);
-        }
+        await persistState(finalState);
     };
 
     // Reset game

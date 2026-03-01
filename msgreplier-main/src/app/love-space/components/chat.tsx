@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
 import { LoveMessage, LoveRoomMember } from '@/types/love-space';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,53 +11,72 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const channelRef = useRef<any>(null);
+    const lastMessageIdRef = useRef<string | null>(null);
 
-    // Fetch initial messages and subscribe to new ones
+    // Fetch initial messages and stream updates
     useEffect(() => {
-        const fetchMessages = async () => {
-            const { data, error } = await supabase
-                .from('love_messages')
-                .select('*')
-                .eq('room_id', roomId)
-                .order('created_at', { ascending: true });
+        let isMounted = true;
+        let pollInterval: ReturnType<typeof setInterval> | null = null;
+        let eventSource: EventSource | null = null;
 
-            if (data) {
-                setMessages(data as LoveMessage[]);
+        const fetchMessages = async () => {
+            try {
+                const res = await fetch(`/api/love-space/messages?roomId=${roomId}`);
+                const data = await res.json();
+                if (!res.ok || !Array.isArray(data.messages)) return;
+                if (!isMounted) return;
+                const nextMessages = data.messages as LoveMessage[];
+                const last = nextMessages[nextMessages.length - 1];
+                if (last && last.id !== lastMessageIdRef.current) {
+                    lastMessageIdRef.current = last.id;
+                    if (last.sender_nickname !== currentMember.nickname && onNewMessage) {
+                        onNewMessage();
+                    }
+                }
+                setMessages(nextMessages);
+            } catch {
+                // Ignore transient network errors
             }
         };
+
         fetchMessages();
 
-        // Subscribe to real-time additions via Broadcast
-        const channel = supabase.channel(`chat_broadcast_${roomId}`)
-            .on(
-                'broadcast',
-                { event: 'new_message' },
-                (payload: { payload: LoveMessage }) => {
-                    setMessages((prev) => {
-                        if (prev.some(m => m.id === payload.payload.id || (m.message === payload.payload.message && m.sender_nickname === payload.payload.sender_nickname && Math.abs(new Date(m.created_at).getTime() - new Date(payload.payload.created_at).getTime()) < 5000))) {
-                            return prev;
-                        }
+        const startPolling = () => {
+            if (pollInterval) return;
+            pollInterval = setInterval(fetchMessages, 2000);
+        };
 
-                        // Notify parent of new message if it's from the other person
-                        if (payload.payload.sender_nickname !== currentMember.nickname && onNewMessage) {
+        try {
+            eventSource = new EventSource(`/api/love-space/messages/stream?roomId=${roomId}`);
+            eventSource.addEventListener('message', (event) => {
+                try {
+                    const payload = JSON.parse((event as MessageEvent).data) as LoveMessage;
+                    setMessages((prev) => {
+                        if (prev.some(m => m.id === payload.id)) return prev;
+                        if (payload.sender_nickname !== currentMember.nickname && onNewMessage) {
                             onNewMessage();
                         }
-
-                        return [...prev, payload.payload];
+                        return [...prev, payload];
                     });
-                }
-            )
-            .subscribe((status: string) => {
-                if (status === 'SUBSCRIBED') {
-                    console.log('Chat channel subscribed');
+                } catch {
+                    // ignore parse errors
                 }
             });
-
-        channelRef.current = channel;
+            eventSource.addEventListener('error', () => {
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
+                startPolling();
+            });
+        } catch {
+            startPolling();
+        }
 
         return () => {
-            if (channelRef.current) supabase.removeChannel(channelRef.current);
+            isMounted = false;
+            if (pollInterval) clearInterval(pollInterval);
+            if (eventSource) eventSource.close();
         };
     }, [roomId]);
 
@@ -85,27 +103,15 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
         setMessages((prev) => [...prev, msgData]);
         setNewMessage('');
 
-        // 2. Broadcast to other clients using the SAME subscribed channel
-        if (channelRef.current) {
-            await channelRef.current.send({
-                type: 'broadcast',
-                event: 'new_message',
-                payload: msgData
-            });
-        }
-
-        // 3. Save to DB in background
-        const { error } = await supabase
-            .from('love_messages')
-            .insert([{
-                room_id: roomId,
-                sender_nickname: currentMember.nickname,
+        await fetch('/api/love-space/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                roomId,
+                senderNickname: currentMember.nickname,
                 message: msgData.message
-            }]);
-
-        if (error) {
-            console.error("Error saving message:", error);
-        }
+            })
+        });
 
         setIsLoading(false);
     };
