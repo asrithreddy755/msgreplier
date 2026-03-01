@@ -9,7 +9,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Chat, XOX, Ludo, SnakeLadder } from '../components/games';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2 } from 'lucide-react';
+import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, ArrowLeft, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -25,7 +25,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [copied, setCopied] = useState(false);
 
     // Presence & Notification State
-    const [activeTab, setActiveTab] = useState('chat');
+    const [activeTab, setActiveTab] = useState('home');
     const [otherMemberTab, setOtherMemberTab] = useState<string | null>(null);
     const [unreadCount, setUnreadCount] = useState(0);
     const channelRef = useRef<RealtimeChannel | null>(null);
@@ -198,9 +198,9 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     <TabsList className="grid grid-cols-4 w-[calc(100%-2rem)] bg-white/80 dark:bg-slate-900/80 p-1.5 mx-auto my-2 rounded-2xl sm:rounded-xl backdrop-blur-md h-14 border border-pink-200 dark:border-pink-900/50 shadow-[0_8px_30px_rgb(236,72,153,0.12)] overflow-x-auto hide-scrollbar flex-shrink-0 relative">
                         {/* Mobile Invite Button (Absolute positioned inside the tabs area or just below it if preferred) */}
 
-                        <TabsTrigger value="chat" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
-                            Chat
-                            {otherMemberTab === 'chat' && <div className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
+                        <TabsTrigger value="home" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
+                            Home
+                            {otherMemberTab === 'home' && <div className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
                             {unreadCount > 0 && (
                                 <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow-md border border-white dark:border-slate-900">
                                     {unreadCount}
@@ -235,8 +235,78 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
 
                     <div className="flex-1 overflow-hidden relative flex flex-col">
+                        <TabsContent value="home" className="flex-1 overflow-y-auto mt-0 data-[state=inactive]:hidden px-4 pb-4 hide-scrollbar">
+                            <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-sm mx-auto pt-2">
+                                {/* Room Title Card */}
+                                <div className="bg-gradient-to-br from-pink-100 to-rose-50 dark:from-pink-900/40 dark:to-rose-900/20 p-6 rounded-[2rem] border border-pink-200 dark:border-pink-800 shadow-sm relative overflow-hidden">
+                                    <Heart className="absolute -right-4 -top-4 w-32 h-32 text-pink-500/10 rotate-12" strokeWidth={1} />
+                                    <h2 className="text-xs uppercase tracking-widest text-pink-500 dark:text-pink-400 font-bold mb-1">Welcome to</h2>
+                                    <h1 className="text-3xl sm:text-4xl font-black text-gray-800 dark:text-pink-100 tracking-tight leading-none mb-2 break-words">Love Space</h1>
+                                    <p className="text-sm text-gray-600 dark:text-gray-300 relative z-10 w-4/5 pt-1">Your private couple space. Choose an activity below to get started!</p>
+                                </div>
+
+                                {/* Quick Links Grid */}
+                                <div className="grid grid-cols-2 gap-3 mt-1">
+                                    <button
+                                        onClick={() => setActiveTab('chat')}
+                                        className="col-span-2 flex items-center p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-pink-100 dark:border-pink-900/50 hover:scale-[1.02] active:scale-95 transition-all text-left group"
+                                    >
+                                        <div className="w-14 h-14 bg-pink-100 dark:bg-pink-900/50 rounded-2xl flex items-center justify-center mr-4 group-hover:bg-pink-500 group-hover:text-white transition-colors text-pink-500 shadow-inner">
+                                            <MessageSquareHeart className="w-7 h-7" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-bold text-gray-800 dark:text-gray-200 text-lg">Sweet Messages</h3>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Chat with your partner</p>
+                                        </div>
+                                        {unreadCount > 0 ? (
+                                            <div className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-bounce shadow-md border border-white dark:border-slate-800">
+                                                {unreadCount} New
+                                            </div>
+                                        ) : (
+                                            <div className="text-pink-300 dark:text-pink-700 opacity-50"><MessageCircle className="w-5 h-5" /></div>
+                                        )}
+                                    </button>
+
+                                    <button onClick={() => setActiveTab('xox')} className="flex flex-col items-center justify-center p-5 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-purple-100 dark:border-purple-900/50 hover:scale-[1.05] active:scale-95 transition-all group">
+                                        <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-purple-500 group-hover:text-white transition-colors text-purple-500 shadow-inner">
+                                            <Gamepad2 className="w-6 h-6" />
+                                        </div>
+                                        <h3 className="font-bold text-gray-800 dark:text-gray-200 text-sm">Tic Tac Toe</h3>
+                                    </button>
+
+                                    <button onClick={() => setActiveTab('ludo')} className="flex flex-col items-center justify-center p-5 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-emerald-100 dark:border-emerald-900/50 hover:scale-[1.05] active:scale-95 transition-all group">
+                                        <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-emerald-500 group-hover:text-white transition-colors text-emerald-500 shadow-inner">
+                                            <Gamepad2 className="w-6 h-6" />
+                                        </div>
+                                        <h3 className="font-bold text-gray-800 dark:text-gray-200 text-sm">Ludo</h3>
+                                    </button>
+
+                                    <button onClick={() => setActiveTab('snake')} className="col-span-2 flex items-center p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-orange-100 dark:border-orange-900/50 hover:scale-[1.02] active:scale-95 transition-all text-left group">
+                                        <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/50 rounded-2xl flex items-center justify-center mr-4 group-hover:bg-orange-500 group-hover:text-white transition-colors text-orange-500 shadow-inner">
+                                            <Gamepad2 className="w-7 h-7" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-bold text-gray-800 dark:text-gray-200 text-lg">Snake & Ladder</h3>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Custom board adventure</p>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </TabsContent>
+
                         <TabsContent value="chat" className="flex-1 h-full mt-0 data-[state=inactive]:hidden px-0 sm:px-4 pb-0 sm:pb-4 flex flex-col">
-                            <div className="flex-1 h-full bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-inner border-t sm:border border-pink-100 dark:border-pink-900/50 flex flex-col overflow-hidden">
+                            <div className="flex-1 h-full bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-inner border-t sm:border border-pink-100 dark:border-pink-900/50 flex flex-col overflow-hidden relative">
+                                {/* Back button for mobile chat view since tab is hidden */}
+                                <div className="absolute top-2 left-2 z-10 w-full sm:hidden p-2 pointer-events-none">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur pointer-events-auto border-pink-200 text-pink-600 shadow-sm"
+                                        onClick={() => setActiveTab('home')}
+                                    >
+                                        <ArrowLeft className="w-4 h-4" />
+                                    </Button>
+                                </div>
                                 <Chat
                                     roomId={roomId}
                                     currentMember={currentMember}

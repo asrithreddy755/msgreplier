@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
-// Collector's Edition snakes and ladders 
-const SNAKES: Record<number, number> = { 28: 9, 38: 18, 33: 27, 41: 39, 43: 24 };
-const LADDERS: Record<number, number> = { 3: 24, 6: 16, 14: 26, 30: 49 };
+// Collector's Edition snakes and ladders matching snake.webp exactly
+const SNAKES: Record<number, number> = { 12: 9, 33: 27, 37: 23, 41: 39, 43: 24 };
+const LADDERS: Record<number, number> = { 3: 18, 6: 16, 14: 26, 30: 49 };
 
 // 5x10 board logic
 const BOARDS_CELLS = Array.from({ length: 50 }, (_, i) => i + 1);
@@ -496,71 +496,8 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
             {/* The Board */}
             <div className="w-full mt-2 sm:mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-[#3E2723] bg-white aspect-[2/1]">
-                {/* CSS Grid Board */}
-                <div className="absolute inset-0 grid grid-cols-10 grid-rows-5">
-                    {flattenedRows.map((num, idx) => {
-                        const COLORS = ['bg-[#1A3626]', 'bg-[#FAF9F6]', 'bg-[#3E2723]'];
-                        const bgColor = COLORS[idx % 3];
-                        return (
-                            <div key={num} className={`relative flex items-center justify-center border border-black/20 shadow-[inset_0_0_10px_rgba(0,0,0,0.3)] ${bgColor}`}>
-                                <span className={`font-black text-xs sm:text-xl z-0 ${bgColor === 'bg-[#FAF9F6]' ? 'drop-shadow-sm' : 'drop-shadow-md'}`} style={{
-                                    color: '#C5A059',
-                                    textShadow: '1px 1px 0px #4a3b1c, -1px -1px 0px #fffbee',
-                                }}>
-                                    {num === 1 && <div className="absolute top-0.5 sm:top-1 left-0 right-0 text-[6px] sm:text-[8px] text-center uppercase font-bold tracking-widest" style={{ color: '#C5A059' }}>Start</div>}
-                                    {num}
-                                    {num === 50 && <div className="absolute bottom-0.5 sm:bottom-1 left-0 right-0 text-[6px] sm:text-[8px] text-center uppercase font-bold tracking-widest" style={{ color: '#C5A059' }}>Finish</div>}
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* SVG Overlays for Snakes and Ladders */}
-                <svg className="absolute inset-0 pointer-events-none z-10" viewBox="0 0 1000 500" preserveAspectRatio="none">
-                    <defs>
-                        <filter id="shadow">
-                            <feDropShadow dx="2" dy="4" stdDeviation="3" floodOpacity="0.5" />
-                        </filter>
-                    </defs>
-
-                    {/* Render Ladders */}
-                    {Object.entries(LADDERS).map(([startStr, end]) => {
-                        const start = parseInt(startStr);
-                        const p1 = getCellSVGCoords(start);
-                        const p2 = getCellSVGCoords(end);
-                        return (
-                            <g key={`ladder-${start}-${end}`} filter="url(#shadow)">
-                                <line x1={p1.x - 12} y1={p1.y} x2={p2.x - 12} y2={p2.y} stroke="#3e2723" strokeWidth="6" strokeLinecap="round" />
-                                <line x1={p1.x + 12} y1={p1.y} x2={p2.x + 12} y2={p2.y} stroke="#3e2723" strokeWidth="6" strokeLinecap="round" />
-                                <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#8d6e63" strokeWidth="20" strokeDasharray="6 20" strokeLinecap="butt" />
-                            </g>
-                        );
-                    })}
-
-                    {/* Render Snakes */}
-                    {Object.entries(SNAKES).map(([startStr, end]) => {
-                        const start = parseInt(startStr);
-                        const p1 = getCellSVGCoords(start); // Head of snake
-                        const p2 = getCellSVGCoords(end);   // Tail of snake
-                        const dx = p2.x - p1.x;
-                        const dy = p2.y - p1.y;
-                        const cx = p1.x + dx * 0.5 + dy * 0.2;
-                        const cy = p1.y + dy * 0.5 - dx * 0.2;
-
-                        return (
-                            <g key={`snake-${start}-${end}`} filter="url(#shadow)">
-                                <path d={`M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`} fill="none" stroke="#2e7d32" strokeWidth="14" strokeLinecap="round" />
-                                <path d={`M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`} fill="none" stroke="#81c784" strokeWidth="6" strokeDasharray="10 15" strokeLinecap="round" />
-                                <circle cx={p1.x} cy={p1.y} r="12" fill="#b71c1c" />
-                                <circle cx={p1.x - 4} cy={p1.y - 4} r="3" fill="white" />
-                                <circle cx={p1.x + 4} cy={p1.y - 4} r="3" fill="white" />
-                                <circle cx={p1.x - 4} cy={p1.y - 4} r="1" fill="black" />
-                                <circle cx={p1.x + 4} cy={p1.y - 4} r="1" fill="black" />
-                            </g>
-                        );
-                    })}
-                </svg>
+                {/* Custom User Board Image */}
+                <img src="/snake.webp" alt="Snake and Ladder Board" className="absolute inset-0 w-full h-full object-fill z-0 pointer-events-none" />
 
                 {/* Player 1 Pin */}
                 <div
