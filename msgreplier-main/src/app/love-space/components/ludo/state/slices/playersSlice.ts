@@ -55,7 +55,7 @@ const reducers = {
     }>
   ) => {
     const player = state.players.find((p) => p.colour === action.payload.colour);
-    if (player) throw new Error(ERRORS.playerAlreadyExists(action.payload.colour));
+    if (player) return; // Prevents crash in React Strict Mode fast-refresh
     state.players.push({
       name: action.payload.name,
       colour: action.payload.colour,

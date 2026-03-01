@@ -27,6 +27,10 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
     const [loading, setLoading] = useState(true);
     const lastStateRef = useRef<string | null>(null);
 
+    // Win animation state
+    const [showWinOverlay, setShowWinOverlay] = useState(false);
+    const [winningLineCoords, setWinningLineCoords] = useState<string[] | null>(null);
+
     // Determine player assignment and load state
     useEffect(() => {
         const init = async () => {
@@ -69,6 +73,7 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         let isMounted = true;
         let pollInterval: ReturnType<typeof setInterval> | null = null;
         let eventSource: EventSource | null = null;
+        let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
 
         const poll = async () => {
             try {
@@ -93,37 +98,59 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
             pollInterval = setInterval(poll, 2000);
         };
 
-        try {
-            eventSource = new EventSource(`/api/love-space/games/stream?roomId=${roomId}&gameType=xox`);
-            eventSource.addEventListener('game', (event) => {
-                try {
-                    const payload = JSON.parse((event as MessageEvent).data) as { game_state?: XOXGameState };
-                    if (payload?.game_state) {
-                        const serialized = JSON.stringify(payload.game_state);
-                        if (serialized !== lastStateRef.current) {
-                            lastStateRef.current = serialized;
-                            setGameState(payload.game_state);
-                        }
+        const connectSSE = () => {
+            if (!isMounted) return;
+            try {
+                if (eventSource) eventSource.close();
+
+                eventSource = new EventSource(`/api/love-space/games/stream?roomId=${roomId}&gameType=xox`);
+
+                eventSource.onopen = () => {
+                    if (pollInterval) {
+                        clearInterval(pollInterval);
+                        pollInterval = null;
                     }
-                } catch {
-                    // ignore parse errors
-                }
-            });
-            eventSource.addEventListener('error', () => {
-                if (eventSource) {
-                    eventSource.close();
-                    eventSource = null;
-                }
+                };
+
+                eventSource.addEventListener('game', (event) => {
+                    try {
+                        const payload = JSON.parse((event as MessageEvent).data) as { game_state?: XOXGameState };
+                        if (payload?.game_state) {
+                            const serialized = JSON.stringify(payload.game_state);
+                            if (serialized !== lastStateRef.current) {
+                                lastStateRef.current = serialized;
+                                setGameState(payload.game_state);
+                            }
+                        }
+                    } catch {
+                        // ignore parse errors
+                    }
+                });
+
+                eventSource.onerror = () => {
+                    if (eventSource) {
+                        eventSource.close();
+                        eventSource = null;
+                    }
+                    startPolling();
+                    // Attempt to reconnect SSE after a delay
+                    if (reconnectTimeout) clearTimeout(reconnectTimeout);
+                    reconnectTimeout = setTimeout(connectSSE, 3000);
+                };
+            } catch {
                 startPolling();
-            });
-        } catch {
-            startPolling();
-        }
+                if (reconnectTimeout) clearTimeout(reconnectTimeout);
+                reconnectTimeout = setTimeout(connectSSE, 5000);
+            }
+        };
+
+        connectSSE();
 
         return () => {
             isMounted = false;
             if (pollInterval) clearInterval(pollInterval);
             if (eventSource) eventSource.close();
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
         };
     }, [roomId]);
 
@@ -137,6 +164,41 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
         if (board.every(cell => cell !== null)) return 'Draw';
         return null;
     };
+
+    useEffect(() => {
+        let timer: ReturnType<typeof setTimeout>;
+        if (gameState.winner && gameState.winner !== 'Draw') {
+            // Find winning combo
+            let coords: string[] | null = null;
+            for (const combo of WINNING_COMBOS) {
+                const [a, b, c] = combo;
+                if (gameState.board[a] && gameState.board[a] === gameState.board[b] && gameState.board[a] === gameState.board[c]) {
+                    const key = combo.join(',');
+                    const map: Record<string, string[]> = {
+                        '0,1,2': ['5', '16.5', '95', '16.5'], // Row 1
+                        '3,4,5': ['5', '50', '95', '50'],     // Row 2
+                        '6,7,8': ['5', '83.5', '95', '83.5'], // Row 3
+                        '0,3,6': ['16.5', '5', '16.5', '95'], // Col 1
+                        '1,4,7': ['50', '5', '50', '95'],     // Col 2
+                        '2,5,8': ['83.5', '5', '83.5', '95'], // Col 3
+                        '0,4,8': ['5', '5', '95', '95'],      // Diag 1
+                        '2,4,6': ['95', '5', '5', '95'],      // Diag 2
+                    };
+                    coords = map[key] || null;
+                    break;
+                }
+            }
+            setWinningLineCoords(coords);
+            timer = setTimeout(() => setShowWinOverlay(true), 1500);
+        } else if (gameState.winner === 'Draw') {
+            setWinningLineCoords(null);
+            timer = setTimeout(() => setShowWinOverlay(true), 1000);
+        } else {
+            setWinningLineCoords(null);
+            setShowWinOverlay(false);
+        }
+        return () => { if (timer) clearTimeout(timer); };
+    }, [gameState.winner, gameState.board]);
 
     const handleMove = async (index: number) => {
         if (gameState.winner || gameState.board[index] || gameState.currentTurn !== myPlayer) return;
@@ -239,8 +301,27 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
             </div>
 
             <div className="grid grid-cols-3 gap-3 bg-purple-100 dark:bg-purple-900/20 p-4 rounded-3xl shadow-inner w-full aspect-square relative">
-                {gameState.winner && (
-                    <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 rounded-3xl flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+                {winningLineCoords && (
+                    <svg className="absolute inset-4 pointer-events-none z-10 overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <line
+                            x1={winningLineCoords[0]} y1={winningLineCoords[1]}
+                            x2={winningLineCoords[2]} y2={winningLineCoords[3]}
+                            stroke={gameState.winner === 'X' ? '#ec4899' : '#a855f7'}
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            strokeDasharray="150"
+                            strokeDashoffset="150"
+                            style={{ animation: 'draw-winning-line 0.6s ease-out forwards' }}
+                        />
+                        <style>{`
+                            @keyframes draw-winning-line {
+                                to { stroke-dashoffset: 0; }
+                            }
+                        `}</style>
+                    </svg>
+                )}
+                {showWinOverlay && gameState.winner && (
+                    <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-20 rounded-3xl flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
                         <Trophy className={`w-16 h-16 mb-2 ${gameState.winner === 'Draw' ? 'text-gray-400 dark:text-gray-500' : 'text-yellow-400'}`} />
                         <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 dark:from-pink-400 dark:to-purple-400">
                             {gameState.winner === 'Draw' ? "It's a draw!" : `${gameState.winner} wins!`}

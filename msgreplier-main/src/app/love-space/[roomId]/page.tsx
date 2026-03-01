@@ -2,9 +2,11 @@
 
 export const runtime = 'edge';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useRef } from 'react';
 import { LoveRoom, LoveRoomMember } from '@/types/love-space';
 import { JoinRoom } from '../components/join-room';
+import type { RealtimeChannel } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { Chat, XOX, Ludo, SnakeLadder } from '../components/games';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2 } from 'lucide-react';
@@ -26,6 +28,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [activeTab, setActiveTab] = useState('chat');
     const [otherMemberTab, setOtherMemberTab] = useState<string | null>(null);
     const [unreadCount, setUnreadCount] = useState(0);
+    const channelRef = useRef<RealtimeChannel | null>(null);
 
     useEffect(() => {
         const fetchRoom = async () => {
@@ -68,11 +71,72 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         }
     }, [roomId]);
 
+    // Handle Presence Channel
+    useEffect(() => {
+        if (!currentMember || !roomId) return;
+
+        const channel = supabase.channel(`room_presence:${roomId}`, {
+            config: {
+                presence: {
+                    key: currentMember.id,
+                },
+            },
+        });
+
+        channel
+            .on('presence', { event: 'sync' }, () => {
+                const presenceState = channel.presenceState();
+
+                // Find the other member's state directly
+                let otherTab = null;
+                for (const key in presenceState) {
+                    if (key !== currentMember.id) {
+                        const stateGroup = presenceState[key] as any[];
+                        if (stateGroup && stateGroup.length > 0) {
+                            otherTab = stateGroup[0].activeTab;
+                        }
+                    }
+                }
+
+                if (otherTab) {
+                    setOtherMemberTab(otherTab);
+                } else {
+                    setOtherMemberTab(null);
+                }
+            })
+            .subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await channel.track({
+                        activeTab: activeTab,
+                        updatedAt: new Date().toISOString(),
+                    });
+                }
+            });
+
+        channelRef.current = channel;
+
+        return () => {
+            if (channelRef.current) {
+                supabase.removeChannel(channelRef.current);
+                channelRef.current = null;
+            }
+        };
+    }, [currentMember, roomId, supabase]);
+
+    // Track activeTab changes
     useEffect(() => {
         if (activeTab === 'chat') {
             setUnreadCount(0);
         }
-    }, [activeTab]);
+
+        // Update presence when tab changes
+        if (channelRef.current && currentMember) {
+            channelRef.current.track({
+                activeTab: activeTab,
+                updatedAt: new Date().toISOString(),
+            }).catch(console.error);
+        }
+    }, [activeTab, currentMember]);
 
     const copyLink = () => {
         const url = window.location.href;
@@ -111,7 +175,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         <div className="min-h-[100dvh] h-[100dvh] sm:h-[calc(100vh-2rem)] bg-gradient-to-b from-pink-50 to-purple-50 dark:from-pink-950 dark:to-purple-950 flex flex-col overflow-hidden max-w-md mx-auto shadow-lg relative sm:my-4 sm:rounded-3xl sm:border sm:border-pink-200 dark:sm:border-pink-900/50">
 
             {/* Header Area */}
-            <header className="px-4 py-3 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-b border-pink-100 dark:border-pink-900/50 flex items-center justify-between z-20 sticky top-0">
+            <header className="hidden sm:flex px-4 py-3 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-b border-pink-100 dark:border-pink-900/50 items-center justify-between z-20 sticky top-0">
                 <div className="flex items-center gap-2">
                     <Heart className="w-6 h-6 text-pink-500 fill-pink-500" />
                     <h1 className="font-bold text-lg text-gray-800 dark:text-pink-100 tracking-tight">Love Space</h1>
@@ -129,31 +193,45 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             </header>
 
             {/* Main Content Area Using Tabs */}
-            <div className="flex-1 overflow-hidden flex flex-col z-10 w-full">
+            <div className="flex-1 overflow-hidden flex flex-col z-10 w-full pt-3 sm:pt-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full w-full">
-                    <TabsList className="grid grid-cols-4 w-full bg-white/40 dark:bg-slate-900/40 p-1 mx-0 sm:mx-4 my-2 rounded-none sm:rounded-xl backdrop-blur-sm self-center sm:w-[calc(100%-2rem)] h-12 border-y sm:border border-pink-100 dark:border-pink-900/50 shadow-sm overflow-x-auto hide-scrollbar flex-shrink-0">
-                        <TabsTrigger value="chat" className="relative rounded-lg data-[state=active]:bg-pink-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
+                    <TabsList className="grid grid-cols-4 w-[calc(100%-2rem)] bg-white/80 dark:bg-slate-900/80 p-1.5 mx-auto my-2 rounded-2xl sm:rounded-xl backdrop-blur-md h-14 border border-pink-200 dark:border-pink-900/50 shadow-[0_8px_30px_rgb(236,72,153,0.12)] overflow-x-auto hide-scrollbar flex-shrink-0 relative">
+                        {/* Mobile Invite Button (Absolute positioned inside the tabs area or just below it if preferred) */}
+
+                        <TabsTrigger value="chat" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
                             Chat
                             {otherMemberTab === 'chat' && <div className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
                             {unreadCount > 0 && (
-                                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow-md">
+                                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow-md border border-white dark:border-slate-900">
                                     {unreadCount}
                                 </div>
                             )}
                         </TabsTrigger>
-                        <TabsTrigger value="xox" className="relative rounded-lg data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
+                        <TabsTrigger value="xox" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
                             XOX
                             {otherMemberTab === 'xox' && <div className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
                         </TabsTrigger>
-                        <TabsTrigger value="ludo" className="relative rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
+                        <TabsTrigger value="ludo" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
                             Ludo
                             {otherMemberTab === 'ludo' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
                         </TabsTrigger>
-                        <TabsTrigger value="snake" className="relative rounded-lg data-[state=active]:bg-orange-500 data-[state=active]:text-white text-xs whitespace-nowrap px-2">
+                        <TabsTrigger value="snake" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
                             Snake
                             {otherMemberTab === 'snake' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
                         </TabsTrigger>
                     </TabsList>
+
+                    {/* Mobile Only Floating Actions */}
+                    <div className="sm:hidden absolute bottom-6 right-4 z-50">
+                        <Button
+                            variant="default"
+                            size="icon"
+                            onClick={copyLink}
+                            className="h-12 w-12 rounded-full bg-pink-500 hover:bg-pink-600 shadow-lg border-2 border-white dark:border-slate-800"
+                        >
+                            {copied ? <CheckCircle2 className="w-5 h-5 text-white" /> : <Copy className="w-5 h-5 text-white" />}
+                        </Button>
+                    </div>
 
 
                     <div className="flex-1 overflow-hidden relative flex flex-col">

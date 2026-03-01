@@ -7,8 +7,8 @@ import { Dices, Trophy, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Collector's Edition snakes and ladders 
-const SNAKES: Record<number, number> = { 41: 39, 43: 24, 33: 27, 22: 19, 13: 9 };
-const LADDERS: Record<number, number> = { 3: 18, 6: 16, 14: 26, 32: 49 };
+const SNAKES: Record<number, number> = { 28: 9, 38: 18, 33: 27, 41: 39, 43: 24 };
+const LADDERS: Record<number, number> = { 3: 24, 6: 16, 14: 26, 30: 49 };
 
 // 5x10 board logic
 const BOARDS_CELLS = Array.from({ length: 50 }, (_, i) => i + 1);
@@ -103,6 +103,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         let isMounted = true;
         let pollInterval: ReturnType<typeof setInterval> | null = null;
         let eventSource: EventSource | null = null;
+        let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
 
         const poll = async () => {
             try {
@@ -126,36 +127,58 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
             pollInterval = setInterval(poll, 2000);
         };
 
-        try {
-            eventSource = new EventSource(`/api/love-space/games/stream?roomId=${roomId}&gameType=snake`);
-            eventSource.addEventListener('game', (event) => {
-                try {
-                    const payload = JSON.parse((event as MessageEvent).data) as { game_state?: SnakeLadderState };
-                    if (payload?.game_state) {
-                        const serialized = JSON.stringify(payload.game_state);
-                        if (serialized !== lastStateRef.current) {
-                            applyRemoteState(payload.game_state);
-                        }
+        const connectSSE = () => {
+            if (!isMounted) return;
+            try {
+                if (eventSource) eventSource.close();
+
+                eventSource = new EventSource(`/api/love-space/games/stream?roomId=${roomId}&gameType=snake`);
+
+                eventSource.onopen = () => {
+                    if (pollInterval) {
+                        clearInterval(pollInterval);
+                        pollInterval = null;
                     }
-                } catch {
-                    // ignore parse errors
-                }
-            });
-            eventSource.addEventListener('error', () => {
-                if (eventSource) {
-                    eventSource.close();
-                    eventSource = null;
-                }
+                };
+
+                eventSource.addEventListener('game', (event) => {
+                    try {
+                        const payload = JSON.parse((event as MessageEvent).data) as { game_state?: SnakeLadderState };
+                        if (payload?.game_state) {
+                            const serialized = JSON.stringify(payload.game_state);
+                            if (serialized !== lastStateRef.current) {
+                                applyRemoteState(payload.game_state);
+                            }
+                        }
+                    } catch {
+                        // ignore parse errors
+                    }
+                });
+
+                eventSource.onerror = () => {
+                    if (eventSource) {
+                        eventSource.close();
+                        eventSource = null;
+                    }
+                    startPolling();
+                    // Attempt to reconnect
+                    if (reconnectTimeout) clearTimeout(reconnectTimeout);
+                    reconnectTimeout = setTimeout(connectSSE, 3000);
+                };
+            } catch {
                 startPolling();
-            });
-        } catch {
-            startPolling();
-        }
+                if (reconnectTimeout) clearTimeout(reconnectTimeout);
+                reconnectTimeout = setTimeout(connectSSE, 5000);
+            }
+        };
+
+        connectSSE();
 
         return () => {
             isMounted = false;
             if (pollInterval) clearInterval(pollInterval);
             if (eventSource) eventSource.close();
+            if (reconnectTimeout) clearTimeout(reconnectTimeout);
         };
     }, [roomId, applyRemoteState]);
 
@@ -316,6 +339,17 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         };
     };
 
+    const getCellSVGCoords = (num: number) => {
+        const idx = flattenedRows.indexOf(num);
+        if (idx === -1) return { x: 50, y: 450 }; // default to square 1
+        const r = Math.floor(idx / 10);
+        const c = idx % 10;
+        return {
+            x: c * 100 + 50,
+            y: r * 100 + 50
+        };
+    };
+
     if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse">Loading Game...</div>;
 
     // Get colors for players
@@ -439,42 +473,101 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                                 <Dices className={`w-8 h-8 sm:w-14 sm:h-14 drop-shadow-md transition-colors ${isMyTurn || rolling ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`} />
                             )}
                         </button>
-
-                        {isMyTurn && !rolling && !isAnimating && !state.winner && (
-                            <div className="mt-1.5 sm:mt-4 text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400 animate-bounce bg-orange-100 dark:bg-orange-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
-                                Tap to Roll!
-                            </div>
-                        )}
                     </div>
 
-                    {lastRoll === 6 && !rolling && (
-                        <p className="text-xs font-bold text-orange-500 animate-pulse">Rolled a 6! Extra turn!</p>
-                    )}
-
-                    {/* Event Log Window */}
-                    {state.lastActionMessage && !rolling && (
-                        <div className="w-full text-center p-1.5 sm:p-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-lg text-xs sm:text-sm font-medium animate-pulse border border-yellow-200 dark:border-yellow-700">
-                            {state.lastActionMessage}
-                        </div>
-                    )}
+                    {/* Fixed-height container to prevent board from shifting up and down */}
+                    <div className="h-12 sm:h-16 w-full flex flex-col items-center justify-start z-10">
+                        {isMyTurn && !rolling && !isAnimating && !state.winner ? (
+                            <div className="text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400 animate-bounce bg-orange-100 dark:bg-orange-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+                                Tap to Roll!
+                            </div>
+                        ) : lastRoll === 6 && !rolling ? (
+                            <p className="text-xs sm:text-sm font-bold text-orange-500 animate-pulse bg-orange-50 dark:bg-orange-900/20 px-3 py-1 rounded-full">
+                                Rolled a 6! Extra turn!
+                            </p>
+                        ) : state.lastActionMessage && !rolling ? (
+                            <div className="w-full text-center p-1.5 sm:p-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-lg text-xs sm:text-sm font-medium animate-pulse border border-yellow-200 dark:border-yellow-700">
+                                {state.lastActionMessage}
+                            </div>
+                        ) : null}
+                    </div>
                 </div>
             )}
 
             {/* The Board */}
-            <div className="w-full mt-2 sm:mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-green-900 dark:border-green-600 bg-white aspect-[525/485]">
-                {/* Background Board Image */}
-                <img
-                    src="/snake.webp"
-                    alt="Snake and Ladder Board"
-                    className="absolute inset-0 w-full h-full object-fill pointer-events-none"
-                />
+            <div className="w-full mt-2 sm:mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-[#3E2723] bg-white aspect-[2/1]">
+                {/* CSS Grid Board */}
+                <div className="absolute inset-0 grid grid-cols-10 grid-rows-5">
+                    {flattenedRows.map((num, idx) => {
+                        const COLORS = ['bg-[#1A3626]', 'bg-[#FAF9F6]', 'bg-[#3E2723]'];
+                        const bgColor = COLORS[idx % 3];
+                        return (
+                            <div key={num} className={`relative flex items-center justify-center border border-black/20 shadow-[inset_0_0_10px_rgba(0,0,0,0.3)] ${bgColor}`}>
+                                <span className={`font-black text-xs sm:text-xl z-0 ${bgColor === 'bg-[#FAF9F6]' ? 'drop-shadow-sm' : 'drop-shadow-md'}`} style={{
+                                    color: '#C5A059',
+                                    textShadow: '1px 1px 0px #4a3b1c, -1px -1px 0px #fffbee',
+                                }}>
+                                    {num === 1 && <div className="absolute top-0.5 sm:top-1 left-0 right-0 text-[6px] sm:text-[8px] text-center uppercase font-bold tracking-widest" style={{ color: '#C5A059' }}>Start</div>}
+                                    {num}
+                                    {num === 50 && <div className="absolute bottom-0.5 sm:bottom-1 left-0 right-0 text-[6px] sm:text-[8px] text-center uppercase font-bold tracking-widest" style={{ color: '#C5A059' }}>Finish</div>}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* SVG Overlays for Snakes and Ladders */}
+                <svg className="absolute inset-0 pointer-events-none z-10" viewBox="0 0 1000 500" preserveAspectRatio="none">
+                    <defs>
+                        <filter id="shadow">
+                            <feDropShadow dx="2" dy="4" stdDeviation="3" floodOpacity="0.5" />
+                        </filter>
+                    </defs>
+
+                    {/* Render Ladders */}
+                    {Object.entries(LADDERS).map(([startStr, end]) => {
+                        const start = parseInt(startStr);
+                        const p1 = getCellSVGCoords(start);
+                        const p2 = getCellSVGCoords(end);
+                        return (
+                            <g key={`ladder-${start}-${end}`} filter="url(#shadow)">
+                                <line x1={p1.x - 12} y1={p1.y} x2={p2.x - 12} y2={p2.y} stroke="#3e2723" strokeWidth="6" strokeLinecap="round" />
+                                <line x1={p1.x + 12} y1={p1.y} x2={p2.x + 12} y2={p2.y} stroke="#3e2723" strokeWidth="6" strokeLinecap="round" />
+                                <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#8d6e63" strokeWidth="20" strokeDasharray="6 20" strokeLinecap="butt" />
+                            </g>
+                        );
+                    })}
+
+                    {/* Render Snakes */}
+                    {Object.entries(SNAKES).map(([startStr, end]) => {
+                        const start = parseInt(startStr);
+                        const p1 = getCellSVGCoords(start); // Head of snake
+                        const p2 = getCellSVGCoords(end);   // Tail of snake
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;
+                        const cx = p1.x + dx * 0.5 + dy * 0.2;
+                        const cy = p1.y + dy * 0.5 - dx * 0.2;
+
+                        return (
+                            <g key={`snake-${start}-${end}`} filter="url(#shadow)">
+                                <path d={`M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`} fill="none" stroke="#2e7d32" strokeWidth="14" strokeLinecap="round" />
+                                <path d={`M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`} fill="none" stroke="#81c784" strokeWidth="6" strokeDasharray="10 15" strokeLinecap="round" />
+                                <circle cx={p1.x} cy={p1.y} r="12" fill="#b71c1c" />
+                                <circle cx={p1.x - 4} cy={p1.y - 4} r="3" fill="white" />
+                                <circle cx={p1.x + 4} cy={p1.y - 4} r="3" fill="white" />
+                                <circle cx={p1.x - 4} cy={p1.y - 4} r="1" fill="black" />
+                                <circle cx={p1.x + 4} cy={p1.y - 4} r="1" fill="black" />
+                            </g>
+                        );
+                    })}
+                </svg>
 
                 {/* Player 1 Pin */}
                 <div
                     className="absolute z-20 flex items-center justify-center transition-all duration-300 ease-in-out"
                     style={getCellCenter(visualP1)}
                 >
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-pink-500 shadow-[0_4px_10px_rgba(236,72,153,0.5)] border-2 border-white animate-bounce" title={members[0] ? members[0].nickname : "Player 1"} />
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-pink-500 shadow-[0_4px_10px_rgba(236,72,153,0.8)] border-2 border-white animate-bounce" title={members[0] ? members[0].nickname : "Player 1"} />
                 </div>
 
                 {/* Player 2 Pin */}
@@ -482,7 +575,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                     className="absolute z-20 flex items-center justify-center transition-all duration-300 ease-in-out"
                     style={getCellCenter(visualP2)}
                 >
-                    <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-500 shadow-[0_4px_10px_rgba(59,130,246,0.5)] border-2 border-white animate-bounce ${visualP1 === visualP2 ? 'ml-6' : ''}`} title={members[1] ? members[1].nickname : "Player 2"} />
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-500 shadow-[0_4px_10px_rgba(59,130,246,0.8)] border-2 border-white animate-bounce ${visualP1 === visualP2 ? 'ml-6 sm:ml-8' : ''}`} title={members[1] ? members[1].nickname : "Player 2"} />
                 </div>
             </div>
         </div>

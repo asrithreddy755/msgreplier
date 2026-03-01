@@ -28,6 +28,7 @@ export function generateRollBag(): number[] {
 
 const reducers = {
   registerDice: (state: TDiceState, action: PayloadAction<TPlayerColour>) => {
+    if (state.dice.some((d) => d.colour === action.payload)) return; // Prevent duplicate dice on remount
     state.dice.push({
       colour: action.payload,
       diceNumber: 1,
