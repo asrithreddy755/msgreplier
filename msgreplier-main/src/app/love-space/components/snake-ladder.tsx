@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { LoveRoomMember, SnakeLadderState } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw } from 'lucide-react';
@@ -25,12 +25,17 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
     const [rolling, setRolling] = useState(false);
     const [lastRoll, setLastRoll] = useState<number | null>(null);
     const lastStateRef = useRef<string | null>(null);
+    const pendingStateRef = useRef<SnakeLadderState | null>(null);
+    const isAnimatingRef = useRef(false);
 
     const [visualP1, setVisualP1] = useState(1);
     const [visualP2, setVisualP2] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
+    const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
+    const [syncing, setSyncing] = useState(false);
 
     useEffect(() => {
+        isAnimatingRef.current = isAnimating;
         if (!isAnimating) {
             setVisualP1(state.player1Position);
             setVisualP2(state.player2Position);
@@ -39,15 +44,28 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
     const playAnimationAndSync = async (playerNum: number, path: number[], finalState: SnakeLadderState) => {
         setIsAnimating(true);
-        const setVisual = playerNum === 1 ? setVisualP1 : setVisualP2;
-        await new Promise(r => setTimeout(r, 200));
-        for (const step of path) {
-            setVisual(step);
-            await new Promise(r => setTimeout(r, 400));
+        try {
+            const setVisual = playerNum === 1 ? setVisualP1 : setVisualP2;
+            await new Promise(r => setTimeout(r, 200));
+            for (const step of path) {
+                setVisual(step);
+                await new Promise(r => setTimeout(r, 400));
+            }
+            lastStateRef.current = JSON.stringify(finalState);
+            setState(finalState);
+        } finally {
+            setIsAnimating(false);
         }
-        setState(finalState);
-        setIsAnimating(false);
     };
+
+    const applyRemoteState = useCallback((nextState: SnakeLadderState) => {
+        if (isAnimatingRef.current) {
+            pendingStateRef.current = nextState;
+            return;
+        }
+        lastStateRef.current = JSON.stringify(nextState);
+        setState(nextState);
+    }, []);
 
     useEffect(() => {
         const init = async () => {
@@ -61,15 +79,14 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                 const sortedData = membersData.sort((a: LoveRoomMember, b: LoveRoomMember) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime());
                 setMembers(sortedData as LoveRoomMember[]);
 
-                if (sortedData.length > 0 && !state.currentTurn) {
-                    setState(s => ({ ...s, currentTurn: sortedData[0].nickname }));
+                if (sortedData.length > 0) {
+                    setState(s => (s.currentTurn ? s : { ...s, currentTurn: sortedData[0].nickname }));
                 }
 
                 const lastGame = stateRes?.game;
                 if (lastGame?.game_state) {
                     const parsed = lastGame.game_state as SnakeLadderState;
-                    setState(parsed);
-                    lastStateRef.current = JSON.stringify(parsed);
+                    applyRemoteState(parsed);
                 }
             } catch (err) {
                 console.error("Failed to init snake ladder:", err);
@@ -80,7 +97,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
         init();
 
-    }, [roomId]);
+    }, [roomId, applyRemoteState]);
 
     useEffect(() => {
         let isMounted = true;
@@ -96,8 +113,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                     const nextState = lastGame.game_state as SnakeLadderState;
                     const serialized = JSON.stringify(nextState);
                     if (serialized !== lastStateRef.current) {
-                        lastStateRef.current = serialized;
-                        setState(nextState);
+                        applyRemoteState(nextState);
                     }
                 }
             } catch {
@@ -118,8 +134,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                     if (payload?.game_state) {
                         const serialized = JSON.stringify(payload.game_state);
                         if (serialized !== lastStateRef.current) {
-                            lastStateRef.current = serialized;
-                            setState(payload.game_state);
+                            applyRemoteState(payload.game_state);
                         }
                     }
                 } catch {
@@ -142,7 +157,39 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
             if (pollInterval) clearInterval(pollInterval);
             if (eventSource) eventSource.close();
         };
-    }, [roomId]);
+    }, [roomId, applyRemoteState]);
+
+    useEffect(() => {
+        if (!isAnimating && pendingStateRef.current) {
+            const nextState = pendingStateRef.current;
+            pendingStateRef.current = null;
+            lastStateRef.current = JSON.stringify(nextState);
+            setState(nextState);
+        }
+    }, [isAnimating]);
+
+    const syncNow = useCallback(async () => {
+        setSyncing(true);
+        try {
+            const data = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=snake`).then(res => res.json());
+            const lastGame = data?.game;
+            if (lastGame?.game_state) {
+                applyRemoteState(lastGame.game_state as SnakeLadderState);
+            }
+            setLastSyncAt(new Date().toISOString());
+        } finally {
+            setSyncing(false);
+        }
+    }, [roomId, applyRemoteState]);
+
+    useEffect(() => {
+        if (state.winner || members.length === 0) return;
+        const hasTurn = state.currentTurn && members.some(m => m.nickname === state.currentTurn);
+        if (!hasTurn) {
+            const next = members[0].nickname;
+            setState(s => (s.currentTurn === next ? s : { ...s, currentTurn: next }));
+        }
+    }, [members, state.currentTurn, state.winner]);
 
     const getPlayerIndex = (nickname: string) => {
         return members.findIndex(m => m.nickname === nickname) === 0 ? 1 : 2;
@@ -217,6 +264,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
 
         setLastRoll(roll);
         setRolling(false);
+        lastStateRef.current = JSON.stringify(newState);
 
         await fetch('/api/love-space/games', {
             method: 'POST',
@@ -225,7 +273,7 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         });
 
         if (path.length > 0) {
-            playAnimationAndSync(myPlayerNum, path, newState);
+            await playAnimationAndSync(myPlayerNum, path, newState);
         } else {
             setState(newState);
         }
@@ -292,14 +340,27 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
                 <h2 className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1 sm:mb-2 flex items-center justify-center gap-1.5 sm:gap-2">
                     Snake & Ladder <Dices className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                 </h2>
-                <div className="flex gap-3 sm:gap-4 justify-center text-xs sm:text-sm items-center">
+                <div className="flex gap-2 sm:gap-3 justify-center text-[10px] sm:text-xs items-center">
                     <div className={`px-3 sm:px-4 py-0.5 sm:py-1 rounded-full text-white shadow-sm flex items-center gap-1.5 sm:gap-2 ${myColor}`}>
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" /> You
                     </div>
                     <div className={`px-3 sm:px-4 py-0.5 sm:py-1 rounded-full ${isMyTurn ? 'bg-orange-500 text-white shadow-md animate-pulse' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400'}`}>
                         {state.winner ? 'Game Over' : (isMyTurn ? 'Your Turn' : 'Waiting...')}
                     </div>
+                    <button
+                        type="button"
+                        onClick={syncNow}
+                        disabled={syncing}
+                        className={`px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full border text-[10px] sm:text-xs transition-all ${syncing ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 border-gray-200 dark:border-slate-700' : 'bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-300 border-orange-200 dark:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20'}`}
+                    >
+                        {syncing ? 'Syncing...' : 'Sync'}
+                    </button>
                 </div>
+                {lastSyncAt && (
+                    <div className="mt-1 text-[10px] sm:text-xs text-gray-400">
+                        Synced
+                    </div>
+                )}
             </div>
 
             {state.winner ? (

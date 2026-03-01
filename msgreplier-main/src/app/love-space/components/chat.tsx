@@ -10,8 +10,10 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
     const [messages, setMessages] = useState<LoveMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [pendingIds, setPendingIds] = useState<string[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const lastMessageIdRef = useRef<string | null>(null);
+    const pendingMessageRef = useRef<{ tempId: string; message: string; sender: string } | null>(null);
 
     // Fetch initial messages and stream updates
     useEffect(() => {
@@ -53,6 +55,12 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
                     const payload = JSON.parse((event as MessageEvent).data) as LoveMessage;
                     setMessages((prev) => {
                         if (prev.some(m => m.id === payload.id)) return prev;
+                        if (pendingMessageRef.current && payload.sender_nickname === pendingMessageRef.current.sender && payload.message === pendingMessageRef.current.message) {
+                            const { tempId } = pendingMessageRef.current;
+                            pendingMessageRef.current = null;
+                            setPendingIds((prev) => prev.filter(id => id !== tempId));
+                            return [...prev.filter(m => m.id !== tempId), payload];
+                        }
                         if (payload.sender_nickname !== currentMember.nickname && onNewMessage) {
                             onNewMessage();
                         }
@@ -101,9 +109,11 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
 
         // 1. Optimistic UI update (Instant for sender)
         setMessages((prev) => [...prev, msgData]);
+        setPendingIds((prev) => [...prev, tempId]);
+        pendingMessageRef.current = { tempId, message: msgData.message, sender: currentMember.nickname };
         setNewMessage('');
 
-        await fetch('/api/love-space/messages', {
+        const response = await fetch('/api/love-space/messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -112,6 +122,19 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
                 message: msgData.message
             })
         });
+
+        if (response.ok) {
+            const data = await response.json();
+            const saved = data?.message as LoveMessage | undefined;
+            if (saved?.id) {
+                setMessages((prev) => {
+                    if (prev.some(m => m.id === saved.id)) return prev;
+                    return [...prev.filter(m => m.id !== tempId), saved];
+                });
+                setPendingIds((prev) => prev.filter(id => id !== tempId));
+                pendingMessageRef.current = null;
+            }
+        }
 
         setIsLoading(false);
     };
@@ -128,6 +151,7 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
                 ) : (
                     messages.map((msg) => {
                         const isMe = msg.sender_nickname === currentMember.nickname;
+                        const isPending = pendingIds.includes(msg.id);
                         return (
                             <div
                                 key={msg.id}
@@ -136,7 +160,7 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
                                 <div className={`text-xs text-gray-400 dark:text-gray-500 mb-1 px-1 flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
                                     <span>{msg.sender_nickname}</span>
                                     <span className="opacity-50 text-[10px] self-center">
-                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                        {isPending ? 'Sending...' : new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
                                     </span>
                                 </div>
                                 <div
