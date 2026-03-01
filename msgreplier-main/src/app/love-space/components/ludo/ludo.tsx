@@ -103,7 +103,7 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
 
     return (
         <Provider store={store}>
-            <div className="w-full relative ludo-wrapper">
+            <div className="w-full h-full relative flex items-center justify-center ludo-wrapper">
                 <Game initData={initData} />
             </div>
         </Provider>

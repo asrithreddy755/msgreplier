@@ -221,19 +221,6 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                         </TabsTrigger>
                     </TabsList>
 
-                    {/* Mobile Only Floating Actions */}
-                    <div className="sm:hidden absolute bottom-6 right-4 z-50">
-                        <Button
-                            variant="default"
-                            size="icon"
-                            onClick={copyLink}
-                            className="h-12 w-12 rounded-full bg-pink-500 hover:bg-pink-600 shadow-lg border-2 border-white dark:border-slate-800"
-                        >
-                            {copied ? <CheckCircle2 className="w-5 h-5 text-white" /> : <Copy className="w-5 h-5 text-white" />}
-                        </Button>
-                    </div>
-
-
                     <div className="flex-1 overflow-hidden relative flex flex-col">
                         <TabsContent value="home" className="flex-1 overflow-y-auto mt-0 data-[state=inactive]:hidden px-4 pb-4 hide-scrollbar">
                             <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-sm mx-auto pt-2">

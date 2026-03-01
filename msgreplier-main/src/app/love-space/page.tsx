@@ -91,28 +91,14 @@ export default function LoveSpacePage() {
 
                     <CardContent className="flex flex-col gap-4 mt-6">
                         <div className="flex items-center gap-2 bg-pink-50 dark:bg-slate-800 border border-pink-200 dark:border-slate-700 p-3 rounded-xl overflow-hidden shadow-inner">
-                            <span className="flex-1 text-sm text-gray-500 dark:text-gray-400 truncate select-all px-2">
+                            <span className="flex-1 text-sm text-gray-500 dark:text-gray-400 break-all px-2">
                                 {createdRoomUrl}
                             </span>
-                            <Button
-                                onClick={() => {
-                                    navigator.clipboard.writeText(createdRoomUrl);
-                                    setCopied(true);
-                                    toast.success("Link copied! Ready to send.");
-                                    setTimeout(() => setCopied(false), 2000);
-                                }}
-                                variant="secondary"
-                                size="sm"
-                                className="shrink-0 bg-white dark:bg-slate-700 hover:bg-pink-100 dark:hover:bg-slate-600 text-pink-600 dark:text-pink-300 shadow-sm"
-                            >
-                                {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                            </Button>
                         </div>
 
-                        <div className="flex gap-3">
+                        <div className="flex flex-col gap-3">
                             <Button
-                                variant="outline"
-                                className="flex-1 border-pink-200 dark:border-slate-700 hover:bg-pink-50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-300 h-12 rounded-xl"
+                                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-md h-12 rounded-xl text-sm sm:text-base flex items-center justify-center"
                                 onClick={() => {
                                     if (navigator.share) {
                                         navigator.share({
@@ -122,12 +108,14 @@ export default function LoveSpacePage() {
                                         }).catch(console.error);
                                     } else {
                                         navigator.clipboard.writeText(createdRoomUrl);
-                                        toast.success("Link copied!");
+                                        setCopied(true);
+                                        toast.success("Invite link copied!");
+                                        setTimeout(() => setCopied(false), 2000);
                                     }
                                 }}
                             >
-                                <Share2 className="w-4 h-4 mr-2 text-pink-500" />
-                                Share Link
+                                <Heart className="w-4 h-4 mr-2" />
+                                {copied ? "Link Copied" : "Invite Partner"}
                             </Button>
                         </div>
                     </CardContent>
