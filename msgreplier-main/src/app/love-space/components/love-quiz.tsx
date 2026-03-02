@@ -45,7 +45,6 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
     const [currentQuiz, setCurrentQuiz] = useState<LoveQuiz | null>(null);
 
     // Quiz Creation State
-    const [newQuizTitle, setNewQuizTitle] = useState('');
     const [questions, setQuestions] = useState<QuizQuestion[]>([
         { id: '1', text: '', options: ['', '', '', ''], correctAnswer: 0 }
     ]);
@@ -130,10 +129,6 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
     };
 
     const handleCreateQuiz = async () => {
-        if (!newQuizTitle.trim()) {
-            toast.error('Please enter a quiz title');
-            return;
-        }
         if (questions.some(q => !q.text.trim() || q.options.some(o => !o.trim()))) {
             toast.error('Please fill in all questions and options');
             return;
@@ -148,7 +143,7 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
                     quizData: {
                         room_id: roomId,
                         creator_id: currentMember.id,
-                        title: newQuizTitle,
+                        title: `Quiz for ${partnerName}`,
                         questions,
                         status: 'pending'
                     }
@@ -160,7 +155,6 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
                 setView('dashboard');
                 fetchQuizzes();
                 // Reset form
-                setNewQuizTitle('');
                 setQuestions([{ id: '1', text: '', options: ['', '', '', ''], correctAnswer: 0 }]);
             } else {
                 toast.error('Failed to create quiz');
@@ -234,16 +228,6 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
                 </div>
 
                 <div className="space-y-4">
-                    <div>
-                        <Label>Quiz Title</Label>
-                        <Input
-                            value={newQuizTitle}
-                            onChange={(e) => setNewQuizTitle(e.target.value)}
-                            placeholder="e.g., How well do you know me?"
-                            className="mt-1"
-                        />
-                    </div>
-
                     {questions.map((q, qIndex) => (
                         <Card key={q.id} className="p-4 border-pink-100 dark:border-pink-900/30 relative flex flex-col pt-10">
                             <button

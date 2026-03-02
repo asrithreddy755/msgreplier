@@ -31,7 +31,12 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [unreadCount, setUnreadCount] = useState(0);
     const [showGameChat, setShowGameChat] = useState(false);
     const [members, setMembers] = useState<LoveRoomMember[]>([]);
+    const membersRef = useRef<LoveRoomMember[]>([]);
     const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        membersRef.current = members;
+    }, [members]);
     const [networkQuality, setNetworkQuality] = useState<'good' | 'fair' | 'poor'>('good');
     const channelRef = useRef<RealtimeChannel | null>(null);
 
@@ -127,7 +132,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                             otherTab = stateGroup[0].activeTab;
                         }
                         // If we see a user ID that is not in our members list, trigger a reload
-                        if (members.length > 0 && !members.find(m => m.id === key)) {
+                        if (!membersRef.current.find(m => m.id === key)) {
                             hasNewMembers = true;
                         }
                     }
@@ -226,7 +231,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
     if (error || !room) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-pink-50 p-4text-center">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-pink-50 p-4 text-center">
                 <Heart className="w-16 h-16 text-red-400 mb-4 opacity-50" />
                 <h1 className="text-2xl font-bold text-gray-800">Oops!</h1>
                 <p className="text-gray-500 mt-2">{error || "Something went wrong."}</p>

@@ -87,13 +87,13 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
         const p2Changed = p2From !== p2To;
 
         if (p1Changed && !p2Changed) {
-            const path = buildPath(p1From, p1To);
+            const path = (nextState.lastPathPlayer === 1 && nextState.lastPath?.length) ? nextState.lastPath : buildPath(p1From, p1To);
             if (path.length > 0) {
                 playAnimationAndSync(1, path, nextState);
                 return;
             }
         } else if (!p1Changed && p2Changed) {
-            const path = buildPath(p2From, p2To);
+            const path = (nextState.lastPathPlayer === 2 && nextState.lastPath?.length) ? nextState.lastPath : buildPath(p2From, p2To);
             if (path.length > 0) {
                 playAnimationAndSync(2, path, nextState);
                 return;
@@ -314,7 +314,9 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
             player2Position: myPlayerNum === 2 ? newPos : state.player2Position,
             currentTurn: winner ? null : (roll === 6 ? currentMember.nickname : nextTurn), // Roll 6 = extra turn
             winner,
-            lastActionMessage: actionMessage || (roll === 6 ? `${currentMember.nickname} rolled a 6 and gets another turn!` : undefined)
+            lastActionMessage: actionMessage || (roll === 6 ? `${currentMember.nickname} rolled a 6 and gets another turn!` : undefined),
+            lastPath: path,
+            lastPathPlayer: myPlayerNum
         };
 
         setLastRoll(roll);
@@ -346,7 +348,9 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
             player2Position: 1,
             currentTurn: nextTurnNick,
             winner: null,
-            lastActionMessage: null
+            lastActionMessage: null,
+            lastPath: [],
+            lastPathPlayer: undefined
         };
         setState(newState);
         setLastRoll(null);
