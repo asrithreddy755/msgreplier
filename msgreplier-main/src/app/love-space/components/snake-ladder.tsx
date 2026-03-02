@@ -13,14 +13,14 @@ const LADDERS: Record<number, number> = { 3: 18, 6: 16, 14: 26, 30: 49 };
 // 5x10 board logic
 const BOARDS_CELLS = Array.from({ length: 50 }, (_, i) => i + 1);
 
-export function SnakeLadder({ roomId, currentMember, otherOnline }: { roomId: string, currentMember: LoveRoomMember, otherOnline?: boolean }) {
+export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }: { roomId: string, currentMember: LoveRoomMember, otherOnline?: boolean, members?: LoveRoomMember[] }) {
     const [state, setState] = useState<SnakeLadderState>({
         player1Position: 1,
         player2Position: 1,
         currentTurn: null,
         winner: null,
     });
-    const [members, setMembers] = useState<LoveRoomMember[]>([]);
+    // const [members, setMembers] = useState<LoveRoomMember[]>([]); // Using prop instead
     const [loading, setLoading] = useState(true);
     const [rolling, setRolling] = useState(false);
     const [lastRoll, setLastRoll] = useState<number | null>(null);
@@ -106,18 +106,9 @@ export function SnakeLadder({ roomId, currentMember, otherOnline }: { roomId: st
     useEffect(() => {
         const init = async () => {
             try {
-                const [membersRes, stateRes] = await Promise.all([
-                    fetch(`/api/love-space/members?roomId=${roomId}`).then(res => res.json()),
-                    fetch(`/api/love-space/games?roomId=${roomId}&gameType=snake`).then(res => res.json())
-                ]);
+                const stateRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=snake`).then(res => res.json());
 
-                const membersData = Array.isArray(membersRes?.members) ? membersRes.members : [];
-                const sortedData = membersData.sort((a: LoveRoomMember, b: LoveRoomMember) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime());
-                setMembers(sortedData as LoveRoomMember[]);
-
-                if (sortedData.length > 0) {
-                    setState(s => (s.currentTurn ? s : { ...s, currentTurn: sortedData[0].nickname }));
-                }
+                // members are now passed via props
 
                 const lastGame = stateRes?.game;
                 if (lastGame?.game_state) {
@@ -134,6 +125,13 @@ export function SnakeLadder({ roomId, currentMember, otherOnline }: { roomId: st
         init();
 
     }, [roomId, applyRemoteState]);
+
+    // Set initial turn when members load
+    useEffect(() => {
+        if (members.length > 0) {
+            setState(s => (s.currentTurn ? s : { ...s, currentTurn: members[0].nickname }));
+        }
+    }, [members]);
 
     useEffect(() => {
         let isMounted = true;
@@ -240,6 +238,14 @@ export function SnakeLadder({ roomId, currentMember, otherOnline }: { roomId: st
             setSyncing(false);
         }
     }, [roomId, applyRemoteState]);
+
+    // Auto-sync every 5 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            syncNow();
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [syncNow]);
 
     useEffect(() => {
         if (state.winner || members.length === 0) return;

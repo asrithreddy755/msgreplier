@@ -59,3 +59,24 @@ export interface GameSyncPayload {
     type: GameType;
     state: any;
 }
+
+// Love Quiz Types
+export interface QuizQuestion {
+    id: string;
+    text: string;
+    options: string[];
+    correctAnswer: number; // Index of the correct option
+}
+
+export interface LoveQuiz {
+    id: string;
+    room_id: string;
+    creator_id: string; // Member ID who created the quiz
+    taker_id?: string; // Member ID who takes the quiz (initially undefined)
+    title: string;
+    questions: QuizQuestion[];
+    score: number | null; // Null if not taken yet
+    status: 'pending' | 'completed';
+    created_at: string;
+    taker_answers?: number[]; // Array of selected option indices
+}

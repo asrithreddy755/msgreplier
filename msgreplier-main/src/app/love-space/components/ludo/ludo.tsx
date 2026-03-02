@@ -11,9 +11,10 @@ import { debounce } from 'lodash-es';
 interface LudoProps {
     roomId: string;
     currentMember: LoveRoomMember;
+    members?: LoveRoomMember[];
 }
 
-export function Ludo({ roomId, currentMember }: LudoProps) {
+export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
     const [initData, setInitData] = useState<TPlayerInitData[]>([]);
     const [loading, setLoading] = useState(true);
     const lastBroadcastStateRef = useRef<string | null>(null);
@@ -38,19 +39,11 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
     useEffect(() => {
         const init = async () => {
             try {
-                const [membersRes, gameRes] = await Promise.all([
-                    fetch(`/api/love-space/members?roomId=${roomId}`).then(res => res.json()),
-                    fetch(`/api/love-space/games?roomId=${roomId}&gameType=ludo`).then(res => res.json())
-                ]);
-
-                const membersData = Array.isArray(membersRes?.members) ? membersRes.members : [];
-                const sorted = membersData.sort((a: LoveRoomMember, b: LoveRoomMember) =>
-                    new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
-                );
+                const gameRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=ludo`).then(res => res.json());
 
                 const initialPlayers = [
-                    { name: sorted[0]?.nickname || 'Player 1', isBot: false },
-                    { name: sorted[1]?.nickname || 'Player 2', isBot: false },
+                    { name: members[0]?.nickname || 'Player 1', isBot: false },
+                    { name: members[1]?.nickname || 'Player 2', isBot: false },
                 ];
                 setInitData(initialPlayers);
 
@@ -67,7 +60,7 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
         };
 
         init();
-    }, [roomId, currentMember.id]);
+    }, [roomId, members]);
 
     useEffect(() => {
         let isMounted = true;
@@ -95,6 +88,26 @@ export function Ludo({ roomId, currentMember }: LudoProps) {
             isMounted = false;
             if (eventSource) eventSource.close();
         };
+    }, [roomId]);
+
+    // Auto-sync every 5 seconds
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            try {
+                const gameRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=ludo`).then(res => res.json());
+                const gameData = gameRes?.game;
+                if (gameData?.game_state && Object.keys(gameData.game_state).length > 0) {
+                    const serialized = JSON.stringify(gameData.game_state);
+                    if (serialized !== lastBroadcastStateRef.current) {
+                        lastBroadcastStateRef.current = serialized;
+                        store.dispatch({ type: 'HYDRATE_GAME_STATE', payload: gameData.game_state });
+                    }
+                }
+            } catch {
+                // ignore
+            }
+        }, 5000);
+        return () => clearInterval(interval);
     }, [roomId]);
 
     if (loading) {

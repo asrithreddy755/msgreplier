@@ -8,6 +8,7 @@ import { JoinRoom } from '../components/join-room';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Chat, XOX, Ludo, SnakeLadder } from '../components/games';
+import { LoveQuiz } from '../components/love-quiz';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,30 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [showGameChat, setShowGameChat] = useState(false);
     const [members, setMembers] = useState<LoveRoomMember[]>([]);
     const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
+    const [networkQuality, setNetworkQuality] = useState<'good' | 'fair' | 'poor'>('good');
     const channelRef = useRef<RealtimeChannel | null>(null);
+
+    // Monitor network quality
+    useEffect(() => {
+        const updateNetworkStatus = () => {
+            const nav = window.navigator as any;
+            if (nav.connection) {
+                const conn = nav.connection;
+                if (conn.rtt > 500 || conn.downlink < 1) setNetworkQuality('poor');
+                else if (conn.rtt > 150 || conn.downlink < 5) setNetworkQuality('fair');
+                else setNetworkQuality('good');
+            }
+        };
+        updateNetworkStatus();
+        if ((window.navigator as any).connection) {
+            (window.navigator as any).connection.addEventListener('change', updateNetworkStatus);
+        }
+        return () => {
+            if ((window.navigator as any).connection) {
+                (window.navigator as any).connection.removeEventListener('change', updateNetworkStatus);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         const fetchRoom = async () => {
@@ -89,16 +113,22 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         channel
             .on('presence', { event: 'sync' }, () => {
                 const presenceState = channel.presenceState();
-
+                
                 // Find the other member's state directly
                 let otherTab = null;
                 const online = new Set<string>();
+                let hasNewMembers = false;
+
                 for (const key in presenceState) {
                     const stateGroup = presenceState[key] as any[];
                     if (stateGroup && stateGroup.length > 0) {
                         online.add(key);
                         if (key !== currentMember.id) {
                             otherTab = stateGroup[0].activeTab;
+                        }
+                        // If we see a user ID that is not in our members list, trigger a reload
+                        if (members.length > 0 && !members.find(m => m.id === key)) {
+                            hasNewMembers = true;
                         }
                     }
                 }
@@ -109,6 +139,20 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     setOtherMemberTab(null);
                 }
                 setOnlineIds(online);
+
+                if (hasNewMembers) {
+                    fetch(`/api/love-space/members?roomId=${roomId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (Array.isArray(data?.members)) {
+                                const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
+                                    new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
+                                );
+                                setMembers(sorted);
+                            }
+                        })
+                        .catch(() => { });
+                }
             })
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
@@ -251,7 +295,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                         </TabsTrigger>
                     </TabsList>
                     {/* Presence status chip */}
-                    <div className="px-4 -mt-1 mb-1">
+                    <div className="px-4 -mt-1 mb-1 flex items-center justify-between">
                         {otherMember && (
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/60 border border-pink-100 dark:border-pink-900/40 text-[11px] text-gray-600 dark:text-gray-300 shadow-sm">
                                 <span className={`w-2 h-2 rounded-full ${isOtherOnline ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.9)]' : 'bg-gray-400'}`} />
@@ -259,6 +303,12 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 <span className={isOtherOnline ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}>{isOtherOnline ? 'Online' : 'Offline'}</span>
                             </div>
                         )}
+                        {/* Network Quality Indicator */}
+                        <div className="flex items-center gap-1 bg-white/50 dark:bg-slate-900/50 px-2 py-0.5 rounded-full border border-pink-50 dark:border-pink-900/20" title={`Network: ${networkQuality}`}>
+                                <div className={`w-1 h-1.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-500' : (networkQuality === 'fair' ? 'bg-yellow-500' : 'bg-green-500')}`} />
+                                <div className={`w-1 h-2.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-300 dark:bg-red-900/50' : (networkQuality === 'fair' ? 'bg-yellow-500' : 'bg-green-500')}`} />
+                                <div className={`w-1 h-3.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-300 dark:bg-red-900/50' : (networkQuality === 'fair' ? 'bg-yellow-300 dark:bg-yellow-900/50' : 'bg-green-500')}`} />
+                            </div>
                     </div>
 
                     <div className="flex-1 overflow-hidden relative flex flex-col">
@@ -270,6 +320,11 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     <h2 className="text-xs uppercase tracking-widest text-pink-500 dark:text-pink-400 font-bold mb-1">Welcome to</h2>
                                     <h1 className="text-3xl sm:text-4xl font-black text-gray-800 dark:text-pink-100 tracking-tight leading-none mb-2 break-words">Love Space</h1>
                                     <p className="text-sm text-gray-600 dark:text-gray-300 relative z-10 w-4/5 pt-1">Your private couple space. Choose an activity below to get started!</p>
+                                </div>
+
+                                {/* Love Quiz Section */}
+                                <div className="mt-2 mb-1">
+                                    <LoveQuiz roomId={roomId} currentMember={currentMember} members={members} />
                                 </div>
 
                                 {/* Quick Links Grid */}
@@ -375,7 +430,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         </span>
                                     )}
                                 </button>
-                                <Ludo roomId={roomId} currentMember={currentMember} />
+                                <Ludo roomId={roomId} currentMember={currentMember} members={members} />
                             </div>
                         </TabsContent>
                         <TabsContent value="snake" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
@@ -392,7 +447,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         </span>
                                     )}
                                 </button>
-                                <SnakeLadder roomId={roomId} currentMember={currentMember} otherOnline={isOtherOnline} />
+                                <SnakeLadder roomId={roomId} currentMember={currentMember} members={members} otherOnline={isOtherOnline} />
                             </div>
                         </TabsContent>
                         {showGameChat && (
