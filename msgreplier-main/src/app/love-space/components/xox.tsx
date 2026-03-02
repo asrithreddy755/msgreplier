@@ -300,7 +300,7 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 bg-purple-100 dark:bg-purple-900/20 p-4 rounded-3xl shadow-inner w-full aspect-square relative">
+            <div className="grid grid-cols-3 grid-rows-3 gap-3 bg-purple-100 dark:bg-purple-900/20 p-4 rounded-3xl shadow-inner w-full aspect-square relative">
                 {winningLineCoords && (
                     <svg className="absolute inset-4 pointer-events-none z-10 overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
                         <line
@@ -347,7 +347,7 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
                         onClick={() => handleMove(idx)}
                         disabled={!!cell || !!gameState.winner || gameState.currentTurn !== myPlayer}
                         className={`
-                bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-purple-50 dark:border-purple-900/30 flex items-center justify-center text-5xl transition-all
+                w-full h-full bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-purple-50 dark:border-purple-900/30 flex items-center justify-center text-5xl transition-all
                 ${!cell && !gameState.winner && gameState.currentTurn === myPlayer ? 'hover:scale-105 active:scale-95 cursor-pointer hover:bg-pink-50 hover:border-pink-200 dark:hover:bg-pink-900/20 dark:hover:border-pink-800' : 'cursor-default'}
                 ${cell === 'X' ? 'text-pink-500' : 'text-purple-500'}
             `}

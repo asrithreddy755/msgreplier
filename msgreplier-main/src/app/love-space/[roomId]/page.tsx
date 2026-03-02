@@ -113,7 +113,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         channel
             .on('presence', { event: 'sync' }, () => {
                 const presenceState = channel.presenceState();
-                
+
                 // Find the other member's state directly
                 let otherTab = null;
                 const online = new Set<string>();
@@ -133,11 +133,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     }
                 }
 
-                if (otherTab) {
-                    setOtherMemberTab(otherTab);
-                } else {
-                    setOtherMemberTab(null);
-                }
+                setOtherMemberTab(otherTab);
                 setOnlineIds(online);
 
                 if (hasNewMembers) {
@@ -305,10 +301,10 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                         )}
                         {/* Network Quality Indicator */}
                         <div className="flex items-center gap-1 bg-white/50 dark:bg-slate-900/50 px-2 py-0.5 rounded-full border border-pink-50 dark:border-pink-900/20" title={`Network: ${networkQuality}`}>
-                                <div className={`w-1 h-1.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-500' : (networkQuality === 'fair' ? 'bg-yellow-500' : 'bg-green-500')}`} />
-                                <div className={`w-1 h-2.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-300 dark:bg-red-900/50' : (networkQuality === 'fair' ? 'bg-yellow-500' : 'bg-green-500')}`} />
-                                <div className={`w-1 h-3.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-300 dark:bg-red-900/50' : (networkQuality === 'fair' ? 'bg-yellow-300 dark:bg-yellow-900/50' : 'bg-green-500')}`} />
-                            </div>
+                            <div className={`w-1 h-1.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-500' : (networkQuality === 'fair' ? 'bg-yellow-500' : 'bg-green-500')}`} />
+                            <div className={`w-1 h-2.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-300 dark:bg-red-900/50' : (networkQuality === 'fair' ? 'bg-yellow-500' : 'bg-green-500')}`} />
+                            <div className={`w-1 h-3.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-300 dark:bg-red-900/50' : (networkQuality === 'fair' ? 'bg-yellow-300 dark:bg-yellow-900/50' : 'bg-green-500')}`} />
+                        </div>
                     </div>
 
                     <div className="flex-1 overflow-hidden relative flex flex-col">

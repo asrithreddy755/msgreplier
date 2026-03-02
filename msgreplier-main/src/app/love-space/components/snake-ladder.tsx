@@ -306,7 +306,7 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
         }
 
         const other = members.find(m => m.nickname !== currentMember.nickname);
-        const nextTurn = (otherOnline && other) ? other.nickname : currentMember.nickname;
+        const nextTurn = other ? other.nickname : currentMember.nickname;
 
         const newState: SnakeLadderState = {
             ...state,
