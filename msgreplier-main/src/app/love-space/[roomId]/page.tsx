@@ -9,7 +9,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Chat, XOX, Ludo, SnakeLadder } from '../components/games';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, ArrowLeft, MessageCircle } from 'lucide-react';
+import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -29,6 +29,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [otherMemberTab, setOtherMemberTab] = useState<string | null>(null);
     const [unreadCount, setUnreadCount] = useState(0);
     const [showGameChat, setShowGameChat] = useState(false);
+    const [members, setMembers] = useState<LoveRoomMember[]>([]);
+    const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
     const channelRef = useRef<RealtimeChannel | null>(null);
 
     useEffect(() => {
@@ -90,10 +92,12 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
                 // Find the other member's state directly
                 let otherTab = null;
+                const online = new Set<string>();
                 for (const key in presenceState) {
-                    if (key !== currentMember.id) {
-                        const stateGroup = presenceState[key] as any[];
-                        if (stateGroup && stateGroup.length > 0) {
+                    const stateGroup = presenceState[key] as any[];
+                    if (stateGroup && stateGroup.length > 0) {
+                        online.add(key);
+                        if (key !== currentMember.id) {
                             otherTab = stateGroup[0].activeTab;
                         }
                     }
@@ -104,6 +108,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 } else {
                     setOtherMemberTab(null);
                 }
+                setOnlineIds(online);
             })
             .subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') {
@@ -145,6 +150,31 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         toast("Link copied to clipboard!");
         setTimeout(() => setCopied(false), 2000);
     };
+
+    // Fetch members to know other member name
+    useEffect(() => {
+        if (!roomId) return;
+        const loadMembers = async () => {
+            try {
+                const res = await fetch(`/api/love-space/members?roomId=${roomId}`);
+                const data = await res.json();
+                if (Array.isArray(data?.members)) {
+                    const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
+                        new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
+                    );
+                    setMembers(sorted);
+                }
+            } catch {
+                // ignore
+            }
+        };
+        loadMembers();
+    }, [roomId]);
+
+    const otherMember = currentMember && members.length > 0
+        ? members.find(m => m.id !== currentMember.id) || null
+        : null;
+    const isOtherOnline = !!(otherMember && onlineIds.has(otherMember.id));
 
     if (loading) {
         return (
@@ -220,6 +250,16 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                             {otherMemberTab === 'snake' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
                         </TabsTrigger>
                     </TabsList>
+                    {/* Presence status chip */}
+                    <div className="px-4 -mt-1 mb-1">
+                        {otherMember && (
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/60 border border-pink-100 dark:border-pink-900/40 text-[11px] text-gray-600 dark:text-gray-300 shadow-sm">
+                                <span className={`w-2 h-2 rounded-full ${isOtherOnline ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.9)]' : 'bg-gray-400'}`} />
+                                <span className="font-semibold">{otherMember.nickname}</span>
+                                <span className={isOtherOnline ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}>{isOtherOnline ? 'Online' : 'Offline'}</span>
+                            </div>
+                        )}
+                    </div>
 
                     <div className="flex-1 overflow-hidden relative flex flex-col">
                         <TabsContent value="home" className="flex-1 overflow-y-auto mt-0 data-[state=inactive]:hidden px-4 pb-4 hide-scrollbar">
@@ -256,21 +296,21 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
                                     <button onClick={() => setActiveTab('xox')} className="flex flex-col items-center justify-center p-5 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-purple-100 dark:border-purple-900/50 hover:scale-[1.05] active:scale-95 transition-all group">
                                         <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-purple-500 group-hover:text-white transition-colors text-purple-500 shadow-inner">
-                                            <Gamepad2 className="w-6 h-6" />
+                                            <Grid3X3 className="w-6 h-6" />
                                         </div>
                                         <h3 className="font-bold text-gray-800 dark:text-gray-200 text-sm">Tic Tac Toe</h3>
                                     </button>
 
                                     <button onClick={() => setActiveTab('ludo')} className="flex flex-col items-center justify-center p-5 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-emerald-100 dark:border-emerald-900/50 hover:scale-[1.05] active:scale-95 transition-all group">
                                         <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-emerald-500 group-hover:text-white transition-colors text-emerald-500 shadow-inner">
-                                            <Gamepad2 className="w-6 h-6" />
+                                            <Dices className="w-6 h-6" />
                                         </div>
                                         <h3 className="font-bold text-gray-800 dark:text-gray-200 text-sm">Ludo</h3>
                                     </button>
 
                                     <button onClick={() => setActiveTab('snake')} className="col-span-2 flex items-center p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-orange-100 dark:border-orange-900/50 hover:scale-[1.02] active:scale-95 transition-all text-left group">
                                         <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/50 rounded-2xl flex items-center justify-center mr-4 group-hover:bg-orange-500 group-hover:text-white transition-colors text-orange-500 shadow-inner">
-                                            <Gamepad2 className="w-7 h-7" />
+                                            <Flag className="w-7 h-7" />
                                         </div>
                                         <div className="flex-1">
                                             <h3 className="font-bold text-gray-800 dark:text-gray-200 text-lg">Snake & Ladder</h3>
@@ -352,7 +392,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         </span>
                                     )}
                                 </button>
-                                <SnakeLadder roomId={roomId} currentMember={currentMember} />
+                                <SnakeLadder roomId={roomId} currentMember={currentMember} otherOnline={isOtherOnline} />
                             </div>
                         </TabsContent>
                         {showGameChat && (

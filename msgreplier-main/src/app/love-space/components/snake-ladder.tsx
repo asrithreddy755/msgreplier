@@ -13,7 +13,7 @@ const LADDERS: Record<number, number> = { 3: 18, 6: 16, 14: 26, 30: 49 };
 // 5x10 board logic
 const BOARDS_CELLS = Array.from({ length: 50 }, (_, i) => i + 1);
 
-export function SnakeLadder({ roomId, currentMember }: { roomId: string, currentMember: LoveRoomMember }) {
+export function SnakeLadder({ roomId, currentMember, otherOnline }: { roomId: string, currentMember: LoveRoomMember, otherOnline?: boolean }) {
     const [state, setState] = useState<SnakeLadderState>({
         player1Position: 1,
         player2Position: 1,
@@ -58,10 +58,46 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
         }
     };
 
+    const visualP1Ref = useRef(visualP1);
+    const visualP2Ref = useRef(visualP2);
+    useEffect(() => { visualP1Ref.current = visualP1; }, [visualP1]);
+    useEffect(() => { visualP2Ref.current = visualP2; }, [visualP2]);
+
+    const buildPath = (from: number, to: number) => {
+        const path: number[] = [];
+        if (to > from) {
+            for (let i = from + 1; i <= to; i++) path.push(i);
+        } else if (to < from) {
+            path.push(to);
+        }
+        return path;
+    };
+
     const applyRemoteState = useCallback((nextState: SnakeLadderState) => {
         if (isAnimatingRef.current) {
             pendingStateRef.current = nextState;
             return;
+        }
+        const p1From = visualP1Ref.current;
+        const p2From = visualP2Ref.current;
+        const p1To = nextState.player1Position;
+        const p2To = nextState.player2Position;
+
+        const p1Changed = p1From !== p1To;
+        const p2Changed = p2From !== p2To;
+
+        if (p1Changed && !p2Changed) {
+            const path = buildPath(p1From, p1To);
+            if (path.length > 0) {
+                playAnimationAndSync(1, path, nextState);
+                return;
+            }
+        } else if (!p1Changed && p2Changed) {
+            const path = buildPath(p2From, p2To);
+            if (path.length > 0) {
+                playAnimationAndSync(2, path, nextState);
+                return;
+            }
         }
         lastStateRef.current = JSON.stringify(nextState);
         setState(nextState);
@@ -263,7 +299,8 @@ export function SnakeLadder({ roomId, currentMember }: { roomId: string, current
             actionMessage = `Player ${currentMember.nickname} reached square 50 and won the game! 🎉`;
         }
 
-        const nextTurn = members.find(m => m.nickname !== currentMember.nickname)?.nickname || currentMember.nickname;
+        const other = members.find(m => m.nickname !== currentMember.nickname);
+        const nextTurn = (otherOnline && other) ? other.nickname : currentMember.nickname;
 
         const newState: SnakeLadderState = {
             ...state,
