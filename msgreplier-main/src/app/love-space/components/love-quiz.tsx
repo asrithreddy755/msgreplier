@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { Heart, Trophy, PenTool, CheckCircle, Loader2 } from 'lucide-react';
+import { Heart, Trophy, PenTool, CheckCircle, Loader2, XCircle, Wand2 } from 'lucide-react';
+import presetQuestions from '@/data/love-questions.json';
 
 interface QuizQuestion {
     id: string;
@@ -40,7 +41,7 @@ interface LoveQuizProps {
 export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
     const [quizzes, setQuizzes] = useState<LoveQuiz[]>([]);
     const [loading, setLoading] = useState(true);
-    const [view, setView] = useState<'dashboard' | 'create' | 'take'>('dashboard');
+    const [view, setView] = useState<'dashboard' | 'create' | 'take' | 'details'>('dashboard');
     const [currentQuiz, setCurrentQuiz] = useState<LoveQuiz | null>(null);
 
     // Quiz Creation State
@@ -87,6 +88,44 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
     const handleOptionChange = (qIndex: number, oIndex: number, value: string) => {
         const updated = [...questions];
         updated[qIndex].options[oIndex] = value;
+        setQuestions(updated);
+    };
+
+    const handlePresets = () => {
+        if (!presetQuestions || presetQuestions.length === 0) {
+            toast.error("The preset questions list is empty.");
+            return;
+        }
+        const shuffled = [...presetQuestions].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, 5).map((q, idx) => ({
+            id: Date.now().toString() + idx,
+            text: q.text,
+            options: q.options,
+            correctAnswer: (q as any).correctOptionIndex || 0
+        }));
+        setQuestions(selected);
+        toast.success("Loaded 5 random questions!");
+    };
+
+    const handleSinglePreset = (index: number) => {
+        if (!presetQuestions || presetQuestions.length === 0) return;
+
+        const currentTexts = questions.map(q => q.text);
+        const available = presetQuestions.filter(p => !currentTexts.includes(p.text));
+
+        if (available.length === 0) {
+            toast.error("You are already using all available preset questions!");
+            return;
+        }
+
+        const randomPreset = available[Math.floor(Math.random() * available.length)];
+        const updated = [...questions];
+        updated[index] = {
+            ...updated[index],
+            text: randomPreset.text,
+            options: randomPreset.options,
+            correctAnswer: (randomPreset as any).correctOptionIndex || 0
+        };
         setQuestions(updated);
     };
 
@@ -185,44 +224,58 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
             <div className="space-y-6 max-w-2xl mx-auto p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-pink-100 dark:border-pink-900/50">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold text-pink-600 dark:text-pink-400">Create Quiz for {partnerName}</h2>
-                    <Button variant="ghost" onClick={() => setView('dashboard')}>Cancel</Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={handlePresets} className="text-pink-600 border-pink-200 hover:bg-pink-50">
+                            <Wand2 className="w-4 h-4 mr-2" />
+                            Presets
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setView('dashboard')}>Cancel</Button>
+                    </div>
                 </div>
-                
+
                 <div className="space-y-4">
                     <div>
                         <Label>Quiz Title</Label>
-                        <Input 
-                            value={newQuizTitle} 
-                            onChange={(e) => setNewQuizTitle(e.target.value)} 
-                            placeholder="e.g., How well do you know me?" 
+                        <Input
+                            value={newQuizTitle}
+                            onChange={(e) => setNewQuizTitle(e.target.value)}
+                            placeholder="e.g., How well do you know me?"
                             className="mt-1"
                         />
                     </div>
 
                     {questions.map((q, qIndex) => (
-                        <Card key={q.id} className="p-4 border-pink-100 dark:border-pink-900/30">
+                        <Card key={q.id} className="p-4 border-pink-100 dark:border-pink-900/30 relative flex flex-col pt-10">
+                            <button
+                                type="button"
+                                onClick={() => handleSinglePreset(qIndex)}
+                                className="absolute top-2 right-2 text-pink-500 hover:text-pink-600 bg-pink-50 hover:bg-pink-100 dark:bg-pink-900/20 dark:hover:bg-pink-900/40 p-2 rounded-full transition-colors shadow-sm"
+                                title="Random Preset"
+                            >
+                                <Wand2 className="w-4 h-4" />
+                            </button>
                             <div className="space-y-3">
                                 <div>
                                     <Label>Question {qIndex + 1}</Label>
-                                    <Input 
-                                        value={q.text} 
-                                        onChange={(e) => handleQuestionChange(qIndex, 'text', e.target.value)} 
-                                        placeholder="Type your question..." 
+                                    <Input
+                                        value={q.text}
+                                        onChange={(e) => handleQuestionChange(qIndex, 'text', e.target.value)}
+                                        placeholder="Type your question..."
                                         className="mt-1"
                                     />
                                 </div>
-                                
+
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {q.options.map((opt, oIndex) => (
                                         <div key={oIndex} className="flex items-center gap-2">
-                                            <Input 
-                                                value={opt} 
-                                                onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)} 
-                                                placeholder={`Option ${oIndex + 1}`} 
+                                            <Input
+                                                value={opt}
+                                                onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
+                                                placeholder={`Option ${oIndex + 1}`}
                                             />
-                                            <input 
-                                                type="radio" 
-                                                name={`correct-${qIndex}`} 
+                                            <input
+                                                type="radio"
+                                                name={`correct-${qIndex}`}
                                                 checked={q.correctAnswer === oIndex}
                                                 onChange={() => handleQuestionChange(qIndex, 'correctAnswer', oIndex)}
                                                 className="w-4 h-4 text-pink-600 focus:ring-pink-500 cursor-pointer"
@@ -265,9 +318,18 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
                                 setAnswers(newAnswers);
                             }}>
                                 {q.options.map((opt, oIndex) => (
-                                    <div key={oIndex} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-pink-50 dark:hover:bg-slate-800 transition-colors">
-                                        <RadioGroupItem value={oIndex.toString()} id={`q${qIndex}-opt${oIndex}`} className="text-pink-500 border-pink-500" />
-                                        <Label htmlFor={`q${qIndex}-opt${oIndex}`} className="flex-1 cursor-pointer">{opt}</Label>
+                                    <div key={oIndex} className="flex items-center space-x-2">
+                                        <RadioGroupItem
+                                            value={oIndex.toString()}
+                                            id={`q${qIndex}-opt${oIndex}`}
+                                            className="border-slate-300 dark:border-slate-600 text-pink-500 w-5 h-5 focus:ring-pink-500"
+                                        />
+                                        <Label
+                                            htmlFor={`q${qIndex}-opt${oIndex}`}
+                                            className="cursor-pointer flex-1 bg-slate-50 hover:bg-pink-50 dark:bg-slate-950 dark:hover:bg-slate-800/80 border dark:border-slate-800 p-4 rounded-lg transition-colors text-base"
+                                        >
+                                            {opt}
+                                        </Label>
                                     </div>
                                 ))}
                             </RadioGroup>
@@ -277,6 +339,80 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
                     <Button onClick={handleSubmitQuiz} className="w-full bg-pink-500 hover:bg-pink-600 text-white mt-4">
                         Submit Answers
                     </Button>
+                </div>
+            </div>
+        );
+    }
+
+    if (view === 'details' && currentQuiz) {
+        const isMyQuiz = currentQuiz.creator_id === currentMember.id;
+        const takerName = isMyQuiz ? partnerName : 'You';
+
+        return (
+            <div className="space-y-6 w-full max-w-2xl mx-auto pb-8">
+                <div className="flex justify-between items-center mb-4 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-pink-100 dark:border-pink-900/50">
+                    <div>
+                        <h2 className="text-xl font-bold text-pink-600 dark:text-pink-400">Quiz Results: {currentQuiz.title}</h2>
+                        <p className="text-sm text-gray-500">Taken by {takerName}</p>
+                    </div>
+                    <Button variant="ghost" onClick={() => setView('dashboard')}>Back</Button>
+                </div>
+
+                <div className="space-y-6">
+                    {currentQuiz.questions.map((q, qIndex) => {
+                        const correctIndex = q.correctAnswer ?? (q as any).correctOptionIndex;
+                        const takerAnswerIndex = Array.isArray(currentQuiz.taker_answers)
+                            ? currentQuiz.taker_answers[qIndex]
+                            : (currentQuiz.taker_answers as any)?.[q.id];
+
+                        const isCorrect = takerAnswerIndex === correctIndex;
+
+                        return (
+                            <Card key={qIndex} className="border-2 border-pink-100 dark:border-pink-900/50 shadow-md bg-white dark:bg-slate-900">
+                                <CardHeader className="pb-4 bg-pink-50/50 dark:bg-pink-900/10 border-b dark:border-pink-900/30">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs font-bold text-pink-500 tracking-wider uppercase drop-shadow-sm">Question {qIndex + 1} of {currentQuiz.questions.length}</span>
+                                        {isCorrect ? (
+                                            <CheckCircle className="w-5 h-5 text-emerald-500" />
+                                        ) : (
+                                            <XCircle className="w-5 h-5 text-rose-500" />
+                                        )}
+                                    </div>
+                                    <CardTitle className="text-lg sm:text-xl leading-relaxed text-slate-800 dark:text-slate-100 mt-2">{q.text}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-5 space-y-2">
+                                    {q.options.map((option, optIndex) => {
+                                        const isThisCorrect = optIndex === correctIndex;
+                                        const isThisUser = optIndex === takerAnswerIndex;
+                                        const isWrongUser = isThisUser && !isThisCorrect;
+
+                                        const baseClass = "flex items-center justify-between rounded-lg border px-3 py-2 text-sm sm:text-base";
+                                        const statusClass = isThisCorrect
+                                            ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
+                                            : isWrongUser
+                                                ? "border-rose-400 bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300"
+                                                : "border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-950";
+
+                                        return (
+                                            <div key={optIndex} className={`${baseClass} ${statusClass}`}>
+                                                <span>{option}</span>
+                                                {isThisCorrect ? (
+                                                    <CheckCircle className="w-4 h-4" />
+                                                ) : isWrongUser ? (
+                                                    <XCircle className="w-4 h-4" />
+                                                ) : null}
+                                            </div>
+                                        );
+                                    })}
+                                    <div className="pt-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                                        {takerName}'s answer: <span className="font-semibold text-slate-700 dark:text-slate-200">
+                                            {takerAnswerIndex !== undefined && takerAnswerIndex !== null && q.options[takerAnswerIndex] ? q.options[takerAnswerIndex] : "No Answer"}
+                                        </span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
                 </div>
             </div>
         );
@@ -297,10 +433,16 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
                 </CardHeader>
                 <CardContent className="text-center relative z-10 pb-8">
                     {finalScore !== null ? (
-                        <div className="animate-in zoom-in duration-500">
-                            <span className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 drop-shadow-sm">
+                        <div className="animate-in zoom-in duration-500 bg-white dark:bg-slate-950 rounded-2xl p-6 shadow-inner border border-pink-100 dark:border-pink-900/30">
+                            <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 p-4 rounded-full w-fit mb-4">
+                                <Trophy className="w-12 h-12 text-amber-500 fill-amber-500/20" />
+                            </div>
+                            <span className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-rose-500 to-red-600 drop-shadow-sm">
                                 {finalScore}%
                             </span>
+                            <p className="text-2xl font-bold text-slate-800 dark:text-slate-200 mt-4">
+                                {finalScore === 100 ? "Perfect Soulmates! 💘" : finalScore >= 80 ? "It's True Love! ❤️" : finalScore >= 50 ? "Getting There! 💕" : "We Need To Talk... 💔"}
+                            </p>
                             <p className="text-sm text-gray-500 mt-2">Combined Match Rate</p>
                         </div>
                     ) : (
@@ -332,10 +474,17 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
                                     </span>
                                 </div>
                                 {myQuiz.status === 'completed' && (
-                                    <div className="flex justify-between items-center text-sm mt-2">
-                                        <span className="text-gray-500">{partnerName}'s Score:</span>
-                                        <span className="font-bold text-lg text-pink-600">{myQuiz.score}%</span>
-                                    </div>
+                                    <>
+                                        <div className="flex justify-between items-center text-sm mt-2">
+                                            <span className="text-gray-500">{partnerName}'s Score:</span>
+                                            <span className="font-bold text-lg text-pink-600">{myQuiz.score}%</span>
+                                        </div>
+                                        <div className="mt-4">
+                                            <Button variant="outline" onClick={() => { setCurrentQuiz(myQuiz); setView('details'); }} className="w-full text-pink-600 border-pink-200 hover:bg-pink-50">
+                                                View Answers
+                                            </Button>
+                                        </div>
+                                    </>
                                 )}
                                 {myQuiz.status === 'pending' && (
                                     <p className="text-xs text-gray-400 italic mt-2">Waiting for {partnerName} to take it...</p>
@@ -370,10 +519,17 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
                                     </span>
                                 </div>
                                 {partnerQuiz.status === 'completed' ? (
-                                    <div className="flex justify-between items-center text-sm mt-2">
-                                        <span className="text-gray-500">Your Score:</span>
-                                        <span className="font-bold text-lg text-pink-600">{partnerQuiz.score}%</span>
-                                    </div>
+                                    <>
+                                        <div className="flex justify-between items-center text-sm mt-2">
+                                            <span className="text-gray-500">Your Score:</span>
+                                            <span className="font-bold text-lg text-pink-600">{partnerQuiz.score}%</span>
+                                        </div>
+                                        <div className="mt-4">
+                                            <Button variant="outline" onClick={() => { setCurrentQuiz(partnerQuiz); setView('details'); }} className="w-full text-pink-600 border-pink-200 hover:bg-pink-50">
+                                                View Your Answers
+                                            </Button>
+                                        </div>
+                                    </>
                                 ) : (
                                     <div className="mt-4">
                                         <Button onClick={() => handleTakeQuiz(partnerQuiz)} className="w-full bg-orange-500 hover:bg-orange-600 text-white">
