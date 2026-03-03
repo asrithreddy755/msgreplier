@@ -258,6 +258,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 subscribeTimeout = null;
             }
         };
+    }, [currentMember, roomId, supabase]);
 
     // Track activeTab changes
     useEffect(() => {
@@ -567,16 +568,6 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 </Tabs>
             </div>
 
-            <style dangerouslySetInnerHTML={{
-                __html: `
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-       `}} />
         </div>
     );
 }
