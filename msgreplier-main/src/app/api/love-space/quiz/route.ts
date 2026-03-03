@@ -153,35 +153,52 @@ export async function POST(request: Request) {
                 .insert([dbPayload])
                 .select();
 
-            if (error) {
-                if (!isFallbackError(error)) throw error;
-                const now = new Date().toISOString();
-                const fallbackState = {
-                    id: crypto.randomUUID(),
-                    room_id: quizData.room_id,
-                    creator_id: quizData.creator_id,
-                    title: quizData.title,
-                    questions: quizData.questions,
-                    score: null,
-                    status: 'pending',
-                    created_at: now,
-                    taker_id: null,
-                    taker_answers: []
-                };
-                const { data: fallbackData, error: fallbackError } = await supabaseAdmin
-                    .from('love_games')
-                    .insert([{
-                        room_id: quizData.room_id,
-                        game_type: 'love_quiz',
-                        game_state: fallbackState,
-                        updated_at: now
-                    }])
-                    .select()
-                    .single();
-                if (fallbackError) throw fallbackError;
-                return NextResponse.json({ quiz: formatFallbackQuiz(fallbackData) });
+            if (!error && data && data[0]) {
+                // Happy path: quiz stored in dedicated love_quizzes table
+                return NextResponse.json({ quiz: data[0] });
             }
-            return NextResponse.json({ quiz: data[0] });
+
+            // If inserting into love_quizzes fails for ANY reason (missing table,
+            // RLS, wrong schema, etc), gracefully fall back to the generic
+            // love_games storage so the Love Space quiz still works.
+            const now = new Date().toISOString();
+            const fallbackState = {
+                id: crypto.randomUUID(),
+                room_id: quizData.room_id,
+                creator_id: quizData.creator_id,
+                title: quizData.title,
+                questions: quizData.questions,
+                score: null,
+                status: 'pending',
+                created_at: now,
+                taker_id: null,
+                taker_answers: []
+            };
+            const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+                .from('love_games')
+                .insert([{
+                    room_id: quizData.room_id,
+                    game_type: 'love_quiz',
+                    game_state: fallbackState,
+                    updated_at: now
+                }])
+                .select()
+                .single();
+
+            if (fallbackError || !fallbackData) {
+                const primaryMsg = (error as { message?: string } | null)?.message;
+                const fallbackMsg = (fallbackError as { message?: string } | null)?.message;
+                console.error('Love quiz CREATE failed on both love_quizzes and love_games:', {
+                    primaryError: primaryMsg,
+                    fallbackError: fallbackMsg,
+                });
+                return NextResponse.json(
+                    { error: fallbackMsg || primaryMsg || 'Failed to create quiz' },
+                    { status: 500 }
+                );
+            }
+
+            return NextResponse.json({ quiz: formatFallbackQuiz(fallbackData) });
         }
 
         if (action === 'submit') {
