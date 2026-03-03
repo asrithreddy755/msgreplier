@@ -80,3 +80,30 @@ CREATE POLICY "Anyone can manage games" ON public.love_games
 
 -- Enable Realtime for love_games (optional, we might mostly use broadcast, but good to have)
 alter publication supabase_realtime add table public.love_games;
+
+
+-- 5) love_quizzes
+CREATE TABLE IF NOT EXISTS public.love_quizzes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  sender_name TEXT NOT NULL,
+  receiver_name TEXT NOT NULL,
+  time_limit_seconds INTEGER NOT NULL DEFAULT 60,
+  questions JSONB NOT NULL,
+  score INTEGER,
+  status TEXT DEFAULT 'pending'::text NOT NULL,
+  taker_id TEXT,
+  taker_answers JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE public.love_quizzes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can create quizzes" ON public.love_quizzes
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Anyone can read quizzes" ON public.love_quizzes
+  FOR SELECT USING (true);
+
+CREATE POLICY "Anyone can update quizzes" ON public.love_quizzes
+  FOR UPDATE USING (true);

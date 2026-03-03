@@ -84,6 +84,7 @@ function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
   }, [handleDiceClick, isDiceDisabled]);
   return (
     <div className={clsx(styles.diceContainer, styles[colour])}>
+      <span className={styles.playerName}>{playerName}</span>
       <button
         className={clsx(styles.dice, {
           [styles.active]: !isDiceDisabled,
@@ -100,7 +101,6 @@ function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
           aria-hidden="true"
         />
       </button>
-      <span className={styles.playerName}>{playerName}</span>
     </div>
   );
 }

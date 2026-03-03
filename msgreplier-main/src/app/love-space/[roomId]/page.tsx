@@ -302,6 +302,29 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         loadMembers();
     }, [roomId]);
 
+    useEffect(() => {
+        if (!roomId || members.length >= 2) return;
+        let isMounted = true;
+        const interval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' });
+                const data = await res.json();
+                if (!isMounted) return;
+                if (Array.isArray(data?.members)) {
+                    const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
+                        new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
+                    );
+                    setMembers(sorted);
+                }
+            } catch {
+            }
+        }, 3000);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
+    }, [roomId, members.length]);
+
     const otherMember = currentMember && members.length > 0
         ? members.find(m => m.id !== currentMember.id) || null
         : null;
