@@ -96,6 +96,15 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
         };
     }, [roomId, fetchQuizzes]);
 
+    // Lightweight auto-sync so both partners see quiz updates without manual refresh.
+    useEffect(() => {
+        if (!roomId) return;
+        const interval = setInterval(() => {
+            fetchQuizzes(true);
+        }, 10000);
+        return () => clearInterval(interval);
+    }, [roomId, fetchQuizzes]);
+
     const handleAddQuestion = () => {
         setQuestions([
             ...questions,

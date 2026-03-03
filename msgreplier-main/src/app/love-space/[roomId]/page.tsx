@@ -435,11 +435,6 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     <p className="text-sm text-gray-600 dark:text-gray-300 relative z-10 w-4/5 pt-1">Your private couple space. Choose an activity below to get started!</p>
                                 </div>
 
-                                {/* Love Quiz Section */}
-                                <div className="mt-2 mb-1">
-                                    <LoveQuiz roomId={roomId} currentMember={currentMember} members={members} />
-                                </div>
-
                                 {/* Quick Links Grid */}
                                 <div className="grid grid-cols-2 gap-3 mt-1">
                                     <button
@@ -485,6 +480,11 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                             <p className="text-xs text-gray-500 dark:text-gray-400">Custom board adventure</p>
                                         </div>
                                     </button>
+                                </div>
+
+                                {/* Love Quiz Section moved below quick links */}
+                                <div className="mt-2 mb-1">
+                                    <LoveQuiz roomId={roomId} currentMember={currentMember} members={members} />
                                 </div>
                             </div>
                         </TabsContent>
