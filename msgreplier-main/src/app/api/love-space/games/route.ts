@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '../_supabase';
 
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
     try {
@@ -31,7 +32,9 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ game: data ?? null });
+        const response = NextResponse.json({ game: data ?? null });
+        response.headers.set('Cache-Control', 'no-store, max-age=0');
+        return response;
     } catch {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }

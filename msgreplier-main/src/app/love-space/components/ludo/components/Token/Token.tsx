@@ -5,8 +5,7 @@ import { type TPlayer, type TPlayerColour, type TTokenClickData } from '../../ty
 import { type TToken } from '../../types';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../state/store';
-import TokenImageRaw from '../../assets/token.svg?react';
-const TokenImage = (TokenImageRaw as any).default || TokenImageRaw;
+import { TokenIcon } from './TokenIcon';
 import { useCoordsToPosition } from '../../hooks/useCoordsToPosition';
 import { setTokenTransitionTime } from '../../utils/setTokenTransitionTime';
 import { changeTurnThunk } from '../../state/thunks/changeTurnThunk';
@@ -104,7 +103,7 @@ function Token({ colour, id, tokenClickData }: Props) {
       }
     >
       <span className={clsx(styles.bouncer, { [styles.active]: isActive && !isCurrentlyFocused })}>
-        <TokenImage
+        <TokenIcon
           className={styles.svg}
           aria-hidden="true"
           style={

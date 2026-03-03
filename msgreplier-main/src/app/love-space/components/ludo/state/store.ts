@@ -13,11 +13,18 @@ const appReducer = combineReducers({
 
 const rootReducer = (state: any, action: any) => {
   if (action.type === 'HYDRATE_GAME_STATE') {
-    // Keep local board slice size if hydration tries to override it, it's view specific
-    return {
-      ...action.payload,
-      board: { ...action.payload.board, boardSideLength: state?.board?.boardSideLength || 0, boardTileSize: state?.board?.boardTileSize || 0 }
+    // Safely merge incoming remote state into existing structure 
+    const hydratedState = {
+      players: action.payload.players || state.players,
+      board: {
+        ...(action.payload.board || state.board),
+        boardSideLength: state?.board?.boardSideLength || 0,
+        boardTileSize: state?.board?.boardTileSize || 0
+      },
+      dice: action.payload.dice || state.dice,
+      session: action.payload.session || state.session,
     };
+    return hydratedState;
   }
   return appReducer(state, action);
 };

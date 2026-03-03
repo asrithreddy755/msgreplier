@@ -359,15 +359,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/60 border border-pink-100 dark:border-pink-900/40 text-[11px] text-gray-600 dark:text-gray-300 shadow-sm">
                                 <span className={`w-2 h-2 rounded-full ${isOtherOnline ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.9)]' : 'bg-gray-400'}`} />
                                 <span className="font-semibold">{otherMember.nickname}</span>
-                                <span className={isOtherOnline ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}>{isOtherOnline ? 'Online' : 'Offline'}</span>
                             </div>
                         )}
-                        {/* Network Quality Indicator */}
-                        <div className="flex items-center gap-1 bg-white/50 dark:bg-slate-900/50 px-2 py-0.5 rounded-full border border-pink-50 dark:border-pink-900/20" title={`Network: ${networkQuality}`}>
-                            <div className={`w-1 h-1.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-500' : (networkQuality === 'fair' ? 'bg-yellow-500' : 'bg-green-500')}`} />
-                            <div className={`w-1 h-2.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-300 dark:bg-red-900/50' : (networkQuality === 'fair' ? 'bg-yellow-500' : 'bg-green-500')}`} />
-                            <div className={`w-1 h-3.5 rounded-sm ${networkQuality === 'poor' ? 'bg-red-300 dark:bg-red-900/50' : (networkQuality === 'fair' ? 'bg-yellow-300 dark:bg-yellow-900/50' : 'bg-green-500')}`} />
-                        </div>
                     </div>
 
                     <div className="flex-1 overflow-hidden relative flex flex-col">

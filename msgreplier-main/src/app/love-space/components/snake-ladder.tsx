@@ -175,9 +175,9 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
                     }
                 };
 
-                eventSource.addEventListener('game', (event) => {
+                eventSource.addEventListener('game', (event: any) => {
                     try {
-                        const payload = JSON.parse((event as MessageEvent).data) as { game_state?: SnakeLadderState };
+                        const payload = JSON.parse(event.data) as { game_state?: SnakeLadderState };
                         if (payload?.game_state) {
                             const serialized = JSON.stringify(payload.game_state);
                             if (serialized !== lastStateRef.current) {

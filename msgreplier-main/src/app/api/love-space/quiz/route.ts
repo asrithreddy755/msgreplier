@@ -21,11 +21,27 @@ export async function GET(request: Request) {
         const { data, error } = await supabaseAdmin
             .from('love_quizzes')
             .select('*')
-            .eq('room_id', roomId)
+            // Match room_id that was encoded into the receiver_name column
+            .eq('receiver_name', roomId)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        return NextResponse.json({ quizzes: data });
+
+        // Restore mapped properties transparently to the UI components
+        const formattedQuizzes = data.map(quiz => {
+            const hasMeta = quiz.questions[0]?._meta;
+            const meta = hasMeta ? quiz.questions[0]._meta : {};
+            const actualQuestions = hasMeta ? quiz.questions.slice(1) : quiz.questions;
+            return {
+                ...quiz,
+                room_id: meta.room_id || quiz.receiver_name,
+                creator_id: meta.creator_id || quiz.sender_name,
+                title: meta.title || 'Love Quiz',
+                questions: actualQuestions
+            };
+        });
+
+        return NextResponse.json({ quizzes: formattedQuizzes });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -43,13 +59,14 @@ export async function POST(request: Request) {
 
         if (action === 'create') {
             const dbPayload = {
-                room_id: quizData.room_id,
-                creator_id: quizData.creator_id,
-                title: quizData.title,
-                sender_name: "Love Space User",
-                receiver_name: "Partner",
+                sender_name: quizData.creator_id, // Map creator onto sender
+                receiver_name: quizData.room_id,  // Map room onto receiver to filter later
                 time_limit_seconds: 60,
-                questions: quizData.questions,
+                // Embed extra metadata securely inside questions since it's JSONB
+                questions: [
+                    { _meta: { title: quizData.title, room_id: quizData.room_id, creator_id: quizData.creator_id } },
+                    ...quizData.questions
+                ],
                 status: 'pending'
             };
 
@@ -72,7 +89,8 @@ export async function POST(request: Request) {
             if (fetchError) throw fetchError;
 
             let correctCount = 0;
-            const questions = quiz.questions;
+            const hasMeta = quiz.questions[0]?._meta;
+            const questions = hasMeta ? quiz.questions.slice(1) : quiz.questions;
 
             questions.forEach((q: any, index: number) => {
                 const answerIndex = Array.isArray(answers) ? answers[index] : answers[q.id];
