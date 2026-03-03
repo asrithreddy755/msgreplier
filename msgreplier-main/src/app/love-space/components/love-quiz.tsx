@@ -69,7 +69,10 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
         }
         fetchAbortRef.current = controller;
         try {
-            const res = await fetch(`/api/love-space/quiz?roomId=${roomId}`, { signal: controller.signal });
+            const res = await fetch(`/api/love-space/quiz?roomId=${roomId}`, {
+                signal: controller.signal,
+                cache: 'no-store',
+            });
             if (!res.ok) throw new Error(`Quiz fetch failed (${res.status})`);
             const data = await res.json();
             if (data.quizzes) setQuizzes(data.quizzes);
