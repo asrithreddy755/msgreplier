@@ -98,10 +98,9 @@ export async function GET(request: Request) {
         const formattedQuizzes = data.map(formatQuizRow);
         return NextResponse.json({ quizzes: formattedQuizzes });
     } catch (error) {
-        if (!isFallbackError(error)) {
-            const err = error as { message?: string };
-            return NextResponse.json({ error: err?.message || 'Unknown error' }, { status: 500 });
-        }
+        // If reading from the primary love_quizzes table fails for ANY reason,
+        // fall back to the generic love_games storage. This keeps the Love Space
+        // quiz UI working even if migrations are out of sync or permissions differ.
         try {
             const { data, error: fallbackError } = await supabaseAdmin
                 .from('love_games')
@@ -113,13 +112,12 @@ export async function GET(request: Request) {
             const formattedQuizzes = (data || []).map(formatFallbackQuiz);
             return NextResponse.json({ quizzes: formattedQuizzes });
         } catch (fallbackErr) {
-            // If both primary and fallback tables are unavailable (for example on a fresh install
-            // where migrations haven't been applied yet), fail gracefully with an empty list
-            // instead of a 500 so the UI can still render and allow quiz creation.
             console.error('Love quiz GET failed on both primary and fallback tables:', {
                 primaryError: (error as { message?: string })?.message,
                 fallbackError: (fallbackErr as { message?: string })?.message,
             });
+            // Gracefully return an empty list instead of a 500 so the
+            // Love Space page still loads and allows quiz creation.
             return NextResponse.json({ quizzes: [] });
         }
     }
