@@ -109,6 +109,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
         let isMounted = true;
         const channelName = `room_presence:${roomId}`;
+        let presenceDisabled = false;
+        let subscribeTimeout: any = null;
 
         // Ensure no leftover channels cause duplicate presence state
         const existingChannel = supabase.getChannels().find(c => c.topic === channelName);
@@ -116,13 +118,19 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             supabase.removeChannel(existingChannel);
         }
 
-        const channel = supabase.channel(channelName, {
-            config: {
-                presence: {
-                    key: currentMember.id,
+        let channel: RealtimeChannel | null = null;
+        try {
+            channel = supabase.channel(channelName, {
+                config: {
+                    presence: {
+                        key: currentMember.id,
+                    },
                 },
-            },
-        });
+            });
+        } catch {
+            presenceDisabled = true;
+        }
+        if (!channel || presenceDisabled) return;
 
         channel
             .on('presence', { event: 'sync' }, () => {
@@ -203,7 +211,12 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 });
             })
             .subscribe(async (status) => {
-                if (status === 'SUBSCRIBED' && isMounted) {
+                if (!isMounted) return;
+                if (status === 'SUBSCRIBED') {
+                    if (subscribeTimeout) {
+                        clearTimeout(subscribeTimeout);
+                        subscribeTimeout = null;
+                    }
                     try {
                         await channel.track({
                             activeTab: activeTab,
@@ -212,8 +225,19 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     } catch (error) {
                         console.error('Error tracking self:', error);
                     }
+                } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                    try {
+                        supabase.removeChannel(channel);
+                    } catch {}
                 }
             });
+        // Fallback: if not subscribed within 4s, disable presence to avoid WS spam
+        subscribeTimeout = setTimeout(() => {
+            if (!isMounted) return;
+            try {
+                if (channel) supabase.removeChannel(channel);
+            } catch {}
+        }, 4000);
 
         channelRef.current = channel;
 
@@ -229,8 +253,11 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 });
                 channelRef.current = null;
             }
+            if (subscribeTimeout) {
+                clearTimeout(subscribeTimeout);
+                subscribeTimeout = null;
+            }
         };
-    }, [currentMember, roomId, supabase]);
 
     // Track activeTab changes
     useEffect(() => {
