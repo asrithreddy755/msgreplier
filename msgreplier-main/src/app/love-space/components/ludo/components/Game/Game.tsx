@@ -15,6 +15,7 @@ import { playerCountToWord } from '../../game/players/logic';
 import bg from '../../assets/bg.jpg';
 import { usePageLeaveBlocker } from '../../hooks/usePageLeaveBlocker';
 import { addToGameInactiveTime, setGameStartTime } from '../../state/slices/sessionSlice';
+import Dice from '../Dice/Dice';
 import styles from './Game.module.css';
 
 export const EXIT_MESSAGE = 'Are you sure you want to exit? Any progress made will be lost.';
@@ -28,6 +29,7 @@ function Game({ initData }: Props) {
   const boardTileSize = useSelector((state: RootState) => state.board.boardTileSize);
   const { playerSequence, isGameEnded, playerFinishOrder, currentPlayerColour, players } =
     useSelector((state: RootState) => state.players);
+  const { dice } = useSelector((state: RootState) => state.dice);
   const playersRegisteredInitiallyRef = useRef(true);
   const gameInactiveStartTime = useRef(0);
   const router = useRouter();
@@ -82,24 +84,25 @@ function Game({ initData }: Props) {
   const handleExitBtnClick = () => router.push('/');
 
   return (
-    <div
-      className={styles.game}
-      style={
-        {
-          '--board-tile-size': `${boardTileSize}px`,
-          backgroundImage: `url(${bg})`,
-        } as React.CSSProperties
-      }
-    >
-      <button
-        type="button"
-        aria-label="Exit button"
-        className={styles.exitBtn}
-        onClick={handleExitBtnClick}
-      >
-        &times;
-      </button>
-      <Board onDiceClick={handleDiceRoll} />
+    <div className="relative w-full max-w-[600px] mx-auto flex flex-col items-center justify-center gap-4 py-4" style={{ '--board-tile-size': `${boardTileSize}px` } as React.CSSProperties}>
+
+      {/* Board Container */}
+      <div className="relative w-full aspect-square bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-emerald-100 dark:border-emerald-900/50 overflow-hidden">
+        <Board />
+      </div>
+
+      {/* The Locked-in Dice Container */}
+      <div className="mt-2 sm:mt-4 p-4 min-w-[200px] w-full bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 z-10 flex flex-wrap justify-center items-center gap-4">
+        {dice.map((d: any) => (
+          <Dice
+            colour={d.colour}
+            onDiceClick={handleDiceRoll}
+            playerName={players.find((p: any) => p.colour === d.colour)?.name as string}
+            key={d.colour}
+          />
+        ))}
+      </div>
+
       {isGameEnded && <GameFinishedScreen playerFinishOrder={playerFinishOrder} />}
     </div>
   );

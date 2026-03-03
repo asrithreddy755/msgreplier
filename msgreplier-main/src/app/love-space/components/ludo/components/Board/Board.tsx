@@ -7,20 +7,14 @@ import type { RootState } from '../../state/store';
 import { useEffect, useRef, useState } from 'react';
 import { NUMBER_OF_BLOCKS_IN_ONE_ROW, resizeBoard } from '../../state/slices/boardSlice';
 import { ERRORS } from '../../utils/errors';
-import Dice from '../Dice/Dice';
-import type { TCoordinate, TPlayerColour } from '../../types';
+import type { TCoordinate } from '../../types';
 import { getTokenDOMId, tokensWithCoord } from '../../game/tokens/logic';
 import type { TTokenClickData } from '../../types/tokens';
 import styles from './Board.module.css';
 
-type Props = {
-  onDiceClick: (colour: TPlayerColour, diceNumber: number) => void;
-};
-
-function Board({ onDiceClick: onDiceRoll }: Props) {
+function Board() {
   const { players, currentPlayerColour } = useSelector((state: RootState) => state.players);
   const { boardTileSize, boardSideLength } = useSelector((state: RootState) => state.board);
-  const { dice } = useSelector((state: RootState) => state.dice);
   const [tokenClickData, setTokenClickData] = useState<TTokenClickData | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
@@ -94,14 +88,6 @@ function Board({ onDiceClick: onDiceRoll }: Props) {
           />
         ))
       )}
-      {dice.map((d) => (
-        <Dice
-          colour={d.colour}
-          onDiceClick={onDiceRoll}
-          playerName={players.find((p) => p.colour === d.colour)?.name as string}
-          key={d.colour}
-        />
-      ))}
       <BoardImage className={styles.boardImage} aria-hidden="true" />
     </div>
   );

@@ -66,7 +66,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         const fetchRoom = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`/api/love-space/get-room?roomId=${roomId}`);
+                const response = await fetch(`/api/love-space/get-room?roomId=${roomId}`, { cache: 'no-store' });
                 const data = await response.json();
 
                 if (response.ok && data.room) {
@@ -107,7 +107,16 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     useEffect(() => {
         if (!currentMember || !roomId) return;
 
-        const channel = supabase.channel(`room_presence:${roomId}`, {
+        let isMounted = true;
+        const channelName = `room_presence:${roomId}`;
+
+        // Ensure no leftover channels cause duplicate presence state
+        const existingChannel = supabase.getChannels().find(c => c.topic === channelName);
+        if (existingChannel) {
+            supabase.removeChannel(existingChannel);
+        }
+
+        const channel = supabase.channel(channelName, {
             config: {
                 presence: {
                     key: currentMember.id,
@@ -117,9 +126,10 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
         channel
             .on('presence', { event: 'sync' }, () => {
+                if (!isMounted) return;
                 const presenceState = channel.presenceState();
+                console.log('[Presence] Sync event. State:', presenceState);
 
-                // Find the other member's state directly
                 let otherTab = null;
                 const online = new Set<string>();
                 let hasNewMembers = false;
@@ -131,6 +141,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                         if (key !== currentMember.id) {
                             otherTab = stateGroup[0].activeTab;
                         }
+
                         // If we see a user ID that is not in our members list, trigger a reload
                         if (!membersRef.current.find(m => m.id === key)) {
                             hasNewMembers = true;
@@ -142,10 +153,34 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 setOnlineIds(online);
 
                 if (hasNewMembers) {
-                    fetch(`/api/love-space/members?roomId=${roomId}`)
+                    console.log('[Presence] Unknown member detected, fetching members...');
+                    fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' })
                         .then(res => res.json())
                         .then(data => {
-                            if (Array.isArray(data?.members)) {
+                            if (isMounted && Array.isArray(data?.members)) {
+                                const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
+                                    new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
+                                );
+                                setMembers(sorted);
+                            }
+                        })
+                        .catch((err) => console.error('Member fetch error:', err));
+                }
+            })
+            .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+                if (!isMounted) return;
+                setOnlineIds(prev => {
+                    const next = new Set(prev);
+                    next.add(key);
+                    return next;
+                });
+
+                // Fetch members if unknown user joins
+                if (!membersRef.current.find(m => m.id === key)) {
+                    fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (isMounted && Array.isArray(data?.members)) {
                                 const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
                                     new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
                                 );
@@ -154,21 +189,44 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                         })
                         .catch(() => { });
                 }
+
+                if (key !== currentMember.id && newPresences && newPresences.length > 0) {
+                    setOtherMemberTab(newPresences[0].activeTab);
+                }
+            })
+            .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+                if (!isMounted) return;
+                setOnlineIds(prev => {
+                    const next = new Set(prev);
+                    next.delete(key);
+                    return next;
+                });
             })
             .subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                    await channel.track({
-                        activeTab: activeTab,
-                        updatedAt: new Date().toISOString(),
-                    });
+                if (status === 'SUBSCRIBED' && isMounted) {
+                    try {
+                        await channel.track({
+                            activeTab: activeTab,
+                            updatedAt: new Date().toISOString(),
+                        });
+                    } catch (error) {
+                        console.error('Error tracking self:', error);
+                    }
                 }
             });
 
         channelRef.current = channel;
 
         return () => {
+            isMounted = false;
             if (channelRef.current) {
-                supabase.removeChannel(channelRef.current);
+                // Attempt to untrack immediately so others see us leave
+                const currentCh = channelRef.current;
+                currentCh.untrack().then(() => {
+                    supabase.removeChannel(currentCh);
+                }).catch(() => {
+                    supabase.removeChannel(currentCh);
+                });
                 channelRef.current = null;
             }
         };
@@ -201,7 +259,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         if (!roomId) return;
         const loadMembers = async () => {
             try {
-                const res = await fetch(`/api/love-space/members?roomId=${roomId}`);
+                const res = await fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' });
                 const data = await res.json();
                 if (Array.isArray(data?.members)) {
                     const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>

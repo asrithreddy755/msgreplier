@@ -257,7 +257,10 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
     }, [members, state.currentTurn, state.winner]);
 
     const getPlayerIndex = (nickname: string) => {
-        return members.findIndex(m => m.nickname === nickname) === 0 ? 1 : 2;
+        if (!members || members.length === 0) return 1;
+        // The creator (first to join) is always Player 1
+        const player1 = members[0];
+        return player1.nickname === nickname ? 1 : 2;
     };
 
     const roomCreator = members.length > 0 ? members[0] : null;

@@ -94,6 +94,19 @@ export default function LoveSpacePage() {
                             <span className="flex-1 text-sm text-gray-500 dark:text-gray-400 break-all px-2">
                                 {createdRoomUrl}
                             </span>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-pink-500 hover:text-pink-600 hover:bg-pink-100 dark:hover:bg-slate-700 shrink-0"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(createdRoomUrl);
+                                    setCopied(true);
+                                    toast.success("Invite link copied!");
+                                    setTimeout(() => setCopied(false), 2000);
+                                }}
+                            >
+                                {copied ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                            </Button>
                         </div>
 
                         <div className="flex flex-col gap-3">
