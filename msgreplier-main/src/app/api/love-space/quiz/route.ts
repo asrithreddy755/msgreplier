@@ -113,9 +113,14 @@ export async function GET(request: Request) {
             const formattedQuizzes = (data || []).map(formatFallbackQuiz);
             return NextResponse.json({ quizzes: formattedQuizzes });
         } catch (fallbackErr) {
-            const fallback = fallbackErr as { message?: string };
-            const err = error as { message?: string };
-            return NextResponse.json({ error: fallback?.message || err?.message || 'Unknown error' }, { status: 500 });
+            // If both primary and fallback tables are unavailable (for example on a fresh install
+            // where migrations haven't been applied yet), fail gracefully with an empty list
+            // instead of a 500 so the UI can still render and allow quiz creation.
+            console.error('Love quiz GET failed on both primary and fallback tables:', {
+                primaryError: (error as { message?: string })?.message,
+                fallbackError: (fallbackErr as { message?: string })?.message,
+            });
+            return NextResponse.json({ quizzes: [] });
         }
     }
 }
