@@ -11,8 +11,9 @@ import type { TCoordinate } from '../../types';
 import { getTokenDOMId, tokensWithCoord } from '../../game/tokens/logic';
 import type { TTokenClickData } from '../../types/tokens';
 import styles from './Board.module.css';
+import type { TPlayerColour } from '../../types';
 
-function Board() {
+function Board({ myColour }: { myColour: TPlayerColour }) {
   const { players, currentPlayerColour } = useSelector((state: RootState) => state.players);
   const { boardTileSize, boardSideLength } = useSelector((state: RootState) => state.board);
   const [tokenClickData, setTokenClickData] = useState<TTokenClickData | null>(null);
@@ -30,6 +31,8 @@ function Board() {
       });
     }
     const resizeObserver = resizeObserverRef.current;
+    // Set initial sizes immediately to ensure tokens are placed correctly before the first resize event
+    dispatch(resizeBoard(boardNode.getBoundingClientRect().width));
     resizeObserver.observe(boardNode);
     return () => {
       resizeObserver.unobserve(boardNode);
@@ -46,6 +49,7 @@ function Board() {
   }, []);
 
   const handleBoardClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    if (!currentPlayerColour || currentPlayerColour !== myColour) return;
     if (players.find((p) => p.colour === currentPlayerColour)?.isBot) return;
     const boardNode = boardRef.current;
     if (!boardNode) throw new Error(ERRORS.boardDoesNotExist());
@@ -94,4 +98,3 @@ function Board() {
 }
 
 export default Board;
-

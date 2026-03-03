@@ -22,9 +22,10 @@ export const EXIT_MESSAGE = 'Are you sure you want to exit? Any progress made wi
 
 type Props = {
   initData: TPlayerInitData[];
+  myColour: TPlayerColour;
 };
 
-function Game({ initData }: Props) {
+function Game({ initData, myColour }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const boardTileSize = useSelector((state: RootState) => state.board.boardTileSize);
   const { playerSequence, isGameEnded, playerFinishOrder, currentPlayerColour, players } =
@@ -88,7 +89,7 @@ function Game({ initData }: Props) {
 
       {/* Board Container */}
       <div className="relative w-full aspect-square bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-emerald-100 dark:border-emerald-900/50 overflow-hidden">
-        <Board />
+        <Board myColour={myColour} />
       </div>
 
       {/* The Locked-in Dice Container */}
@@ -96,6 +97,7 @@ function Game({ initData }: Props) {
         {dice.map((d: any) => (
           <Dice
             colour={d.colour}
+            myColour={myColour}
             onDiceClick={handleDiceRoll}
             playerName={players.find((p: any) => p.colour === d.colour)?.name as string}
             key={d.colour}
@@ -109,4 +111,3 @@ function Game({ initData }: Props) {
 }
 
 export default Game;
-

@@ -21,6 +21,7 @@ type Props = {
   colour: TPlayerColour;
   playerName: string;
   onDiceClick: (colour: TPlayerColour, diceNumber: number) => void;
+  myColour: TPlayerColour;
 };
 
 function getDiceImage(diceNumber: number | undefined): string {
@@ -42,7 +43,7 @@ function getDiceImage(diceNumber: number | undefined): string {
   }
 }
 
-function Dice({ colour, onDiceClick, playerName }: Props) {
+function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const {
     isAnyTokenMoving,
@@ -61,6 +62,7 @@ function Dice({ colour, onDiceClick, playerName }: Props) {
   const isCurrentPlayer = currentPlayer === colour;
   const isDiceDisabled =
     !isCurrentPlayer ||
+    myColour !== colour ||
     anyTokenActive ||
     isAnyTokenMoving ||
     isGameEnded ||
@@ -104,4 +106,3 @@ function Dice({ colour, onDiceClick, playerName }: Props) {
 }
 
 export default Dice;
-

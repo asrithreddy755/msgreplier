@@ -5,7 +5,7 @@ import { LoveRoomMember } from '@/types/love-space';
 import { Provider } from 'react-redux';
 import { store, setSyncCallback } from './state/store';
 import Game from './components/Game/Game';
-import { TPlayerInitData } from './types';
+import { TPlayerInitData, TPlayerColour } from './types';
 import { debounce } from 'lodash-es';
 
 interface LudoProps {
@@ -18,6 +18,7 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
     const [initData, setInitData] = useState<TPlayerInitData[]>([]);
     const [loading, setLoading] = useState(true);
     const lastBroadcastStateRef = useRef<string | null>(null);
+    const [myColour, setMyColour] = useState<TPlayerColour | null>(null);
 
     const persistState = useCallback(debounce(async (stateToSave: any) => {
         const serialized = JSON.stringify(stateToSave);
@@ -46,6 +47,9 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
                     { name: members[1]?.nickname || 'Player 2', isBot: false },
                 ];
                 setInitData(initialPlayers);
+                const idx = Math.max(0, members.findIndex(m => m.id === currentMember.id));
+                const sequence: TPlayerColour[] = ['blue', 'green'];
+                setMyColour(sequence[idx === -1 ? 0 : idx] || 'blue');
 
                 const gameData = gameRes?.game;
                 if (gameData?.game_state && Object.keys(gameData.game_state).length > 0) {
@@ -117,7 +121,7 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
     return (
         <Provider store={store}>
             <div className="w-full h-full relative flex items-center justify-center ludo-wrapper">
-                <Game initData={initData} />
+                <Game initData={initData} myColour={myColour || 'blue'} />
             </div>
         </Provider>
     );
