@@ -80,7 +80,10 @@ export async function GET(request: Request) {
 
     const { client: supabaseAdmin, envStatus } = getSupabaseAdmin();
     if (!supabaseAdmin) {
-        return NextResponse.json({ error: 'Server misconfiguration: missing Supabase config.', env: envStatus }, { status: 500 });
+        return NextResponse.json(
+            { error: 'Supabase client unavailable. Set SUPABASE_SERVICE_ROLE_KEY (no NEXT_PUBLIC prefix) in deployment.', env: envStatus },
+            { status: 500 }
+        );
     }
 
     try {
@@ -120,7 +123,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     const { client: supabaseAdmin, envStatus } = getSupabaseAdmin();
     if (!supabaseAdmin) {
-        return NextResponse.json({ error: 'Server misconfiguration: missing Supabase config.', env: envStatus }, { status: 500 });
+        return NextResponse.json(
+            { error: 'Supabase client unavailable. Set SUPABASE_SERVICE_ROLE_KEY (no NEXT_PUBLIC prefix) in deployment.', env: envStatus },
+            { status: 500 }
+        );
     }
 
     try {

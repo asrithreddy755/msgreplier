@@ -41,6 +41,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const channelRef = useRef<RealtimeChannel | null>(null);
     const presenceCleanupRef = useRef(false);
     const presenceDisabledRef = useRef(false);
+    const hasSupabaseConfig = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
     // Monitor network quality
     useEffect(() => {
@@ -107,7 +108,10 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
     // Handle Presence Channel
     useEffect(() => {
-        if (!currentMember || !roomId || presenceDisabledRef.current) return;
+        if (!currentMember || !roomId || presenceDisabledRef.current || !hasSupabaseConfig) {
+            presenceDisabledRef.current = true;
+            return;
+        }
 
         let isMounted = true;
         const channelName = `room_presence:${roomId}`;
@@ -272,13 +276,13 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             setUnreadCount(0);
         }
 
-        if (channelRef.current && currentMember) {
+        if (channelRef.current && currentMember && hasSupabaseConfig) {
             channelRef.current.track({
                 activeTab: activeTab,
                 updatedAt: new Date().toISOString(),
             }).catch(console.error);
         }
-    }, [activeTab, currentMember, showGameChat]);
+    }, [activeTab, currentMember, showGameChat, hasSupabaseConfig]);
 
     const copyLink = () => {
         const url = window.location.href;
