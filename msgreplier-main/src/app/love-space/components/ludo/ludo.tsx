@@ -94,7 +94,6 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
         };
     }, [roomId]);
 
-    // Auto-sync every 5 seconds
     useEffect(() => {
         const interval = setInterval(async () => {
             try {
@@ -110,7 +109,7 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
             } catch {
                 // ignore
             }
-        }, 5000);
+        }, 4000);
         return () => clearInterval(interval);
     }, [roomId]);
 

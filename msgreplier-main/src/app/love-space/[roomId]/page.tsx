@@ -39,6 +39,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     }, [members]);
     const [networkQuality, setNetworkQuality] = useState<'good' | 'fair' | 'poor'>('good');
     const channelRef = useRef<RealtimeChannel | null>(null);
+    const presenceCleanupRef = useRef(false);
+    const presenceDisabledRef = useRef(false);
 
     // Monitor network quality
     useEffect(() => {
@@ -105,17 +107,37 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
     // Handle Presence Channel
     useEffect(() => {
-        if (!currentMember || !roomId) return;
+        if (!currentMember || !roomId || presenceDisabledRef.current) return;
 
         let isMounted = true;
         const channelName = `room_presence:${roomId}`;
-        let presenceDisabled = false;
         let subscribeTimeout: any = null;
 
-        // Ensure no leftover channels cause duplicate presence state
-        const existingChannel = supabase.getChannels().find(c => c.topic === channelName);
-        if (existingChannel) {
-            supabase.removeChannel(existingChannel);
+        const cleanupChannel = async () => {
+            if (presenceCleanupRef.current) return;
+            presenceCleanupRef.current = true;
+            const current = channelRef.current;
+            channelRef.current = null;
+            if (subscribeTimeout) {
+                clearTimeout(subscribeTimeout);
+                subscribeTimeout = null;
+            }
+            if (current) {
+                try {
+                    await current.untrack();
+                } catch {}
+                try {
+                    await current.unsubscribe();
+                } catch {}
+                try {
+                    supabase.removeChannel(current);
+                } catch {}
+            }
+            presenceCleanupRef.current = false;
+        };
+
+        if (channelRef.current) {
+            cleanupChannel();
         }
 
         let channel: RealtimeChannel | null = null;
@@ -128,9 +150,9 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 },
             });
         } catch {
-            presenceDisabled = true;
+            presenceDisabledRef.current = true;
         }
-        if (!channel || presenceDisabled) return;
+        if (!channel || presenceDisabledRef.current) return;
 
         channel
             .on('presence', { event: 'sync' }, () => {
@@ -226,37 +248,21 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                         console.error('Error tracking self:', error);
                     }
                 } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-                    try {
-                        supabase.removeChannel(channel);
-                    } catch {}
+                    presenceDisabledRef.current = true;
+                    cleanupChannel();
                 }
             });
-        // Fallback: if not subscribed within 4s, disable presence to avoid WS spam
         subscribeTimeout = setTimeout(() => {
             if (!isMounted) return;
-            try {
-                if (channel) supabase.removeChannel(channel);
-            } catch {}
+            presenceDisabledRef.current = true;
+            cleanupChannel();
         }, 4000);
 
         channelRef.current = channel;
 
         return () => {
             isMounted = false;
-            if (channelRef.current) {
-                // Attempt to untrack immediately so others see us leave
-                const currentCh = channelRef.current;
-                currentCh.untrack().then(() => {
-                    supabase.removeChannel(currentCh);
-                }).catch(() => {
-                    supabase.removeChannel(currentCh);
-                });
-                channelRef.current = null;
-            }
-            if (subscribeTimeout) {
-                clearTimeout(subscribeTimeout);
-                subscribeTimeout = null;
-            }
+            cleanupChannel();
         };
     }, [currentMember, roomId, supabase]);
 

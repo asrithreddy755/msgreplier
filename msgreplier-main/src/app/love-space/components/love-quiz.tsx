@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { LoveRoomMember } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +43,9 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState<'dashboard' | 'create' | 'take' | 'details'>('dashboard');
     const [currentQuiz, setCurrentQuiz] = useState<LoveQuiz | null>(null);
+    const fetchInFlightRef = useRef(false);
+    const fetchCooldownUntilRef = useRef(0);
+    const fetchAbortRef = useRef<AbortController | null>(null);
 
     // Quiz Creation State
     const [questions, setQuestions] = useState<QuizQuestion[]>([
@@ -55,21 +58,40 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
     const otherMember = members.find(m => m.id !== currentMember.id);
     const partnerName = otherMember ? otherMember.nickname : 'your partner';
 
-    useEffect(() => {
-        fetchQuizzes();
-    }, [roomId]);
-
-    const fetchQuizzes = async () => {
+    const fetchQuizzes = useCallback(async (force?: boolean) => {
+        if (!roomId) return;
+        const now = Date.now();
+        if (!force && (fetchInFlightRef.current || now < fetchCooldownUntilRef.current)) return;
+        fetchInFlightRef.current = true;
+        const controller = new AbortController();
+        if (fetchAbortRef.current) {
+            fetchAbortRef.current.abort();
+        }
+        fetchAbortRef.current = controller;
         try {
-            const res = await fetch(`/api/love-space/quiz?roomId=${roomId}`);
+            const res = await fetch(`/api/love-space/quiz?roomId=${roomId}`, { signal: controller.signal });
+            if (!res.ok) throw new Error(`Quiz fetch failed (${res.status})`);
             const data = await res.json();
             if (data.quizzes) setQuizzes(data.quizzes);
         } catch (error) {
-            console.error('Error fetching quizzes:', error);
+            if (!controller.signal.aborted) {
+                console.error('Error fetching quizzes:', error);
+                fetchCooldownUntilRef.current = Date.now() + 10000;
+            }
         } finally {
-            setLoading(false);
+            if (!controller.signal.aborted) setLoading(false);
+            fetchInFlightRef.current = false;
         }
-    };
+    }, [roomId]);
+
+    useEffect(() => {
+        fetchQuizzes();
+        return () => {
+            if (fetchAbortRef.current) {
+                fetchAbortRef.current.abort();
+            }
+        };
+    }, [roomId, fetchQuizzes]);
 
     const handleAddQuestion = () => {
         setQuestions([
@@ -153,7 +175,7 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
             if (res.ok) {
                 toast.success('Quiz created successfully!');
                 setView('dashboard');
-                fetchQuizzes();
+                fetchQuizzes(true);
                 // Reset form
                 setQuestions([{ id: '1', text: '', options: ['', '', '', ''], correctAnswer: 0 }]);
             } else {
@@ -193,7 +215,7 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
             if (res.ok) {
                 toast.success('Quiz submitted!');
                 setView('dashboard');
-                fetchQuizzes();
+                fetchQuizzes(true);
             } else {
                 toast.error('Failed to submit quiz');
             }

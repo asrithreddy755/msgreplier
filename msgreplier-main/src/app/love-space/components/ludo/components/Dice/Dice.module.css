@@ -13,6 +13,8 @@
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 calc(var(--board-tile-size) * 0.08) calc(var(--board-tile-size) * 0.18)
     rgba(15, 23, 42, 0.12);
+  width: max-content;
+  min-width: calc(var(--board-tile-size) * 3.8);
 }
 
 .diceContainer * {
@@ -68,6 +70,7 @@
   cursor: default;
   border-radius: calc(var(--board-tile-size) * 0.4);
   width: 100%;
+  max-width: calc(var(--board-tile-size) * 5);
   text-align: center;
   background: color-mix(in srgb, var(--player-colour) 16%, #ffffff);
   color: color-mix(in srgb, var(--player-colour) 70%, #0f172a);
@@ -78,6 +81,19 @@
 .diceContainer.green .playerName,
 .diceContainer.yellow .playerName {
   text-align: center;
+}
+
+@media (max-width: 640px) {
+  .diceContainer {
+    padding: calc(var(--board-tile-size) * 0.25);
+    border-radius: calc(var(--board-tile-size) * 0.5);
+    min-width: calc(var(--board-tile-size) * 3.4);
+  }
+
+  .playerName {
+    font-size: calc(var(--board-tile-size) * 0.38);
+    padding: calc(var(--board-tile-size) * 0.18) calc(var(--board-tile-size) * 0.24);
+  }
 }
 
 @keyframes pulse {
