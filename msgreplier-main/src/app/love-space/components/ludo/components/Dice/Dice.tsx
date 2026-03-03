@@ -87,7 +87,8 @@ function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
       <span className={styles.playerName}>{playerName}</span>
       <button
         className={clsx(styles.dice, {
-          [styles.active]: !isDiceDisabled,
+          // Keep the dice clickable but stop the pulse animation when the rolled number is 6
+          [styles.active]: !isDiceDisabled && diceNumber !== 6,
         })}
         tabIndex={isDiceDisabled ? -1 : undefined}
         title={!isDiceDisabled ? 'Roll Dice (Press D)' : undefined}

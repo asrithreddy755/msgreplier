@@ -36,7 +36,8 @@
 
 @media (max-width: 640px) {
   .svg {
-    transform: translate3d(0, -10%, 0);
+    /* Adjust vertical alignment for mobile so the token sits correctly on the tile */
+    transform: translate3d(0, -15%, 0);
   }
 }
 

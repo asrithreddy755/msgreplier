@@ -26,6 +26,7 @@
   border: 2px solid color-mix(in srgb, var(--player-colour) 70%, #ffffff);
   height: calc(var(--board-tile-size) * var(--dice-scale-factor));
   width: calc(var(--board-tile-size) * var(--dice-scale-factor));
+  aspect-ratio: 1 / 1;
   border-radius: calc(var(--board-tile-size) * 0.22);
   padding: calc(var(--board-tile-size) * 0.13);
   cursor: pointer;
