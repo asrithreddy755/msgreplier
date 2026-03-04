@@ -24,11 +24,15 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
         const serialized = JSON.stringify(stateToSave);
         if (serialized === lastBroadcastStateRef.current) return;
         lastBroadcastStateRef.current = serialized;
-        await fetch('/api/love-space/games', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, gameType: 'ludo', gameState: stateToSave })
-        });
+        try {
+            await fetch('/api/love-space/games', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomId, gameType: 'ludo', gameState: stateToSave })
+            });
+        } catch (err) {
+            console.error("Failed to persist ludo state:", err);
+        }
     }, 500), [roomId]);
 
     useEffect(() => {

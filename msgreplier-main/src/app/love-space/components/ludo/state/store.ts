@@ -13,7 +13,16 @@ const appReducer = combineReducers({
 
 const rootReducer = (state: any, action: any) => {
   if (action.type === 'HYDRATE_GAME_STATE') {
-    // Safely merge incoming remote state into existing structure 
+    // Safely merge incoming remote state into existing structure
+    // Ensure we don't sync 'isPlaceholderShowing' so we don't get stuck in a dice animation loop
+    const hydratedDice = action.payload.dice ? {
+      ...action.payload.dice,
+      dice: action.payload.dice.dice?.map((d: any) => {
+        const localDice = state.dice?.dice?.find((ld: any) => ld.colour === d.colour);
+        return { ...d, isPlaceholderShowing: localDice ? localDice.isPlaceholderShowing : false };
+      }) || state.dice?.dice
+    } : state.dice;
+
     const hydratedState = {
       players: action.payload.players || state.players,
       board: {
@@ -21,7 +30,7 @@ const rootReducer = (state: any, action: any) => {
         boardSideLength: state?.board?.boardSideLength || 0,
         boardTileSize: state?.board?.boardTileSize || 0
       },
-      dice: action.payload.dice || state.dice,
+      dice: hydratedDice,
       session: action.payload.session || state.session,
     };
     return hydratedState;

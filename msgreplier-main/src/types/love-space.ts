@@ -54,6 +54,7 @@ export interface SnakeLadderState {
     lastActionMessage?: string | null;
     lastPath?: number[];
     lastPathPlayer?: number;
+    lastRollValue?: number;
 }
 
 // Sync Payload for Broadcast

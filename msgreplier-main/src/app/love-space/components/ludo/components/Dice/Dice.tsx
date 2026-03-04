@@ -97,7 +97,7 @@ function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
         onClick={handleDiceClick}
       >
         <img
-          src={(((isPlaceholderShowing ? dicePlaceholder : getDiceImage(diceNumber)) as any)?.src || (isPlaceholderShowing ? dicePlaceholder : getDiceImage(diceNumber))) as string}
+          src={(((isPlaceholderShowing ? `${dicePlaceholder.src || dicePlaceholder}?v=${Date.now()}` : getDiceImage(diceNumber)) as any)?.src || (isPlaceholderShowing ? `${dicePlaceholder.src || dicePlaceholder}?v=${Date.now()}` : getDiceImage(diceNumber))) as string}
           alt="Dice image"
           aria-hidden="true"
         />

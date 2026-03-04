@@ -15,11 +15,11 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
     const lastMessageIdRef = useRef<string | null>(null);
     const pendingMessageRef = useRef<{ tempId: string; message: string; sender: string } | null>(null);
 
+
     // Fetch initial messages and stream updates
     useEffect(() => {
         let isMounted = true;
         let pollInterval: ReturnType<typeof setInterval> | null = null;
-        let eventSource: EventSource | null = null;
 
         const fetchMessages = async () => {
             try {
@@ -27,15 +27,44 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
                 const data = await res.json();
                 if (!res.ok || !Array.isArray(data.messages)) return;
                 if (!isMounted) return;
+
                 const nextMessages = data.messages as LoveMessage[];
                 const last = nextMessages[nextMessages.length - 1];
+
+                setMessages((prev) => {
+                    const newMessages = [...nextMessages];
+
+                    if (pendingMessageRef.current) {
+                        const pending = pendingMessageRef.current;
+                        const foundInDb = newMessages.some(m => m.sender_nickname === pending.sender && m.message === pending.message);
+
+                        if (foundInDb) {
+                            setTimeout(() => {
+                                if (isMounted) {
+                                    pendingMessageRef.current = null;
+                                    setPendingIds(p => p.filter(id => id !== pending.tempId));
+                                }
+                            }, 0);
+                        } else {
+                            const tempMsg = prev.find(m => m.id === pending.tempId);
+                            if (tempMsg) newMessages.push(tempMsg);
+                        }
+                    }
+
+                    if (newMessages.length === prev.length) {
+                        const allSame = newMessages.every((nm, i) => nm.id === prev[i]?.id);
+                        if (allSame) return prev;
+                    }
+
+                    return newMessages;
+                });
+
                 if (last && last.id !== lastMessageIdRef.current) {
                     lastMessageIdRef.current = last.id;
                     if (last.sender_nickname !== currentMember.nickname && onNewMessage) {
                         onNewMessage();
                     }
                 }
-                setMessages(nextMessages);
             } catch {
                 // Ignore transient network errors
             }
@@ -48,43 +77,11 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
             pollInterval = setInterval(fetchMessages, 2000);
         };
 
-        try {
-            eventSource = new EventSource(`/api/love-space/messages/stream?roomId=${roomId}`);
-            eventSource.addEventListener('message', (event) => {
-                try {
-                    const payload = JSON.parse((event as MessageEvent).data) as LoveMessage;
-                    setMessages((prev) => {
-                        if (prev.some(m => m.id === payload.id)) return prev;
-                        if (pendingMessageRef.current && payload.sender_nickname === pendingMessageRef.current.sender && payload.message === pendingMessageRef.current.message) {
-                            const { tempId } = pendingMessageRef.current;
-                            pendingMessageRef.current = null;
-                            setPendingIds((prev) => prev.filter(id => id !== tempId));
-                            return [...prev.filter(m => m.id !== tempId), payload];
-                        }
-                        if (payload.sender_nickname !== currentMember.nickname && onNewMessage) {
-                            onNewMessage();
-                        }
-                        return [...prev, payload];
-                    });
-                } catch {
-                    // ignore parse errors
-                }
-            });
-            eventSource.addEventListener('error', () => {
-                if (eventSource) {
-                    eventSource.close();
-                    eventSource = null;
-                }
-                startPolling();
-            });
-        } catch {
-            startPolling();
-        }
+        startPolling();
 
         return () => {
             isMounted = false;
             if (pollInterval) clearInterval(pollInterval);
-            if (eventSource) eventSource.close();
         };
     }, [roomId]);
 

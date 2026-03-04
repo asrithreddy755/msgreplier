@@ -129,13 +129,13 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             if (current) {
                 try {
                     await current.untrack();
-                } catch {}
+                } catch { }
                 try {
                     await current.unsubscribe();
-                } catch {}
+                } catch { }
                 try {
                     supabase.removeChannel(current);
-                } catch {}
+                } catch { }
             }
             presenceCleanupRef.current = false;
         };
@@ -489,7 +489,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="chat" className="flex-1 h-full mt-0 data-[state=inactive]:hidden px-0 sm:px-4 pb-0 sm:pb-4 flex flex-col">
+                        <TabsContent value="chat" forceMount className="flex-1 h-full mt-0 data-[state=inactive]:hidden px-0 sm:px-4 pb-0 sm:pb-4 flex flex-col">
                             <div className="flex-1 h-full bg-white dark:bg-slate-800 rounded-none sm:rounded-2xl shadow-inner border-t sm:border border-pink-100 dark:border-pink-900/50 flex flex-col overflow-hidden relative">
                                 <div className="absolute top-2 left-2 z-10 w-full sm:hidden p-2 pointer-events-none">
                                     <Button

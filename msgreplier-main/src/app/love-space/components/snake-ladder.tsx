@@ -99,6 +99,10 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
                 return;
             }
         }
+        if (nextState.lastRollValue !== undefined) {
+            setLastRoll(nextState.lastRollValue);
+        }
+
         lastStateRef.current = JSON.stringify(nextState);
         setState(nextState);
     }, []);
@@ -305,7 +309,7 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
         let winner = null;
         if (newPos === 50) {
             winner = currentMember.nickname;
-            actionMessage = `Player ${currentMember.nickname} reached square 50 and won the game! 🎉`;
+            actionMessage = `${currentMember.nickname} rolled ${roll} and reached square 50 to win the game! 🎉`;
         }
 
         const other = members.find(m => m.nickname !== currentMember.nickname);
@@ -319,7 +323,8 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
             winner,
             lastActionMessage: actionMessage || (roll === 6 ? `${currentMember.nickname} rolled a 6 and gets another turn!` : undefined),
             lastPath: path,
-            lastPathPlayer: myPlayerNum
+            lastPathPlayer: myPlayerNum,
+            lastRollValue: roll
         };
 
         setLastRoll(roll);
