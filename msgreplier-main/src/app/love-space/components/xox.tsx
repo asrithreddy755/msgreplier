@@ -5,6 +5,7 @@ import { LoveRoomMember, XOXGameState, XOXPlayer } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Heart, X as XIcon, Circle, RotateCcw, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 const INITIAL_STATE: XOXGameState = {
     board: Array(9).fill(null),
@@ -66,91 +67,44 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
             }
         };
 
-        init();
+        if (roomId) init();
     }, [roomId, currentMember.id]);
 
     useEffect(() => {
         let isMounted = true;
-        let pollInterval: ReturnType<typeof setInterval> | null = null;
-        let eventSource: EventSource | null = null;
-        let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+        let channel: ReturnType<typeof supabase.channel> | null = null;
 
-        const poll = async () => {
-            try {
-                const data = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`).then(res => res.json());
-                if (!isMounted) return;
-                const lastGame = data?.game;
-                if (lastGame?.game_state) {
-                    const nextState = lastGame.game_state as XOXGameState;
-                    const serialized = JSON.stringify(nextState);
-                    if (serialized !== lastStateRef.current) {
-                        lastStateRef.current = serialized;
-                        setGameState(nextState);
+        channel = supabase
+            .channel(`public:love_games:xox:${roomId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'love_games',
+                    filter: `room_id=eq.${roomId}`,
+                },
+                (payload: any) => {
+                    if (!isMounted) return;
+
+                    const newGame = payload.new;
+                    if (newGame.game_type !== 'xox') return;
+
+                    if (newGame?.game_state) {
+                        const parsed = newGame.game_state as XOXGameState;
+                        const serialized = JSON.stringify(parsed);
+                        if (serialized !== lastStateRef.current) {
+                            lastStateRef.current = serialized;
+                            setGameState(parsed);
+                        }
                     }
                 }
-            } catch {
-                // ignore polling errors
-            }
-        };
-
-        const startPolling = () => {
-            if (pollInterval) return;
-            pollInterval = setInterval(poll, 2000);
-        };
-
-        const connectSSE = () => {
-            if (!isMounted) return;
-            try {
-                if (eventSource) eventSource.close();
-
-                eventSource = new EventSource(`/api/love-space/games/stream?roomId=${roomId}&gameType=xox`);
-
-                eventSource.onopen = () => {
-                    if (pollInterval) {
-                        clearInterval(pollInterval);
-                        pollInterval = null;
-                    }
-                };
-
-                eventSource.addEventListener('game', (event) => {
-                    try {
-                        const payload = JSON.parse((event as MessageEvent).data) as { game_state?: XOXGameState };
-                        if (payload?.game_state) {
-                            const serialized = JSON.stringify(payload.game_state);
-                            if (serialized !== lastStateRef.current) {
-                                lastStateRef.current = serialized;
-                                setGameState(payload.game_state);
-                            }
-                        }
-                    } catch {
-                        // ignore parse errors
-                    }
-                });
-
-                eventSource.onerror = () => {
-                    if (eventSource) {
-                        eventSource.close();
-                        eventSource = null;
-                    }
-                    startPolling();
-                    // Attempt to reconnect SSE after a delay
-                    if (reconnectTimeout) clearTimeout(reconnectTimeout);
-                    reconnectTimeout = setTimeout(connectSSE, 3000);
-                };
-            } catch {
-                startPolling();
-                if (reconnectTimeout) clearTimeout(reconnectTimeout);
-                reconnectTimeout = setTimeout(connectSSE, 5000);
-            }
-        };
-
-        connectSSE();
+            )
+            .subscribe();
 
         return () => {
             isMounted = false;
-            if (pollInterval) clearInterval(pollInterval);
-            if (eventSource) eventSource.close();
-            if (reconnectTimeout) clearTimeout(reconnectTimeout);
+            if (channel) supabase.removeChannel(channel);
         };
     }, [roomId]);
 

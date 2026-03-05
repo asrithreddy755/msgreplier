@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { Heart, Trophy, PenTool, CheckCircle, Loader2, XCircle, Wand2 } from 'lucide-react';
 import presetQuestions from '@/data/love-questions.json';
+import { supabase } from '@/lib/supabase';
 
 interface QuizQuestion {
     id: string;
@@ -87,6 +88,10 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
         }
     }, [roomId]);
 
+    // Keep a stable ref to fetchQuizzes so the Realtime channel doesn't need it in its dep array
+    const fetchQuizzesRef = useRef(fetchQuizzes);
+    useEffect(() => { fetchQuizzesRef.current = fetchQuizzes; }, [fetchQuizzes]);
+
     useEffect(() => {
         fetchQuizzes();
         return () => {
@@ -94,16 +99,37 @@ export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
                 fetchAbortRef.current.abort();
             }
         };
-    }, [roomId, fetchQuizzes]);
+        // Only re-run once on mount / roomId change. fetchQuizzes identity is intentionally excluded
+        // because it's stable via useCallback([roomId]) — adding it here would cause unnecessary re-runs.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [roomId]);
 
-    // Lightweight auto-sync so both partners see quiz updates without manual refresh.
+    // Realtime sync so both partners see quiz updates without manual refresh or spam polling.
     useEffect(() => {
         if (!roomId) return;
-        const interval = setInterval(() => {
-            fetchQuizzes(true);
-        }, 10000);
-        return () => clearInterval(interval);
-    }, [roomId, fetchQuizzes]);
+
+        const channel = supabase
+            .channel(`public:love_quizzes:${roomId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // INSERT, UPDATE, DELETE
+                    schema: 'public',
+                    table: 'love_quizzes',
+                    filter: `room_id=eq.${roomId}`
+                },
+                () => {
+                    // Access via ref so this effect's dep array can stay [roomId] only
+                    fetchQuizzesRef.current(true);
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+        // CRITICAL: dep array must only contain roomId. fetchQuizzesRef is a ref — stable by design.
+    }, [roomId]);
 
     const handleAddQuestion = () => {
         setQuestions([

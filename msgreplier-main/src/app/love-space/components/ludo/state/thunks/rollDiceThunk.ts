@@ -8,6 +8,7 @@ const DICE_PLACEHOLDER_DELAY = 1000;
 export function rollDiceThunk(colour: TPlayerColour, onDiceRoll: (diceNumber: number) => void) {
   return (dispatch: AppDispatch, getState: () => RootState) => {
     if (getState().players.isGameEnded) return;
+    if (getState().dice.dice.find((d) => d.colour === colour)?.isPlaceholderShowing) return;
     dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: true }));
     setTimeout(() => {
       const diceState = getState().dice;

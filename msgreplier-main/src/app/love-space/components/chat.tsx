@@ -5,6 +5,7 @@ import { LoveMessage, LoveRoomMember } from '@/types/love-space';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send, Heart } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, currentMember: LoveRoomMember, onNewMessage?: () => void }) {
     const [messages, setMessages] = useState<LoveMessage[]>([]);
@@ -14,76 +15,90 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const lastMessageIdRef = useRef<string | null>(null);
     const pendingMessageRef = useRef<{ tempId: string; message: string; sender: string } | null>(null);
+    // Use a ref for pendingIds so the Realtime callback can access it without being in dep array
+    const pendingIdsRef = useRef<string[]>([]);
+    // Use a ref for onNewMessage so the channel effect dep array stays stable
+    const onNewMessageRef = useRef(onNewMessage);
+    useEffect(() => { onNewMessageRef.current = onNewMessage; }, [onNewMessage]);
+    useEffect(() => { pendingIdsRef.current = pendingIds; }, [pendingIds]);
 
 
     // Fetch initial messages and stream updates
     useEffect(() => {
         let isMounted = true;
-        let pollInterval: ReturnType<typeof setInterval> | null = null;
+        let channel: ReturnType<typeof supabase.channel> | null = null;
 
-        const fetchMessages = async () => {
+        const fetchInitialMessages = async () => {
             try {
                 const res = await fetch(`/api/love-space/messages?roomId=${roomId}`);
                 const data = await res.json();
                 if (!res.ok || !Array.isArray(data.messages)) return;
                 if (!isMounted) return;
 
-                const nextMessages = data.messages as LoveMessage[];
-                const last = nextMessages[nextMessages.length - 1];
+                setMessages(data.messages as LoveMessage[]);
 
-                setMessages((prev) => {
-                    const newMessages = [...nextMessages];
-
-                    if (pendingMessageRef.current) {
-                        const pending = pendingMessageRef.current;
-                        const foundInDb = newMessages.some(m => m.sender_nickname === pending.sender && m.message === pending.message);
-
-                        if (foundInDb) {
-                            setTimeout(() => {
-                                if (isMounted) {
-                                    pendingMessageRef.current = null;
-                                    setPendingIds(p => p.filter(id => id !== pending.tempId));
-                                }
-                            }, 0);
-                        } else {
-                            const tempMsg = prev.find(m => m.id === pending.tempId);
-                            if (tempMsg) newMessages.push(tempMsg);
-                        }
-                    }
-
-                    if (newMessages.length === prev.length) {
-                        const allSame = newMessages.every((nm, i) => nm.id === prev[i]?.id);
-                        if (allSame) return prev;
-                    }
-
-                    return newMessages;
-                });
-
-                if (last && last.id !== lastMessageIdRef.current) {
+                const last = data.messages[data.messages.length - 1];
+                if (last) {
                     lastMessageIdRef.current = last.id;
-                    if (last.sender_nickname !== currentMember.nickname && onNewMessage) {
-                        onNewMessage();
-                    }
                 }
             } catch {
                 // Ignore transient network errors
             }
         };
 
-        fetchMessages();
+        fetchInitialMessages();
 
-        const startPolling = () => {
-            if (pollInterval) return;
-            pollInterval = setInterval(fetchMessages, 2000);
-        };
+        // Subscribe to real-time message inserts
+        channel = supabase
+            .channel(`public:love_messages:${roomId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'love_messages',
+                    filter: `room_id=eq.${roomId}`,
+                },
+                (payload: any) => {
+                    if (!isMounted) return;
+                    const newMsg = payload.new as LoveMessage;
 
-        startPolling();
+                    setMessages((prev) => {
+                        // Avoid duplicates if we optimistically added it
+                        if (prev.some(m => m.id === newMsg.id)) return prev;
+
+                        // Use ref instead of state to avoid dep array issues
+                        const currentPendingIds = pendingIdsRef.current;
+                        const isPendingMatch = prev.some(m =>
+                            currentPendingIds.includes(m.id) &&
+                            m.message === newMsg.message &&
+                            m.sender_nickname === newMsg.sender_nickname
+                        );
+
+                        if (isPendingMatch && newMsg.sender_nickname === currentMember.nickname) {
+                            return prev;
+                        }
+
+                        return [...prev, newMsg];
+                    });
+
+                    if (newMsg.sender_nickname !== currentMember.nickname && onNewMessageRef.current) {
+                        onNewMessageRef.current();
+                    }
+                }
+            )
+            .subscribe();
 
         return () => {
             isMounted = false;
-            if (pollInterval) clearInterval(pollInterval);
+            if (channel) {
+                supabase.removeChannel(channel);
+            }
         };
-    }, [roomId]);
+        // CRITICAL: Only re-run when roomId changes. Do NOT add pendingIds, onNewMessage, or
+        // currentMember.nickname here — they are accessed via refs to keep this dep array stable.
+    }, [roomId, currentMember.nickname]);
+
 
     // Auto-scroll to bottom when messages change
     useEffect(() => {

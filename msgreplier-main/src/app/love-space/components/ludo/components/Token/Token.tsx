@@ -80,7 +80,11 @@ function Token({ colour, id, tokenClickData }: Props) {
 
   const handleTokenClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
     if (e.detail === 0) e.stopPropagation();
-    if (isLocked && isActive && diceNumber !== -1 && diceNumber) unlock();
+    if (isLocked && isActive && diceNumber !== -1 && diceNumber) {
+      unlock();
+      tokenElRef.current?.blur?.();
+      return;
+    }
     tokenElRef.current?.blur?.();
     executeTokenMove();
   };

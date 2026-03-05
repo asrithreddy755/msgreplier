@@ -8,6 +8,8 @@ import Game from './components/Game/Game';
 import { TPlayerInitData, TPlayerColour } from './types';
 import { debounce } from 'lodash-es';
 
+import { supabase } from '@/lib/supabase';
+
 interface LudoProps {
     roomId: string;
     currentMember: LoveRoomMember;
@@ -67,54 +69,48 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
             }
         };
 
-        init();
-    }, [roomId, members]);
+        if (roomId && members.length > 0) {
+            init();
+        }
+    }, [roomId, members, currentMember]);
 
     useEffect(() => {
         let isMounted = true;
-        let eventSource: EventSource | null = null;
+        let channel: ReturnType<typeof supabase.channel> | null = null;
 
-        try {
-            eventSource = new EventSource(`/api/love-space/games/stream?roomId=${roomId}&gameType=ludo`);
-            eventSource.addEventListener('game', (event) => {
-                try {
-                    const payload = JSON.parse((event as MessageEvent).data) as { game_state?: any };
-                    if (payload?.game_state && Object.keys(payload.game_state).length > 0) {
-                        const serialized = JSON.stringify(payload.game_state);
+        channel = supabase
+            .channel(`public:love_games:ludo:${roomId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'love_games',
+                    filter: `room_id=eq.${roomId}`,
+                },
+                (payload: any) => {
+                    if (!isMounted) return;
+
+                    const newGame = payload.new;
+                    // We only care about ludo updates in this component
+                    if (newGame.game_type !== 'ludo') return;
+
+                    if (newGame?.game_state && Object.keys(newGame.game_state).length > 0) {
+                        const serialized = JSON.stringify(newGame.game_state);
+                        // Prevent echo loops
                         if (serialized !== lastBroadcastStateRef.current) {
                             lastBroadcastStateRef.current = serialized;
-                            store.dispatch({ type: 'HYDRATE_GAME_STATE', payload: payload.game_state });
+                            store.dispatch({ type: 'HYDRATE_GAME_STATE', payload: newGame.game_state });
                         }
                     }
-                } catch {
-                    // ignore parse errors
                 }
-            });
-        } catch { }
+            )
+            .subscribe();
 
         return () => {
             isMounted = false;
-            if (eventSource) eventSource.close();
+            if (channel) supabase.removeChannel(channel);
         };
-    }, [roomId]);
-
-    useEffect(() => {
-        const interval = setInterval(async () => {
-            try {
-                const gameRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=ludo`).then(res => res.json());
-                const gameData = gameRes?.game;
-                if (gameData?.game_state && Object.keys(gameData.game_state).length > 0) {
-                    const serialized = JSON.stringify(gameData.game_state);
-                    if (serialized !== lastBroadcastStateRef.current) {
-                        lastBroadcastStateRef.current = serialized;
-                        store.dispatch({ type: 'HYDRATE_GAME_STATE', payload: gameData.game_state });
-                    }
-                }
-            } catch {
-                // ignore
-            }
-        }, 4000);
-        return () => clearInterval(interval);
     }, [roomId]);
 
     if (loading) {

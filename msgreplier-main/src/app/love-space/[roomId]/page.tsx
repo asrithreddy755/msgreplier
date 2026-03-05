@@ -10,14 +10,55 @@ import { supabase } from '@/lib/supabase';
 import { Chat, XOX, Ludo, SnakeLadder } from '../components/games';
 import { LoveQuiz } from '../components/love-quiz';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle } from 'lucide-react';
+import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: string }> }) {
     // Use React.use() to unwrap the params promise (Next.js 15+ compatible way)
     const resolvedParams = use(params);
     const { roomId } = resolvedParams;
+
+    const handleLeaveRoom = async () => {
+        if (!currentMember || !roomId) return;
+        try {
+            // Remove from local storage
+            localStorage.removeItem(`loveRoom_${roomId}`);
+
+            // Clean up Supabase presence immediately
+            if (channelRef.current) {
+                try {
+                    await channelRef.current.untrack();
+                    await channelRef.current.unsubscribe();
+                } catch (e) {
+                    console.error("Error cleaning up channel", e);
+                }
+            }
+
+            // Setting currentMember to null instantly unmounts the room UI (and its intervals)
+            setCurrentMember(null);
+            toast.success("Left the room");
+
+            // Redirect cleanly
+            setTimeout(() => {
+                window.location.href = '/love-space';
+            }, 100);
+        } catch (error) {
+            console.error("Error leaving room:", error);
+            window.location.href = '/love-space';
+        }
+    };
 
     const [room, setRoom] = useState<LoveRoom | null>(null);
     const [currentMember, setCurrentMember] = useState<LoveRoomMember | null>(null);
@@ -268,7 +309,10 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             isMounted = false;
             cleanupChannel();
         };
-    }, [currentMember, roomId, supabase]);
+        // CRITICAL: Use currentMember.id (primitive) not currentMember (object) in dep array.
+        // The full object reference changes on every render even if the data is the same,
+        // which would cause the presence channel to disconnect and reconnect in a tight loop.
+    }, [currentMember?.id, roomId]);
 
     // Track activeTab changes
     useEffect(() => {
@@ -312,28 +356,42 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         loadMembers();
     }, [roomId]);
 
+    // Subscribe to member changes via Supabase Realtime instead of polling
     useEffect(() => {
-        if (!roomId || members.length >= 2) return;
-        let isMounted = true;
-        const interval = setInterval(async () => {
-            try {
-                const res = await fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' });
-                const data = await res.json();
-                if (!isMounted) return;
-                if (Array.isArray(data?.members)) {
-                    const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
-                        new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
-                    );
-                    setMembers(sorted);
+        if (!roomId) return;
+
+        const channel = supabase
+            .channel(`public:love_room_members:${roomId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // INSERT = new member joins, DELETE = member leaves
+                    schema: 'public',
+                    table: 'love_room_members',
+                    filter: `room_id=eq.${roomId}`,
+                },
+                async () => {
+                    // Refetch members once on any change
+                    try {
+                        const res = await fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' });
+                        const data = await res.json();
+                        if (Array.isArray(data?.members)) {
+                            const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
+                                new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
+                            );
+                            setMembers(sorted);
+                        }
+                    } catch {
+                        // ignore transient errors
+                    }
                 }
-            } catch {
-            }
-        }, 3000);
+            )
+            .subscribe();
+
         return () => {
-            isMounted = false;
-            clearInterval(interval);
+            supabase.removeChannel(channel);
         };
-    }, [roomId, members.length]);
+    }, [roomId, supabase]);
 
     const otherMember = currentMember && members.length > 0
         ? members.find(m => m.id !== currentMember.id) || null
@@ -414,12 +472,43 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                             {otherMemberTab === 'snake' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
                         </TabsTrigger>
                     </TabsList>
-                    {/* Presence status chip */}
-                    <div className="px-4 -mt-1 mb-1 flex items-center justify-between">
-                        {otherMember && (
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/60 border border-pink-100 dark:border-pink-900/40 text-[11px] text-gray-600 dark:text-gray-300 shadow-sm">
-                                <span className={`w-2 h-2 rounded-full ${isOtherOnline ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.9)]' : 'bg-gray-400'}`} />
-                                <span className="font-semibold">{otherMember.nickname}</span>
+                    {/* Presence status chip / Crazy Title */}
+                    <div className="px-4 -mt-1 mb-2 flex flex-col items-center justify-center w-full relative z-10 min-h-[40px]">
+                        {otherMember ? (
+                            <div className="flex flex-col items-center justify-center gap-1 animate-in zoom-in duration-500">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-rose-500 drop-shadow-sm filter">
+                                        {currentMember?.nickname}
+                                    </span>
+                                    <div className="relative flex items-center justify-center w-8 h-8 mx-1">
+                                        <Heart className={`absolute w-7 h-7 text-pink-500 fill-pink-500 transition-all duration-1000 ${isOtherOnline ? 'animate-pulse scale-110 drop-shadow-[0_0_10px_rgba(236,72,153,0.8)]' : 'opacity-60 grayscale-[50%]'}`} />
+                                        <Heart className={`absolute w-3 h-3 text-white fill-white ${isOtherOnline ? 'animate-ping' : 'opacity-0'}`} />
+                                    </div>
+                                    <span className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-gradient-to-l from-purple-500 to-fuchsia-500 drop-shadow-sm filter">
+                                        {otherMember.nickname}
+                                    </span>
+                                </div>
+                                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/60 dark:bg-slate-900/40 border border-pink-200/50 dark:border-pink-800/30 text-[9px] uppercase tracking-widest text-pink-600/80 dark:text-pink-300/80 font-bold backdrop-blur-sm -mt-0.5">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${isOtherOnline ? 'bg-green-500 shadow-[0_0_5px_rgba(34,197,94,1)] animate-pulse' : 'bg-gray-400'}`} />
+                                    {isOtherOnline ? 'Connected' : 'Away'}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center gap-1 animate-in zoom-in duration-500">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-rose-500 drop-shadow-sm filter">
+                                        {currentMember?.nickname}
+                                    </span>
+                                    <div className="relative flex items-center justify-center w-8 h-8 mx-1 opacity-50 grayscale">
+                                        <Heart className="absolute w-7 h-7 fill-current" />
+                                    </div>
+                                    <span className="text-xl sm:text-2xl font-black text-gray-400 dark:text-gray-600 drop-shadow-sm filter blur-[1px]">
+                                        Partner
+                                    </span>
+                                </div>
+                                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/60 dark:bg-slate-900/40 border border-pink-200/50 dark:border-pink-800/30 text-[9px] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-bold backdrop-blur-sm -mt-0.5 animate-pulse">
+                                    Waiting for companion...
+                                </div>
                             </div>
                         )}
                     </div>
@@ -485,6 +574,32 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 {/* Love Quiz Section moved below quick links */}
                                 <div className="mt-2 mb-1">
                                     <LoveQuiz roomId={roomId} currentMember={currentMember} members={members} />
+                                </div>
+
+                                {/* Leave Room Action */}
+                                <div className="mt-6 flex justify-center pb-8 border-t border-pink-100 dark:border-pink-900/30 pt-4">
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-red-900/50 dark:hover:bg-red-950/30 rounded-full px-6">
+                                                <LogOut className="w-4 h-4 mr-2" />
+                                                Leave Love Room
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent className="w-[90vw] max-w-[400px] rounded-3xl">
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Leave Room?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Are you sure you want to leave this Love Room? You will appear offline to your partner and will need to join again to chat or play games.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter className="sm:justify-start gap-2">
+                                                <AlertDialogCancel className="rounded-xl flex-1">Stay Here</AlertDialogCancel>
+                                                <AlertDialogAction onClick={handleLeaveRoom} className="rounded-xl flex-1 bg-red-500 hover:bg-red-600 text-white">
+                                                    Yes, Leave
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                 </div>
                             </div>
                         </TabsContent>

@@ -45,9 +45,12 @@ export const useMoveTokenForward = () => {
         const initialCoordinateIndex = tokenPath.findIndex((v) => areCoordsEqual(v, coordinates));
         let i = initialCoordinateIndex;
         let count = 0;
+        let isTransitioning = false;
 
         const handleTransitionEnd = (e: TransitionEvent) => {
           if (e.propertyName !== 'transform' || e.target !== tokenEl) return;
+          if (isTransitioning) return;
+          isTransitioning = true;
           const hasTokenReachedHome = areCoordsEqual(tokenPath[i], tokenPath[tokenPath.length - 1]);
           if (count >= diceNumber || hasTokenReachedHome) {
             const player = players.find((p) => p.colour === colour);
@@ -68,6 +71,7 @@ export const useMoveTokenForward = () => {
           }
           i++;
           count++;
+          isTransitioning = false;
           dispatch(updateTokenPositionAndAlignmentThunk({ colour, id, newCoords: tokenPath[i] }));
         };
         // Trigger the first transition

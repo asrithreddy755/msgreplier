@@ -1,12 +1,4 @@
-// @ts-nocheck
-import dice1 from '../../assets/dice/1.svg';
-import dice2 from '../../assets/dice/2.svg';
-import dice3 from '../../assets/dice/3.svg';
-import dice4 from '../../assets/dice/4.svg';
-import dice5 from '../../assets/dice/5.svg';
-import dice6 from '../../assets/dice/6.svg';
-import dicePlaceholder from '../../assets/dice/dice_placeholder.gif';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { type TPlayerColour } from '../../types';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../state/store';
@@ -24,25 +16,6 @@ type Props = {
   myColour: TPlayerColour;
 };
 
-function getDiceImage(diceNumber: number | undefined): string {
-  switch (diceNumber) {
-    case 1:
-      return dice1;
-    case 2:
-      return dice2;
-    case 3:
-      return dice3;
-    case 4:
-      return dice4;
-    case 5:
-      return dice5;
-    case 6:
-      return dice6;
-    default:
-      throw new Error(ERRORS.invalidDiceNumber(diceNumber as never));
-  }
-}
-
 function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -52,13 +25,13 @@ function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
     players,
   } = useSelector((state: RootState) => state.players);
   const { diceNumber, isPlaceholderShowing } =
-    useSelector((state: RootState) => state.dice.dice.find((d) => d.colour === colour)) ?? {};
+    useSelector((state: RootState) => state.dice.dice.find((d: any) => d.colour === colour)) ?? {};
 
   const anyTokenActive = useMemo(
     () => isAnyTokenActiveOfColour(colour, players),
     [colour, players]
   );
-  const isBot = players.find((p) => p.colour === colour)?.isBot;
+  const isBot = players.find((p: any) => p.colour === colour)?.isBot;
   const isCurrentPlayer = currentPlayer === colour;
   const isDiceDisabled =
     !isCurrentPlayer ||
@@ -71,7 +44,7 @@ function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
 
   const handleDiceClick = useCallback(() => {
     if (isDiceDisabled) return;
-    dispatch(rollDiceThunk(colour, (diceNumber) => onDiceClick(colour, diceNumber)));
+    dispatch(rollDiceThunk(colour, (rolledNumber) => onDiceClick(colour, rolledNumber)));
   }, [colour, dispatch, isDiceDisabled, onDiceClick]);
 
   useEffect(() => {
@@ -82,13 +55,29 @@ function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleDiceClick, isDiceDisabled]);
+
+  // Handle local state for animated rolling effect
+  const [internalDiceNum, setInternalDiceNum] = useState(1);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (isPlaceholderShowing) {
+      interval = setInterval(() => {
+        setInternalDiceNum((prev) => (prev % 6) + 1);
+      }, 60);
+    } else {
+      setInternalDiceNum(diceNumber || 1);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaceholderShowing, diceNumber]);
+
   return (
     <div className={clsx(styles.diceContainer, styles[colour])}>
       <span className={styles.playerName}>{playerName}</span>
       <button
         className={clsx(styles.dice, {
-          // Keep the dice clickable but stop the pulse animation when the rolled number is 6
-          [styles.active]: !isDiceDisabled && diceNumber !== 6,
+          [styles.active]: !isDiceDisabled,
+          [styles.rolling]: isPlaceholderShowing,
         })}
         tabIndex={isDiceDisabled ? -1 : undefined}
         title={!isDiceDisabled ? 'Roll Dice (Press D)' : undefined}
@@ -96,14 +85,17 @@ function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
         type="button"
         onClick={handleDiceClick}
       >
-        <img
-          src={(((isPlaceholderShowing ? `${dicePlaceholder.src || dicePlaceholder}?v=${Date.now()}` : getDiceImage(diceNumber)) as any)?.src || (isPlaceholderShowing ? `${dicePlaceholder.src || dicePlaceholder}?v=${Date.now()}` : getDiceImage(diceNumber))) as string}
-          alt="Dice image"
-          aria-hidden="true"
-        />
+        <div className={clsx(styles.diceFace, styles[`face${internalDiceNum}`])}>
+          <span className={clsx(styles.dot, styles.dot1)} />
+          <span className={clsx(styles.dot, styles.dot2)} />
+          <span className={clsx(styles.dot, styles.dot3)} />
+          <span className={clsx(styles.dot, styles.dot4)} />
+          <span className={clsx(styles.dot, styles.dot5)} />
+          <span className={clsx(styles.dot, styles.dot6)} />
+          <span className={clsx(styles.dot, styles.dot7)} />
+        </div>
       </button>
     </div>
   );
 }
-
 export default Dice;

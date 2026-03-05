@@ -52,13 +52,114 @@
     0 0 calc(var(--board-tile-size) * 0.12) calc(var(--board-tile-size) * 0.02) color-mix(in srgb, var(--player-colour) 40%, transparent);
 }
 
-.dice>img {
+.diceFace {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 0 calc(var(--board-tile-size) * 0.02) rgba(0, 0, 0, 0.25));
+  border-radius: calc(var(--board-tile-size) * 0.15);
+  background: white;
+  display: grid;
+  padding: 15%;
+  grid-template-areas:
+    "a . c"
+    "e g f"
+    "d . b";
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
 }
 
+.dice.active .diceFace {
+  background: color-mix(in srgb, var(--player-colour) 10%, white);
+}
 
+.dot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: var(--player-colour);
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Dot Positions */
+.dot1 {
+  grid-area: g;
+}
+
+.dot2 {
+  grid-area: a;
+}
+
+.dot3 {
+  grid-area: b;
+}
+
+.dot4 {
+  grid-area: c;
+}
+
+.dot5 {
+  grid-area: d;
+}
+
+.dot6 {
+  grid-area: e;
+}
+
+.dot7 {
+  grid-area: f;
+}
+
+/* Faces */
+.face1 .dot:not(.dot1) {
+  display: none;
+}
+
+.face2 .dot:not(.dot2):not(.dot3) {
+  display: none;
+}
+
+.face3 .dot:not(.dot1):not(.dot2):not(.dot3) {
+  display: none;
+}
+
+.face4 .dot:not(.dot2):not(.dot3):not(.dot4):not(.dot5) {
+  display: none;
+}
+
+.face5 .dot.dot6,
+.face5 .dot.dot7 {
+  display: none;
+}
+
+.face6 .dot.dot1 {
+  display: none;
+}
+
+.rolling .diceFace {
+  animation: rollAnimation 0.3s linear infinite;
+}
+
+@keyframes rollAnimation {
+  0% {
+    transform: rotate(0deg) scale(0.9);
+  }
+
+  25% {
+    transform: rotate(15deg) scale(0.95);
+  }
+
+  50% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  75% {
+    transform: rotate(-15deg) scale(0.95);
+  }
+
+  100% {
+    transform: rotate(0deg) scale(0.9);
+  }
+}
 
 .diceContainer.green {
   flex-direction: column;
