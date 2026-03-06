@@ -54,9 +54,17 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Server misconfiguration: missing Supabase config.', env: envStatus }, { status: 500 });
         }
 
+        // UPSERT (not INSERT) so that every move updates the SAME row for (room_id, game_type).
+        // INSERT creates a new row on every move — new rows trigger an INSERT postgres_changes event,
+        // NOT an UPDATE event, so the opponent's Realtime listener never fires.
+        // UPSERT ensures there is exactly one row per game session and every write
+        // fires an UPDATE event that all subscribed clients receive.
         const { data, error } = await supabaseAdmin
             .from('love_games')
-            .insert([{ room_id: roomId, game_type: gameType, game_state: gameState, updated_at: new Date().toISOString() }])
+            .upsert(
+                { room_id: roomId, game_type: gameType, game_state: gameState, updated_at: new Date().toISOString() },
+                { onConflict: 'room_id,game_type' }
+            )
             .select()
             .single();
 

@@ -21,36 +21,38 @@ const WINNING_COMBOS = [
     [0, 4, 8], [2, 4, 6]             // Diagonals
 ];
 
-export function XOX({ roomId, currentMember }: { roomId: string, currentMember: LoveRoomMember }) {
+export function XOX({ roomId, currentMember, members = [] }: { roomId: string, currentMember: LoveRoomMember, members?: LoveRoomMember[] }) {
     const [gameState, setGameState] = useState<XOXGameState>(INITIAL_STATE);
     const [myPlayer, setMyPlayer] = useState<XOXPlayer>(null);
-    const [members, setMembers] = useState<LoveRoomMember[]>([]);
     const [loading, setLoading] = useState(true);
     const lastStateRef = useRef<string | null>(null);
+    // Prevents re-running init when the parent re-renders with a new members array reference
+    const hasInitializedRef = useRef(false);
 
     // Win animation state
     const [showWinOverlay, setShowWinOverlay] = useState(false);
     const [winningLineCoords, setWinningLineCoords] = useState<string[] | null>(null);
 
     // Determine player assignment and load state
+    // members come from props (parent already fetches and sorts them)
     useEffect(() => {
+        // Guard: only init once per roomId. members array is a new reference on every
+        // parent re-render, so without this guard identity resets mid-game.
+        if (hasInitializedRef.current) return;
+        if (!roomId || members.length === 0) return;
+
         const init = async () => {
+            hasInitializedRef.current = true;
             try {
-                const [membersRes, stateRes] = await Promise.all([
-                    fetch(`/api/love-space/members?roomId=${roomId}`).then(res => res.json()),
-                    fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`).then(res => res.json())
-                ]);
+                const stateRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`).then(res => res.json());
 
-                const membersData = Array.isArray(membersRes?.members) ? membersRes.members : [];
-                const sortedMembers = membersData.sort((a: LoveRoomMember, b: LoveRoomMember) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime());
-                setMembers(sortedMembers as LoveRoomMember[]);
-
-                if (sortedMembers.length > 0 && sortedMembers[0].id === currentMember.id) {
+                // Assign identity based on join order (already sorted by parent)
+                if (members.length > 0 && members[0].id === currentMember.id) {
                     setMyPlayer('X');
-                } else if (sortedMembers.length > 1 && sortedMembers[1].id === currentMember.id) {
+                } else if (members.length > 1 && members[1].id === currentMember.id) {
                     setMyPlayer('O');
                 } else {
-                    setMyPlayer('X');
+                    setMyPlayer('X'); // fallback for solo testing
                 }
 
                 const lastGame = stateRes?.game;
@@ -62,13 +64,16 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
             } catch (err) {
                 console.error("Failed to init xox:", err);
                 setMyPlayer('X');
+                hasInitializedRef.current = false; // allow retry on error
             } finally {
                 setLoading(false);
             }
         };
 
-        if (roomId) init();
-    }, [roomId, currentMember.id]);
+        init();
+        // members.length: triggers once when parent first loads members.
+        // hasInitializedRef prevents any subsequent re-runs from parent re-renders.
+    }, [roomId, members.length, currentMember.id]);
 
     useEffect(() => {
         let isMounted = true;
@@ -79,7 +84,8 @@ export function XOX({ roomId, currentMember }: { roomId: string, currentMember: 
             .on(
                 'postgres_changes',
                 {
-                    event: 'UPDATE',
+                    // '*' catches both INSERT (first move) and UPDATE (subsequent moves).
+                    event: '*',
                     schema: 'public',
                     table: 'love_games',
                     filter: `room_id=eq.${roomId}`,

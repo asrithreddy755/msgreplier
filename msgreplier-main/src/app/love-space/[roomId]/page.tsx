@@ -82,6 +82,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const channelRef = useRef<RealtimeChannel | null>(null);
     const presenceCleanupRef = useRef(false);
     const presenceDisabledRef = useRef(false);
+    // Prevents parallel /members fetches during rapid reconnect bursts
+    const fetchingMembersRef = useRef(false);
     const hasSupabaseConfig = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
     // Monitor network quality
@@ -227,8 +229,9 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 setOtherMemberTab(otherTab);
                 setOnlineIds(online);
 
-                if (hasNewMembers) {
+                if (hasNewMembers && !fetchingMembersRef.current) {
                     console.log('[Presence] Unknown member detected, fetching members...');
+                    fetchingMembersRef.current = true;
                     fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' })
                         .then(res => res.json())
                         .then(data => {
@@ -239,7 +242,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 setMembers(sorted);
                             }
                         })
-                        .catch((err) => console.error('Member fetch error:', err));
+                        .catch((err) => console.error('Member fetch error:', err))
+                        .finally(() => { fetchingMembersRef.current = false; });
                 }
             })
             .on('presence', { event: 'join' }, ({ key, newPresences }) => {
@@ -250,8 +254,10 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     return next;
                 });
 
-                // Fetch members if unknown user joins
-                if (!membersRef.current.find(m => m.id === key)) {
+                // Fetch members if a genuinely new (not self) unknown user joins.
+                // Skipping key === currentMember.id prevents a self-fetch on every reconnect.
+                if (key !== currentMember.id && !membersRef.current.find(m => m.id === key) && !fetchingMembersRef.current) {
+                    fetchingMembersRef.current = true;
                     fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' })
                         .then(res => res.json())
                         .then(data => {
@@ -262,7 +268,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 setMembers(sorted);
                             }
                         })
-                        .catch(() => { });
+                        .catch(() => { })
+                        .finally(() => { fetchingMembersRef.current = false; });
                 }
 
                 if (key !== currentMember.id && newPresences && newPresences.length > 0) {
@@ -391,7 +398,9 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [roomId, supabase]);
+        // CRITICAL: Do NOT add `supabase` here — it's a stable module singleton.
+        // Adding it would cause this channel to be torn down and rebuilt on every render.
+    }, [roomId]);
 
     const otherMember = currentMember && members.length > 0
         ? members.find(m => m.id !== currentMember.id) || null
@@ -641,7 +650,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         </span>
                                     )}
                                 </button>
-                                <XOX roomId={roomId} currentMember={currentMember} />
+                                <XOX roomId={roomId} currentMember={currentMember} members={members} />
                             </div>
                         </TabsContent>
                         <TabsContent value="ludo" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">

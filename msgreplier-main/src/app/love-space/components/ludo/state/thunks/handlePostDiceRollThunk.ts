@@ -7,6 +7,7 @@ import {
 } from '../slices/playersSlice';
 import { type TPlayerColour } from '../../types';
 import type { AppDispatch, RootState } from '../store';
+import { store, startTurn, commitTurn } from '../store';
 import { areCoordsEqual } from '../../game/coords/logic';
 import { changeTurnThunk } from './changeTurnThunk';
 import type { useMoveAndCaptureToken } from '../../hooks/useMoveAndCaptureToken';
@@ -24,6 +25,11 @@ export const handlePostDiceRollThunk = (
     getState: () => RootState
   ): Promise<{ shouldContinue: boolean; moveData: TMoveData | null } | null> => {
     if (getState().players.isGameEnded) return null;
+
+    // Mute all intermediate Redux writes for the duration of this turn.
+    // commitTurn() will unmute and fire exactly ONE DB write when the turn fully resolves.
+    startTurn();
+
     if (diceNumber === 6) dispatch(incrementNumberOfConsecutiveSix(colour));
     else dispatch(resetNumberOfConsecutiveSix(colour));
 
@@ -36,6 +42,7 @@ export const handlePostDiceRollThunk = (
       dispatch(resetNumberOfConsecutiveSix(colour));
       dispatch(deactivateAllTokens(colour));
       if (player.isBot) await sleep(500);
+      commitTurn(store);
       dispatch(changeTurnThunk(moveAndCapture));
       return { moveData: null, shouldContinue: false };
     }
@@ -56,15 +63,20 @@ export const handlePostDiceRollThunk = (
       const moveData = await moveAndCapture(movableTokens[0], diceNumber);
       if (!moveData) {
         if (player.isBot) await sleep(500);
-        dispatch(changeTurnThunk(moveAndCapture));
-        return { shouldContinue: false, moveData };
+        if (diceNumber !== 6) {
+          commitTurn(store);
+          dispatch(changeTurnThunk(moveAndCapture));
+        }
+        return { shouldContinue: diceNumber === 6, moveData };
       }
       const { hasTokenReachedHome, isCaptured, hasPlayerWon } = moveData;
       if (hasPlayerWon) {
+        commitTurn(store);
         dispatch(changeTurnThunk(moveAndCapture));
         return { shouldContinue: false, moveData: null };
       }
       if (!hasTokenReachedHome && !isCaptured && diceNumber !== 6 && !player.isBot) {
+        commitTurn(store);
         dispatch(changeTurnThunk(moveAndCapture));
         return { shouldContinue: false, moveData: null };
       }
@@ -72,9 +84,13 @@ export const handlePostDiceRollThunk = (
     }
     if (!isAnyTokenActiveOfColour(colour, players)) {
       if (player.isBot) await sleep(500);
-      dispatch(changeTurnThunk(moveAndCapture));
-      return { shouldContinue: false, moveData: null };
+      if (diceNumber !== 6) {
+        commitTurn(store);
+        dispatch(changeTurnThunk(moveAndCapture));
+      }
+      return { shouldContinue: diceNumber === 6, moveData: null };
     }
     return { shouldContinue: true, moveData: null };
   };
 };
+

@@ -53,6 +53,19 @@ const reducers = {
       (_, i) => i !== action.payload.randomIndex
     );
   },
+  // Atomically resolves a roll: stops the spinner AND sets the final number in one
+  // state update → one React render → Dice.tsx useEffect fires exactly once per roll.
+  resolveRoll: (
+    state: TDiceState,
+    action: PayloadAction<{ colour: TPlayerColour; randomIndex: number }>
+  ) => {
+    const dice = getDice(state, action.payload.colour);
+    dice.isPlaceholderShowing = false;
+    dice.diceNumber = state.rollBag[action.payload.colour][action.payload.randomIndex];
+    state.rollBag[action.payload.colour] = state.rollBag[action.payload.colour].filter(
+      (_, i) => i !== action.payload.randomIndex
+    );
+  },
   renewRollBag: (state: TDiceState, action: PayloadAction<TPlayerColour>) => {
     state.rollBag[action.payload] = generateRollBag();
   },
@@ -69,6 +82,7 @@ export const {
   registerDice,
   setDiceNumber,
   setIsPlaceholderShowing,
+  resolveRoll,
   renewRollBag,
   clearDiceState,
 } = diceSlice.actions;

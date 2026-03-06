@@ -42,11 +42,31 @@ const rootReducer = (state: any, action: any) => {
 let syncCallback: ((state: any) => void) | null = null;
 export const setSyncCallback = (cb: (state: any) => void) => { syncCallback = cb; };
 
-const syncMiddleware = (store: any) => (next: any) => (action: any) => {
+// --- Explicit Commit Model ---
+// Instead of maintaining a growing exclusion list of action types, we use a turn-in-progress
+// flag. While a turn is active, all Redux actions are muted from triggering DB writes.
+// When the turn fully resolves (token landed, turn changed), commitTurn() is called ONCE to
+// flush exactly one DB write with the final authoritative state.
+
+let isTurnInProgress = false;
+
+/** Call at the start of every dice roll to suppress all intermediate DB writes. */
+export const startTurn = () => { isTurnInProgress = true; };
+
+/**
+ * Call exactly once when a turn fully resolves (changeTurnThunk, markTokenAsReachedHome, etc.).
+ * Unmutes the middleware and immediately fires syncCallback with the current state.
+ */
+export const commitTurn = (storeInstance: typeof store) => {
+  isTurnInProgress = false;
+  if (syncCallback) syncCallback(storeInstance.getState());
+};
+
+const syncMiddleware = (storeInstance: any) => (next: any) => (action: any) => {
   const result = next(action);
-  const type = action.type;
-  if (!type.includes('HYDRATE') && !type.includes('board/resizeBoard')) {
-    if (syncCallback) syncCallback(store.getState());
+  // Only write to DB when no turn is in progress AND it's not a hydration action
+  if (!isTurnInProgress && !action.type.includes('HYDRATE')) {
+    if (syncCallback) syncCallback(storeInstance.getState());
   }
   return result;
 };
