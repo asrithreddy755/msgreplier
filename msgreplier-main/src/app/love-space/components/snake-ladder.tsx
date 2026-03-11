@@ -29,6 +29,7 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
     const lastStateRef = useRef<string | null>(null);
     const pendingStateRef = useRef<SnakeLadderState | null>(null);
     const isAnimatingRef = useRef(false);
+    const hasInitializedRef = useRef(false);
 
     const [visualP1, setVisualP1] = useState(1);
     const [visualP2, setVisualP2] = useState(1);
@@ -110,6 +111,8 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
 
     useEffect(() => {
         const init = async () => {
+            if (hasInitializedRef.current) return;
+            hasInitializedRef.current = true;
             try {
                 const stateRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=snake`).then(res => res.json());
 
@@ -122,6 +125,7 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
                 }
             } catch (err) {
                 console.error("Failed to init snake ladder:", err);
+                hasInitializedRef.current = false;
             } finally {
                 setLoading(false);
             }
@@ -131,7 +135,7 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
             init();
         }
 
-    }, [roomId, members, applyRemoteState]);
+    }, [roomId, members.length, applyRemoteState]);
 
     // Set initial turn when members load
     useEffect(() => {

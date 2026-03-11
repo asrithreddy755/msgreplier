@@ -63,8 +63,8 @@ function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
     let interval: ReturnType<typeof setInterval>;
     if (isPlaceholderShowing) {
       interval = setInterval(() => {
-        setInternalDiceNum((prev) => (prev % 6) + 1);
-      }, 60);
+        setInternalDiceNum(Math.floor(Math.random() * 6) + 1);
+      }, 80);
     } else {
       setInternalDiceNum(diceNumber || 1);
     }

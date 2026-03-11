@@ -23,6 +23,11 @@ export function generateRollBag(): number[] {
   const diceNumbers = Array(36)
     .fill(null)
     .map((_, i) => (i % 6) + 1);
+  // Fisher-Yates shuffle so rolls are not sequential
+  for (let i = diceNumbers.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [diceNumbers[i], diceNumbers[j]] = [diceNumbers[j], diceNumbers[i]];
+  }
   return diceNumbers;
 }
 
@@ -66,6 +71,14 @@ const reducers = {
       (_, i) => i !== action.payload.randomIndex
     );
   },
+  resolveBroadcastRoll: (
+    state: TDiceState,
+    action: PayloadAction<{ colour: TPlayerColour; diceNumber: number }>
+  ) => {
+    const dice = getDice(state, action.payload.colour);
+    dice.isPlaceholderShowing = false;
+    dice.diceNumber = action.payload.diceNumber;
+  },
   renewRollBag: (state: TDiceState, action: PayloadAction<TPlayerColour>) => {
     state.rollBag[action.payload] = generateRollBag();
   },
@@ -83,6 +96,7 @@ export const {
   setDiceNumber,
   setIsPlaceholderShowing,
   resolveRoll,
+  resolveBroadcastRoll,
   renewRollBag,
   clearDiceState,
 } = diceSlice.actions;

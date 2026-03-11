@@ -85,15 +85,18 @@ function Game({ initData, myColour }: Props) {
   const handleExitBtnClick = () => router.push('/');
 
   return (
-    <div className="relative w-full max-w-[600px] mx-auto flex flex-col items-center justify-center gap-4 py-4" style={{ '--board-tile-size': `${boardTileSize}px` } as React.CSSProperties}>
+    <div className="relative w-full h-full max-w-[600px] mx-auto flex flex-col items-center justify-center p-2 sm:p-4 gap-2" style={{ '--board-tile-size': `${boardTileSize}px` } as React.CSSProperties}>
 
       {/* Board Container */}
-      <div className="relative w-full aspect-square bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-emerald-100 dark:border-emerald-900/50 overflow-hidden">
+      <div
+        className="relative bg-white dark:bg-slate-900 rounded-[10px] md:rounded-xl shadow-lg border border-emerald-100 dark:border-emerald-900/50 overflow-hidden shrink-0"
+        style={{ width: '100%', maxWidth: 'min(100%, 55vh)', aspectRatio: '1/1' }}
+      >
         <Board myColour={myColour} />
       </div>
 
       {/* The Locked-in Dice Container */}
-      <div className="mt-2 sm:mt-4 p-4 min-w-[200px] w-full bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 z-10 flex flex-wrap justify-center items-center gap-4">
+      <div className="mt-2 sm:mt-4 p-3 sm:p-4 min-w-[200px] w-full bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 z-10 flex flex-wrap justify-center items-center gap-4 shrink-0">
         {dice.map((d: any) => (
           <Dice
             colour={d.colour}

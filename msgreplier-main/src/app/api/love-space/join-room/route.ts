@@ -28,6 +28,17 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Room not found or expired' }, { status: 404 });
         }
 
+        // --- 10 MINUTE EXPIRATION CHECK ---
+        const roomAgeMs = Date.now() - new Date(room.created_at).getTime();
+        const tenMinutesMs = 10 * 60 * 1000;
+
+        if (roomAgeMs > tenMinutesMs && (!existingMembers || existingMembers.length < 2)) {
+            // Room is >10 mins old and empty. Terminate it.
+            await supabaseAdmin.from('love_rooms').delete().eq('id', roomId);
+            return NextResponse.json({ error: 'This room has expired due to inactivity.' }, { status: 404 });
+        }
+        // ----------------------------------
+
         if (existingMembers && existingMembers.length >= 2) {
             return NextResponse.json({ error: 'Room is full! Only 2 people allowed.' }, { status: 403 });
         }

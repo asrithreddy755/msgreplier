@@ -86,6 +86,7 @@ function Board({ myColour }: { myColour: TPlayerColour }) {
         p.tokens.map((t) => (
           <Token
             colour={t.colour}
+            myColour={myColour}
             id={t.id}
             tokenClickData={tokenClickData}
             key={getTokenDOMId(t.colour, t.id)}

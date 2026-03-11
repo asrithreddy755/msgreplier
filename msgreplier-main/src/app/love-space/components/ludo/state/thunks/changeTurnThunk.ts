@@ -2,6 +2,7 @@
 import { FORWARD_TOKEN_TRANSITION_TIME } from '../../game/tokens/constants';
 import { selectBestTokenForBot } from '../../game/bot/selectBestTokenForBot';
 import type { AppDispatch, RootState } from '../store';
+import { store, startTurn, commitTurn } from '../store';
 import type { useMoveAndCaptureToken } from '../../hooks/useMoveAndCaptureToken';
 import { setTokenTransitionTime } from '../../utils/setTokenTransitionTime';
 import { changeTurn, deactivateAllTokens } from '../slices/playersSlice';
@@ -13,7 +14,12 @@ export function changeTurnThunk(moveAndCapture: ReturnType<typeof useMoveAndCapt
   return (dispatch: AppDispatch, getState: () => RootState) => {
     if (getState().players.isGameEnded) return;
 
+    // Mute middleware during the turn-change so we get exactly ONE db write
+    // that contains the new currentPlayerColour (not the old one).
+    startTurn();
     dispatch(changeTurn());
+    commitTurn(store);
+
     const { currentPlayerColour, players } = getState().players;
 
     const { colour, isBot } = players.find((p) => p.colour === currentPlayerColour) ?? {};

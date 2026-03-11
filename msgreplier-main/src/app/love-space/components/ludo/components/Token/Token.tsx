@@ -5,6 +5,7 @@ import { type TPlayer, type TPlayerColour, type TTokenClickData } from '../../ty
 import { type TToken } from '../../types';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../state/store';
+import { store, commitTurn } from '../../state/store';
 import { TokenIcon } from './TokenIcon';
 import { useCoordsToPosition } from '../../hooks/useCoordsToPosition';
 import { setTokenTransitionTime } from '../../utils/setTokenTransitionTime';
@@ -19,11 +20,12 @@ import { getTokenDOMId } from '../../game/tokens/logic';
 
 type Props = {
   colour: TPlayerColour;
+  myColour: TPlayerColour;
   id: number;
   tokenClickData: TTokenClickData | null;
 };
 
-function Token({ colour, id, tokenClickData }: Props) {
+function Token({ colour, myColour, id, tokenClickData }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const { tokenHeight, tokenWidth } = useSelector((state: RootState) => state.board);
   const { players } = useSelector((state: RootState) => state.players);
@@ -53,6 +55,9 @@ function Token({ colour, id, tokenClickData }: Props) {
     dispatch(deactivateAllTokens(colour));
     setTimeout(() => {
       dispatch(setIsAnyTokenMoving(false));
+      // Unlock means the token started moving out of home — commit the unlock state
+      // so the opponent's board updates. The player gets to roll again (dice=6 rule).
+      commitTurn(store);
     }, FORWARD_TOKEN_TRANSITION_TIME);
   };
 
@@ -60,12 +65,22 @@ function Token({ colour, id, tokenClickData }: Props) {
     if (!isActive || diceNumber === -1 || !diceNumber) return;
 
     const moveData = await moveAndCapture(token, diceNumber);
-    if (!moveData) return;
+    dispatch(deactivateAllTokens(colour));
+    if (!moveData) {
+      // Token couldn't move — changeTurnThunk will commit with the new currentPlayerColour
+      dispatch(changeTurnThunk(moveAndCapture));
+      return;
+    }
     const { hasTokenReachedHome, isCaptured, hasPlayerWon } = moveData;
-    if (hasPlayerWon) return dispatch(changeTurnThunk(moveAndCapture));
+    if (hasPlayerWon) {
+      return dispatch(changeTurnThunk(moveAndCapture));
+    }
     if ((diceNumber !== 6 || numberOfConsecutiveSix >= 3) && !isCaptured && !hasTokenReachedHome) {
       return dispatch(changeTurnThunk(moveAndCapture));
     }
+    // If the player gets another roll (captured, reached home, or rolled 6),
+    // commit the intermediate state so the opponent's board stays in sync.
+    commitTurn(store);
   }, [diceNumber, dispatch, isActive, moveAndCapture, numberOfConsecutiveSix, token]);
 
   useEffect(() => {
@@ -80,6 +95,7 @@ function Token({ colour, id, tokenClickData }: Props) {
 
   const handleTokenClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
     if (e.detail === 0) e.stopPropagation();
+    if (myColour !== colour) return;
     if (isLocked && isActive && diceNumber !== -1 && diceNumber) {
       unlock();
       tokenElRef.current?.blur?.();

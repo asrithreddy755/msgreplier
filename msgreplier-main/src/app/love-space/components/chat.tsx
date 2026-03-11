@@ -23,10 +23,13 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
     useEffect(() => { pendingIdsRef.current = pendingIds; }, [pendingIds]);
 
 
+    const hasInitializedRef = useRef(false);
+
     // Fetch initial messages and stream updates
     useEffect(() => {
         let isMounted = true;
         let channel: ReturnType<typeof supabase.channel> | null = null;
+        if (hasInitializedRef.current) return;
 
         const fetchInitialMessages = async () => {
             try {
@@ -43,6 +46,8 @@ export function Chat({ roomId, currentMember, onNewMessage }: { roomId: string, 
                 }
             } catch {
                 // Ignore transient network errors
+            } finally {
+                hasInitializedRef.current = true;
             }
         };
 

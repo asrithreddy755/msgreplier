@@ -142,6 +142,10 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
         };
     }, [roomId]);
 
+    // Keep a ref to myColour to avoid closure staleness
+    const myColourRef = useRef<TPlayerColour | null>(null);
+    useEffect(() => { myColourRef.current = myColour; }, [myColour]);
+
     // ─── Broadcast Channel: transient dice + token animation sync ───────────
     // This sends animation signals peer-to-peer via WebSocket with ZERO DB writes.
     // It lets the opponent see dice spinning and token movement in real-time,
@@ -159,7 +163,11 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
             })
             .on('broadcast', { event: 'dice_resolved' }, ({ payload }) => {
                 if (!payload || payload.senderId === currentMemberId) return;
-                store.dispatch(setIsPlaceholderShowing({ colour: payload.colour, isPlaceholderShowing: false }));
+                // Dispatch both to turn off the spinner AND to explicitly set the incoming dice number!
+                store.dispatch({
+                    type: 'dice/resolveBroadcastRoll',
+                    payload: { colour: payload.colour, diceNumber: payload.diceNumber }
+                });
             })
             // Receive: opponent's token moved one step — show the movement animation locally
             .on('broadcast', { event: 'token_moving' }, ({ payload }) => {
@@ -181,6 +189,7 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
 
         const unsubscribeStore = store.subscribe(() => {
             const state = store.getState();
+            const currentMyColour = myColourRef.current;
 
             // ── Dice animation events ──────────────────────────────────────────
             if (state.dice?.dice) {
@@ -188,19 +197,22 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
                     const wasSpinning = prevSpinnerState[dice.colour] ?? false;
                     const isSpinning = dice.isPlaceholderShowing ?? false;
 
-                    if (isSpinning && !wasSpinning) {
-                        broadcastChannel.send({
-                            type: 'broadcast',
-                            event: 'dice_start',
-                            payload: { colour: dice.colour, senderId: currentMemberId },
-                        }).catch(() => { });
-                    }
-                    if (!isSpinning && wasSpinning) {
-                        broadcastChannel.send({
-                            type: 'broadcast',
-                            event: 'dice_resolved',
-                            payload: { colour: dice.colour, diceNumber: dice.diceNumber, senderId: currentMemberId },
-                        }).catch(() => { });
+                    // ONLY broadcast state changes if we are the owner of this colour
+                    if (dice.colour === currentMyColour) {
+                        if (isSpinning && !wasSpinning) {
+                            broadcastChannel.send({
+                                type: 'broadcast',
+                                event: 'dice_start',
+                                payload: { colour: dice.colour, senderId: currentMemberId },
+                            }).catch(() => { });
+                        }
+                        if (!isSpinning && wasSpinning) {
+                            broadcastChannel.send({
+                                type: 'broadcast',
+                                event: 'dice_resolved',
+                                payload: { colour: dice.colour, diceNumber: dice.diceNumber, senderId: currentMemberId },
+                            }).catch(() => { });
+                        }
                     }
                     prevSpinnerState[dice.colour] = isSpinning;
                 }
@@ -211,6 +223,9 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
             // token_moving events during the initial HYDRATE or idle state changes.
             if (state.players?.isAnyTokenMoving && state.players?.players) {
                 for (const player of state.players.players) {
+                    // ONLY broadcast moves for our own tokens
+                    if (player.colour !== currentMyColour) continue;
+
                     for (const token of player.tokens) {
                         const key = `${player.colour}_${token.id}`;
                         const prev = prevTokenCoords[key];
@@ -241,7 +256,7 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
 
     return (
         <Provider store={store}>
-            <div className="w-full h-full relative flex items-center justify-center ludo-wrapper">
+            <div className="absolute inset-0 p-2 sm:p-4 flex items-center justify-center ludo-wrapper overflow-y-auto overflow-x-hidden">
                 <Game initData={initData} myColour={myColour || 'blue'} />
                 {/* Skeleton overlay: only dims the dice panel while the initial fetch is in-flight */}
                 {loading && (

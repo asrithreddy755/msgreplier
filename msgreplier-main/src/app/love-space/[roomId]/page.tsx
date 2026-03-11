@@ -230,20 +230,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 setOnlineIds(online);
 
                 if (hasNewMembers && !fetchingMembersRef.current) {
-                    console.log('[Presence] Unknown member detected, fetching members...');
-                    fetchingMembersRef.current = true;
-                    fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (isMounted && Array.isArray(data?.members)) {
-                                const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
-                                    new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
-                                );
-                                setMembers(sorted);
-                            }
-                        })
-                        .catch((err) => console.error('Member fetch error:', err))
-                        .finally(() => { fetchingMembersRef.current = false; });
+                    console.log('[Presence] Unknown member detected, waiting for postgres_changes...');
                 }
             })
             .on('presence', { event: 'join' }, ({ key, newPresences }) => {
@@ -254,22 +241,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     return next;
                 });
 
-                // Fetch members if a genuinely new (not self) unknown user joins.
-                // Skipping key === currentMember.id prevents a self-fetch on every reconnect.
                 if (key !== currentMember.id && !membersRef.current.find(m => m.id === key) && !fetchingMembersRef.current) {
-                    fetchingMembersRef.current = true;
-                    fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (isMounted && Array.isArray(data?.members)) {
-                                const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
-                                    new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
-                                );
-                                setMembers(sorted);
-                            }
-                        })
-                        .catch(() => { })
-                        .finally(() => { fetchingMembersRef.current = false; });
+                    // Let postgres_changes handle the member fetch.
                 }
 
                 if (key !== currentMember.id && newPresences && newPresences.length > 0) {
@@ -401,6 +374,33 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         // CRITICAL: Do NOT add `supabase` here — it's a stable module singleton.
         // Adding it would cause this channel to be torn down and rebuilt on every render.
     }, [roomId]);
+
+    // Live Frontend Expiration Sweeper
+    // If 10 minutes pass and the room is still empty, terminate the UI for the creator.
+    useEffect(() => {
+        if (!room || !currentMember) return;
+
+        const roomCreatedTime = new Date(room.created_at).getTime();
+        const tenMinutesMs = 10 * 60 * 1000;
+        const now = Date.now();
+        const timeRemaining = (roomCreatedTime + tenMinutesMs) - now;
+
+        if (timeRemaining <= 0) {
+            // Already expired
+            if (membersRef.current.length < 2) {
+                setError("This room has expired due to 10 minutes of inactivity.");
+            }
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            if (membersRef.current.length < 2) {
+                setError("This room has expired due to 10 minutes of inactivity.");
+            }
+        }, timeRemaining);
+
+        return () => clearTimeout(timeout);
+    }, [room, currentMember]);
 
     const otherMember = currentMember && members.length > 0
         ? members.find(m => m.id !== currentMember.id) || null

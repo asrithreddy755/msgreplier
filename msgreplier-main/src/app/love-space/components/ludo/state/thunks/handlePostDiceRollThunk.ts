@@ -27,7 +27,7 @@ export const handlePostDiceRollThunk = (
     if (getState().players.isGameEnded) return null;
 
     // Mute all intermediate Redux writes for the duration of this turn.
-    // commitTurn() will unmute and fire exactly ONE DB write when the turn fully resolves.
+    // changeTurnThunk() will do its own startTurn/commitTurn with the final authoritative state.
     startTurn();
 
     if (diceNumber === 6) dispatch(incrementNumberOfConsecutiveSix(colour));
@@ -42,7 +42,7 @@ export const handlePostDiceRollThunk = (
       dispatch(resetNumberOfConsecutiveSix(colour));
       dispatch(deactivateAllTokens(colour));
       if (player.isBot) await sleep(500);
-      commitTurn(store);
+      // changeTurnThunk handles its own commit with the new currentPlayerColour
       dispatch(changeTurnThunk(moveAndCapture));
       return { moveData: null, shouldContinue: false };
     }
@@ -50,7 +50,10 @@ export const handlePostDiceRollThunk = (
     const areUnlockableTokensPresent =
       diceNumber === 6 && player.tokens.some((t) => areCoordsEqual(t.coordinates, t.initialCoords));
 
-    if (areUnlockableTokensPresent) return { shouldContinue: true, moveData: null };
+    if (areUnlockableTokensPresent) {
+      commitTurn(store);
+      return { shouldContinue: true, moveData: null };
+    }
 
     const movableTokens = player.tokens.filter((t) => isTokenMovable(t, diceNumber));
 
@@ -61,35 +64,39 @@ export const handlePostDiceRollThunk = (
 
     if (areAllTokensInSameCoord) {
       const moveData = await moveAndCapture(movableTokens[0], diceNumber);
+      dispatch(deactivateAllTokens(colour));
       if (!moveData) {
         if (player.isBot) await sleep(500);
         if (diceNumber !== 6) {
-          commitTurn(store);
+          // changeTurnThunk handles commit atomically
           dispatch(changeTurnThunk(moveAndCapture));
+        } else {
+          commitTurn(store);
         }
         return { shouldContinue: diceNumber === 6, moveData };
       }
       const { hasTokenReachedHome, isCaptured, hasPlayerWon } = moveData;
       if (hasPlayerWon) {
-        commitTurn(store);
         dispatch(changeTurnThunk(moveAndCapture));
         return { shouldContinue: false, moveData: null };
       }
       if (!hasTokenReachedHome && !isCaptured && diceNumber !== 6 && !player.isBot) {
-        commitTurn(store);
         dispatch(changeTurnThunk(moveAndCapture));
         return { shouldContinue: false, moveData: null };
       }
+      commitTurn(store);
       return { shouldContinue: true, moveData };
     }
     if (!isAnyTokenActiveOfColour(colour, players)) {
       if (player.isBot) await sleep(500);
       if (diceNumber !== 6) {
-        commitTurn(store);
         dispatch(changeTurnThunk(moveAndCapture));
+      } else {
+        commitTurn(store);
       }
       return { shouldContinue: diceNumber === 6, moveData: null };
     }
+    commitTurn(store);
     return { shouldContinue: true, moveData: null };
   };
 };

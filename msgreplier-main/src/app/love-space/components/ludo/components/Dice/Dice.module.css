@@ -136,29 +136,16 @@
 }
 
 .rolling .diceFace {
-  animation: rollAnimation 0.3s linear infinite;
+  animation: rollAnimation 0.15s linear infinite;
 }
 
 @keyframes rollAnimation {
-  0% {
-    transform: rotate(0deg) scale(0.9);
-  }
-
-  25% {
-    transform: rotate(15deg) scale(0.95);
-  }
-
-  50% {
-    transform: rotate(0deg) scale(1);
-  }
-
-  75% {
-    transform: rotate(-15deg) scale(0.95);
-  }
-
-  100% {
-    transform: rotate(0deg) scale(0.9);
-  }
+  0%   { transform: rotate(-12deg) scale(0.88) translateX(-2px); }
+  20%  { transform: rotate(10deg)  scale(0.95) translateX(2px); }
+  40%  { transform: rotate(-8deg)  scale(0.90) translateX(-1px); }
+  60%  { transform: rotate(12deg)  scale(0.96) translateX(2px); }
+  80%  { transform: rotate(-6deg)  scale(0.92) translateX(-2px); }
+  100% { transform: rotate(0deg)   scale(1.00) translateX(0px); }
 }
 
 .diceContainer.green {

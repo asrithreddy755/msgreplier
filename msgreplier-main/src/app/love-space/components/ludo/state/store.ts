@@ -15,12 +15,19 @@ const rootReducer = (state: any, action: any) => {
   if (action.type === 'HYDRATE_GAME_STATE') {
     // Safely merge incoming remote state into existing structure
     // Ensure we don't sync 'isPlaceholderShowing' so we don't get stuck in a dice animation loop
-    const hydratedDice = action.payload.dice ? {
-      ...action.payload.dice,
-      dice: action.payload.dice.dice?.map((d: any) => {
+    const incomingDiceEntries = action.payload.dice?.dice;
+    // Never replace a populated local dice array with an empty one —
+    // that would blank out the dice panel when state is received before registration
+    const mergedDiceEntries = (incomingDiceEntries && incomingDiceEntries.length > 0)
+      ? incomingDiceEntries.map((d: any) => {
         const localDice = state.dice?.dice?.find((ld: any) => ld.colour === d.colour);
         return { ...d, isPlaceholderShowing: localDice ? localDice.isPlaceholderShowing : false };
-      }) || state.dice?.dice
+      })
+      : (state.dice?.dice ?? []);
+
+    const hydratedDice = action.payload.dice ? {
+      ...action.payload.dice,
+      dice: mergedDiceEntries,
     } : state.dice;
 
     const hydratedState = {
@@ -64,10 +71,8 @@ export const commitTurn = (storeInstance: typeof store) => {
 
 const syncMiddleware = (storeInstance: any) => (next: any) => (action: any) => {
   const result = next(action);
-  // Only write to DB when no turn is in progress AND it's not a hydration action
-  if (!isTurnInProgress && !action.type.includes('HYDRATE')) {
-    if (syncCallback) syncCallback(storeInstance.getState());
-  }
+  // Auto-sync was causing initialization actions in client 2 to overwrite the live game state.
+  // We now rely solely on explicit commitTurn calls to persist data to Supabase.
   return result;
 };
 
