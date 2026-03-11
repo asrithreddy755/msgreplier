@@ -4,43 +4,20 @@ export const TokenIcon = ({ className, style, "aria-hidden": ariaHidden }: React
     <svg
         viewBox="0 0 6.6145832 10.395"
         version="1.1"
+        preserveAspectRatio="xMidYMax meet"
         id="svg1"
         xmlns="http://www.w3.org/2000/svg"
         className={className}
         style={style}
         aria-hidden={ariaHidden}
     >
-        <defs id="defs1">
-            <filter
-                id="mask-powermask-path-effect8_inverse"
-                style={{ colorInterpolationFilters: 'sRGB' }}
-                x="-50"
-                y="-50"
-            >
-                <feColorMatrix
-                    id="mask-powermask-path-effect8_primitive1"
-                    values="1"
-                    type="saturate"
-                    result="fbSourceGraphic"
-                />
-                <feColorMatrix
-                    id="mask-powermask-path-effect8_primitive2"
-                    values="-1 0 0 0 1 0 -1 0 0 1 0 0 -1 0 1 0 0 0 1 0 "
-                    in="fbSourceGraphic"
-                />
-            </filter>
-        </defs>
         <g id="layer1">
             <path
                 style={{
-                    fill: '#c4c4c4',
+                    fill: '#ffffff',
                     fillOpacity: 1,
-                    stroke: '#000000',
-                    strokeWidth: 0.38,
-                    strokeLinecap: 'round',
-                    strokeLinejoin: 'round',
-                    strokeDasharray: 'none',
-                    paintOrder: 'stroke fill markers',
+                    stroke: 'none',
+                    strokeWidth: 0,
                 }}
                 d="M 3.1295321,9.7939401 C 2.2845619,7.9256536 0.53665551,4.006563 0.34551669,3.5517238 0.25691473,3.3408843 0.24716233,3.3064799 0.24143802,3.1845594 0.2337783,3.0214167 0.25899442,2.8256839 0.31977005,2.576529 0.56954314,1.5525634 1.340042,0.72049031 2.3435691,0.39099851 3.0819463,0.14856432 3.9021053,0.2005165 4.6055247,0.5342799 5.1265566,0.78150289 5.611332,1.2145903 5.905353,1.6955172 6.1696785,2.1278719 6.3254638,2.6280288 6.3598214,3.154614 l 0.00999,0.153118 -1.007614,2.2605618 C 4.3758389,7.7811692 3.7574616,9.1664313 3.4617027,9.8256991 c -0.0813,0.1812239 -0.1525362,0.3294989 -0.1583018,0.3294989 -0.00576,0 -0.084006,-0.1625664 -0.1738688,-0.3612579 z M 3.7162743,4.9228615 C 4.1095107,4.8293096 4.4159721,4.6598997 4.6928617,4.3830101 4.9306057,4.1452661 5.07272,3.9128522 5.1836267,3.5804128 5.3046516,3.2176431 5.3046516,2.75359 5.1836267,2.3908205 5.0722049,2.0568363 4.9295919,1.8231777 4.6936225,1.5879921 4.4598902,1.3550358 4.2018078,1.1962578 3.8988882,1.0990541 3.6743057,1.0269879 3.5970439,1.0166493 3.2875286,1.0172472 c -0.2500273,4.83e-4 -0.31492,0.00586 -0.4358082,0.036107 -0.69382,0.1736 -1.2139033,0.6495791 -1.4368359,1.3149885 -0.075602,0.2256569 -0.1009956,0.419225 -0.091394,0.6966715 0.011823,0.341638 0.093487,0.63435 0.2525236,0.9051298 0.2969749,0.5056371 0.7534792,0.8335569 1.3383471,0.9613714 0.121772,0.026612 0.1840274,0.030098 0.4208061,0.023568 0.1689575,-0.00466 0.3183516,-0.017293 0.381107,-0.032222 z"
                 id="path2"
@@ -49,18 +26,34 @@ export const TokenIcon = ({ className, style, "aria-hidden": ariaHidden }: React
                 style={{
                     fill: 'var(--fill-colour)',
                     fillOpacity: 1,
-                    stroke: '#000000',
-                    strokeWidth: 0.36,
-                    strokeLinecap: 'round',
-                    strokeLinejoin: 'round',
-                    strokeDasharray: 'none',
-                    strokeOpacity: 1,
-                    paintOrder: 'stroke fill markers',
+                    stroke: 'none',
                 }}
                 id="path142"
                 cx="3.2954681"
-                cy="2.9856167"
-                r="1.9285219"
+                cy="2.9856"
+                r="1.9"
+            />
+            {/* Inner shadow simulator stroke for depth inside the colored circle */}
+            <circle
+                style={{
+                    fill: 'none',
+                    stroke: 'rgba(0,0,0,0.15)',
+                    strokeWidth: 0.15,
+                }}
+                cx="3.2954681"
+                cy="2.9856"
+                r="1.825"
+            />
+            {/* Outer edge inside stroke to separate white from circle a bit */}
+            <circle
+                style={{
+                    fill: 'none',
+                    stroke: 'rgba(0,0,0,0.1)',
+                    strokeWidth: 0.1,
+                }}
+                cx="3.2954681"
+                cy="2.9856"
+                r="1.95"
             />
         </g>
     </svg>

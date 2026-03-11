@@ -32,11 +32,7 @@ const rootReducer = (state: any, action: any) => {
 
     const hydratedState = {
       players: action.payload.players || state.players,
-      board: {
-        ...(action.payload.board || state.board),
-        boardSideLength: state?.board?.boardSideLength || 0,
-        boardTileSize: state?.board?.boardTileSize || 0
-      },
+      board: state.board, // Purely local responsive dimensions, never sync from remote
       dice: hydratedDice,
       session: action.payload.session || state.session,
     };

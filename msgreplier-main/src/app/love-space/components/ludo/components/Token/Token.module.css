@@ -32,13 +32,19 @@
   display: block;
   width: 100%;
   height: 100%;
-  transform: translate3d(0, calc(var(--token-height) * -0.15), 0);
+  filter: drop-shadow(2px 3px 3px rgba(0, 0, 0, 0.45));
+  /* Positioning the pin so its tip aligns with the tile center */
+  transform: translate3d(0, calc(var(--token-height) * -0.3), 0);
 }
 
 @media (max-width: 640px) {
+  .token {
+    transform-origin: center bottom;
+  }
   .svg {
-    /* Adjust vertical alignment for mobile so the token sits correctly on the tile */
-    transform: translate3d(0, calc(var(--token-height) * -0.25), 0);
+    /* Precise positioning for mobile */
+    transform: translate3d(0, -30%, 0);
+    filter: drop-shadow(1.5px 2px 2px rgba(0, 0, 0, 0.5));
   }
 }
 
@@ -46,7 +52,7 @@
   transition:
     transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
     filter 300ms ease;
-  transform: translate3d(0, -12px, 0) scale(1.1);
+  transform: translate3d(0, calc(var(--token-height) * -0.4), 0) scale(1.1);
   filter: drop-shadow(0 15px 6px rgba(0, 0, 0, 0.4));
 }
 

@@ -26,13 +26,13 @@ function Board({ myColour }: { myColour: TPlayerColour }) {
     if (!boardNode) throw new Error(ERRORS.boardDoesNotExist());
     if (!resizeObserverRef.current) {
       resizeObserverRef.current = new ResizeObserver(() => {
-        const boardSideLength = boardNode.getBoundingClientRect().width;
+        const boardSideLength = Math.round(boardNode.getBoundingClientRect().width);
         dispatch(resizeBoard(boardSideLength));
       });
     }
     const resizeObserver = resizeObserverRef.current;
     // Set initial sizes immediately to ensure tokens are placed correctly before the first resize event
-    dispatch(resizeBoard(boardNode.getBoundingClientRect().width));
+    dispatch(resizeBoard(Math.round(boardNode.getBoundingClientRect().width)));
     resizeObserver.observe(boardNode);
     return () => {
       resizeObserver.unobserve(boardNode);

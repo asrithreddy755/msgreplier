@@ -15,15 +15,15 @@ export const initialState: TBoardState = {
 };
 
 export const NUMBER_OF_BLOCKS_IN_ONE_ROW = 15;
-export const TOKEN_WIDTH_HEIGHT_RATIO = 0.625;
+export const TOKEN_WIDTH_HEIGHT_RATIO = 0.85;
 
 const reducers = {
   resizeBoard: (state: TBoardState, action: PayloadAction<number>) => {
     state.boardSideLength = action.payload;
     state.boardTileSize = action.payload / NUMBER_OF_BLOCKS_IN_ONE_ROW;
-    state.tokenHeight = (action.payload / NUMBER_OF_BLOCKS_IN_ONE_ROW) * 0.8;
+    state.tokenHeight = (action.payload / NUMBER_OF_BLOCKS_IN_ONE_ROW) * 1.2;
     state.tokenWidth =
-      (action.payload / NUMBER_OF_BLOCKS_IN_ONE_ROW) * 0.8 * TOKEN_WIDTH_HEIGHT_RATIO;
+      (action.payload / NUMBER_OF_BLOCKS_IN_ONE_ROW) * 1.2 * TOKEN_WIDTH_HEIGHT_RATIO;
   },
   clearBoardState: () => structuredClone(initialState),
 };

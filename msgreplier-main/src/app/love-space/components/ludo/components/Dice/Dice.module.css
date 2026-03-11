@@ -1,19 +1,17 @@
 .diceContainer {
-  --dice-scale-factor: 1.25;
-  --dice-margin: calc(var(--board-tile-size) * 0.25);
-  --player-name-padding: calc(var(--board-tile-size) * 0.3);
-  padding: calc(var(--board-tile-size) * 0.35);
+  --dice-size: 64px;
+  padding: 12px;
   margin: 0;
   display: flex;
   align-items: center;
   flex-direction: column;
-  gap: calc(var(--board-tile-size) * 0.25);
-  border-radius: calc(var(--board-tile-size) * 0.35);
+  gap: 8px;
+  border-radius: 12px;
   background: #ffffff;
   border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 calc(var(--board-tile-size) * 0.08) calc(var(--board-tile-size) * 0.18) rgba(15, 23, 42, 0.12);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
   width: max-content;
-  min-width: calc(var(--board-tile-size) * 3.8);
+  min-width: 110px;
 }
 
 .diceContainer * {
@@ -23,12 +21,12 @@
 .dice {
   background: radial-gradient(ellipse at 30% 30%, #ffffff, #f3f3f3 60%, #ececec);
   border: 2px solid color-mix(in srgb, var(--player-colour) 70%, #ffffff);
-  height: calc(var(--board-tile-size) * var(--dice-scale-factor));
-  width: calc(var(--board-tile-size) * var(--dice-scale-factor));
+  height: var(--dice-size);
+  width: var(--dice-size);
   flex-shrink: 0;
   aspect-ratio: 1 / 1;
-  border-radius: calc(var(--board-tile-size) * 0.22);
-  padding: calc(var(--board-tile-size) * 0.13);
+  border-radius: 10px;
+  padding: 6px;
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -37,8 +35,8 @@
   opacity: 0.5;
   filter: grayscale(0.5);
   box-shadow:
-    0 calc(var(--board-tile-size) * 0.04) calc(var(--board-tile-size) * 0.09) rgba(0, 0, 0, 0.15),
-    inset 0 calc(var(--board-tile-size) * 0.02) calc(var(--board-tile-size) * 0.04) rgba(0, 0, 0, 0.06);
+    0 2px 5px rgba(0, 0, 0, 0.15),
+    inset 0 1px 2px rgba(0, 0, 0, 0.06);
   transition: transform 150ms ease, box-shadow 150ms ease, background 200ms ease, opacity 200ms ease;
 }
 
@@ -48,14 +46,14 @@
   filter: grayscale(0);
   animation: pulse 1s ease-in-out infinite;
   box-shadow:
-    0 calc(var(--board-tile-size) * 0.05) calc(var(--board-tile-size) * 0.12) rgba(0, 0, 0, 0.2),
-    0 0 calc(var(--board-tile-size) * 0.12) calc(var(--board-tile-size) * 0.02) color-mix(in srgb, var(--player-colour) 40%, transparent);
+    0 3px 8px rgba(0, 0, 0, 0.2),
+    0 0 8px 1px color-mix(in srgb, var(--player-colour) 40%, transparent);
 }
 
 .diceFace {
   width: 100%;
   height: 100%;
-  border-radius: calc(var(--board-tile-size) * 0.15);
+  border-radius: 6px;
   background: white;
   display: grid;
   padding: 15%;
@@ -157,13 +155,13 @@
 }
 
 .playerName {
-  padding: calc(var(--board-tile-size) * 0.2) var(--player-name-padding);
+  padding: 4px 10px;
   font-weight: 700;
-  font-size: calc(var(--board-tile-size) * 0.42);
+  font-size: 14px;
   cursor: default;
-  border-radius: calc(var(--board-tile-size) * 0.4);
+  border-radius: 12px;
   width: 100%;
-  max-width: calc(var(--board-tile-size) * 5);
+  max-width: 120px;
   text-align: center;
   background: color-mix(in srgb, var(--player-colour) 16%, #ffffff);
   color: color-mix(in srgb, var(--player-colour) 70%, #0f172a);
@@ -178,35 +176,36 @@
 
 @media (max-width: 640px) {
   .diceContainer {
-    padding: calc(var(--board-tile-size) * 0.25);
-    border-radius: calc(var(--board-tile-size) * 0.5);
-    min-width: calc(var(--board-tile-size) * 3.4);
+    --dice-size: 52px;
+    padding: 10px;
+    border-radius: 10px;
+    min-width: 90px;
   }
 
   .dice {
-    height: calc(var(--board-tile-size) * var(--dice-scale-factor));
-    width: calc(var(--board-tile-size) * var(--dice-scale-factor));
+    height: var(--dice-size);
+    width: var(--dice-size);
   }
 
   .playerName {
-    font-size: calc(var(--board-tile-size) * 0.38);
-    padding: calc(var(--board-tile-size) * 0.18) calc(var(--board-tile-size) * 0.24);
+    font-size: 12px;
+    padding: 3px 8px;
   }
 }
 
 @keyframes pulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 calc(var(--board-tile-size) / 8) calc(var(--board-tile-size) / 40) var(--player-colour);
+    box-shadow: 0 0 4px 1px var(--player-colour);
   }
 
   50% {
     transform: scale(1.07);
-    box-shadow: 0 0 calc(var(--board-tile-size) / 4) calc(var(--board-tile-size) / 10) var(--player-colour);
+    box-shadow: 0 0 10px 3px var(--player-colour);
   }
 
   100% {
     transform: scale(1);
-    box-shadow: 0 0 calc(var(--board-tile-size) / 8) calc(var(--board-tile-size) / 40) var(--player-colour);
+    box-shadow: 0 0 4px 1px var(--player-colour);
   }
 }

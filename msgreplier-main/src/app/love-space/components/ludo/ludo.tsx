@@ -9,6 +9,8 @@ import { TPlayerInitData, TPlayerColour } from './types';
 import { debounce } from 'lodash-es';
 import { setIsPlaceholderShowing } from './state/slices/diceSlice';
 import { changeCoordsOfToken } from './state/slices/playersSlice';
+import { setTokenTransitionTime } from './utils/setTokenTransitionTime';
+import { FORWARD_TOKEN_TRANSITION_TIME } from './game/tokens/constants';
 
 import { supabase } from '@/lib/supabase';
 
@@ -173,6 +175,7 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
             .on('broadcast', { event: 'token_moving' }, ({ payload }) => {
                 if (!payload || payload.senderId === currentMemberId) return;
                 // Dispatch changeCoordsOfToken to animate the token step-by-step on this client.
+                setTokenTransitionTime(FORWARD_TOKEN_TRANSITION_TIME, { colour: payload.colour, id: payload.tokenId } as any);
                 // This is purely visual — the authoritative coordinates arrive via HYDRATE_GAME_STATE.
                 store.dispatch(changeCoordsOfToken({
                     colour: payload.colour,
