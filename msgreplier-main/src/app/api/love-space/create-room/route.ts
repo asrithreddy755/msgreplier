@@ -21,7 +21,11 @@ export async function POST(request: Request) {
 
         const { data: room, error: insertDbError } = await supabaseAdmin
             .from('love_rooms')
-            .insert([{ status: 'active', created_by: createdBy.trim() }])
+            .insert([{ 
+                status: 'active', 
+                created_by: createdBy.trim(),
+                expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+            }])
             .select()
             .single();
 

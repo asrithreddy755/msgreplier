@@ -207,8 +207,78 @@ export default function LoveSpacePage() {
                 </Card>
             )}
 
-            <p className="mt-8 text-sm text-gray-400 dark:text-gray-500 text-center z-10">
-                Rooms automatically expire after 24 hours.
+            <div className="mt-12 w-full max-w-2xl px-4 z-10 space-y-8 pb-8 text-center sm:text-left">
+                {/* Highlight Badge */}
+                <div className="flex justify-center mb-6">
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-2 rounded-full font-bold shadow-lg shadow-green-500/20 text-sm sm:text-base animate-in zoom-in">
+                        <CheckCircle2 className="w-5 h-5 text-green-100" />
+                        100% Private & No Login Required
+                    </div>
+                </div>
+
+                {/* Uses & Features */}
+                <section className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 border border-pink-100 dark:border-pink-900/30 shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-pink-100 dark:bg-pink-900/20 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-pink-100 mb-4 flex items-center justify-center sm:justify-start gap-2 relative z-10">
+                        <Sparkles className="w-5 h-5 text-purple-500" /> Why Use Love Space?
+                    </h2>
+                    <ul className="text-gray-600 dark:text-gray-300 space-y-3 text-sm sm:text-base list-none relative z-10">
+                        <li className="flex items-start gap-3">
+                            <span className="bg-pink-100 dark:bg-pink-900/40 text-pink-500 p-1 rounded-full mt-0.5"><Heart className="w-3 h-3 fill-current" /></span>
+                            <span><strong>Instant Connection:</strong> A beautifully crafted, temporary private room for you and your partner.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-500 p-1 rounded-full mt-0.5"><CheckCircle2 className="w-3 h-3" /></span>
+                            <span><strong>Zero Friction:</strong> No accounts, no emails, no passwords. Just enter a nickname and share the link.</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <span className="bg-rose-100 dark:bg-rose-900/40 text-rose-500 p-1 rounded-full mt-0.5"><Sparkles className="w-3 h-3" /></span>
+                            <span><strong>Live Status:</strong> See exactly when your partner is online, typing, or playing a game.</span>
+                        </li>
+                    </ul>
+                </section>
+
+                {/* Games Container */}
+                <section className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 border border-pink-100 dark:border-pink-900/30 shadow-sm">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-pink-100 mb-5 flex items-center justify-center sm:justify-start gap-2">
+                        <Heart className="w-5 h-5 text-pink-500 fill-pink-500" /> Play Together
+                    </h2>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl text-center shadow-sm border border-pink-100 dark:border-slate-700 hover:-translate-y-1 transition-transform">
+                            <span className="text-2xl mb-2 block animate-bounce" style={{ animationDuration: '2s' }}>💬</span>
+                            <span className="font-semibold text-sm text-gray-700 dark:text-gray-300">Live Chat</span>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl text-center shadow-sm border border-purple-100 dark:border-slate-700 hover:-translate-y-1 transition-transform">
+                            <span className="text-2xl mb-2 block animate-pulse">⭕</span>
+                            <span className="font-semibold text-sm text-gray-700 dark:text-gray-300">Tic Tac Toe</span>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl text-center shadow-sm border border-emerald-100 dark:border-slate-700 hover:-translate-y-1 transition-transform">
+                            <span className="text-2xl mb-2 block animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}>🎲</span>
+                            <span className="font-semibold text-sm text-gray-700 dark:text-gray-300">Ludo</span>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl text-center shadow-sm border border-orange-100 dark:border-slate-700 hover:-translate-y-1 transition-transform">
+                            <span className="text-2xl mb-2 block animate-pulse" style={{ animationDelay: '1s' }}>🐍</span>
+                            <span className="font-semibold text-sm text-gray-700 dark:text-gray-300">Snake</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Privacy and Terms */}
+                <section className="bg-white/30 dark:bg-slate-900/20 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
+                    <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3 text-base">Privacy Policy & Terms of Use</h3>
+                    <div className="space-y-3">
+                        <p>
+                            <strong className="text-gray-600 dark:text-gray-300">Total Privacy:</strong> We strictly do not ask for any personal information. All messages, nicknames, and game data are strictly confined to your temporary room environment.
+                        </p>
+                        <p>
+                            <strong className="text-gray-600 dark:text-gray-300">Terms of Use:</strong> This service is provided loosely {"\"as is\""} and is designed exclusively for fun and lighthearted entertainment. Love Rooms and absolutely all their contents are automatically and irretrievably <strong>deleted after 24 hours</strong>, or after 10 minutes of complete inactivity by both partners. Please do not use this space to share sensitive personal information.
+                        </p>
+                    </div>
+                </section>
+            </div>
+
+            <p className="mt-4 text-xs text-gray-400 dark:text-gray-600 text-center z-10 pb-8 uppercase tracking-widest font-semibold opacity-70">
+                Rooms automatically expire after 24 hours of creation.
             </p>
         </div>
     );

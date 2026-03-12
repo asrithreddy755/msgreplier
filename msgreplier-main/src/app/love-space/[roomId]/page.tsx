@@ -385,34 +385,72 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const isOtherOnline = (!hasPresenceSynced || members.length < 2) ? true : !!(otherMember && onlineIds.has(otherMember.id));
 
     useEffect(() => {
-        if (!room || !currentMember) return;
+        if (!room || !currentMember || !hasSupabaseConfig) return;
 
-        const roomCreatedTime = new Date(room.created_at).getTime();
-        const tenMinutesMs = 10 * 60 * 1000;
-        const now = Date.now();
-        const timeRemaining = (roomCreatedTime + tenMinutesMs) - now;
+        let inactivityTimeout: NodeJS.Timeout;
+        let heartbeatInterval: NodeJS.Timeout;
+
+        // --- HEARTBEAT LOGIC ---
+        // We ping the server every 1 minute to push the expires_at time, BUT ONLY IF:
+        // 1. We are waiting for a partner (members.length < 2)
+        // 2. Both players are online (isOtherOnline is true)
+        const shouldPing = membersRef.current.length < 2 || isOtherOnline;
         
-        // Expiration Logic:
-        // If room is older than 10 mins:
-        // 1. If length < 2 (never joined) -> Expire
-        // 2. If length == 2 but !isOtherOnline -> Expire
-        
-        const checkExpiration = () => {
-            if (membersRef.current.length < 2) {
-                setError("This room has expired due to 10 minutes of inactivity.");
-            } else if (!isOtherOnline) {
-                setError("This room has expired due to 10 minutes of inactivity from your partner.");
-            }
+        const sendHeartbeat = () => {
+             fetch('/api/love-space/heartbeat', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ roomId: room.id })
+             }).catch(() => {});
         };
 
-        if (timeRemaining <= 0) {
-            checkExpiration();
-            return;
+        if (shouldPing) {
+             // Send an immediate heartbeat to ensure we are marked active right now,
+             // unless we just created it (but sending again doesn't hurt).
+             sendHeartbeat();
+             // Then send every 1 minute
+             heartbeatInterval = setInterval(sendHeartbeat, 60 * 1000);
         }
 
-        const timeout = setTimeout(checkExpiration, timeRemaining);
+        // --- FRONTEND EXPIRATION LOGIC ---
+        // If the other player is currently offline (and we have 2 members), start a 10 min countdown.
+        // If they come back, this effect re-runs, clearing the timeout.
+        if (membersRef.current.length >= 2 && !isOtherOnline) {
+             inactivityTimeout = setTimeout(() => {
+                  setError("This room has expired because a player was inactive for 10 minutes.");
+                  fetch(`/api/love-space/delete-room?roomId=${room.id}`, { method: 'DELETE' }).catch(() => {});
+             }, 10 * 60 * 1000); // 10 minutes
+        }
 
-        return () => clearTimeout(timeout);
+        // If no one joined for 10 minutes, also terminate.
+        if (membersRef.current.length < 2) {
+             const roomCreatedTime = new Date(room.created_at).getTime();
+             const timeRemaining = (roomCreatedTime + 10 * 60 * 1000) - Date.now();
+             
+             const expireAsEmpty = () => {
+                  // Verify with API to prevent race conditions
+                  fetch(`/api/love-space/members?roomId=${room.id}`)
+                      .then(res => res.json())
+                      .then(data => {
+                          const actualCount = Array.isArray(data?.members) ? data.members.length : membersRef.current.length;
+                          if (actualCount < 2) {
+                              setError("This room has expired because no one joined within 10 minutes.");
+                              fetch(`/api/love-space/delete-room?roomId=${room.id}`, { method: 'DELETE' }).catch(() => {});
+                          }
+                      }).catch(() => {});
+             };
+
+             if (timeRemaining <= 0) {
+                 expireAsEmpty();
+             } else {
+                 inactivityTimeout = setTimeout(expireAsEmpty, timeRemaining);
+             }
+        }
+
+        return () => {
+            if (inactivityTimeout) clearTimeout(inactivityTimeout);
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+        };
     }, [room, currentMember, isOtherOnline]);
 
     if (loading) {
