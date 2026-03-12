@@ -74,6 +74,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [members, setMembers] = useState<LoveRoomMember[]>([]);
     const membersRef = useRef<LoveRoomMember[]>([]);
     const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
+    const [hasPresenceSynced, setHasPresenceSynced] = useState(false);
 
     useEffect(() => {
         membersRef.current = members;
@@ -228,6 +229,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
                 setOtherMemberTab(otherTab);
                 setOnlineIds(online);
+                setHasPresenceSynced(true);
 
                 if (hasNewMembers && !fetchingMembersRef.current) {
                     console.log('[Presence] Unknown member detected, waiting for postgres_changes...');
@@ -376,7 +378,12 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     }, [roomId]);
 
     // Live Frontend Expiration Sweeper
-    // If 10 minutes pass and the room is still empty, terminate the UI for the creator.
+    // If the room is older than 10 minutes AND the other member is offline, terminate.
+    const otherMember = currentMember && members.length > 0
+        ? members.find(m => m.id !== currentMember.id) || null
+        : null;
+    const isOtherOnline = (!hasPresenceSynced || members.length < 2) ? true : !!(otherMember && onlineIds.has(otherMember.id));
+
     useEffect(() => {
         if (!room || !currentMember) return;
 
@@ -384,28 +391,29 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         const tenMinutesMs = 10 * 60 * 1000;
         const now = Date.now();
         const timeRemaining = (roomCreatedTime + tenMinutesMs) - now;
-
-        if (timeRemaining <= 0) {
-            // Already expired
+        
+        // Expiration Logic:
+        // If room is older than 10 mins:
+        // 1. If length < 2 (never joined) -> Expire
+        // 2. If length == 2 but !isOtherOnline -> Expire
+        
+        const checkExpiration = () => {
             if (membersRef.current.length < 2) {
                 setError("This room has expired due to 10 minutes of inactivity.");
+            } else if (!isOtherOnline) {
+                setError("This room has expired due to 10 minutes of inactivity from your partner.");
             }
+        };
+
+        if (timeRemaining <= 0) {
+            checkExpiration();
             return;
         }
 
-        const timeout = setTimeout(() => {
-            if (membersRef.current.length < 2) {
-                setError("This room has expired due to 10 minutes of inactivity.");
-            }
-        }, timeRemaining);
+        const timeout = setTimeout(checkExpiration, timeRemaining);
 
         return () => clearTimeout(timeout);
-    }, [room, currentMember]);
-
-    const otherMember = currentMember && members.length > 0
-        ? members.find(m => m.id !== currentMember.id) || null
-        : null;
-    const isOtherOnline = !!(otherMember && onlineIds.has(otherMember.id));
+    }, [room, currentMember, isOtherOnline]);
 
     if (loading) {
         return (
@@ -650,7 +658,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         </span>
                                     )}
                                 </button>
-                                <XOX roomId={roomId} currentMember={currentMember} members={members} />
+                                <XOX roomId={roomId} currentMember={currentMember} members={members} otherOnline={isOtherOnline} />
                             </div>
                         </TabsContent>
                         <TabsContent value="ludo" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
@@ -667,7 +675,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         </span>
                                     )}
                                 </button>
-                                <Ludo roomId={roomId} currentMember={currentMember} members={members} />
+                                <Ludo roomId={roomId} currentMember={currentMember} members={members} otherOnline={isOtherOnline} />
                             </div>
                         </TabsContent>
                         <TabsContent value="snake" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">

@@ -14,9 +14,10 @@ type Props = {
   playerName: string;
   onDiceClick: (colour: TPlayerColour, diceNumber: number) => void;
   myColour: TPlayerColour;
+  otherOnline?: boolean;
 };
 
-function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
+function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const {
     isAnyTokenMoving,
@@ -40,12 +41,14 @@ function Dice({ colour, onDiceClick, playerName, myColour }: Props) {
     isAnyTokenMoving ||
     isGameEnded ||
     isPlaceholderShowing ||
-    isBot;
+    isBot ||
+    !otherOnline;
 
   const handleDiceClick = useCallback(() => {
     if (isDiceDisabled) return;
+    if (!otherOnline) return; // Added this line
     dispatch(rollDiceThunk(colour, (rolledNumber) => onDiceClick(colour, rolledNumber)));
-  }, [colour, dispatch, isDiceDisabled, onDiceClick]);
+  }, [colour, dispatch, isDiceDisabled, onDiceClick, otherOnline]); // Added otherOnline to dependencies
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

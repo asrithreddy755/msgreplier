@@ -41,7 +41,7 @@
   .svg {
     /* Precise positioning for mobile. Removing the token transform-origin fixes
        the issue where overlapping tokens were drawn lower than on desktop. */
-    transform: translate3d(0, -38%, 0);
+    transform: translate3d(0, -50%, 0);
     filter: drop-shadow(1.5px 2px 2px rgba(0, 0, 0, 0.5));
   }
 }

@@ -18,9 +18,10 @@ interface LudoProps {
     roomId: string;
     currentMember: LoveRoomMember;
     members?: LoveRoomMember[];
+    otherOnline?: boolean;
 }
 
-export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
+export function Ludo({ roomId, currentMember, members = [], otherOnline = true }: LudoProps) {
     const currentMemberId = currentMember.id;
     const [initData, setInitData] = useState<TPlayerInitData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -260,7 +261,7 @@ export function Ludo({ roomId, currentMember, members = [] }: LudoProps) {
     return (
         <Provider store={store}>
             <div className="absolute inset-0 p-2 sm:p-4 flex items-center justify-center ludo-wrapper overflow-y-auto overflow-x-hidden">
-                <Game initData={initData} myColour={myColour || 'blue'} />
+                <Game initData={initData} myColour={myColour || 'blue'} otherOnline={otherOnline} />
                 {/* Skeleton overlay: only dims the dice panel while the initial fetch is in-flight */}
                 {loading && (
                     <div

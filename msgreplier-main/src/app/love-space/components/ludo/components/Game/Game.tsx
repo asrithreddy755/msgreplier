@@ -23,9 +23,10 @@ export const EXIT_MESSAGE = 'Are you sure you want to exit? Any progress made wi
 type Props = {
   initData: TPlayerInitData[];
   myColour: TPlayerColour;
+  otherOnline?: boolean;
 };
 
-function Game({ initData, myColour }: Props) {
+function Game({ initData, myColour, otherOnline = true }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const boardTileSize = useSelector((state: RootState) => state.board.boardTileSize);
   const { playerSequence, isGameEnded, playerFinishOrder, currentPlayerColour, players } =
@@ -87,12 +88,18 @@ function Game({ initData, myColour }: Props) {
   return (
     <div className="relative w-full h-full max-w-[600px] mx-auto flex flex-col items-center justify-center p-2 sm:p-4 gap-2" style={{ '--board-tile-size': `${boardTileSize}px` } as React.CSSProperties}>
 
+      {!otherOnline && (
+        <div className="text-xs sm:text-sm font-bold text-red-500 animate-pulse bg-red-100 dark:bg-red-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+            Partner Offline
+        </div>
+      )}
+
       {/* Board Container */}
       <div
         className="relative bg-white dark:bg-slate-900 rounded-[10px] md:rounded-xl shadow-lg border border-emerald-100 dark:border-emerald-900/50 overflow-hidden shrink-0"
         style={{ width: '100%', maxWidth: 'min(100%, 55vh)', aspectRatio: '1/1' }}
       >
-        <Board myColour={myColour} />
+        <Board myColour={myColour} otherOnline={otherOnline} />
       </div>
 
       {/* The Locked-in Dice Container */}
@@ -104,6 +111,7 @@ function Game({ initData, myColour }: Props) {
             onDiceClick={handleDiceRoll}
             playerName={players.find((p: any) => p.colour === d.colour)?.name as string}
             key={d.colour}
+            otherOnline={otherOnline}
           />
         ))}
       </div>

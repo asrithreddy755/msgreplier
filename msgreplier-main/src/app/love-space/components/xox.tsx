@@ -21,7 +21,7 @@ const WINNING_COMBOS = [
     [0, 4, 8], [2, 4, 6]             // Diagonals
 ];
 
-export function XOX({ roomId, currentMember, members = [] }: { roomId: string, currentMember: LoveRoomMember, members?: LoveRoomMember[] }) {
+export function XOX({ roomId, currentMember, members = [], otherOnline = true }: { roomId: string, currentMember: LoveRoomMember, members?: LoveRoomMember[], otherOnline?: boolean }) {
     const [gameState, setGameState] = useState<XOXGameState>(INITIAL_STATE);
     const [myPlayer, setMyPlayer] = useState<XOXPlayer>(null);
     const [loading, setLoading] = useState(true);
@@ -161,7 +161,7 @@ export function XOX({ roomId, currentMember, members = [] }: { roomId: string, c
     }, [gameState.winner, gameState.board]);
 
     const handleMove = async (index: number) => {
-        if (gameState.winner || gameState.board[index] || gameState.currentTurn !== myPlayer) return;
+        if (gameState.winner || gameState.board[index] || gameState.currentTurn !== myPlayer || !otherOnline) return;
 
         const newBoard = [...gameState.board];
         newBoard[index] = myPlayer;
@@ -254,8 +254,8 @@ export function XOX({ roomId, currentMember, members = [] }: { roomId: string, c
                 </div>
 
                 <div className="flex gap-4 justify-center text-sm">
-                    <div className={`px-4 py-1 rounded-full ${gameState.currentTurn === myPlayer && !gameState.winner ? 'bg-purple-500 text-white shadow-md animate-pulse' : 'bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-gray-500'}`}>
-                        {gameState.winner ? 'Game Over' : (gameState.currentTurn === myPlayer ? 'Your Turn' : "Opponent's Turn")}
+                    <div className={`px-4 py-1 rounded-full ${!otherOnline ? 'bg-red-100 text-red-500 animate-pulse' : (gameState.currentTurn === myPlayer && !gameState.winner ? 'bg-purple-500 text-white shadow-md animate-pulse' : 'bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-gray-500')}`}>
+                        {!otherOnline ? 'Partner Offline' : (gameState.winner ? 'Game Over' : (gameState.currentTurn === myPlayer ? 'Your Turn' : "Opponent's Turn"))}
                     </div>
                 </div>
             </div>
@@ -305,7 +305,7 @@ export function XOX({ roomId, currentMember, members = [] }: { roomId: string, c
                     <button
                         key={idx}
                         onClick={() => handleMove(idx)}
-                        disabled={!!cell || !!gameState.winner || gameState.currentTurn !== myPlayer}
+                        disabled={!!cell || !!gameState.winner || gameState.currentTurn !== myPlayer || !otherOnline}
                         className={`
                 w-full h-full bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-purple-50 dark:border-purple-900/30 flex items-center justify-center text-5xl transition-all
                 ${!cell && !gameState.winner && gameState.currentTurn === myPlayer ? 'hover:scale-105 active:scale-95 cursor-pointer hover:bg-pink-50 hover:border-pink-200 dark:hover:bg-pink-900/20 dark:hover:border-pink-800' : 'cursor-default'}

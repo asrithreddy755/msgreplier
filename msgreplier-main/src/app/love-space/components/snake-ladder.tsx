@@ -7,10 +7,11 @@ import { Dices, Trophy, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
+import SnakeDice from './SnakeDice';
 
 // Collector's Edition snakes and ladders matching snake.webp exactly
-const SNAKES: Record<number, number> = { 12: 9, 33: 27, 37: 23, 41: 39, 43: 24 };
-const LADDERS: Record<number, number> = { 3: 18, 6: 16, 14: 26, 30: 49 };
+const SNAKES: Record<number, number> = { 28: 9, 33: 27, 38: 18, 41: 39, 43: 24 };
+const LADDERS: Record<number, number> = { 3: 24, 6: 16, 14: 26, 30: 49 };
 
 // 5x10 board logic
 const BOARDS_CELLS = Array.from({ length: 50 }, (_, i) => i + 1);
@@ -25,11 +26,13 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
     // const [members, setMembers] = useState<LoveRoomMember[]>([]); // Using prop instead
     const [loading, setLoading] = useState(true);
     const [rolling, setRolling] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const [lastRoll, setLastRoll] = useState<number | null>(null);
     const lastStateRef = useRef<string | null>(null);
     const pendingStateRef = useRef<SnakeLadderState | null>(null);
     const isAnimatingRef = useRef(false);
     const hasInitializedRef = useRef(false);
+    const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
     const [visualP1, setVisualP1] = useState(1);
     const [visualP2, setVisualP2] = useState(1);
@@ -80,6 +83,11 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
             pendingStateRef.current = nextState;
             return;
         }
+
+        if (nextState.lastRollValue !== undefined) {
+            setLastRoll(nextState.lastRollValue);
+        }
+
         const p1From = visualP1Ref.current;
         const p2From = visualP2Ref.current;
         const p1To = nextState.player1Position;
@@ -100,9 +108,6 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
                 playAnimationAndSync(2, path, nextState);
                 return;
             }
-        }
-        if (nextState.lastRollValue !== undefined) {
-            setLastRoll(nextState.lastRollValue);
         }
 
         lastStateRef.current = JSON.stringify(nextState);
@@ -151,6 +156,26 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
         channel = supabase
             .channel(`public:love_games:snake:${roomId}`)
             .on(
+                'broadcast',
+                { event: 'dice_start' },
+                (payload) => {
+                    if (!isMounted) return;
+                    setRolling(true);
+                    setIsProcessing(true);
+                }
+            )
+            .on(
+                'broadcast',
+                { event: 'dice_result' },
+                (payload) => {
+                    if (!isMounted) return;
+                    if (payload.payload?.rollValue) {
+                        setLastRoll(payload.payload.rollValue);
+                    }
+                    setRolling(false);
+                }
+            )
+            .on(
                 'postgres_changes',
                 {
                     // '*' catches both INSERT (first move) and UPDATE (subsequent moves).
@@ -169,6 +194,8 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
                         const parsed = newGame.game_state as SnakeLadderState;
                         const serialized = JSON.stringify(parsed);
                         if (serialized !== lastStateRef.current) {
+                            setRolling(false);
+                            setIsProcessing(false);
                             applyRemoteState(parsed);
                         }
                     }
@@ -181,6 +208,8 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
                     console.log('Realtime Snake Ladder Subscribed');
                 }
             });
+
+        channelRef.current = channel;
 
         return () => {
             isMounted = false;
@@ -221,74 +250,90 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
     const myPlayerNum = getPlayerIndex(currentMember.nickname);
 
     const rollDice = async (forPlayerNum: number) => {
-        if (!isMyTurn || state.winner || rolling || isAnimating || myPlayerNum !== forPlayerNum) return;
+        if (!isMyTurn || state.winner || rolling || isAnimating || isProcessing || myPlayerNum !== forPlayerNum || !otherOnline) return;
 
+        setIsProcessing(true);
         setRolling(true);
 
-        // Simulate roll animation delay (longer to sync with CSS animation)
-        await new Promise(r => setTimeout(r, 800));
-
-        const roll = Math.floor(Math.random() * 6) + 1;
-        let newPos = myPlayerNum === 1 ? state.player1Position : state.player2Position;
-        let actionMessage: string | null = null;
-        const path: number[] = [];
-
-        if (newPos + roll <= 50) {
-            for (let i = newPos + 1; i <= newPos + roll; i++) path.push(i);
-            newPos += roll;
-
-            if (SNAKES[newPos]) {
-                const dest = SNAKES[newPos];
-                actionMessage = `${currentMember.nickname} hit a snake at ${newPos}, sliding to ${dest}!`;
-                newPos = dest;
-                path.push(newPos);
-            } else if (LADDERS[newPos]) {
-                const dest = LADDERS[newPos];
-                actionMessage = `${currentMember.nickname} hit a ladder at ${newPos}, climbing to ${dest}!`;
-                newPos = dest;
-                path.push(newPos);
-            } else {
-                actionMessage = `${currentMember.nickname} rolled ${roll} and moved to ${newPos}.`;
-            }
-        } else {
-            actionMessage = `${currentMember.nickname} rolled ${roll} but needs exactly ${50 - newPos} to finish!`;
-        }
-
-        let winner = null;
-        if (newPos === 50) {
-            winner = currentMember.nickname;
-            actionMessage = `${currentMember.nickname} rolled ${roll} and reached square 50 to win the game! 🎉`;
-        }
-
-        const other = members.find(m => m.nickname !== currentMember.nickname);
-        const nextTurn = other ? other.nickname : currentMember.nickname;
-
-        const newState: SnakeLadderState = {
-            ...state,
-            player1Position: myPlayerNum === 1 ? newPos : state.player1Position,
-            player2Position: myPlayerNum === 2 ? newPos : state.player2Position,
-            currentTurn: winner ? null : (roll === 6 ? currentMember.nickname : nextTurn), // Roll 6 = extra turn
-            winner,
-            lastActionMessage: actionMessage || (roll === 6 ? `${currentMember.nickname} rolled a 6 and gets another turn!` : undefined),
-            lastPath: path,
-            lastPathPlayer: myPlayerNum,
-            lastRollValue: roll
-        };
-
-        setLastRoll(roll);
-        setRolling(false);
-        lastStateRef.current = JSON.stringify(newState);
-
-        await fetch('/api/love-space/games', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, gameType: 'snake', gameState: newState })
+        channelRef.current?.send({
+            type: 'broadcast',
+            event: 'dice_start',
+            payload: { playerNum: myPlayerNum }
         });
 
-        if (path.length > 0) {
-            await playAnimationAndSync(myPlayerNum, path, newState);
-        } else {
-            setState(newState);
+        try {
+            // Simulate roll animation delay (longer to sync with CSS animation)
+            await new Promise(r => setTimeout(r, 800));
+
+            const roll = Math.floor(Math.random() * 6) + 1;
+            let newPos = myPlayerNum === 1 ? state.player1Position : state.player2Position;
+            let actionMessage: string | null = null;
+            const path: number[] = [];
+
+            if (newPos + roll <= 50) {
+                for (let i = newPos + 1; i <= newPos + roll; i++) path.push(i);
+                newPos += roll;
+
+                if (SNAKES[newPos]) {
+                    const dest = SNAKES[newPos];
+                    actionMessage = `${currentMember.nickname} hit a snake at ${newPos}, sliding to ${dest}!`;
+                    newPos = dest;
+                    path.push(newPos);
+                } else if (LADDERS[newPos]) {
+                    const dest = LADDERS[newPos];
+                    actionMessage = `${currentMember.nickname} hit a ladder at ${newPos}, climbing to ${dest}!`;
+                    newPos = dest;
+                    path.push(newPos);
+                }
+            }
+
+            let winner = null;
+            if (newPos === 50) {
+                winner = currentMember.nickname;
+                actionMessage = `${currentMember.nickname} reached square 50 and won the game! 🎉`;
+            }
+
+            const other = members.find(m => m.nickname !== currentMember.nickname);
+            const nextTurn = other ? other.nickname : currentMember.nickname;
+
+            const newState: SnakeLadderState = {
+                ...state,
+                player1Position: myPlayerNum === 1 ? newPos : state.player1Position,
+                player2Position: myPlayerNum === 2 ? newPos : state.player2Position,
+                currentTurn: winner ? null : (roll === 6 ? currentMember.nickname : nextTurn), // Roll 6 = extra turn
+                winner,
+                lastActionMessage: actionMessage || (roll === 6 ? `${currentMember.nickname} rolled a 6 and gets another turn!` : undefined),
+                lastPath: path,
+                lastPathPlayer: myPlayerNum,
+                lastRollValue: roll
+            };
+
+            setLastRoll(roll);
+            setRolling(false);
+
+            channelRef.current?.send({
+                type: 'broadcast',
+                event: 'dice_result',
+                payload: { playerNum: myPlayerNum, rollValue: roll }
+            });
+
+            lastStateRef.current = JSON.stringify(newState);
+
+            const apiPromise = fetch('/api/love-space/games', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomId, gameType: 'snake', gameState: newState })
+            });
+
+            if (path.length > 0) {
+                await Promise.all([playAnimationAndSync(myPlayerNum, path, newState), apiPromise]);
+            } else {
+                setState(newState);
+                await apiPromise;
+            }
+        } finally {
+            setIsProcessing(false);
+            setRolling(false);
         }
     };
 
@@ -453,33 +498,30 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center my-2 sm:my-6 relative w-full">
-                                {isMyTurn && !rolling && !isAnimating && !state.winner && (
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-r from-orange-400/30 to-rose-400/30 animate-pulse blur-xl z-0"></div>
+                                {isMyTurn && !rolling && !isAnimating && !state.winner && !isProcessing && (
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-r from-orange-400/30 to-rose-400/30 animate-pulse blur-xl z-0 pointer-events-none"></div>
                                 )}
-                                <button
-                                    onClick={() => isMyTurn && !rolling && !isAnimating && !state.winner ? rollDice(myPlayerNum) : undefined}
-                                    disabled={!isMyTurn || rolling || isAnimating || !!state.winner}
-                                    className={`
-                                relative dice-container w-16 h-16 sm:w-28 sm:h-28 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl flex items-center justify-center border-3 sm:border-4 border-white/90 dark:border-slate-700/90 backdrop-blur-md z-10 transition-all duration-300
-                                ${rolling ? 'animate-dice-roll shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-gradient-to-br from-orange-400 to-rose-500' : ''}
-                                ${isMyTurn && !rolling && !isAnimating && !state.winner ? 'cursor-pointer hover:scale-105 active:scale-95 bg-gradient-to-br from-orange-400 to-rose-500 hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:-translate-y-1' : ''}
-                                ${(!isMyTurn || !!state.winner) && !rolling ? 'cursor-default bg-gray-100 dark:bg-slate-800 opacity-90' : ''}
-                            `}
-                                >
-                                    {!rolling && lastRoll ? (
-                                        <div className="flex flex-col items-center justify-center">
-                                            <span className={`font-black text-3xl sm:text-6xl drop-shadow-lg ${isMyTurn || rolling || state.winner ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>{lastRoll}</span>
-                                        </div>
-                                    ) : (
-                                        <Dices className={`w-8 h-8 sm:w-14 sm:h-14 drop-shadow-md transition-colors ${isMyTurn || rolling ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`} />
-                                    )}
-                                </button>
+                                <div className="z-10 relative mt-2 sm:mt-4 transform scale-[1.2] sm:scale-[1.6]">
+                                    <SnakeDice
+                                        isRolling={rolling}
+                                        diceNumber={lastRoll}
+                                        colour={state.currentTurn === roomCreator?.nickname ? 'red' : 'blue'}
+                                        onDiceClick={() => isMyTurn && !rolling && !isAnimating && !isProcessing && !state.winner ? rollDice(myPlayerNum) : undefined}
+                                        playerName={state.currentTurn || 'Rolling...'}
+                                        isMyTurn={isMyTurn && !isProcessing}
+                                        disabled={!isMyTurn || rolling || isAnimating || isProcessing || !!state.winner}
+                                    />
+                                </div>
                             </div>
                         )}
 
                         {/* Fixed-height container to prevent board from shifting up and down */}
                         <div className="h-12 sm:h-16 w-full flex flex-col items-center justify-start z-10">
-                            {isMyTurn && !rolling && !isAnimating && !state.winner ? (
+                            {!otherOnline ? (
+                                <div className="text-xs sm:text-sm font-bold text-red-500 animate-pulse bg-red-100 dark:bg-red-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+                                    Partner Offline
+                                </div>
+                            ) : isMyTurn && !rolling && !isAnimating && !state.winner ? (
                                 <div className="text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400 animate-bounce bg-orange-100 dark:bg-orange-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
                                     Tap to Roll!
                                 </div>

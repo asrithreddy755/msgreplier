@@ -13,7 +13,7 @@ import type { TTokenClickData } from '../../types/tokens';
 import styles from './Board.module.css';
 import type { TPlayerColour } from '../../types';
 
-function Board({ myColour }: { myColour: TPlayerColour }) {
+function Board({ myColour, otherOnline = true }: { myColour: TPlayerColour, otherOnline?: boolean }) {
   const { players, currentPlayerColour } = useSelector((state: RootState) => state.players);
   const { boardTileSize, boardSideLength } = useSelector((state: RootState) => state.board);
   const [tokenClickData, setTokenClickData] = useState<TTokenClickData | null>(null);
@@ -89,6 +89,7 @@ function Board({ myColour }: { myColour: TPlayerColour }) {
             myColour={myColour}
             id={t.id}
             tokenClickData={tokenClickData}
+            otherOnline={otherOnline}
             key={getTokenDOMId(t.colour, t.id)}
           />
         ))

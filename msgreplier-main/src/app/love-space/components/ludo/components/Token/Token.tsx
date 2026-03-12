@@ -23,9 +23,10 @@ type Props = {
   myColour: TPlayerColour;
   id: number;
   tokenClickData: TTokenClickData | null;
+  otherOnline?: boolean;
 };
 
-function Token({ colour, myColour, id, tokenClickData }: Props) {
+function Token({ colour, myColour, id, tokenClickData, otherOnline = true }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const { tokenHeight, tokenWidth } = useSelector((state: RootState) => state.board);
   const { players } = useSelector((state: RootState) => state.players);
@@ -95,7 +96,7 @@ function Token({ colour, myColour, id, tokenClickData }: Props) {
 
   const handleTokenClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
     if (e.detail === 0) e.stopPropagation();
-    if (myColour !== colour) return;
+    if (myColour !== colour || !otherOnline) return;
     if (isLocked && isActive && diceNumber !== -1 && diceNumber) {
       unlock();
       tokenElRef.current?.blur?.();
