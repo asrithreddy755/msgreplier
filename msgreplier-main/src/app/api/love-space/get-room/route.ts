@@ -27,12 +27,16 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Room not found or expired' }, { status: 404 });
         }
 
+        if (room.is_active === false) {
+            return NextResponse.json({ error: 'This room is currently offline due to 10 minutes of inactivity.' }, { status: 404 });
+        }
+
         // --- RENEWED EXPIRATION CHECK ---
         const expiresAtMs = new Date(room.expires_at).getTime();
 
         if (Date.now() > expiresAtMs) {
-            // Room is expired. Terminate it.
-            await supabaseAdmin.from('love_rooms').delete().eq('id', roomId);
+            // Room is expired. Set to inactive.
+            await supabaseAdmin.from('love_rooms').update({ is_active: false }).eq('id', roomId);
             return NextResponse.json({ error: 'This room has expired due to 10 minutes of inactivity.' }, { status: 404 });
         }
         // ----------------------------------

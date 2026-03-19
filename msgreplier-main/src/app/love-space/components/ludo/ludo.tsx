@@ -1,54 +1,180 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { LoveRoomMember } from '@/types/love-space';
 import { Provider } from 'react-redux';
 import { store, setSyncCallback } from './state/store';
 import Game from './components/Game/Game';
 import { TPlayerInitData, TPlayerColour } from './types';
-import { debounce } from 'lodash-es';
+import { debounce, throttle } from 'lodash-es';
 import { setIsPlaceholderShowing } from './state/slices/diceSlice';
 import { changeCoordsOfToken } from './state/slices/playersSlice';
 import { setTokenTransitionTime } from './utils/setTokenTransitionTime';
 import { FORWARD_TOKEN_TRANSITION_TIME } from './game/tokens/constants';
-
-import { supabase } from '@/lib/supabase';
+import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
+import { useAssetPreloader } from '../../hooks/useAssetPreloader';
+import { GamePreloader } from '../GamePreloader';
+import { playDiceSound } from './utils/diceSound';
+import bgAsset from './assets/bg.jpg';
 
 interface LudoProps {
     roomId: string;
     currentMember: LoveRoomMember;
     members?: LoveRoomMember[];
     otherOnline?: boolean;
+    sendMessage?: (type: WebRTCMessageType, payload?: any) => void;
+    registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
+    unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
 }
 
-export function Ludo({ roomId, currentMember, members = [], otherOnline = true }: LudoProps) {
+type LudoMoveRecord = {
+    player: string | null;
+    dice: number | null;
+    updatedAt: number;
+};
+
+const serializeState = (state: any) => {
+    if (!state) return '';
+    const { moves, ...core } = state;
+    return JSON.stringify(core);
+};
+
+const parseUpdatedAt = (value: unknown) => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string') {
+        const parsed = Date.parse(value);
+        if (!Number.isNaN(parsed)) return parsed;
+    }
+    return 0;
+};
+
+export function Ludo({
+    roomId,
+    currentMember,
+    members = [],
+    otherOnline = true,
+    sendMessage,
+    registerHandler,
+    unregisterHandler
+}: LudoProps) {
     const currentMemberId = currentMember.id;
     const [initData, setInitData] = useState<TPlayerInitData[]>([]);
     const [loading, setLoading] = useState(true);
-    const lastBroadcastStateRef = useRef<string | null>(null);
     const [myColour, setMyColour] = useState<TPlayerColour | null>(null);
-    // Ensures the init fetch + store hydration only ever runs once per roomId,
-    // even if the parent re-renders with a new `members` array reference.
     const hasInitializedRef = useRef(false);
-    // Keep a ref to the latest members so the init callback can read them
-    // without having members in the effect dep array.
     const membersRef = useRef(members);
-    useEffect(() => { membersRef.current = members; }, [members]);
+    const myColourRef = useRef<TPlayerColour | null>(null);
+    const lastOnlineStateRef = useRef(otherOnline);
+    const lastBroadcastStateRef = useRef<string | null>(null);
+    const lastDbStateRef = useRef<string | null>(null);
+    const latestStateRef = useRef<any | null>(null);
+    const latestUpdatedAtRef = useRef(0);
+    const lastSyncRequestAtRef = useRef(0);
+    const moveHistoryRef = useRef<LudoMoveRecord[]>([]);
+    const ludoBackupKey = useMemo(() => `ludo_backup_${roomId}`, [roomId]);
 
-    const persistState = useCallback(debounce(async (stateToSave: any) => {
-        const serialized = JSON.stringify(stateToSave);
-        if (serialized === lastBroadcastStateRef.current) return;
-        lastBroadcastStateRef.current = serialized;
-        try {
-            await fetch('/api/love-space/games', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomId, gameType: 'ludo', gameState: stateToSave })
-            });
-        } catch (err) {
-            console.error("Failed to persist ludo state:", err);
+    const { isLoaded, progress } = useAssetPreloader([
+        bgAsset.src,
+        '/dice-roll.mp3'
+    ]);
+
+    useEffect(() => {
+        membersRef.current = members;
+    }, [members]);
+
+    useEffect(() => {
+        myColourRef.current = myColour;
+    }, [myColour]);
+
+    const applyIncomingState = useCallback((incomingState: any, incomingUpdatedAt: number, shouldBackup = false) => {
+        if (!incomingState || Object.keys(incomingState).length === 0) return;
+        const normalizedUpdatedAt = Number.isFinite(incomingUpdatedAt) ? incomingUpdatedAt : 0;
+        const currentUpdatedAt = latestUpdatedAtRef.current;
+        const shouldApply = !latestStateRef.current || normalizedUpdatedAt >= currentUpdatedAt;
+        if (!shouldApply) return;
+
+        const serialized = serializeState(incomingState);
+        if (serialized !== lastBroadcastStateRef.current) {
+            lastBroadcastStateRef.current = serialized;
+            store.dispatch({ type: 'HYDRATE_GAME_STATE', payload: incomingState });
         }
-    }, 500), [roomId]);
+
+        latestStateRef.current = incomingState;
+        latestUpdatedAtRef.current = normalizedUpdatedAt || Date.now();
+        if (Array.isArray(incomingState.moves)) {
+            moveHistoryRef.current = incomingState.moves.slice(-200);
+        }
+
+        if (shouldBackup) {
+            try {
+                localStorage.setItem(ludoBackupKey, JSON.stringify({ state: incomingState, updatedAt: latestUpdatedAtRef.current }));
+            } catch {
+                return;
+            }
+        }
+    }, [ludoBackupKey]);
+
+    const saveToDb = useMemo(() => throttle((stateToSave: any, updatedAt: number) => {
+        const serialized = serializeState(stateToSave);
+        if (serialized === lastDbStateRef.current) return;
+        lastDbStateRef.current = serialized;
+        fetch('/api/love-space/ludo-state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, gameState: stateToSave, lastUpdated: updatedAt }),
+        }).catch(() => {
+            return;
+        });
+    }, 3000, { leading: true, trailing: true }), [roomId]);
+
+    useEffect(() => {
+        return () => {
+            saveToDb.cancel();
+        };
+    }, [saveToDb]);
+
+    const requestSync = useCallback((reason: string) => {
+        if (!sendMessage) return;
+        const now = Date.now();
+        if (now - lastSyncRequestAtRef.current < 1200) return;
+        lastSyncRequestAtRef.current = now;
+        sendMessage('sync_request', { game: 'ludo', roomId, senderId: currentMemberId, reason, sentAt: now });
+    }, [sendMessage, roomId, currentMemberId]);
+
+    const persistState = useCallback(debounce((stateToSave: any) => {
+        const serialized = serializeState(stateToSave);
+        if (serialized === lastBroadcastStateRef.current) return;
+
+        const updatedAt = Date.now();
+        const diceValue = stateToSave?.dice?.dice?.find(
+            (d: any) => d.colour === stateToSave?.players?.currentPlayerColour
+        )?.diceNumber ?? null;
+
+        const moveRecord: LudoMoveRecord = {
+            player: stateToSave?.players?.currentPlayerColour ?? null,
+            dice: typeof diceValue === 'number' ? diceValue : null,
+            updatedAt,
+        };
+
+        moveHistoryRef.current = [...moveHistoryRef.current.slice(-199), moveRecord];
+        const payloadState = {
+            ...stateToSave,
+            moves: moveHistoryRef.current,
+        };
+
+        lastBroadcastStateRef.current = serialized;
+        latestStateRef.current = payloadState;
+        latestUpdatedAtRef.current = updatedAt;
+
+        try {
+            localStorage.setItem(ludoBackupKey, JSON.stringify({ state: payloadState, updatedAt }));
+        } catch {
+            return;
+        }
+
+        sendMessage?.('game_move', { game: 'ludo', state: payloadState, updatedAt });
+        saveToDb(payloadState, updatedAt);
+    }, 400), [sendMessage, saveToDb, ludoBackupKey]);
 
     useEffect(() => {
         setSyncCallback((state) => {
@@ -57,194 +183,173 @@ export function Ludo({ roomId, currentMember, members = [], otherOnline = true }
     }, [persistState]);
 
     useEffect(() => {
-        // Guard: only initialise once per roomId. Without this, every time the parent
-        // calls setMembers() (e.g. on presence sync), the `members.length` dep would
-        // re-trigger this effect, causing a double-fetch and a second HYDRATE_GAME_STATE
-        // dispatch that overwrites any moves made since first load.
+        hasInitializedRef.current = false;
+        setLoading(true);
+        latestStateRef.current = null;
+        latestUpdatedAtRef.current = 0;
+        lastBroadcastStateRef.current = null;
+        lastDbStateRef.current = null;
+        moveHistoryRef.current = [];
+    }, [roomId]);
+
+    useEffect(() => {
         if (hasInitializedRef.current) return;
 
         const init = async () => {
-            // Read the latest members from the ref so we don't need members in the dep array
             const currentMembers = membersRef.current;
             if (!roomId || currentMembers.length === 0) return;
 
+            const initialPlayers = [
+                { name: currentMembers[0]?.nickname || 'Player 1', isBot: false },
+                { name: currentMembers[1]?.nickname || 'Player 2', isBot: false },
+            ];
+            setInitData(initialPlayers);
+            const idx = currentMembers.findIndex(m => m.id === currentMemberId);
+            const sequence: TPlayerColour[] = ['blue', 'green'];
+            setMyColour(sequence[idx === -1 ? 0 : idx] || 'blue');
+
             hasInitializedRef.current = true;
             try {
-                const gameRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=ludo`).then(res => res.json());
+                const backupRaw = localStorage.getItem(ludoBackupKey);
+                if (backupRaw) {
+                    const backup = JSON.parse(backupRaw);
+                    applyIncomingState(backup?.state, parseUpdatedAt(backup?.updatedAt), false);
+                }
 
-                const initialPlayers = [
-                    { name: currentMembers[0]?.nickname || 'Player 1', isBot: false },
-                    { name: currentMembers[1]?.nickname || 'Player 2', isBot: false },
-                ];
-                setInitData(initialPlayers);
-                const idx = currentMembers.findIndex(m => m.id === currentMemberId);
-                const sequence: TPlayerColour[] = ['blue', 'green'];
-                setMyColour(sequence[idx === -1 ? 0 : idx] || 'blue');
-
+                const gameRes = await fetch(`/api/love-space/ludo-state?roomId=${roomId}`, { cache: 'no-store' }).then(res => res.json());
                 const gameData = gameRes?.game;
                 if (gameData?.game_state && Object.keys(gameData.game_state).length > 0) {
-                    lastBroadcastStateRef.current = JSON.stringify(gameData.game_state);
-                    store.dispatch({ type: 'HYDRATE_GAME_STATE', payload: gameData.game_state });
+                    applyIncomingState(gameData.game_state, parseUpdatedAt(gameData.last_updated), true);
                 }
             } catch (err) {
-                console.error("Failed to init ludo:", err);
-                hasInitializedRef.current = false; // allow retry on error
+                console.error('[Ludo] Failed to initialize state', err);
+                hasInitializedRef.current = false;
             } finally {
                 setLoading(false);
+                requestSync('init');
             }
         };
 
         if (roomId && membersRef.current.length > 0) {
             init();
         }
-        // Deps: roomId resets the whole session (correct). members.length triggers the
-        // first run once the parent has loaded members, but hasInitializedRef prevents
-        // any subsequent runs caused by members array reference changes.
-    }, [roomId, members.length, currentMemberId]);
+    }, [roomId, members.length, currentMemberId, ludoBackupKey, applyIncomingState, requestSync]);
 
-    // ─── Postgres Changes: authoritative turn-end state sync ────────────────
     useEffect(() => {
-        let isMounted = true;
-        let channel: ReturnType<typeof supabase.channel> | null = null;
+        if (!registerHandler || !unregisterHandler) return;
 
-        channel = supabase
-            .channel(`public:love_games:ludo:${roomId}`)
-            .on(
-                'postgres_changes',
-                {
-                    // '*' catches both INSERT (first move, no row yet) and UPDATE (subsequent moves).
-                    // With UPSERT, the very first write is an INSERT — subscribing only to 'UPDATE'
-                    // would miss it and leave the opponent's board empty until they refresh.
-                    event: '*',
-                    schema: 'public',
-                    table: 'love_games',
-                    filter: `room_id=eq.${roomId}`,
-                },
-                (payload: any) => {
-                    if (!isMounted) return;
+        const handleGameMove = (payload: any) => {
+            if (!payload || payload.game !== 'ludo') return;
+            const state = payload.state;
+            const updatedAt = parseUpdatedAt(payload.updatedAt) || Date.now();
+            applyIncomingState(state, updatedAt, true);
+        };
 
-                    const newGame = payload.new;
-                    // We only care about ludo updates in this component
-                    if (newGame.game_type !== 'ludo') return;
+        const handleSyncRequest = (payload: any) => {
+            if (!payload || payload.senderId === currentMemberId) return;
+            if (payload.game && payload.game !== 'ludo') return;
+            const state = latestStateRef.current || store.getState();
+            const updatedAt = latestUpdatedAtRef.current || Date.now();
+            sendMessage?.('sync_state', { game: 'ludo', state, updatedAt });
+        };
 
-                    if (newGame?.game_state && Object.keys(newGame.game_state).length > 0) {
-                        const serialized = JSON.stringify(newGame.game_state);
-                        // Prevent echo loops
-                        if (serialized !== lastBroadcastStateRef.current) {
-                            lastBroadcastStateRef.current = serialized;
-                            store.dispatch({ type: 'HYDRATE_GAME_STATE', payload: newGame.game_state });
-                        }
-                    }
-                }
-            )
-            .subscribe();
+        const handleSyncState = (payload: any) => {
+            if (!payload || payload.game !== 'ludo') return;
+            const state = payload.state;
+            const updatedAt = parseUpdatedAt(payload.updatedAt);
+            applyIncomingState(state, updatedAt, true);
+        };
+
+        registerHandler('game_move', handleGameMove);
+        registerHandler('sync_request', handleSyncRequest);
+        registerHandler('sync_state', handleSyncState);
+
+        requestSync('handler_registered');
 
         return () => {
-            isMounted = false;
-            if (channel) supabase.removeChannel(channel);
+            unregisterHandler('game_move', handleGameMove);
+            unregisterHandler('sync_request', handleSyncRequest);
+            unregisterHandler('sync_state', handleSyncState);
         };
-    }, [roomId]);
+    }, [registerHandler, unregisterHandler, sendMessage, currentMemberId, applyIncomingState, requestSync]);
 
-    // Keep a ref to myColour to avoid closure staleness
-    const myColourRef = useRef<TPlayerColour | null>(null);
-    useEffect(() => { myColourRef.current = myColour; }, [myColour]);
-
-    // ─── Broadcast Channel: transient dice + token animation sync ───────────
-    // This sends animation signals peer-to-peer via WebSocket with ZERO DB writes.
-    // It lets the opponent see dice spinning and token movement in real-time,
-    // while the authoritative state (final positions, turn order) arrives via postgres_changes.
     useEffect(() => {
-        if (!roomId) return;
+        if (otherOnline && !lastOnlineStateRef.current) {
+            requestSync('peer_reconnected');
+        }
+        lastOnlineStateRef.current = otherOnline;
+    }, [otherOnline, requestSync]);
 
-        const broadcastChannel = supabase.channel(`room:ludo:broadcast:${roomId}`);
+    useEffect(() => {
+        if (!registerHandler || !unregisterHandler) return;
 
-        // Receive: opponent rolled — show their dice animation locally
-        broadcastChannel
-            .on('broadcast', { event: 'dice_start' }, ({ payload }) => {
-                if (!payload || payload.senderId === currentMemberId) return;
-                store.dispatch(setIsPlaceholderShowing({ colour: payload.colour, isPlaceholderShowing: true }));
-            })
-            .on('broadcast', { event: 'dice_resolved' }, ({ payload }) => {
-                if (!payload || payload.senderId === currentMemberId) return;
-                // Dispatch both to turn off the spinner AND to explicitly set the incoming dice number!
-                store.dispatch({
-                    type: 'dice/resolveBroadcastRoll',
-                    payload: { colour: payload.colour, diceNumber: payload.diceNumber }
-                });
-            })
-            // Receive: opponent's token moved one step — show the movement animation locally
-            .on('broadcast', { event: 'token_moving' }, ({ payload }) => {
-                if (!payload || payload.senderId === currentMemberId) return;
-                // Dispatch changeCoordsOfToken to animate the token step-by-step on this client.
-                setTokenTransitionTime(FORWARD_TOKEN_TRANSITION_TIME, { colour: payload.colour, id: payload.tokenId } as any);
-                // This is purely visual — the authoritative coordinates arrive via HYDRATE_GAME_STATE.
-                store.dispatch(changeCoordsOfToken({
-                    colour: payload.colour,
-                    id: payload.tokenId,
-                    newCoords: payload.currentTile,
-                }));
-            })
-            .subscribe();
+        const handleDiceStart = (payload: any) => {
+            if (!payload || payload.senderId === currentMemberId) return;
+            playDiceSound();
+            store.dispatch(setIsPlaceholderShowing({ colour: payload.colour, isPlaceholderShowing: true }));
+        };
 
-        // Send: watch store for state transitions and broadcast them
+        const handleDiceResolved = (payload: any) => {
+            if (!payload || payload.senderId === currentMemberId) return;
+            store.dispatch({
+                type: 'dice/resolveBroadcastRoll',
+                payload: { colour: payload.colour, diceNumber: payload.diceNumber }
+            });
+        };
+
+        const handleTokenMoving = (payload: any) => {
+            if (!payload || payload.senderId === currentMemberId) return;
+            setTokenTransitionTime(FORWARD_TOKEN_TRANSITION_TIME, { colour: payload.colour, id: payload.tokenId } as any);
+            store.dispatch(changeCoordsOfToken({
+                colour: payload.colour,
+                id: payload.tokenId,
+                newCoords: payload.currentTile,
+            }));
+        };
+
+        registerHandler('dice_start', handleDiceStart);
+        registerHandler('dice_resolved', handleDiceResolved);
+        registerHandler('token_moving', handleTokenMoving);
+
         let prevSpinnerState: Record<string, boolean> = {};
-        // Track previous token coordinates per colour+id to detect per-step moves
         let prevTokenCoords: Record<string, { x: number; y: number }> = {};
 
         const unsubscribeStore = store.subscribe(() => {
             const state = store.getState();
             const currentMyColour = myColourRef.current;
 
-            // ── Dice animation events ──────────────────────────────────────────
             if (state.dice?.dice) {
                 for (const dice of state.dice.dice) {
                     const wasSpinning = prevSpinnerState[dice.colour] ?? false;
                     const isSpinning = dice.isPlaceholderShowing ?? false;
 
-                    // ONLY broadcast state changes if we are the owner of this colour
-                    if (dice.colour === currentMyColour) {
+                    if (dice.colour === currentMyColour && sendMessage) {
                         if (isSpinning && !wasSpinning) {
-                            broadcastChannel.send({
-                                type: 'broadcast',
-                                event: 'dice_start',
-                                payload: { colour: dice.colour, senderId: currentMemberId },
-                            }).catch(() => { });
+                            sendMessage('dice_start', { colour: dice.colour, senderId: currentMemberId });
                         }
                         if (!isSpinning && wasSpinning) {
-                            broadcastChannel.send({
-                                type: 'broadcast',
-                                event: 'dice_resolved',
-                                payload: { colour: dice.colour, diceNumber: dice.diceNumber, senderId: currentMemberId },
-                            }).catch(() => { });
+                            sendMessage('dice_resolved', { colour: dice.colour, diceNumber: dice.diceNumber, senderId: currentMemberId });
                         }
                     }
                     prevSpinnerState[dice.colour] = isSpinning;
                 }
             }
 
-            // ── Token movement events ──────────────────────────────────────────
-            // Only broadcast while a token is actively moving to avoid spamming
-            // token_moving events during the initial HYDRATE or idle state changes.
             if (state.players?.isAnyTokenMoving && state.players?.players) {
-                for (const player of state.players.players) {
-                    // ONLY broadcast moves for our own tokens
-                    if (player.colour !== currentMyColour) continue;
+                if (state.players.currentPlayerColour !== currentMyColour) return;
 
+                for (const player of state.players.players) {
                     for (const token of player.tokens) {
                         const key = `${player.colour}_${token.id}`;
                         const prev = prevTokenCoords[key];
                         const curr = token.coordinates;
                         if (!prev || prev.x !== curr.x || prev.y !== curr.y) {
-                            broadcastChannel.send({
-                                type: 'broadcast',
-                                event: 'token_moving',
-                                payload: {
-                                    colour: player.colour,
-                                    tokenId: token.id,
-                                    currentTile: curr,
-                                    senderId: currentMemberId,
-                                },
-                            }).catch(() => { });
+                            sendMessage?.('token_moving', {
+                                colour: player.colour,
+                                tokenId: token.id,
+                                currentTile: curr,
+                                senderId: currentMemberId,
+                            });
                             prevTokenCoords[key] = { x: curr.x, y: curr.y };
                         }
                     }
@@ -254,15 +359,24 @@ export function Ludo({ roomId, currentMember, members = [], otherOnline = true }
 
         return () => {
             unsubscribeStore();
-            supabase.removeChannel(broadcastChannel);
+            unregisterHandler('dice_start', handleDiceStart);
+            unregisterHandler('dice_resolved', handleDiceResolved);
+            unregisterHandler('token_moving', handleTokenMoving);
         };
-    }, [roomId, currentMemberId]);
+    }, [registerHandler, unregisterHandler, sendMessage, currentMemberId]);
+
+    if (!isLoaded) {
+        return (
+            <div className="absolute inset-0 p-2 sm:p-4 flex items-center justify-center bg-white dark:bg-slate-900 rounded-2xl w-full h-full">
+                <GamePreloader progress={progress} gameName="Ludo" />
+            </div>
+        );
+    }
 
     return (
         <Provider store={store}>
             <div className="absolute inset-0 p-2 sm:p-4 flex items-center justify-center ludo-wrapper overflow-y-auto overflow-x-hidden">
                 <Game initData={initData} myColour={myColour || 'blue'} otherOnline={otherOnline} />
-                {/* Skeleton overlay: only dims the dice panel while the initial fetch is in-flight */}
                 {loading && (
                     <div
                         className="absolute inset-0 z-50 flex items-end justify-center pb-4 pointer-events-none"

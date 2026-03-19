@@ -6,6 +6,7 @@ CREATE TABLE public.love_rooms (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   status TEXT DEFAULT 'active'::text NOT NULL,
+  is_active BOOLEAN DEFAULT true NOT NULL,
   expires_at TIMESTAMP WITH TIME ZONE DEFAULT (now() + interval '24 hours') NOT NULL
 );
 
@@ -80,6 +81,19 @@ CREATE POLICY "Anyone can manage games" ON public.love_games
 
 -- Enable Realtime for love_games (optional, we might mostly use broadcast, but good to have)
 alter publication supabase_realtime add table public.love_games;
+
+
+-- 5) ludo_games
+CREATE TABLE IF NOT EXISTS public.ludo_games (
+  room_id UUID REFERENCES public.love_rooms(id) ON DELETE CASCADE PRIMARY KEY,
+  game_state JSONB NOT NULL,
+  last_updated TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.ludo_games ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can manage ludo games" ON public.ludo_games
+  FOR ALL USING (true);
 
 
 -- 5) love_quizzes

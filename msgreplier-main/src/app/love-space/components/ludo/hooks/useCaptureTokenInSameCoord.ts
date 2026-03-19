@@ -9,8 +9,8 @@ import { type TCoordinate } from '../types';
 import { type TToken } from '../types';
 import { ERRORS } from '../utils/errors';
 import { areCoordsEqual } from '../game/coords/logic';
-import { useCoordsToPosition } from './useCoordsToPosition';
 import type { RootState } from '../state/store';
+import { updateTokenPositionAndAlignmentThunk } from '../state/thunks/updateTokenPositionAndAlignmentThunk';
 import { setTokenTransitionTime } from '../utils/setTokenTransitionTime';
 import { useCallback } from 'react';
 import {
@@ -24,8 +24,7 @@ import { tokenPaths } from '../game/tokens/paths';
 import { sleep } from '../utils/sleep';
 
 export function useCaptureTokenInSameCoord() {
-  const dispatch = useDispatch();
-  const getPosition = useCoordsToPosition();
+  const dispatch = useDispatch<any>();
   useSelector((state: RootState) => state.players.players);
   const store = useStore<RootState>();
 
@@ -73,7 +72,13 @@ export function useCaptureTokenInSameCoord() {
             );
             let index = initialCoordinateIndex;
 
-            const handleTransitionEnd = () => {
+            let isTransitioning = false;
+
+            const handleTransitionEnd = (e: Event) => {
+              if ((e as TransitionEvent).propertyName !== 'transform' || e.target !== tokenEl) return;
+              if (isTransitioning) return;
+              isTransitioning = true;
+              
               index--;
               if (index < 0) {
                 dispatch(setIsAnyTokenMoving(false));
@@ -84,20 +89,20 @@ export function useCaptureTokenInSameCoord() {
                 if (tokensSuccessfullyCaptured === capturableTokens.length) resolve(true);
                 return;
               }
-              const { x, y } = getPosition(tokenPath[index], defaultTokenAlignmentData);
-              tokenEl.style.transform = `translate(${x}, ${y})`;
+              
+              isTransitioning = false;
+              dispatch(updateTokenPositionAndAlignmentThunk({ colour, id, newCoords: tokenPath[index] }));
             };
             // Trigger the first transition
             if (isFirstCapture) isFirstCapture = false;
             else await sleep(250);
             index--;
-            const { x, y } = getPosition(tokenPath[index], defaultTokenAlignmentData);
-            tokenEl.style.transform = `translate(${x}, ${y})`;
+            dispatch(updateTokenPositionAndAlignmentThunk({ colour, id, newCoords: tokenPath[index] }));
             tokenEl.addEventListener('transitionend', handleTransitionEnd);
           }
         })();
       });
     },
-    [dispatch, getPosition, store]
+    [dispatch, store]
   );
 }

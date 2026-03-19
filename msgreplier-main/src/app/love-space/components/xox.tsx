@@ -5,7 +5,7 @@ import { LoveRoomMember, XOXGameState, XOXPlayer } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Heart, X as XIcon, Circle, RotateCcw, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
 
 const INITIAL_STATE: XOXGameState = {
     board: Array(9).fill(null),
@@ -21,7 +21,23 @@ const WINNING_COMBOS = [
     [0, 4, 8], [2, 4, 6]             // Diagonals
 ];
 
-export function XOX({ roomId, currentMember, members = [], otherOnline = true }: { roomId: string, currentMember: LoveRoomMember, members?: LoveRoomMember[], otherOnline?: boolean }) {
+export function XOX({ 
+    roomId, 
+    currentMember, 
+    members = [], 
+    otherOnline = true,
+    sendMessage,
+    registerHandler,
+    unregisterHandler
+}: { 
+    roomId: string;
+    currentMember: LoveRoomMember;
+    members?: LoveRoomMember[];
+    otherOnline?: boolean;
+    sendMessage?: (type: WebRTCMessageType, payload?: any) => void;
+    registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
+    unregisterHandler?: (type: WebRTCMessageType) => void;
+}) {
     const [gameState, setGameState] = useState<XOXGameState>(INITIAL_STATE);
     const [myPlayer, setMyPlayer] = useState<XOXPlayer>(null);
     const [loading, setLoading] = useState(true);
@@ -75,44 +91,26 @@ export function XOX({ roomId, currentMember, members = [], otherOnline = true }:
         // hasInitializedRef prevents any subsequent re-runs from parent re-renders.
     }, [roomId, members.length, currentMember.id]);
 
+    // WebRTC Real-time state sync
     useEffect(() => {
-        let isMounted = true;
-        let channel: ReturnType<typeof supabase.channel> | null = null;
+        if (!registerHandler || !unregisterHandler) return;
 
-        channel = supabase
-            .channel(`public:love_games:xox:${roomId}`)
-            .on(
-                'postgres_changes',
-                {
-                    // '*' catches both INSERT (first move) and UPDATE (subsequent moves).
-                    event: '*',
-                    schema: 'public',
-                    table: 'love_games',
-                    filter: `room_id=eq.${roomId}`,
-                },
-                (payload: any) => {
-                    if (!isMounted) return;
+        const handleIncomingMove = (payload: any) => {
+            if (payload.game !== 'xox') return;
+            const parsed = payload.state as XOXGameState;
+            const serialized = JSON.stringify(parsed);
+            if (serialized !== lastStateRef.current) {
+                lastStateRef.current = serialized;
+                setGameState(parsed);
+            }
+        };
 
-                    const newGame = payload.new;
-                    if (newGame.game_type !== 'xox') return;
-
-                    if (newGame?.game_state) {
-                        const parsed = newGame.game_state as XOXGameState;
-                        const serialized = JSON.stringify(parsed);
-                        if (serialized !== lastStateRef.current) {
-                            lastStateRef.current = serialized;
-                            setGameState(parsed);
-                        }
-                    }
-                }
-            )
-            .subscribe();
+        registerHandler('game_move', handleIncomingMove);
 
         return () => {
-            isMounted = false;
-            if (channel) supabase.removeChannel(channel);
+            unregisterHandler('game_move');
         };
-    }, [roomId]);
+    }, [registerHandler, unregisterHandler]);
 
     const checkWinner = (board: XOXPlayer[]): XOXGameState['winner'] => {
         for (let combo of WINNING_COMBOS) {
@@ -183,13 +181,12 @@ export function XOX({ roomId, currentMember, members = [], otherOnline = true }:
         };
 
         // Optimistic UI update
+        lastStateRef.current = JSON.stringify(newState);
         setGameState(newState);
 
-        await fetch('/api/love-space/games', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, gameType: 'xox', gameState: newState })
-        });
+        if (sendMessage) {
+            sendMessage('game_move', { game: 'xox', state: newState });
+        }
     };
 
     const roomCreator = members.length > 0 ? members[0] : null;
@@ -208,13 +205,12 @@ export function XOX({ roomId, currentMember, members = [], otherOnline = true }:
             roundStarter: nextStarter,
             scores: gameState.scores || { X: 0, O: 0 }
         };
+        lastStateRef.current = JSON.stringify(newState);
         setGameState(newState);
 
-        await fetch('/api/love-space/games', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, gameType: 'xox', gameState: newState })
-        });
+        if (sendMessage) {
+            sendMessage('game_move', { game: 'xox', state: newState });
+        }
     };
 
     if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse w-full text-center">Loading Game...</div>;

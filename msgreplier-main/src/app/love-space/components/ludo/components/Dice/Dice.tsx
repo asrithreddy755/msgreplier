@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../state/store';
 import { ERRORS } from '../../utils/errors';
 import { rollDiceThunk } from '../../state/thunks/rollDiceThunk';
+import { playDiceSound } from '../../utils/diceSound';
 import { playerColours } from '../../game/players/constants';
 import { isAnyTokenActiveOfColour } from '../../game/tokens/logic';
 import styles from './Dice.module.css';
@@ -47,6 +48,7 @@ function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true }:
   const handleDiceClick = useCallback(() => {
     if (isDiceDisabled) return;
     if (!otherOnline) return; // Added this line
+    playDiceSound(); // Instant sound for the local roller
     dispatch(rollDiceThunk(colour, (rolledNumber) => onDiceClick(colour, rolledNumber)));
   }, [colour, dispatch, isDiceDisabled, onDiceClick, otherOnline]); // Added otherOnline to dependencies
 
@@ -65,9 +67,12 @@ function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true }:
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     if (isPlaceholderShowing) {
+      // Sound is played immediately: by handleDiceClick (local roller)
+      // or by the dice_start WebRTC handler in ludo.tsx (remote player).
+      // Do NOT play here to avoid a delayed double-sound.
       interval = setInterval(() => {
         setInternalDiceNum(Math.floor(Math.random() * 6) + 1);
-      }, 80);
+      }, 280);
     } else {
       setInternalDiceNum(diceNumber || 1);
     }

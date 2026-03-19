@@ -5,9 +5,14 @@ import { LoveRoomMember, SnakeLadderState } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
 import Image from 'next/image';
 import SnakeDice from './SnakeDice';
+import { useAssetPreloader } from '../hooks/useAssetPreloader';
+import { GamePreloader } from './GamePreloader';
+import { MuteButton } from './MuteButton';
+import { throttle } from 'lodash-es';
+import { playDiceSound } from './ludo/utils/diceSound';
 
 // Collector's Edition snakes and ladders matching snake.webp exactly
 const SNAKES: Record<number, number> = { 28: 9, 33: 27, 38: 18, 41: 39, 43: 24 };
@@ -16,7 +21,32 @@ const LADDERS: Record<number, number> = { 3: 24, 6: 16, 14: 26, 30: 49 };
 // 5x10 board logic
 const BOARDS_CELLS = Array.from({ length: 50 }, (_, i) => i + 1);
 
-export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }: { roomId: string, currentMember: LoveRoomMember, otherOnline?: boolean, members?: LoveRoomMember[] }) {
+const parseUpdatedAt = (value: unknown) => {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string') {
+        const parsed = Date.parse(value);
+        if (!Number.isNaN(parsed)) return parsed;
+    }
+    return 0;
+};
+
+export function SnakeLadder({ 
+    roomId, 
+    currentMember, 
+    otherOnline, 
+    members = [],
+    sendMessage,
+    registerHandler,
+    unregisterHandler
+}: { 
+    roomId: string; 
+    currentMember: LoveRoomMember; 
+    otherOnline?: boolean; 
+    members?: LoveRoomMember[];
+    sendMessage?: (type: WebRTCMessageType, payload?: any) => void;
+    registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
+    unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
+}) {
     const [state, setState] = useState<SnakeLadderState>({
         player1Position: 1,
         player2Position: 1,
@@ -29,14 +59,24 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
     const [isProcessing, setIsProcessing] = useState(false);
     const [lastRoll, setLastRoll] = useState<number | null>(null);
     const lastStateRef = useRef<string | null>(null);
+    const latestUpdatedAtRef = useRef(0);
+    const lastSyncRequestAtRef = useRef(0);
     const pendingStateRef = useRef<SnakeLadderState | null>(null);
     const isAnimatingRef = useRef(false);
     const hasInitializedRef = useRef(false);
-    const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+    const lastOnlineStateRef = useRef(Boolean(otherOnline));
+    const stateRef = useRef(state);
+    const snakeBackupKey = useMemo(() => `snake_backup_${roomId}`, [roomId]);
 
     const [visualP1, setVisualP1] = useState(1);
     const [visualP2, setVisualP2] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
+
+    // Preload heavy static assets
+    const { isLoaded, progress } = useAssetPreloader([
+        '/snake.webp',
+        '/dice-roll.mp3'
+    ]);
 
 
     useEffect(() => {
@@ -51,10 +91,10 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
         setIsAnimating(true);
         try {
             const setVisual = playerNum === 1 ? setVisualP1 : setVisualP2;
-            await new Promise(r => setTimeout(r, 200));
+            await new Promise(r => setTimeout(r, 100));
             for (const step of path) {
                 setVisual(step);
-                await new Promise(r => setTimeout(r, 400));
+                await new Promise(r => setTimeout(r, 150));
             }
             lastStateRef.current = JSON.stringify(finalState);
             setState(finalState);
@@ -67,6 +107,50 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
     const visualP2Ref = useRef(visualP2);
     useEffect(() => { visualP1Ref.current = visualP1; }, [visualP1]);
     useEffect(() => { visualP2Ref.current = visualP2; }, [visualP2]);
+    useEffect(() => { stateRef.current = state; }, [state]);
+
+    const persistLocalBackup = useCallback((nextState: SnakeLadderState, updatedAt: number) => {
+        try {
+            localStorage.setItem(snakeBackupKey, JSON.stringify({ state: nextState, updatedAt }));
+        } catch {
+            return;
+        }
+    }, [snakeBackupKey]);
+
+    const saveToDb = useMemo(() => throttle((stateToSave: SnakeLadderState, updatedAt: number) => {
+        fetch('/api/love-space/games', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId, gameType: 'snake', gameState: stateToSave, updatedAt }),
+        }).catch(() => {
+            return;
+        });
+    }, 3000, { leading: true, trailing: true }), [roomId]);
+
+    useEffect(() => {
+        return () => {
+            saveToDb.cancel();
+        };
+    }, [saveToDb]);
+
+    const requestSync = useCallback((reason: string) => {
+        if (!sendMessage) return;
+        const now = Date.now();
+        if (now - lastSyncRequestAtRef.current < 1200) return;
+        lastSyncRequestAtRef.current = now;
+        sendMessage('sync_request', { game: 'snake', roomId, senderId: currentMember.id, reason, sentAt: now });
+    }, [sendMessage, roomId, currentMember.id]);
+
+    const commitState = useCallback((nextState: SnakeLadderState, options?: { broadcast?: boolean }) => {
+        const updatedAt = Date.now();
+        latestUpdatedAtRef.current = updatedAt;
+        lastStateRef.current = JSON.stringify(nextState);
+        persistLocalBackup(nextState, updatedAt);
+        saveToDb(nextState, updatedAt);
+        if (options?.broadcast !== false) {
+            sendMessage?.('game_move', { game: 'snake', state: nextState, updatedAt });
+        }
+    }, [sendMessage, saveToDb, persistLocalBackup]);
 
     const buildPath = (from: number, to: number) => {
         const path: number[] = [];
@@ -78,9 +162,19 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
         return path;
     };
 
-    const applyRemoteState = useCallback((nextState: SnakeLadderState) => {
+    const applyRemoteState = useCallback((nextState: SnakeLadderState, incomingUpdatedAt: number, shouldBackup = false) => {
+        if (!nextState) return;
+        const normalizedUpdatedAt = Number.isFinite(incomingUpdatedAt) ? incomingUpdatedAt : 0;
+        if (normalizedUpdatedAt && normalizedUpdatedAt < latestUpdatedAtRef.current) return;
+        if (normalizedUpdatedAt) {
+            latestUpdatedAtRef.current = normalizedUpdatedAt;
+        }
+
         if (isAnimatingRef.current) {
             pendingStateRef.current = nextState;
+            if (shouldBackup) {
+                persistLocalBackup(nextState, latestUpdatedAtRef.current || Date.now());
+            }
             return;
         }
 
@@ -100,39 +194,55 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
             const path = (nextState.lastPathPlayer === 1 && nextState.lastPath?.length) ? nextState.lastPath : buildPath(p1From, p1To);
             if (path.length > 0) {
                 playAnimationAndSync(1, path, nextState);
+                if (shouldBackup) {
+                    persistLocalBackup(nextState, latestUpdatedAtRef.current || Date.now());
+                }
                 return;
             }
         } else if (!p1Changed && p2Changed) {
             const path = (nextState.lastPathPlayer === 2 && nextState.lastPath?.length) ? nextState.lastPath : buildPath(p2From, p2To);
             if (path.length > 0) {
                 playAnimationAndSync(2, path, nextState);
+                if (shouldBackup) {
+                    persistLocalBackup(nextState, latestUpdatedAtRef.current || Date.now());
+                }
                 return;
             }
         }
 
         lastStateRef.current = JSON.stringify(nextState);
         setState(nextState);
-    }, []);
+        if (shouldBackup) {
+            persistLocalBackup(nextState, latestUpdatedAtRef.current || Date.now());
+        }
+    }, [persistLocalBackup]);
 
     useEffect(() => {
         const init = async () => {
             if (hasInitializedRef.current) return;
             hasInitializedRef.current = true;
             try {
-                const stateRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=snake`).then(res => res.json());
+                const backupRaw = localStorage.getItem(snakeBackupKey);
+                if (backupRaw) {
+                    const backup = JSON.parse(backupRaw);
+                    if (backup?.state) {
+                        applyRemoteState(backup.state as SnakeLadderState, parseUpdatedAt(backup.updatedAt), false);
+                    }
+                }
 
-                // members are now passed via props
+                const stateRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=snake`, { cache: 'no-store' }).then(res => res.json());
 
                 const lastGame = stateRes?.game;
                 if (lastGame?.game_state) {
                     const parsed = lastGame.game_state as SnakeLadderState;
-                    applyRemoteState(parsed);
+                    applyRemoteState(parsed, parseUpdatedAt(lastGame.updated_at), true);
                 }
             } catch (err) {
                 console.error("Failed to init snake ladder:", err);
                 hasInitializedRef.current = false;
             } finally {
                 setLoading(false);
+                requestSync('init');
             }
         };
 
@@ -140,7 +250,7 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
             init();
         }
 
-    }, [roomId, members.length, applyRemoteState]);
+    }, [roomId, members.length, applyRemoteState, requestSync, snakeBackupKey]);
 
     // Set initial turn when members load
     useEffect(() => {
@@ -149,73 +259,74 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
         }
     }, [members]);
 
+    // WebRTC Real-time state sync
     useEffect(() => {
-        let isMounted = true;
-        let channel: ReturnType<typeof supabase.channel> | null = null;
+        if (!registerHandler || !unregisterHandler) return;
 
-        channel = supabase
-            .channel(`public:love_games:snake:${roomId}`)
-            .on(
-                'broadcast',
-                { event: 'dice_start' },
-                (payload) => {
-                    if (!isMounted) return;
-                    setRolling(true);
-                    setIsProcessing(true);
-                }
-            )
-            .on(
-                'broadcast',
-                { event: 'dice_result' },
-                (payload) => {
-                    if (!isMounted) return;
-                    if (payload.payload?.rollValue) {
-                        setLastRoll(payload.payload.rollValue);
-                    }
-                    setRolling(false);
-                }
-            )
-            .on(
-                'postgres_changes',
-                {
-                    // '*' catches both INSERT (first move) and UPDATE (subsequent moves).
-                    event: '*',
-                    schema: 'public',
-                    table: 'love_games',
-                    filter: `room_id=eq.${roomId}`,
-                },
-                (payload: any) => {
-                    if (!isMounted) return;
+        const handleDiceStart = (payload: any) => {
+            if (!payload || payload.playerNum === myPlayerNum) return;
+            playDiceSound();
+            setRolling(true);
+        };
 
-                    const newGame = payload.new;
-                    if (newGame.game_type !== 'snake') return;
+        const handleDiceResolved = (payload: any) => {
+            if (!payload || payload.playerNum === myPlayerNum) return;
+            setRolling(false);
+            const roll = payload.roll;
+            const state = payload.state;
+            const updatedAt = parseUpdatedAt(payload.updatedAt);
+            applyRemoteState(state, updatedAt, true);
+        };
 
-                    if (newGame?.game_state) {
-                        const parsed = newGame.game_state as SnakeLadderState;
-                        const serialized = JSON.stringify(parsed);
-                        if (serialized !== lastStateRef.current) {
-                            setRolling(false);
-                            setIsProcessing(false);
-                            applyRemoteState(parsed);
-                        }
-                    }
-                }
-            )
-            .subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    // We can drop the manual reconnect logic since Supabase JS client
-                    // handles Realtime reconnections automatically out of the box.
-                    console.log('Realtime Snake Ladder Subscribed');
-                }
+        const handleGameMove = (payload: any) => {
+            if (!payload || payload.game !== 'snake') return;
+            const parsed = payload.state as SnakeLadderState;
+            const serialized = JSON.stringify(parsed);
+            if (serialized !== lastStateRef.current) {
+                setRolling(false);
+                setIsProcessing(false);
+                applyRemoteState(parsed, parseUpdatedAt(payload.updatedAt), true);
+            }
+        };
+
+        const handleSyncRequest = (payload: any) => {
+            if (!payload || payload.senderId === currentMember.id) return;
+            if (payload.game && payload.game !== 'snake') return;
+            sendMessage?.('sync_state', {
+                game: 'snake',
+                state: stateRef.current,
+                updatedAt: latestUpdatedAtRef.current || Date.now(),
             });
+        };
 
-        channelRef.current = channel;
+        const handleSyncState = (payload: any) => {
+            if (!payload || payload.game !== 'snake') return;
+            applyRemoteState(payload.state as SnakeLadderState, parseUpdatedAt(payload.updatedAt), true);
+        };
+
+        registerHandler('dice_start', handleDiceStart);
+        registerHandler('dice_resolved', handleDiceResolved);
+        registerHandler('game_move', handleGameMove);
+        registerHandler('sync_request', handleSyncRequest);
+        registerHandler('sync_state', handleSyncState);
+
+        requestSync('handler_registered');
 
         return () => {
-            isMounted = false;
-            if (channel) supabase.removeChannel(channel);
+            unregisterHandler('dice_start', handleDiceStart);
+            unregisterHandler('dice_resolved', handleDiceResolved);
+            unregisterHandler('game_move', handleGameMove);
+            unregisterHandler('sync_request', handleSyncRequest);
+            unregisterHandler('sync_state', handleSyncState);
         };
-    }, [roomId, applyRemoteState]);
+    }, [registerHandler, unregisterHandler, applyRemoteState, currentMember.id, sendMessage, requestSync]);
+
+    useEffect(() => {
+        if (otherOnline && !lastOnlineStateRef.current) {
+            requestSync('peer_reconnected');
+        }
+        lastOnlineStateRef.current = Boolean(otherOnline);
+    }, [otherOnline, requestSync]);
 
     useEffect(() => {
         if (!isAnimating && pendingStateRef.current) {
@@ -254,12 +365,11 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
 
         setIsProcessing(true);
         setRolling(true);
+        playDiceSound();
 
-        channelRef.current?.send({
-            type: 'broadcast',
-            event: 'dice_start',
-            payload: { playerNum: myPlayerNum }
-        });
+        if (sendMessage) {
+            sendMessage('dice_start', { playerNum: myPlayerNum });
+        }
 
         try {
             // Simulate roll animation delay (longer to sync with CSS animation)
@@ -311,25 +421,16 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
             setLastRoll(roll);
             setRolling(false);
 
-            channelRef.current?.send({
-                type: 'broadcast',
-                event: 'dice_result',
-                payload: { playerNum: myPlayerNum, rollValue: roll }
-            });
+            if (sendMessage) {
+                sendMessage('dice_resolved', { playerNum: myPlayerNum, rollValue: roll });
+            }
 
-            lastStateRef.current = JSON.stringify(newState);
-
-            const apiPromise = fetch('/api/love-space/games', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ roomId, gameType: 'snake', gameState: newState })
-            });
+            commitState(newState);
 
             if (path.length > 0) {
-                await Promise.all([playAnimationAndSync(myPlayerNum, path, newState), apiPromise]);
+                await playAnimationAndSync(myPlayerNum, path, newState);
             } else {
                 setState(newState);
-                await apiPromise;
             }
         } finally {
             setIsProcessing(false);
@@ -355,12 +456,7 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
         };
         setState(newState);
         setLastRoll(null);
-
-        await fetch('/api/love-space/games', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, gameType: 'snake', gameState: newState })
-        });
+        commitState(newState);
     };
 
     // Board generation (memoized to avoid regenerating on every render/state update)
@@ -403,8 +499,13 @@ export function SnakeLadder({ roomId, currentMember, otherOnline, members = [] }
     const p2Color = "bg-blue-500";
     const myColor = myPlayerNum === 1 ? p1Color : p2Color;
 
+    if (!isLoaded) {
+        return <GamePreloader progress={progress} gameName="Snake & Ladder" />;
+    }
+
     return (
-        <div className="flex flex-col items-center w-full max-w-sm mx-auto pb-4 sm:pb-8 gap-2 sm:gap-3">
+        <div className="flex flex-col items-center w-full max-w-sm mx-auto pb-4 sm:pb-8 gap-2 sm:gap-3 relative">
+            <MuteButton />
             <div className="text-center w-full">
                 <h2 className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1 sm:mb-2 flex items-center justify-center gap-1.5 sm:gap-2">
                     Snake & Ladder <Dices className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />

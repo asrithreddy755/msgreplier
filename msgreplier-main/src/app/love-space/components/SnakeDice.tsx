@@ -3,6 +3,7 @@ import styles from './ludo/components/Dice/Dice.module.css';
 import clsx from 'clsx';
 import { TPlayerColour } from './ludo/types';
 import { playerColours } from './ludo/game/players/constants';
+import { playDiceSound } from './ludo/utils/diceSound';
 
 type Props = {
   isRolling: boolean;
@@ -52,7 +53,10 @@ function SnakeDice({
         title={!disabled ? 'Roll Dice' : undefined}
         style={{ '--player-colour': playerColours[colour] } as React.CSSProperties}
         type="button"
-        onClick={onDiceClick}
+        onClick={() => {
+          playDiceSound();
+          onDiceClick();
+        }}
         disabled={disabled}
       >
         <div className={clsx(styles.diceFace, styles[`face${internalDiceNum}`])}>

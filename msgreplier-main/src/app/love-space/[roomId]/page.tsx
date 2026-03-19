@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useWebRTC } from '@/hooks/useWebRTC';
+import { GameConnection } from '../components/GameConnection';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -75,6 +77,27 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const membersRef = useRef<LoveRoomMember[]>([]);
     const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
     const [hasPresenceSynced, setHasPresenceSynced] = useState(false);
+
+    const isCreator = members.length > 0 && currentMember?.id === members[0].id;
+    
+    // Derive creator status synchronously from localStorage so useWebRTC gets the right
+    // role on first render — BEFORE the async members API response comes back.
+    // The creator's localStorage entry has { ...member, isCreator: true } set at room creation.
+    const isCreatorFromStorage = (() => {
+        if (typeof window === 'undefined' || !roomId) return false;
+        try {
+            const saved = localStorage.getItem(`loveRoom_${roomId}`);
+            if (!saved) return false;
+            return JSON.parse(saved)?.isCreator === true;
+        } catch { return false; }
+    })();
+
+    const { connectionState, latencyMs, rtcStats, sendMessage, registerHandler, unregisterHandler } = useWebRTC(
+        roomId || '',
+        currentMember?.id || '',
+        isCreatorFromStorage  // Use the localStorage-derived flag instead of the async-members-derived one
+    );
+
 
     useEffect(() => {
         membersRef.current = members;
@@ -413,12 +436,18 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         }
 
         // --- FRONTEND EXPIRATION LOGIC ---
-        // If the other player is currently offline (and we have 2 members), start a 10 min countdown.
-        // If they come back, this effect re-runs, clearing the timeout.
-        if (membersRef.current.length >= 2 && !isOtherOnline) {
+        // If the other player is currently offline (via presence) OR the WebRTC connection is lost (and we have 2 members), 
+        // start a 10 min countdown. If they come back or reconnect, this effect re-runs, clearing the timeout.
+        const isPeerOffline = !isOtherOnline || (connectionState !== 'Connected' && connectionState !== 'Waiting for opponent');
+
+        if (membersRef.current.length >= 2 && isPeerOffline) {
+             console.log(`[Expiration] Peer offline or connection lost. Starting 10m timeout. Connection: ${connectionState}, Presence: ${isOtherOnline}`);
              inactivityTimeout = setTimeout(() => {
-                  setError("This room has expired because a player was inactive for 10 minutes.");
-                  fetch(`/api/love-space/delete-room?roomId=${room.id}`, { method: 'DELETE' }).catch(() => {});
+                  setError("This room has expired because a player was inactive or offline for 10 minutes.");
+                  fetch('/api/love-space/update-room-status', { 
+                      method: 'POST', 
+                      body: JSON.stringify({ roomId: room.id, isActive: false }) 
+                  }).catch(() => {});
              }, 10 * 60 * 1000); // 10 minutes
         }
 
@@ -435,7 +464,10 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                           const actualCount = Array.isArray(data?.members) ? data.members.length : membersRef.current.length;
                           if (actualCount < 2) {
                               setError("This room has expired because no one joined within 10 minutes.");
-                              fetch(`/api/love-space/delete-room?roomId=${room.id}`, { method: 'DELETE' }).catch(() => {});
+                              fetch('/api/love-space/update-room-status', { 
+                                  method: 'POST', 
+                                  body: JSON.stringify({ roomId: room.id, isActive: false }) 
+                              }).catch(() => {});
                           }
                       }).catch(() => {});
              };
@@ -451,7 +483,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             if (inactivityTimeout) clearTimeout(inactivityTimeout);
             if (heartbeatInterval) clearInterval(heartbeatInterval);
         };
-    }, [room, currentMember, isOtherOnline]);
+    }, [room, currentMember, isOtherOnline, connectionState]);
 
     if (loading) {
         return (
@@ -488,15 +520,22 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     <h1 className="font-bold text-lg text-gray-800 dark:text-pink-100 tracking-tight">Love Space</h1>
                 </div>
 
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={copyLink}
-                    className="text-xs h-8 border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-300 hover:bg-pink-50 dark:hover:bg-pink-900/30 rounded-full px-3"
-                >
-                    {copied ? <CheckCircle2 className="w-4 h-4 mr-1 text-green-500" /> : <Copy className="w-4 h-4 mr-1" />}
-                    {copied ? "Copied" : "Invite"}
-                </Button>
+                <div className="flex items-center gap-4">
+                    <GameConnection 
+                         connectionState={connectionState} 
+                         latencyMs={latencyMs}
+                         rtcStats={rtcStats}
+                    />
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={copyLink}
+                        className="text-xs h-8 border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-300 hover:bg-pink-50 dark:hover:bg-pink-900/30 rounded-full px-3"
+                    >
+                        {copied ? <CheckCircle2 className="w-4 h-4 mr-1 text-green-500" /> : <Copy className="w-4 h-4 mr-1" />}
+                        {copied ? "Copied" : "Invite"}
+                    </Button>
+                </div>
             </header>
 
             {/* Main Content Area Using Tabs */}
@@ -679,6 +718,9 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                             setUnreadCount(prev => prev + 1);
                                         }
                                     }}
+                                    sendMessage={sendMessage}
+                                    registerHandler={registerHandler}
+                                    unregisterHandler={unregisterHandler}
                                 />
                             </div>
                         </TabsContent>
@@ -696,7 +738,15 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         </span>
                                     )}
                                 </button>
-                                <XOX roomId={roomId} currentMember={currentMember} members={members} otherOnline={isOtherOnline} />
+                                <XOX 
+                                    roomId={roomId} 
+                                    currentMember={currentMember} 
+                                    members={members} 
+                                    otherOnline={isOtherOnline}
+                                    sendMessage={sendMessage}
+                                    registerHandler={registerHandler}
+                                    unregisterHandler={unregisterHandler}
+                                />
                             </div>
                         </TabsContent>
                         <TabsContent value="ludo" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
@@ -713,7 +763,15 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         </span>
                                     )}
                                 </button>
-                                <Ludo roomId={roomId} currentMember={currentMember} members={members} otherOnline={isOtherOnline} />
+                                <Ludo 
+                                    roomId={roomId} 
+                                    currentMember={currentMember} 
+                                    members={members} 
+                                    otherOnline={isOtherOnline}
+                                    sendMessage={sendMessage}
+                                    registerHandler={registerHandler}
+                                    unregisterHandler={unregisterHandler}
+                                />
                             </div>
                         </TabsContent>
                         <TabsContent value="snake" className="h-full mt-0 data-[state=inactive]:hidden px-4 pb-4">
@@ -730,7 +788,15 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         </span>
                                     )}
                                 </button>
-                                <SnakeLadder roomId={roomId} currentMember={currentMember} members={members} otherOnline={isOtherOnline} />
+                                <SnakeLadder 
+                                    roomId={roomId} 
+                                    currentMember={currentMember} 
+                                    members={members} 
+                                    otherOnline={isOtherOnline} 
+                                    sendMessage={sendMessage}
+                                    registerHandler={registerHandler}
+                                    unregisterHandler={unregisterHandler}
+                                />
                             </div>
                         </TabsContent>
                         {showGameChat && (
@@ -763,6 +829,9 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                                 setUnreadCount(prev => prev + 1);
                                             }
                                         }}
+                                        sendMessage={sendMessage}
+                                        registerHandler={registerHandler}
+                                        unregisterHandler={unregisterHandler}
                                     />
                                 </div>
                             </div>

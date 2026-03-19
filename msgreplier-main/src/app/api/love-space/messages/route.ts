@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { roomId, senderNickname, message } = body || {};
+        const { id, roomId, senderNickname, message, createdAt } = body || {};
 
         if (!roomId || !senderNickname || !message) {
             return NextResponse.json({ error: 'roomId, senderNickname, and message are required' }, { status: 400 });
@@ -49,7 +49,13 @@ export async function POST(request: Request) {
 
         const { data, error } = await supabaseAdmin
             .from('love_messages')
-            .insert([{ room_id: roomId, sender_nickname: senderNickname, message }])
+            .insert([{ 
+                id: id || undefined, // Use client-provided ID if available for deduplication
+                room_id: roomId, 
+                sender_nickname: senderNickname, 
+                message,
+                created_at: createdAt || undefined
+            }])
             .select()
             .single();
 

@@ -40,7 +40,7 @@ export default function LoveSpacePage() {
                 throw new Error(data.error || "Failed to create room.");
             }
 
-            localStorage.setItem(`loveRoom_${data.room.id}`, JSON.stringify(data.member));
+            localStorage.setItem(`loveRoom_${data.room.id}`, JSON.stringify({ ...data.member, isCreator: true }));
             const url = `${window.location.origin}/love-space/${data.room.id}`;
             setCreatedRoomUrl(url);
             setCreatedRoomId(data.room.id);

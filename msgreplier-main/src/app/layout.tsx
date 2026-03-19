@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { CookieConsent } from "@/components/cookie-consent";
 import { Navbar } from "@/components/navbar";
 import Script from "next/script";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 
 const getSiteUrl = () => {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
@@ -113,6 +114,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', '${gaId}');`}
         </Script>
+        <ServiceWorkerRegistration />
 
         <ThemeProvider
           attribute="class"

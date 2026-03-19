@@ -16,6 +16,7 @@ import bg from '../../assets/bg.jpg';
 import { usePageLeaveBlocker } from '../../hooks/usePageLeaveBlocker';
 import { addToGameInactiveTime, setGameStartTime } from '../../state/slices/sessionSlice';
 import Dice from '../Dice/Dice';
+import { MuteButton } from '../../../MuteButton';
 import styles from './Game.module.css';
 
 export const EXIT_MESSAGE = 'Are you sure you want to exit? Any progress made will be lost.';
@@ -103,7 +104,7 @@ function Game({ initData, myColour, otherOnline = true }: Props) {
       </div>
 
       {/* The Locked-in Dice Container */}
-      <div className="mt-2 sm:mt-4 p-3 sm:p-4 min-w-[200px] w-full bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 z-10 flex flex-wrap justify-center items-center gap-4 shrink-0">
+      <div className="relative mt-2 sm:mt-4 p-3 sm:p-4 min-w-[200px] w-full bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 z-10 flex flex-wrap justify-center items-center gap-4 shrink-0">
         {dice.map((d: any) => (
           <Dice
             colour={d.colour}
@@ -114,6 +115,7 @@ function Game({ initData, myColour, otherOnline = true }: Props) {
             otherOnline={otherOnline}
           />
         ))}
+        <MuteButton className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2" />
       </div>
 
       {isGameEnded && <GameFinishedScreen playerFinishOrder={playerFinishOrder} />}
