@@ -4,12 +4,13 @@ import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { LoveMessage, LoveRoomMember } from '@/types/love-space';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, Heart } from 'lucide-react';
+import { Send, Heart, Loader2 } from 'lucide-react';
 import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
 
 export function Chat({ 
     roomId, 
     currentMember, 
+    members = [],
     onNewMessage,
     sendMessage,
     registerHandler,
@@ -17,19 +18,26 @@ export function Chat({
 }: { 
     roomId: string;
     currentMember: LoveRoomMember;
+    members?: LoveRoomMember[];
     onNewMessage?: () => void;
-    sendMessage?: (type: WebRTCMessageType, payload?: any) => void;
+    sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
     registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
     unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
 }) {
     const [messages, setMessages] = useState<LoveMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'saved' | 'error'>('idle');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const pendingMessagesRef = useRef<Map<string, { payload: any, attempts: number }>>(new Map());
     const messagesRef = useRef<LoveMessage[]>([]);
     const lastSyncRequestAtRef = useRef(0);
-    const chatBackupKey = useMemo(() => `love_chat_backup_${roomId}`, [roomId]);
+    const chatBackupKey = useMemo(() => `love_space_${roomId}_chat`, [roomId]);
+    const unsavedMessagesRef = useRef<LoveMessage[]>([]);
+    const lastSavedMessageIdRef = useRef<string | null>(null);
+    const hasUnsavedChangesRef = useRef(false);
+    const versionRef = useRef(0);
+    const isHost = members?.length > 0 && members[0].id === currentMember.id;
 
     // UX Feature States
     const [isPartnerTyping, setIsPartnerTyping] = useState(false);
@@ -192,10 +200,15 @@ export function Chat({
 
         const handleSyncRequest = (payload: any) => {
             if (!payload || payload.senderId === currentMember.id) return;
-            sendMessage?.('chat_sync_state', {
-                messages: messagesRef.current.slice(-500),
-                updatedAt: Date.now(),
-            });
+            
+            // Host Authority: Only host responds to sync_request
+            if (isHost && sendMessage) {
+                console.log("[RTC] Responding to chat sync request as HOST");
+                sendMessage('chat_sync_state', {
+                    messages: messagesRef.current.slice(-500),
+                    updatedAt: Date.now(),
+                });
+            }
         };
 
         const handleSyncState = (payload: any) => {
@@ -245,6 +258,79 @@ export function Chat({
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    // --- DB PERSISTENCE LOGIC ---
+    const saveToDb = async (isImmediate = false) => {
+        if (!hasUnsavedChangesRef.current && !isImmediate) return;
+        if (unsavedMessagesRef.current.length === 0) return;
+
+        const messagesToSave = [...unsavedMessagesRef.current];
+        console.log(`[SYNC] ${isImmediate ? 'Immediate' : 'Lazy'} sync triggered for Chat (${messagesToSave.length} msgs)`);
+        setSyncStatus('syncing');
+
+        try {
+            // Save all pending messages
+            for (const msg of messagesToSave) {
+                await fetch('/api/love-space/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: msg.id,
+                        roomId,
+                        senderNickname: msg.sender_nickname,
+                        message: msg.message,
+                        createdAt: msg.created_at,
+                    }),
+                });
+                lastSavedMessageIdRef.current = msg.id;
+            }
+            
+            // Clear successfully saved messages from the ref
+            unsavedMessagesRef.current = unsavedMessagesRef.current.filter(
+                m => !messagesToSave.find(saved => saved.id === m.id)
+            );
+            
+            console.log(`[SYNC] Chat state saved`);
+            hasUnsavedChangesRef.current = false;
+            setSyncStatus('saved');
+            setTimeout(() => setSyncStatus('idle'), 2000);
+        } catch (error) {
+            console.error('[SYNC] Failed to persist messages', error);
+            setSyncStatus('error');
+            setTimeout(() => setSyncStatus('idle'), 3000);
+        }
+    };
+
+    // Immediate flush logic
+    const flushNow = useCallback(() => {
+        if (hasUnsavedChangesRef.current) {
+            console.log("[SYNC] Immediate flush triggered (Exit/Offline)");
+            saveToDb(true);
+        }
+    }, [roomId]);
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "hidden") flushNow();
+        };
+        window.addEventListener("beforeunload", flushNow);
+        window.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("offline", flushNow);
+        return () => {
+            window.removeEventListener("beforeunload", flushNow);
+            window.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("offline", handleVisibilityChange);
+            window.removeEventListener("offline", flushNow);
+        };
+    }, [flushNow]);
+
+    // Throttled DB Sync Loop (Every 15 seconds)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            saveToDb();
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [roomId]);
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newMessage.trim() || isLoading) return;
@@ -262,7 +348,11 @@ export function Chat({
         mergeMessages([msgData]);
         setNewMessage('');
 
-        // Send via WebRTC DataChannel with ID for ACK tracking
+        // Add to unsaved queue for 15s throttled sync
+        unsavedMessagesRef.current.push(msgData);
+        hasUnsavedChangesRef.current = true;
+
+        // Send via WebRTC DataChannel with ID for ACK tracking (IMMEDIATE)
         if (sendMessage) {
             const payload = {
                 id: uniqueId,
@@ -278,22 +368,7 @@ export function Chat({
             sendMessage('typing', { value: false });
         }
 
-        fetch('/api/love-space/messages', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: uniqueId,
-                roomId,
-                senderNickname: currentMember.nickname,
-                message: msgData.message,
-                createdAt: msgData.created_at,
-            }),
-        }).catch((error) => {
-            console.error('[Chat] Failed to persist message', error);
-        });
-
         setIsLoading(false);
-
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -325,6 +400,45 @@ export function Chat({
 
     return (
         <div className="flex flex-col h-full bg-[#fffefe] dark:bg-slate-800 relative">
+            {/* E2E Encryption Badge & Sync Status */}
+            <div className="flex flex-col items-center py-2 bg-pink-50/30 dark:bg-pink-900/10 border-b border-pink-100/50 dark:border-pink-900/20 gap-1.5">
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 dark:bg-slate-900/80 shadow-sm border border-pink-100/50 dark:border-pink-900/30">
+                    <div className="w-3 h-3 flex items-center justify-center">
+                        <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-pink-500/70" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500/70 dark:text-pink-400/70">
+                        End-to-end encrypted
+                    </span>
+                </div>
+
+                {/* Sync Status Badge */}
+                <div className="h-4 flex items-center justify-center">
+                    {syncStatus === 'syncing' && (
+                        <div className="flex items-center gap-1 text-[9px] font-bold text-blue-500 dark:text-blue-400 animate-pulse">
+                            <Loader2 className="w-2.5 h-2.5 animate-spin" /> Syncing to database...
+                        </div>
+                    )}
+                    {syncStatus === 'saved' && (
+                        <div className="flex items-center gap-1 text-[9px] font-bold text-green-500 dark:text-green-400">
+                            All messages saved ✅
+                        </div>
+                    )}
+                    {syncStatus === 'error' && (
+                        <div className="flex items-center gap-1 text-[9px] font-bold text-red-500 dark:text-red-400">
+                            Save failed ⚠️
+                        </div>
+                    )}
+                    {syncStatus === 'idle' && hasUnsavedChangesRef.current && (
+                        <div className="flex items-center gap-1 text-[9px] font-bold text-amber-500 dark:text-amber-400">
+                            Waiting to sync...
+                        </div>
+                    )}
+                </div>
+            </div>
+
             <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-4">
                 {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-2 opacity-60">
@@ -404,19 +518,36 @@ export function Chat({
 
                 <form
                     onSubmit={handleSendMessage}
-                    className="flex max-w-3xl mx-auto items-center gap-2 p-1.5 bg-white dark:bg-slate-900 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 dark:border-slate-700 pointer-events-auto transition-all focus-within:ring-2 focus-within:ring-pink-200 dark:focus-within:ring-pink-900"
+                    className="flex max-w-3xl mx-auto items-end gap-2 p-2 bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 dark:border-slate-700 pointer-events-auto transition-all focus-within:ring-2 focus-within:ring-pink-200 dark:focus-within:ring-pink-900"
                 >
-                    <Input
+                    <textarea
                         value={newMessage}
-                        onChange={handleInputChange}
+                        onChange={(e) => {
+                            setNewMessage(e.target.value);
+                            handleInputChange(e as any);
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendMessage(e as any);
+                            }
+                        }}
                         placeholder="Type a sweet message..."
-                        className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-4 dark:text-white dark:placeholder:text-gray-500 shadow-none h-10"
+                        className="flex-1 min-h-[44px] max-h-32 border-0 bg-transparent focus:ring-0 focus:outline-none px-3 py-2.5 dark:text-white dark:placeholder:text-gray-500 shadow-none text-sm resize-none hide-scrollbar"
                         maxLength={500}
+                        rows={1}
+                        style={{ height: 'auto' }}
+                        ref={(el) => {
+                            if (el) {
+                                el.style.height = 'auto';
+                                el.style.height = el.scrollHeight + 'px';
+                            }
+                        }}
                     />
                     <Button
                         type="submit"
                         disabled={!newMessage.trim() || isLoading}
-                        className="rounded-full w-10 h-10 p-0 bg-pink-500 hover:bg-pink-600 shadow-md text-white transition-transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100"
+                        className="rounded-full w-10 h-10 p-0 bg-pink-500 hover:bg-pink-600 shadow-md text-white transition-transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100 mb-0.5"
                     >
                         <Send className="w-4 h-4 ml-0.5" />
                     </Button>

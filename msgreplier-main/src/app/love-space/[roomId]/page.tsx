@@ -7,14 +7,18 @@ import { LoveRoom, LoveRoomMember } from '@/types/love-space';
 import { JoinRoom } from '../components/join-room';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { Chat, XOX, Ludo, SnakeLadder } from '../components/games';
-import { LoveQuiz } from '../components/love-quiz';
+import { Chat, XOX, Ludo, SnakeLadder, LoveQuiz } from '../components/games';
+import { LoveSpaceFlames } from '../components/LoveSpaceFlames';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut } from 'lucide-react';
+import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut, Trophy, Send, Sparkles, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useWebRTC } from '@/hooks/useWebRTC';
 import { GameConnection } from '../components/GameConnection';
+import { Bell } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { LoveMessage } from '@/types/love-space';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -71,6 +75,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     // Presence & Notification State
     const [activeTab, setActiveTab] = useState('home');
     const [otherMemberTab, setOtherMemberTab] = useState<string | null>(null);
+    const [wakingUpTab, setWakingUpTab] = useState<string | null>(null);
     const [unreadCount, setUnreadCount] = useState(0);
     const [showGameChat, setShowGameChat] = useState(false);
     const [members, setMembers] = useState<LoveRoomMember[]>([]);
@@ -80,7 +85,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
     const isCreator = members.length > 0 && currentMember?.id === members[0].id;
     
-    // Derive creator status synchronously from localStorage so useWebRTC gets the right
+    // Drive creator status synchronously from localStorage so useWebRTC gets the right
     // role on first render — BEFORE the async members API response comes back.
     // The creator's localStorage entry has { ...member, isCreator: true } set at room creation.
     const isCreatorFromStorage = (() => {
@@ -92,11 +97,56 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         } catch { return false; }
     })();
 
+    // Drive host status from the current members list. 
+    // The first person in the room (sorted by join time) is the Host.
+    const isHost = members.length > 0 ? members[0].id === currentMember?.id : isCreatorFromStorage;
+
     const { connectionState, latencyMs, rtcStats, sendMessage, registerHandler, unregisterHandler } = useWebRTC(
         roomId || '',
         currentMember?.id || '',
-        isCreatorFromStorage  // Use the localStorage-derived flag instead of the async-members-derived one
+        isHost  // Use dynamic host status instead of static creator flag
     );
+
+    // Global "Wake Up" & Sync Handlers
+    useEffect(() => {
+        if (!registerHandler || !unregisterHandler) return;
+
+        const handleSyncRequest = (payload: any) => {
+            if (!payload || payload.senderId === currentMember?.id) return;
+            
+            // Host Authority: Only host responds to sync_request
+            const isHost = membersRef.current.length > 0 && membersRef.current[0].id === currentMember?.id;
+            
+            if (payload.reason === 'wake_up') {
+                const game = payload.game;
+                setWakingUpTab(game);
+                setTimeout(() => setWakingUpTab(null), 5000);
+
+                const gameNameMap: Record<string, string> = {
+                    'xox': 'Tic Tac Toe',
+                    'ludo': 'Ludo',
+                    'snake': 'Snake & Ladder'
+                };
+                const gameDisplayName = gameNameMap[payload.game] || payload.game || 'the game';
+                
+                toast(`Hey! ${payload.senderNickname || 'Your partner'} is waiting for your move in ${gameDisplayName}! 🔔`, {
+                    icon: <Bell className="w-4 h-4 text-orange-500" />,
+                    duration: 5000,
+                    position: 'top-center',
+                });
+            } else if (payload.reason === 'init' || payload.reason === 'peer_reconnected' || payload.reason === 'channel_open_recovery') {
+                if (isHost) {
+                    console.log(`[RTC] Responding to global sync request as HOST (reason: ${payload.reason})`);
+                    // Note: Game-specific components handle their own state sync via their handlers
+                }
+            }
+        };
+
+        registerHandler('sync_request', handleSyncRequest);
+        return () => unregisterHandler('sync_request', handleSyncRequest);
+    }, [registerHandler, unregisterHandler, currentMember?.id, sendMessage]);
+
+
 
 
     useEffect(() => {
@@ -541,29 +591,44 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             {/* Main Content Area Using Tabs */}
             <div className="flex-1 overflow-hidden flex flex-col z-10 w-full pt-3 sm:pt-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full w-full">
-                    <TabsList className="grid grid-cols-4 w-[calc(100%-2rem)] bg-white/80 dark:bg-slate-900/80 p-1.5 mx-auto my-2 rounded-2xl sm:rounded-xl backdrop-blur-md h-14 border border-pink-200 dark:border-pink-900/50 shadow-[0_8px_30px_rgb(236,72,153,0.12)] overflow-x-auto hide-scrollbar flex-shrink-0 relative">
+                    <TabsList className="flex w-[calc(100%-2rem)] bg-white/80 dark:bg-slate-900/80 p-1.5 mx-auto my-2 rounded-2xl sm:rounded-xl backdrop-blur-md h-14 border border-pink-200 dark:border-pink-900/50 shadow-[0_8px_30px_rgb(236,72,153,0.12)] overflow-x-auto hide-scrollbar flex-shrink-0 relative gap-1">
                         {/* Mobile Invite Button (Absolute positioned inside the tabs area or just below it if preferred) */}
 
                         <TabsTrigger value="home" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
                             Home
-                            {otherMemberTab === 'home' && <div className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
-                            {unreadCount > 0 && (
-                                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce shadow-md border border-white dark:border-slate-900">
-                                    {unreadCount}
-                                </div>
+                            {isOtherOnline && (
+                                <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'home' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'}`} />
                             )}
                         </TabsTrigger>
                         <TabsTrigger value="xox" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
                             XOX
-                            {otherMemberTab === 'xox' && <div className="absolute top-1 right-2 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
+                            {isOtherOnline && (
+                                <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'xox' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'} ${wakingUpTab === 'xox' ? 'animate-bounce scale-125' : ''}`}>
+                                    {wakingUpTab === 'xox' && (
+                                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping" />
+                                    )}
+                                </div>
+                            )}
                         </TabsTrigger>
                         <TabsTrigger value="ludo" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
                             Ludo
-                            {otherMemberTab === 'ludo' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
+                            {isOtherOnline && (
+                                <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'ludo' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'} ${wakingUpTab === 'ludo' ? 'animate-bounce scale-125' : ''}`}>
+                                    {wakingUpTab === 'ludo' && (
+                                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping" />
+                                    )}
+                                </div>
+                            )}
                         </TabsTrigger>
                         <TabsTrigger value="snake" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
                             Snake
-                            {otherMemberTab === 'snake' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse" />}
+                            {isOtherOnline && (
+                                <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'snake' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'} ${wakingUpTab === 'snake' ? 'animate-bounce scale-125' : ''}`}>
+                                    {wakingUpTab === 'snake' && (
+                                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping" />
+                                    )}
+                                </div>
+                            )}
                         </TabsTrigger>
                     </TabsList>
                     {/* Presence status chip / Crazy Title */}
@@ -618,28 +683,39 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     <p className="text-sm text-gray-600 dark:text-gray-300 relative z-10 w-4/5 pt-1">Your private couple space. Choose an activity below to get started!</p>
                                 </div>
 
+                                {/* Send a Sweet Message Option */}
+                                <button 
+                                    onClick={() => setShowGameChat(true)}
+                                    className="w-full flex items-center justify-between p-5 bg-gradient-to-br from-pink-500 via-rose-500 to-pink-600 rounded-[2rem] shadow-lg shadow-pink-200/50 dark:shadow-pink-900/20 text-white active:scale-[0.98] transition-all group relative overflow-hidden"
+                                >
+                                    <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-500" />
+                                    
+                                    <div className="flex items-center gap-4 relative z-10">
+                                        <div className="p-3 bg-white/20 backdrop-blur-md rounded-2xl shadow-inner group-hover:bg-white/30 transition-colors relative">
+                                            <MessageCircle className="w-6 h-6 text-white" />
+                                            {unreadCount > 0 && (
+                                                <span className="absolute -top-1.5 -right-1.5 bg-white text-pink-500 text-[10px] font-black min-w-[1.25rem] h-5 rounded-full flex items-center justify-center px-1 shadow-lg border-2 border-pink-500 animate-in zoom-in duration-300">
+                                                    {unreadCount}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="block font-black text-sm uppercase tracking-tight">Send a Sweet Message</span>
+                                            <span className="block text-[10px] text-pink-100 opacity-90 font-medium">Open the heart-to-heart chat ❤️</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2 relative z-10">
+                                        <div className="p-2 bg-white/10 rounded-full">
+                                            <Sparkles className="w-4 h-4 text-white/70 group-hover:rotate-12 transition-transform" />
+                                        </div>
+                                    </div>
+                                </button>
+
+
                                 {/* Quick Links Grid */}
                                 <div className="grid grid-cols-2 gap-3 mt-1">
-                                    <button
-                                        onClick={() => setActiveTab('chat')}
-                                        className="col-span-2 flex items-center p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-pink-100 dark:border-pink-900/50 hover:scale-[1.02] active:scale-95 transition-all text-left group"
-                                    >
-                                        <div className="w-14 h-14 bg-pink-100 dark:bg-pink-900/50 rounded-2xl flex items-center justify-center mr-4 group-hover:bg-pink-500 group-hover:text-white transition-colors text-pink-500 shadow-inner">
-                                            <MessageSquareHeart className="w-7 h-7" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-gray-800 dark:text-gray-200 text-lg">Sweet Messages</h3>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">Chat with your partner</p>
-                                        </div>
-                                        {unreadCount > 0 ? (
-                                            <div className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-bounce shadow-md border border-white dark:border-slate-800">
-                                                {unreadCount} New
-                                            </div>
-                                        ) : (
-                                            <div className="text-pink-300 dark:text-pink-700 opacity-50"><MessageCircle className="w-5 h-5" /></div>
-                                        )}
-                                    </button>
-
                                     <button onClick={() => setActiveTab('xox')} className="flex flex-col items-center justify-center p-5 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-purple-100 dark:border-purple-900/50 hover:scale-[1.05] active:scale-95 transition-all group">
                                         <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-purple-500 group-hover:text-white transition-colors text-purple-500 shadow-inner">
                                             <Grid3X3 className="w-6 h-6" />
@@ -665,9 +741,59 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     </button>
                                 </div>
 
-                                {/* Love Quiz Section moved below quick links */}
-                                <div className="mt-2 mb-1">
-                                    <LoveQuiz roomId={roomId} currentMember={currentMember} members={members} />
+                                {/* Love Score (Quiz) Section */}
+                                <div className="mt-4 bg-white dark:bg-slate-800 rounded-[2rem] border border-pink-100 dark:border-pink-900/50 shadow-sm overflow-hidden flex flex-col min-h-[400px]">
+                                    <div className="px-6 py-4 border-b border-pink-50 dark:border-pink-900/20 flex items-center justify-between bg-pink-50/30 dark:bg-pink-900/10">
+                                        <div className="flex items-center gap-2">
+                                            <Trophy className="w-5 h-5 text-pink-500" />
+                                            <h3 className="font-bold text-gray-800 dark:text-pink-100">Love Score Quiz</h3>
+                                        </div>
+                                        <div className="text-[10px] font-black uppercase tracking-widest text-pink-500/70">Interactive</div>
+                                    </div>
+                                    <div className="flex-1 p-2">
+                                        <LoveQuiz 
+                                            roomId={roomId} 
+                                            currentMember={currentMember!} 
+                                            members={members} 
+                                            sendMessage={sendMessage}
+                                            registerHandler={registerHandler}
+                                            unregisterHandler={unregisterHandler}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* FLAMES Section */}
+                                <div className="mt-4">
+                                    <LoveSpaceFlames 
+                                        sendMessage={sendMessage}
+                                        registerHandler={registerHandler}
+                                        unregisterHandler={unregisterHandler}
+                                        currentMember={currentMember!}
+                                        otherMember={otherMember}
+                                    />
+                                </div>
+
+                                {/* Invite Partner Section */}
+                                <div className="mt-8 flex flex-col items-center gap-4">
+                                    <div className="w-full max-w-[320px] bg-white/50 dark:bg-slate-900/40 backdrop-blur-md rounded-[2rem] p-4 border border-pink-100 dark:border-pink-900/30 shadow-sm flex flex-col gap-3 group transition-all hover:shadow-pink-200/20">
+                                        <div className="flex items-center gap-2 px-1">
+                                            <Sparkles className="w-3 h-3 text-pink-500" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-pink-600 dark:text-pink-400">Invite Partner</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-pink-50/50 dark:bg-slate-950/50 rounded-2xl p-2 pl-4 border border-pink-100 dark:border-pink-900/20 transition-all group-hover:bg-pink-100/30 dark:group-hover:bg-slate-900/40">
+                                            <span className="flex-1 text-[11px] text-gray-500 dark:text-gray-400 truncate font-medium">
+                                                {typeof window !== 'undefined' ? window.location.href : 'Loading...'}
+                                            </span>
+                                            <Button 
+                                                onClick={copyLink}
+                                                className="h-9 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white text-[10px] font-black uppercase px-4 shadow-md transition-all active:scale-95 flex-shrink-0"
+                                            >
+                                                {copied ? <CheckCircle2 className="w-3.5 h-3.5 mr-2" /> : <Copy className="w-3.5 h-3.5 mr-2" />}
+                                                {copied ? "Copied!" : "Copy Link"}
+                                            </Button>
+                                        </div>
+                                        <p className="text-[9px] text-gray-400 dark:text-gray-500 px-1 text-center italic">Share this link with your partner to start your journey! ❤️</p>
+                                    </div>
                                 </div>
 
                                 {/* Leave Room Action */}
@@ -713,6 +839,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 <Chat
                                     roomId={roomId}
                                     currentMember={currentMember}
+                                    members={members}
                                     onNewMessage={() => {
                                         if (activeTab !== 'chat' && !showGameChat) {
                                             setUnreadCount(prev => prev + 1);
@@ -800,30 +927,29 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                             </div>
                         </TabsContent>
                         {showGameChat && (
-                            <div className="absolute inset-0 z-30 flex flex-col bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm">
-                                <div className="flex items-center justify-between px-3 py-2 border-b border-pink-100 dark:border-pink-900/40 bg-white/90 dark:bg-slate-900/90">
-                                    <div className="flex items-center gap-2">
+                            <div className="absolute inset-0 z-30 flex flex-col bg-white dark:bg-slate-950">
+                                <div className="flex items-center justify-between px-4 py-3 border-b border-pink-100 dark:border-pink-900/40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
+                                    <div className="flex items-center gap-3">
                                         <Button
                                             variant="outline"
-                                            size="icon"
-                                            className="h-8 w-8 rounded-full border-pink-200 text-pink-600 dark:border-pink-800 dark:text-pink-300 bg-white dark:bg-slate-900"
+                                            size="sm"
+                                            className="h-9 px-3 rounded-full border-pink-200 text-pink-600 dark:border-pink-800 dark:text-pink-300 bg-white dark:bg-slate-900 shadow-sm hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-all active:scale-95"
                                             onClick={() => setShowGameChat(false)}
                                         >
-                                            <ArrowLeft className="w-4 h-4" />
+                                            <ArrowLeft className="w-4 h-4 mr-2" />
+                                            <span className="text-xs font-bold">Back to game</span>
                                         </Button>
-                                        <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
-                                            Back to game
-                                        </span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-pink-50 dark:bg-pink-900/20 border border-pink-100 dark:border-pink-800/30">
                                         <MessageCircle className="w-4 h-4 text-pink-500" />
-                                        <span>Chat</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-pink-600 dark:text-pink-400">Game Chat</span>
                                     </div>
                                 </div>
-                                <div className="flex-1 flex flex-col overflow-hidden px-2 pb-2 pt-1">
+                                <div className="flex-1 flex flex-col overflow-hidden">
                                     <Chat
                                         roomId={roomId}
                                         currentMember={currentMember}
+                                        members={members}
                                         onNewMessage={() => {
                                             if (!showGameChat && activeTab !== 'chat') {
                                                 setUnreadCount(prev => prev + 1);

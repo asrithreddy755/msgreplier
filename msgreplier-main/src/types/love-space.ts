@@ -41,6 +41,8 @@ export interface XOXGameState {
     winner: 'X' | 'O' | 'Draw' | null;
     scores?: { X: number; O: number };
     roundStarter?: 'X' | 'O';
+    version: number;
+    updatedAt: number;
 }
 
 // Ludo State — defined in src/app/love-space/components/ludo/types.ts
@@ -55,6 +57,8 @@ export interface SnakeLadderState {
     lastPath?: number[];
     lastPathPlayer?: number;
     lastRollValue?: number;
+    version: number;
+    updatedAt: number;
 }
 
 // Sync Payload for Broadcast

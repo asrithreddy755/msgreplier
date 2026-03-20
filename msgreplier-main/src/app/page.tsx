@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, HeartPulse, Flame, BookOpen, Camera, CheckCircle, Shield, Zap } from "lucide-react";
+import { ArrowRight, HeartPulse, Flame, BookOpen, Camera, CheckCircle, Shield, Zap, Heart, MessageSquareHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Footer } from "@/components/footer";
 
 export const metadata = {
-  title: "MsgReplier - Free Text Repeater, Slang Dictionary & AI Reply Generator",
+  title: "MsgReplier - Private Love Space, Slang Dictionary & AI Messaging Tools",
   description:
-    "The ultimate messaging toolkit. distinct features include a Text Repeater for WhatsApp/Instagram, a Gen Z Slang Dictionary (Shortcutpedia), and an AI Reply Generator. No login required.",
+    "The ultimate messaging toolkit. Create a private Love-Space for couples, decode Gen Z slang with Shortcutpedia, and use our AI messaging tools. No login required.",
 };
 
 export default function HomePage() {
@@ -25,17 +25,17 @@ export default function HomePage() {
               Upgrade Your Chat Game Instantly
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              From spamming friends with our <strong className="text-foreground">Text Repeater</strong> to decoding Gen Z slang with <strong className="text-foreground">Shortcutpedia</strong>, we have the tools you need.
+              From connecting with your partner in <strong className="text-foreground">Love-Space</strong> to decoding Gen Z slang with <strong className="text-foreground">Shortcutpedia</strong>, we have the tools you need.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 w-full justify-center pt-4">
-              <Button asChild size="lg" className="h-12 px-8 text-lg rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 w-full sm:w-auto">
-                <Link href="/text-repeater">
-                  Start Repeating Text <ArrowRight className="ml-2 h-4 w-4" />
+              <Button asChild size="lg" className="h-12 px-8 text-lg rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 w-full sm:w-auto bg-gradient-to-r from-pink-500 to-rose-500 border-0">
+                <Link href="/love-space">
+                  Start Your Private Love Space <Heart className="ml-2 h-4 w-4 fill-white" />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="h-12 px-8 text-lg rounded-full w-full sm:w-auto">
                 <Link href="/flames">
-                  Try FLAMES Calculator
+                  Try FLAMES Calculator <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -57,24 +57,24 @@ export default function HomePage() {
             <p className="text-base md:text-lg text-slate-600 dark:text-slate-400">Everything you need to master messaging apps.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {/* Tool 1: Love Score */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {/* Tool 0: Love Space (Promoted) */}
+            <Card className="group hover:shadow-lg transition-all duration-300 border-pink-200 dark:border-pink-900/50 w-full bg-gradient-to-br from-white to-pink-50/50 dark:from-slate-900 dark:to-pink-950/10">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <HeartPulse className="h-6 w-6 text-pink-600 dark:text-pink-400" />
+                <div className="w-12 h-12 rounded-lg bg-pink-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg shadow-pink-500/20">
+                  <MessageSquareHeart className="h-6 w-6 text-white" />
                 </div>
-                <CardTitle>Love Score Quiz</CardTitle>
-                <CardDescription>Test Your Partner</CardDescription>
+                <CardTitle className="text-pink-600 dark:text-pink-400">Love Space</CardTitle>
+                <CardDescription>Private Rooms for Couples</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-                  Build a custom quiz, set a trap timer, and see how well your partner really knows you.
+                  Create a 100% private, no-login space to chat and play games like Ludo and XOX with your partner.
                 </p>
               </CardContent>
               <CardFooter>
-                <Button asChild variant="ghost" className="w-full group-hover:bg-pink-50 dark:group-hover:bg-pink-900/20 group-hover:text-pink-600 dark:group-hover:text-pink-400">
-                  <Link href="/love-score">Create Quiz <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Button asChild variant="default" className="w-full bg-pink-500 hover:bg-pink-600 text-white border-0 shadow-md">
+                  <Link href="/love-space">Enter Love Space <Heart className="ml-2 h-4 w-4 fill-white" /></Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -251,12 +251,12 @@ export default function HomePage() {
 
               <div className="flex gap-4">
                 <div className="bg-primary/10 p-3 rounded-lg h-fit flex-shrink-0">
-                  <Camera className="h-6 w-6 text-primary" />
+                  <Heart className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg md:text-xl mb-2">Msg Prompts</h3>
+                  <h3 className="font-bold text-lg md:text-xl mb-2">Private Love-Space</h3>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Use Msg Prompt to copy proven prompt templates for dating, work, and everyday chats. Paste them into any AI tool to get clearer, more confident replies without overthinking every message.
+                    Create a secure, temporary room to chat and play games with your partner. Our Love-Space offers 100% privacy with no login required and automatic data deletion.
                   </p>
                 </div>
               </div>

@@ -1,18 +1,21 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { LoveRoomMember, XOXGameState, XOXPlayer } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
-import { Heart, X as XIcon, Circle, RotateCcw, Trophy } from 'lucide-react';
+import { Heart, X as XIcon, Circle, RotateCcw, Trophy, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
+import { WakeUpButton } from './WakeUpButton';
 
 const INITIAL_STATE: XOXGameState = {
     board: Array(9).fill(null),
     currentTurn: 'X',
     winner: null,
     scores: { X: 0, O: 0 },
-    roundStarter: 'X'
+    roundStarter: 'X',
+    version: 0,
+    updatedAt: Date.now()
 };
 
 const WINNING_COMBOS = [
@@ -34,61 +37,155 @@ export function XOX({
     currentMember: LoveRoomMember;
     members?: LoveRoomMember[];
     otherOnline?: boolean;
-    sendMessage?: (type: WebRTCMessageType, payload?: any) => void;
+    sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
     registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
     unregisterHandler?: (type: WebRTCMessageType) => void;
 }) {
     const [gameState, setGameState] = useState<XOXGameState>(INITIAL_STATE);
     const [myPlayer, setMyPlayer] = useState<XOXPlayer>(null);
     const [loading, setLoading] = useState(true);
+    const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'saved' | 'error'>('idle');
     const lastStateRef = useRef<string | null>(null);
+    const hasUnsavedChangesRef = useRef(false);
     // Prevents re-running init when the parent re-renders with a new members array reference
     const hasInitializedRef = useRef(false);
+    const xoxBackupKey = useRef(`love_space_${roomId}_xox`);
 
     // Win animation state
     const [showWinOverlay, setShowWinOverlay] = useState(false);
     const [winningLineCoords, setWinningLineCoords] = useState<string[] | null>(null);
 
-    // Determine player assignment and load state
-    // members come from props (parent already fetches and sorts them)
+    const isHost = members.length > 0 && members[0].id === currentMember.id;
+
+    // --- DB PERSISTENCE LOGIC ---
+    const saveToDb = async (stateToSave: XOXGameState, isImmediate = false) => {
+        if (!hasUnsavedChangesRef.current && !isImmediate) return;
+        
+        console.log(`[SYNC] ${isImmediate ? 'Immediate' : 'Lazy'} sync triggered for XOX (v${stateToSave.version})`);
+        setSyncStatus('syncing');
+        
+        try {
+            // Conflict Protection: Fetch latest version from DB before writing
+            const res = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`, { cache: 'no-store' });
+            const data = await res.json();
+            const dbState = data?.game?.game_state as XOXGameState | undefined;
+
+            if (dbState && dbState.version > stateToSave.version) {
+                console.warn(`[SYNC] Skipped outdated write. DB has v${dbState.version}, local is v${stateToSave.version}`);
+                hasUnsavedChangesRef.current = false;
+                setSyncStatus('idle');
+                // Request sync from peer to get the latest
+                if (sendMessage) sendMessage('sync_request', { game: 'xox' });
+                return;
+            }
+
+            await fetch('/api/love-space/games', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    roomId,
+                    gameType: 'xox',
+                    gameState: stateToSave,
+                }),
+            });
+            
+            console.log(`[SYNC] State saved (version ${stateToSave.version})`);
+            hasUnsavedChangesRef.current = false;
+            setSyncStatus('saved');
+            setTimeout(() => setSyncStatus('idle'), 2000);
+        } catch (err) {
+            console.error("[SYNC] Failed to save state:", err);
+            setSyncStatus('error');
+            setTimeout(() => setSyncStatus('idle'), 3000);
+        }
+    };
+
+    // Immediate flush logic
+    const flushNow = useCallback(() => {
+        if (hasUnsavedChangesRef.current) {
+            console.log("[SYNC] Immediate flush triggered (Exit/Offline)");
+            const currentState = JSON.parse(lastStateRef.current || JSON.stringify(INITIAL_STATE));
+            saveToDb(currentState, true);
+        }
+    }, [roomId]);
+
     useEffect(() => {
-        // Guard: only init once per roomId. members array is a new reference on every
-        // parent re-render, so without this guard identity resets mid-game.
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "hidden") flushNow();
+        };
+        window.addEventListener("beforeunload", flushNow);
+        window.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("offline", flushNow);
+        return () => {
+            window.removeEventListener("beforeunload", flushNow);
+            window.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("offline", flushNow);
+        };
+    }, [flushNow]);
+
+    // Throttled DB Sync Loop (Every 15 seconds)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const currentState = JSON.parse(lastStateRef.current || JSON.stringify(INITIAL_STATE));
+            saveToDb(currentState);
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [roomId]);
+
+    // Determine player assignment and load state
+    useEffect(() => {
         if (hasInitializedRef.current) return;
         if (!roomId || members.length === 0) return;
 
         const init = async () => {
             hasInitializedRef.current = true;
             try {
-                const stateRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`).then(res => res.json());
+                // 1. Load Local Backup
+                const backupRaw = localStorage.getItem(xoxBackupKey.current);
+                let latestLocal: XOXGameState | null = null;
+                if (backupRaw) {
+                    try { latestLocal = JSON.parse(backupRaw); } catch {}
+                }
 
-                // Assign identity based on join order (already sorted by parent)
+                // 2. Load DB State
+                const stateRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`).then(res => res.json());
+                const dbState = stateRes?.game?.game_state as XOXGameState | undefined;
+
+                // 3. WebRTC Sync Request (handled in WebRTC useEffect)
+                if (sendMessage) {
+                    console.log("[RTC] Sync requested");
+                    sendMessage('sync_request', { game: 'xox' });
+                }
+
+                // Apply latest between Local and DB
+                let stateToApply = INITIAL_STATE;
+                if (latestLocal && (!dbState || latestLocal.version > dbState.version)) {
+                    stateToApply = latestLocal;
+                } else if (dbState) {
+                    stateToApply = dbState;
+                }
+
+                setGameState(stateToApply);
+                lastStateRef.current = JSON.stringify(stateToApply);
+
+                // Assign identity
                 if (members.length > 0 && members[0].id === currentMember.id) {
                     setMyPlayer('X');
                 } else if (members.length > 1 && members[1].id === currentMember.id) {
                     setMyPlayer('O');
                 } else {
-                    setMyPlayer('X'); // fallback for solo testing
-                }
-
-                const lastGame = stateRes?.game;
-                if (lastGame?.game_state) {
-                    const parsed = lastGame.game_state as XOXGameState;
-                    setGameState(parsed);
-                    lastStateRef.current = JSON.stringify(parsed);
+                    setMyPlayer('X');
                 }
             } catch (err) {
                 console.error("Failed to init xox:", err);
                 setMyPlayer('X');
-                hasInitializedRef.current = false; // allow retry on error
+                hasInitializedRef.current = false;
             } finally {
                 setLoading(false);
             }
         };
 
         init();
-        // members.length: triggers once when parent first loads members.
-        // hasInitializedRef prevents any subsequent re-runs from parent re-renders.
     }, [roomId, members.length, currentMember.id]);
 
     // WebRTC Real-time state sync
@@ -97,20 +194,44 @@ export function XOX({
 
         const handleIncomingMove = (payload: any) => {
             if (payload.game !== 'xox') return;
-            const parsed = payload.state as XOXGameState;
-            const serialized = JSON.stringify(parsed);
-            if (serialized !== lastStateRef.current) {
+            const incoming = payload.state as XOXGameState;
+            const current = JSON.parse(lastStateRef.current || JSON.stringify(INITIAL_STATE));
+
+            // Version-Controlled Acceptance
+            if (incoming.version > current.version) {
+                console.log(`[RTC] Sync received (version ${incoming.version})`);
+                const serialized = JSON.stringify(incoming);
                 lastStateRef.current = serialized;
-                setGameState(parsed);
+                setGameState(incoming);
+                localStorage.setItem(xoxBackupKey.current, serialized);
+                hasUnsavedChangesRef.current = true; // Mark dirty so it syncs to DB later
+            } else {
+                console.log(`[RTC] Ignored stale sync (v${incoming.version} <= v${current.version})`);
+            }
+        };
+
+        const handleSyncRequest = (payload: any) => {
+            if (!payload || payload.senderId === currentMember.id) return;
+            if (payload.game && payload.game !== 'xox') return;
+            
+            // Host Authority System: Only host responds to sync_request
+            if (isHost && sendMessage) {
+                console.log("[RTC] Responding to sync request as HOST");
+                const state = JSON.parse(lastStateRef.current || JSON.stringify(INITIAL_STATE));
+                sendMessage('sync_state', { game: 'xox', state });
             }
         };
 
         registerHandler('game_move', handleIncomingMove);
+        registerHandler('sync_state', handleIncomingMove); // reuse same logic
+        registerHandler('sync_request', handleSyncRequest);
 
         return () => {
             unregisterHandler('game_move');
+            unregisterHandler('sync_state');
+            unregisterHandler('sync_request');
         };
-    }, [registerHandler, unregisterHandler]);
+    }, [registerHandler, unregisterHandler, isHost, sendMessage]);
 
     const checkWinner = (board: XOXPlayer[]): XOXGameState['winner'] => {
         for (let combo of WINNING_COMBOS) {
@@ -177,15 +298,25 @@ export function XOX({
             currentTurn: nextTurn,
             winner,
             scores: newScores,
-            roundStarter: gameState.roundStarter || 'X'
+            roundStarter: gameState.roundStarter || 'X',
+            version: gameState.version + 1,
+            updatedAt: Date.now()
         };
 
         // Optimistic UI update
-        lastStateRef.current = JSON.stringify(newState);
+        const serialized = JSON.stringify(newState);
+        lastStateRef.current = serialized;
         setGameState(newState);
+        hasUnsavedChangesRef.current = true;
+        localStorage.setItem(xoxBackupKey.current, serialized);
 
         if (sendMessage) {
-            sendMessage('game_move', { game: 'xox', state: newState });
+            sendMessage('game_move', { game: 'xox', state: newState }, { reliable: true });
+        }
+
+        // Guaranteed Final Save Event: Sync immediately on win
+        if (winner) {
+            saveToDb(newState, true);
         }
     };
 
@@ -203,14 +334,22 @@ export function XOX({
             ...INITIAL_STATE,
             currentTurn: nextStarter,
             roundStarter: nextStarter,
-            scores: gameState.scores || { X: 0, O: 0 }
+            scores: gameState.scores || { X: 0, O: 0 },
+            version: gameState.version + 1,
+            updatedAt: Date.now()
         };
-        lastStateRef.current = JSON.stringify(newState);
+        const serialized = JSON.stringify(newState);
+        lastStateRef.current = serialized;
         setGameState(newState);
+        hasUnsavedChangesRef.current = true;
+        localStorage.setItem(xoxBackupKey.current, serialized);
 
         if (sendMessage) {
-            sendMessage('game_move', { game: 'xox', state: newState });
+            sendMessage('game_move', { game: 'xox', state: newState }, { reliable: true });
         }
+        
+        // Immediate sync on reset
+        saveToDb(newState, true);
     };
 
     if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse w-full text-center">Loading Game...</div>;
@@ -232,21 +371,63 @@ export function XOX({
                     Tic Tac Toe <Heart className="w-5 h-5 text-pink-500 fill-pink-500" />
                 </h2>
 
+                {/* Sync Status Badge */}
+                <div className="flex justify-center mb-2">
+                    {syncStatus === 'syncing' && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 text-[10px] font-bold text-blue-600 dark:text-blue-400 animate-pulse">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Syncing...
+                        </div>
+                    )}
+                    {syncStatus === 'saved' && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/30 text-[10px] font-bold text-green-600 dark:text-green-400">
+                            Saved ✅
+                        </div>
+                    )}
+                    {syncStatus === 'error' && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 text-[10px] font-bold text-red-600 dark:text-red-400">
+                            Sync Failed ⚠️
+                        </div>
+                    )}
+                    {syncStatus === 'idle' && hasUnsavedChangesRef.current && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                            Unsaved Changes
+                        </div>
+                    )}
+                </div>
+
                 {/* Score Board */}
-                <div className="flex justify-center items-center gap-4 mb-3 bg-white dark:bg-slate-800 rounded-full px-4 py-2 shadow-sm border border-purple-100 dark:border-purple-900/30 w-fit mx-auto">
-                    <div className="flex items-center gap-2">
-                        <span className={`font-bold ${myPlayer === 'X' ? 'text-pink-600 dark:text-pink-400' : 'text-gray-500 dark:text-gray-400'}`}>Player X {myPlayer === 'X' && '(You)'}</span>
-                        <span className="bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-300 px-2.5 py-0.5 rounded-full font-bold text-sm">
-                            {gameState.scores?.X || 0}
-                        </span>
+                <div className="flex flex-col items-center gap-3 mb-4 w-full">
+                    <div className="flex justify-center items-center gap-4 bg-white dark:bg-slate-800 rounded-full px-4 py-2 shadow-sm border border-purple-100 dark:border-purple-900/30 w-fit mx-auto relative">
+                        <div className="flex items-center gap-2">
+                            <span className={`font-bold ${myPlayer === 'X' ? 'text-pink-600 dark:text-pink-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                                Player X {myPlayer === 'X' && '(You)'}
+                            </span>
+                            <span className="bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-300 px-2.5 py-0.5 rounded-full font-bold text-sm">
+                                {gameState.scores?.X || 0}
+                            </span>
+                        </div>
+                        <div className="text-gray-300 dark:text-gray-600 font-bold">VS</div>
+                        <div className="flex items-center gap-2">
+                            <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-pink-300 px-2.5 py-0.5 rounded-full font-bold text-sm">
+                                {gameState.scores?.O || 0}
+                            </span>
+                            <span className={`font-bold ${myPlayer === 'O' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                                Player O {myPlayer === 'O' && '(You)'}
+                            </span>
+                        </div>
                     </div>
-                    <div className="text-gray-300 dark:text-gray-600 font-bold">VS</div>
-                    <div className="flex items-center gap-2">
-                        <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 px-2.5 py-0.5 rounded-full font-bold text-sm">
-                            {gameState.scores?.O || 0}
-                        </span>
-                        <span className={`font-bold ${myPlayer === 'O' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'}`}>Player O {myPlayer === 'O' && '(You)'}</span>
-                    </div>
+
+                    {/* Wake Up Button */}
+                    {!gameState.winner && gameState.currentTurn !== myPlayer && otherOnline && (
+                        <div className="animate-in fade-in slide-in-from-top-2 duration-500">
+                            <WakeUpButton 
+                                sendMessage={sendMessage} 
+                                currentMember={currentMember!} 
+                                targetNickname={members.find(m => m.id !== currentMember.id)?.nickname || 'Partner'}
+                                gameName="xox"
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex gap-4 justify-center text-sm">

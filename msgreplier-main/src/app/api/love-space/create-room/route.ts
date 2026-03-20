@@ -24,7 +24,7 @@ export async function POST(request: Request) {
             .insert([{ 
                 status: 'active', 
                 created_by: createdBy.trim(),
-                expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+                expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
             }])
             .select()
             .single();

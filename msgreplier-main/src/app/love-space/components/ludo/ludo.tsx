@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { WakeUpButton } from '../WakeUpButton';
 import { LoveRoomMember } from '@/types/love-space';
 import { Provider } from 'react-redux';
 import { store, setSyncCallback } from './state/store';
@@ -11,6 +12,8 @@ import { setIsPlaceholderShowing } from './state/slices/diceSlice';
 import { changeCoordsOfToken } from './state/slices/playersSlice';
 import { setTokenTransitionTime } from './utils/setTokenTransitionTime';
 import { FORWARD_TOKEN_TRANSITION_TIME } from './game/tokens/constants';
+import { toast } from 'sonner';
+import { Bell, Loader2 } from 'lucide-react';
 import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
 import { useAssetPreloader } from '../../hooks/useAssetPreloader';
 import { GamePreloader } from '../GamePreloader';
@@ -22,7 +25,7 @@ interface LudoProps {
     currentMember: LoveRoomMember;
     members?: LoveRoomMember[];
     otherOnline?: boolean;
-    sendMessage?: (type: WebRTCMessageType, payload?: any) => void;
+    sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
     registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
     unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
 }
@@ -60,7 +63,9 @@ export function Ludo({
     const currentMemberId = currentMember.id;
     const [initData, setInitData] = useState<TPlayerInitData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'saved' | 'error'>('idle');
     const [myColour, setMyColour] = useState<TPlayerColour | null>(null);
+    const [currentPlayerColour, setCurrentPlayerColour] = useState<string | null>(null);
     const hasInitializedRef = useRef(false);
     const membersRef = useRef(members);
     const myColourRef = useRef<TPlayerColour | null>(null);
@@ -71,7 +76,11 @@ export function Ludo({
     const latestUpdatedAtRef = useRef(0);
     const lastSyncRequestAtRef = useRef(0);
     const moveHistoryRef = useRef<LudoMoveRecord[]>([]);
-    const ludoBackupKey = useMemo(() => `ludo_backup_${roomId}`, [roomId]);
+    const ludoBackupKey = useRef(`love_space_${roomId}_ludo`);
+    const hasUnsavedChangesRef = useRef(false);
+    const currentVersionRef = useRef(0);
+
+    const isHost = members.length > 0 && members[0].id === currentMember.id;
 
     const { isLoaded, progress } = useAssetPreloader([
         bgAsset.src,
@@ -89,49 +98,116 @@ export function Ludo({
     const applyIncomingState = useCallback((incomingState: any, incomingUpdatedAt: number, shouldBackup = false) => {
         if (!incomingState || Object.keys(incomingState).length === 0) return;
         const normalizedUpdatedAt = Number.isFinite(incomingUpdatedAt) ? incomingUpdatedAt : 0;
-        const currentUpdatedAt = latestUpdatedAtRef.current;
-        const shouldApply = !latestStateRef.current || normalizedUpdatedAt >= currentUpdatedAt;
-        if (!shouldApply) return;
+        
+        const incomingVersion = incomingState.version || 0;
+        const currentVersion = currentVersionRef.current;
 
+        // Version-Controlled Acceptance
+        if (incomingVersion <= currentVersion && !shouldBackup) {
+            console.log(`[RTC] Ignored stale Ludo sync (v${incomingVersion} <= v${currentVersion})`);
+            return;
+        }
+
+        console.log(`[RTC] Ludo sync received (version ${incomingVersion})`);
         const serialized = serializeState(incomingState);
         if (serialized !== lastBroadcastStateRef.current) {
             lastBroadcastStateRef.current = serialized;
             store.dispatch({ type: 'HYDRATE_GAME_STATE', payload: incomingState });
         }
 
+        currentVersionRef.current = incomingVersion;
         latestStateRef.current = incomingState;
         latestUpdatedAtRef.current = normalizedUpdatedAt || Date.now();
+        
         if (Array.isArray(incomingState.moves)) {
             moveHistoryRef.current = incomingState.moves.slice(-200);
         }
 
         if (shouldBackup) {
             try {
-                localStorage.setItem(ludoBackupKey, JSON.stringify({ state: incomingState, updatedAt: latestUpdatedAtRef.current }));
+                localStorage.setItem(ludoBackupKey.current, JSON.stringify({ state: incomingState, updatedAt: latestUpdatedAtRef.current }));
             } catch {
                 return;
             }
         }
-    }, [ludoBackupKey]);
+    }, []);
 
-    const saveToDb = useMemo(() => throttle((stateToSave: any, updatedAt: number) => {
+    // --- DB PERSISTENCE LOGIC ---
+    const saveToDb = async (stateToSave: any, updatedAt: number, isImmediate = false) => {
+        if (!hasUnsavedChangesRef.current && !isImmediate) return;
+        
         const serialized = serializeState(stateToSave);
-        if (serialized === lastDbStateRef.current) return;
-        lastDbStateRef.current = serialized;
-        fetch('/api/love-space/ludo-state', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, gameState: stateToSave, lastUpdated: updatedAt }),
-        }).catch(() => {
-            return;
-        });
-    }, 3000, { leading: true, trailing: true }), [roomId]);
+        if (serialized === lastDbStateRef.current && !isImmediate) return;
+        
+        const version = stateToSave.version || currentVersionRef.current;
+        console.log(`[SYNC] ${isImmediate ? 'Immediate' : 'Lazy'} sync triggered for Ludo (v${version})`);
+        setSyncStatus('syncing');
+
+        try {
+            // Conflict Protection
+            const res = await fetch(`/api/love-space/ludo-state?roomId=${roomId}`, { cache: 'no-store' });
+            const data = await res.json();
+            const dbState = data?.game?.game_state;
+
+            if (dbState && dbState.version > version) {
+                console.warn(`[SYNC] Skipped outdated Ludo write. DB has v${dbState.version}, local is v${version}`);
+                hasUnsavedChangesRef.current = false;
+                setSyncStatus('idle');
+                if (sendMessage) sendMessage('sync_request', { game: 'ludo' });
+                return;
+            }
+
+            await fetch('/api/love-space/ludo-state', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomId, gameState: stateToSave, lastUpdated: updatedAt }),
+            });
+            
+            console.log(`[SYNC] Ludo state saved (version ${version})`);
+            lastDbStateRef.current = serialized;
+            hasUnsavedChangesRef.current = false;
+            setSyncStatus('saved');
+            setTimeout(() => setSyncStatus('idle'), 2000);
+        } catch (err) {
+            console.error("[SYNC] Failed to save Ludo state:", err);
+            setSyncStatus('error');
+            setTimeout(() => setSyncStatus('idle'), 3000);
+        }
+    };
+
+    // Immediate flush logic
+    const flushNow = useCallback(() => {
+        if (hasUnsavedChangesRef.current) {
+            console.log("[SYNC] Immediate flush triggered (Exit/Offline)");
+            const currentState = latestStateRef.current || store.getState();
+            const updatedAt = latestUpdatedAtRef.current || Date.now();
+            saveToDb(currentState, updatedAt, true);
+        }
+    }, [roomId]);
 
     useEffect(() => {
-        return () => {
-            saveToDb.cancel();
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "hidden") flushNow();
         };
-    }, [saveToDb]);
+        window.addEventListener("beforeunload", flushNow);
+        window.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("offline", flushNow);
+        return () => {
+            window.removeEventListener("beforeunload", flushNow);
+            window.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("offline", flushNow);
+        };
+    }, [flushNow]);
+
+    // Throttled DB Sync Loop (Every 15 seconds)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const currentState = latestStateRef.current || store.getState();
+            const updatedAt = latestUpdatedAtRef.current || Date.now();
+            saveToDb(currentState, updatedAt);
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [roomId]);
 
     const requestSync = useCallback((reason: string) => {
         if (!sendMessage) return;
@@ -146,6 +222,9 @@ export function Ludo({
         if (serialized === lastBroadcastStateRef.current) return;
 
         const updatedAt = Date.now();
+        const newVersion = currentVersionRef.current + 1;
+        currentVersionRef.current = newVersion;
+
         const diceValue = stateToSave?.dice?.dice?.find(
             (d: any) => d.colour === stateToSave?.players?.currentPlayerColour
         )?.diceNumber ?? null;
@@ -160,21 +239,24 @@ export function Ludo({
         const payloadState = {
             ...stateToSave,
             moves: moveHistoryRef.current,
+            version: newVersion,
+            updatedAt
         };
 
         lastBroadcastStateRef.current = serialized;
         latestStateRef.current = payloadState;
         latestUpdatedAtRef.current = updatedAt;
+        hasUnsavedChangesRef.current = true;
 
         try {
-            localStorage.setItem(ludoBackupKey, JSON.stringify({ state: payloadState, updatedAt }));
+            localStorage.setItem(ludoBackupKey.current, JSON.stringify({ state: payloadState, updatedAt }));
         } catch {
             return;
         }
 
-        sendMessage?.('game_move', { game: 'ludo', state: payloadState, updatedAt });
+        sendMessage?.('game_move', { game: 'ludo', state: payloadState, updatedAt }, { reliable: true });
         saveToDb(payloadState, updatedAt);
-    }, 400), [sendMessage, saveToDb, ludoBackupKey]);
+    }, 400), [sendMessage, saveToDb, roomId]);
 
     useEffect(() => {
         setSyncCallback((state) => {
@@ -190,6 +272,12 @@ export function Ludo({
         lastBroadcastStateRef.current = null;
         lastDbStateRef.current = null;
         moveHistoryRef.current = [];
+        
+        // Reset Redux store on roomId change to prevent stale state issues
+        store.dispatch({ type: 'players/clearPlayersState' });
+        store.dispatch({ type: 'dice/clearDiceState' });
+        store.dispatch({ type: 'board/clearBoardState' });
+        store.dispatch({ type: 'session/clearSessionState' });
     }, [roomId]);
 
     useEffect(() => {
@@ -210,7 +298,7 @@ export function Ludo({
 
             hasInitializedRef.current = true;
             try {
-                const backupRaw = localStorage.getItem(ludoBackupKey);
+                const backupRaw = localStorage.getItem(ludoBackupKey.current);
                 if (backupRaw) {
                     const backup = JSON.parse(backupRaw);
                     applyIncomingState(backup?.state, parseUpdatedAt(backup?.updatedAt), false);
@@ -248,9 +336,14 @@ export function Ludo({
         const handleSyncRequest = (payload: any) => {
             if (!payload || payload.senderId === currentMemberId) return;
             if (payload.game && payload.game !== 'ludo') return;
-            const state = latestStateRef.current || store.getState();
-            const updatedAt = latestUpdatedAtRef.current || Date.now();
-            sendMessage?.('sync_state', { game: 'ludo', state, updatedAt });
+            
+            // Host Authority System: Only host responds to sync_request
+            if (isHost && sendMessage) {
+                console.log("[RTC] Responding to sync request as HOST (Ludo)");
+                const state = latestStateRef.current || store.getState();
+                const updatedAt = latestUpdatedAtRef.current || Date.now();
+                sendMessage('sync_state', { game: 'ludo', state, updatedAt });
+            }
         };
 
         const handleSyncState = (payload: any) => {
@@ -271,7 +364,7 @@ export function Ludo({
             unregisterHandler('sync_request', handleSyncRequest);
             unregisterHandler('sync_state', handleSyncState);
         };
-    }, [registerHandler, unregisterHandler, sendMessage, currentMemberId, applyIncomingState, requestSync]);
+    }, [registerHandler, unregisterHandler, sendMessage, currentMemberId, applyIncomingState, requestSync, isHost]);
 
     useEffect(() => {
         if (otherOnline && !lastOnlineStateRef.current) {
@@ -307,9 +400,17 @@ export function Ludo({
             }));
         };
 
+        const handleSyncRequest = (payload: any) => {
+            if (!payload || payload.senderId === currentMemberId) return;
+            if (payload.game && payload.game !== 'ludo') return;
+            
+            // Global handler in page.tsx now handles 'wake_up'
+        };
+
         registerHandler('dice_start', handleDiceStart);
         registerHandler('dice_resolved', handleDiceResolved);
         registerHandler('token_moving', handleTokenMoving);
+        registerHandler('sync_request', handleSyncRequest);
 
         let prevSpinnerState: Record<string, boolean> = {};
         let prevTokenCoords: Record<string, { x: number; y: number }> = {};
@@ -318,6 +419,10 @@ export function Ludo({
             const state = store.getState();
             const currentMyColour = myColourRef.current;
 
+            if (state.players?.currentPlayerColour !== currentPlayerColour) {
+                setCurrentPlayerColour(state.players.currentPlayerColour);
+            }
+
             if (state.dice?.dice) {
                 for (const dice of state.dice.dice) {
                     const wasSpinning = prevSpinnerState[dice.colour] ?? false;
@@ -325,10 +430,10 @@ export function Ludo({
 
                     if (dice.colour === currentMyColour && sendMessage) {
                         if (isSpinning && !wasSpinning) {
-                            sendMessage('dice_start', { colour: dice.colour, senderId: currentMemberId });
+                            sendMessage('dice_start', { colour: dice.colour, senderId: currentMemberId }, { reliable: true });
                         }
                         if (!isSpinning && wasSpinning) {
-                            sendMessage('dice_resolved', { colour: dice.colour, diceNumber: dice.diceNumber, senderId: currentMemberId });
+                            sendMessage('dice_resolved', { colour: dice.colour, diceNumber: dice.diceNumber, senderId: currentMemberId }, { reliable: true });
                         }
                     }
                     prevSpinnerState[dice.colour] = isSpinning;
@@ -349,7 +454,7 @@ export function Ludo({
                                 tokenId: token.id,
                                 currentTile: curr,
                                 senderId: currentMemberId,
-                            });
+                            }, { reliable: true });
                             prevTokenCoords[key] = { x: curr.x, y: curr.y };
                         }
                     }
@@ -375,8 +480,45 @@ export function Ludo({
 
     return (
         <Provider store={store}>
-            <div className="absolute inset-0 p-2 sm:p-4 flex items-center justify-center ludo-wrapper overflow-y-auto overflow-x-hidden">
+            <div className="absolute inset-0 p-2 sm:p-4 flex flex-col items-center justify-center ludo-wrapper overflow-y-auto overflow-x-hidden">
+                {/* Sync Status Badge for Ludo */}
+                <div className="absolute top-4 left-4 z-50">
+                    {syncStatus === 'syncing' && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 text-[10px] font-bold text-blue-600 dark:text-blue-400 animate-pulse">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Syncing...
+                        </div>
+                    )}
+                    {syncStatus === 'saved' && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/30 text-[10px] font-bold text-green-600 dark:text-green-400">
+                            Saved ✅
+                        </div>
+                    )}
+                    {syncStatus === 'error' && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 text-[10px] font-bold text-red-600 dark:text-red-400">
+                            Sync Failed ⚠️
+                        </div>
+                    )}
+                    {syncStatus === 'idle' && hasUnsavedChangesRef.current && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                            Unsaved Changes
+                        </div>
+                    )}
+                </div>
+
                 <Game initData={initData} myColour={myColour || 'blue'} otherOnline={otherOnline} />
+                
+                {/* Wake Up Button for Ludo */}
+                {otherOnline && currentPlayerColour && myColour && currentPlayerColour !== myColour && (
+                    <div className="mt-4 z-50 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <WakeUpButton 
+                            sendMessage={sendMessage} 
+                            currentMember={currentMember} 
+                            targetNickname={members.find(m => m.id !== currentMember.id)?.nickname || 'Partner'}
+                            gameName="ludo"
+                        />
+                    </div>
+                )}
+
                 {loading && (
                     <div
                         className="absolute inset-0 z-50 flex items-end justify-center pb-4 pointer-events-none"

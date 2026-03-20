@@ -1,9 +1,10 @@
 import type { TPlayerNameAndColour } from '../../types';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
-import GameFinishPlayerItem from '../GameFinishPlayerItem/GameFinishPlayerItem';
 import { AnimatePresence, motion } from 'framer-motion';
-import Link from 'next/link';
+import { Trophy, RotateCcw } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../../state/store';
 import styles from './GameFinishedScreen.module.css';
 
 type Props = {
@@ -12,39 +13,57 @@ type Props = {
 
 function GameFinishedScreen({ playerFinishOrder }: Props) {
   const { width, height } = useWindowSize();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const winner = playerFinishOrder[0];
+
+  const handleRestart = () => {
+    // These actions are picked up by ludo.tsx's store subscription and broadcast
+    dispatch({ type: 'players/clearPlayersState' });
+    dispatch({ type: 'dice/clearDiceState' });
+    dispatch({ type: 'board/clearBoardState' });
+    dispatch({ type: 'session/clearSessionState' });
+  };
+
   return (
     <AnimatePresence>
       <motion.div className={styles.gameFinishedScreen}>
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.7 }}
+          animate={{ opacity: 0.8 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.3 }}
           className={styles.gameFinishedBackdrop}
         />
-        <Confetti width={width} height={height} style={{ zIndex: 20 }} />
+        <Confetti width={width} height={height} style={{ zIndex: 30 }} />
+        
         <motion.div
           className={styles.gameFinishedDialog}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ scale: 0.8, opacity: 0, y: 20 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
         >
-          <span className={styles.gameFinishedText}>GAME FINISHED!</span>
-          <section className={styles.gameResult}>
+          <div className={styles.trophyContainer}>
+            <Trophy className={styles.trophyIcon} />
+          </div>
+          
+          <h2 className={styles.winnerTitle}>{winner?.name} wins!</h2>
+          <p className={styles.congratsText}>Congratulations on winning the Ludo match! 🎉</p>
+
+          <div className={styles.rankList}>
             {playerFinishOrder.map((p, i) => (
-              <GameFinishPlayerItem
-                colour={p.colour}
-                isLast={i === playerFinishOrder.length - 1}
-                name={p.name}
-                rank={i + 1}
-                key={i}
-              />
+              <div key={i} className={styles.rankItem}>
+                <span className={styles.rankBadge}>{i + 1}</span>
+                <span className={styles.rankName}>{p.name}</span>
+                {i === 0 && <span className={styles.winnerBadge}>Winner</span>}
+              </div>
             ))}
-          </section>
-          <Link className={styles.playAgainBtn} href="/">
-            Play Again!
-          </Link>
+          </div>
+
+          <button onClick={handleRestart} className={styles.playAgainBtn}>
+            Play Again <RotateCcw className="w-5 h-5 ml-2" />
+          </button>
         </motion.div>
       </motion.div>
     </AnimatePresence>

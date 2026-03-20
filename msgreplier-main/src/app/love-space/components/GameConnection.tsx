@@ -19,10 +19,10 @@ interface GameConnectionProps {
 }
 
 function getQualityLabel(latencyMs: number): { label: string; color: string; dot: string } {
-    if (latencyMs === 0) return { label: "–", color: "text-gray-400", dot: "bg-gray-400" };
-    if (latencyMs < 80)  return { label: "Excellent", color: "text-green-500 dark:text-green-400", dot: "bg-green-400" };
-    if (latencyMs < 180) return { label: "Good", color: "text-yellow-500 dark:text-yellow-400", dot: "bg-yellow-400" };
-    if (latencyMs < 400) return { label: "Weak", color: "text-orange-500 dark:text-orange-400", dot: "bg-orange-400" };
+    if (latencyMs === 0) return { label: "Checking...", color: "text-gray-400", dot: "bg-gray-400" };
+    if (latencyMs < 100) return { label: "Excellent", color: "text-green-500 dark:text-green-400", dot: "bg-green-400" };
+    if (latencyMs < 200) return { label: "Good", color: "text-yellow-500 dark:text-yellow-400", dot: "bg-yellow-400" };
+    if (latencyMs < 450) return { label: "Fair", color: "text-orange-500 dark:text-orange-400", dot: "bg-orange-400" };
     return { label: "Poor", color: "text-red-500 dark:text-red-400", dot: "bg-red-400" };
 }
 
@@ -61,11 +61,11 @@ export function GameConnection({ connectionState, latencyMs = 0, rtcStats = null
             {/* Latency Indicator – only when connected */}
             {connectionState === "Connected" && (
                 <div
-                    className={`flex items-center gap-1 px-2 py-1 rounded-full bg-white/60 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 text-[10px] font-semibold`}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/60 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 text-[10px] font-semibold shadow-sm`}
                 >
-                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${quality.dot}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${quality.dot} shadow-[0_0_5px_rgba(0,0,0,0.1)]`} />
                     <span className={quality.color}>
-                        {latencyMs > 0 ? `${latencyMs}ms` : "…"}
+                        {quality.label} {latencyMs > 0 ? `(${latencyMs}ms)` : ""}
                     </span>
                 </div>
             )}

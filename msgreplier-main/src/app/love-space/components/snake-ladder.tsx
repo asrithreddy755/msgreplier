@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { LoveRoomMember, SnakeLadderState } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
-import { Dices, Trophy, RotateCcw } from 'lucide-react';
+import { Dices, Trophy, RotateCcw, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
 import Image from 'next/image';
@@ -13,6 +13,7 @@ import { GamePreloader } from './GamePreloader';
 import { MuteButton } from './MuteButton';
 import { throttle } from 'lodash-es';
 import { playDiceSound } from './ludo/utils/diceSound';
+import { WakeUpButton } from './WakeUpButton';
 
 // Collector's Edition snakes and ladders matching snake.webp exactly
 const SNAKES: Record<number, number> = { 28: 9, 33: 27, 38: 18, 41: 39, 43: 24 };
@@ -30,6 +31,15 @@ const parseUpdatedAt = (value: unknown) => {
     return 0;
 };
 
+const INITIAL_STATE: SnakeLadderState = {
+    player1Position: 1,
+    player2Position: 1,
+    currentTurn: null,
+    winner: null,
+    version: 0,
+    updatedAt: Date.now()
+};
+
 export function SnakeLadder({ 
     roomId, 
     currentMember, 
@@ -43,30 +53,26 @@ export function SnakeLadder({
     currentMember: LoveRoomMember; 
     otherOnline?: boolean; 
     members?: LoveRoomMember[];
-    sendMessage?: (type: WebRTCMessageType, payload?: any) => void;
+    sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
     registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
     unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
 }) {
-    const [state, setState] = useState<SnakeLadderState>({
-        player1Position: 1,
-        player2Position: 1,
-        currentTurn: null,
-        winner: null,
-    });
-    // const [members, setMembers] = useState<LoveRoomMember[]>([]); // Using prop instead
+    const [state, setState] = useState<SnakeLadderState>(INITIAL_STATE);
     const [loading, setLoading] = useState(true);
+    const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'saved' | 'error'>('idle');
     const [rolling, setRolling] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [lastRoll, setLastRoll] = useState<number | null>(null);
     const lastStateRef = useRef<string | null>(null);
-    const latestUpdatedAtRef = useRef(0);
+    const hasUnsavedChangesRef = useRef(false);
     const lastSyncRequestAtRef = useRef(0);
     const pendingStateRef = useRef<SnakeLadderState | null>(null);
     const isAnimatingRef = useRef(false);
     const hasInitializedRef = useRef(false);
     const lastOnlineStateRef = useRef(Boolean(otherOnline));
     const stateRef = useRef(state);
-    const snakeBackupKey = useMemo(() => `snake_backup_${roomId}`, [roomId]);
+    const snakeBackupKey = useRef(`love_space_${roomId}_snake`);
+    const isHost = members.length > 0 && members[0].id === currentMember.id;
 
     const [visualP1, setVisualP1] = useState(1);
     const [visualP2, setVisualP2] = useState(1);
@@ -77,7 +83,6 @@ export function SnakeLadder({
         '/snake.webp',
         '/dice-roll.mp3'
     ]);
-
 
     useEffect(() => {
         isAnimatingRef.current = isAnimating;
@@ -109,29 +114,81 @@ export function SnakeLadder({
     useEffect(() => { visualP2Ref.current = visualP2; }, [visualP2]);
     useEffect(() => { stateRef.current = state; }, [state]);
 
-    const persistLocalBackup = useCallback((nextState: SnakeLadderState, updatedAt: number) => {
+    // --- DB PERSISTENCE LOGIC ---
+    const saveToDb = async (stateToSave: SnakeLadderState, isImmediate = false) => {
+        if (!hasUnsavedChangesRef.current && !isImmediate) return;
+        
+        console.log(`[SYNC] ${isImmediate ? 'Immediate' : 'Lazy'} sync triggered for Snake (v${stateToSave.version})`);
+        setSyncStatus('syncing');
+        
         try {
-            localStorage.setItem(snakeBackupKey, JSON.stringify({ state: nextState, updatedAt }));
-        } catch {
-            return;
-        }
-    }, [snakeBackupKey]);
+            // Conflict Protection: Fetch current DB version
+            const res = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=snake`, { cache: 'no-store' });
+            const data = await res.json();
+            const dbState = data?.game?.game_state as SnakeLadderState | undefined;
 
-    const saveToDb = useMemo(() => throttle((stateToSave: SnakeLadderState, updatedAt: number) => {
-        fetch('/api/love-space/games', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ roomId, gameType: 'snake', gameState: stateToSave, updatedAt }),
-        }).catch(() => {
-            return;
-        });
-    }, 3000, { leading: true, trailing: true }), [roomId]);
+            // If local version is older, DO NOT overwrite
+            if (dbState && dbState.version > stateToSave.version) {
+                console.warn(`[SYNC] Skipped outdated write. DB has v${dbState.version}, local is v${stateToSave.version}`);
+                hasUnsavedChangesRef.current = false;
+                setSyncStatus('idle');
+                // Optional: request peer sync instead if we are significantly behind
+                if (sendMessage) sendMessage('sync_request', { game: 'snake', reason: 'outdated_write' });
+                return;
+            }
+
+            await fetch('/api/love-space/games', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    roomId, 
+                    gameType: 'snake', 
+                    gameState: stateToSave, 
+                    updatedAt: stateToSave.updatedAt,
+                    version: stateToSave.version 
+                }),
+            });
+            
+            console.log(`[SYNC] State saved (version ${stateToSave.version})`);
+            hasUnsavedChangesRef.current = false;
+            setSyncStatus('saved');
+            setTimeout(() => setSyncStatus('idle'), 2000);
+        } catch (err) {
+            console.error("[SYNC] Failed to save state:", err);
+            setSyncStatus('error');
+            setTimeout(() => setSyncStatus('idle'), 3000);
+        }
+    };
+
+    // Immediate flush logic
+    const flushNow = useCallback(() => {
+        if (hasUnsavedChangesRef.current) {
+            console.log("[SYNC] Immediate flush triggered (Exit/Offline)");
+            saveToDb(stateRef.current, true);
+        }
+    }, [roomId]);
 
     useEffect(() => {
-        return () => {
-            saveToDb.cancel();
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "hidden") flushNow();
         };
-    }, [saveToDb]);
+        window.addEventListener("beforeunload", flushNow);
+        window.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("offline", flushNow);
+        return () => {
+            window.removeEventListener("beforeunload", flushNow);
+            window.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("offline", flushNow);
+        };
+    }, [flushNow]);
+
+    // Throttled DB Sync Loop (Every 15 seconds)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            saveToDb(stateRef.current);
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [roomId]);
 
     const requestSync = useCallback((reason: string) => {
         if (!sendMessage) return;
@@ -143,14 +200,25 @@ export function SnakeLadder({
 
     const commitState = useCallback((nextState: SnakeLadderState, options?: { broadcast?: boolean }) => {
         const updatedAt = Date.now();
-        latestUpdatedAtRef.current = updatedAt;
-        lastStateRef.current = JSON.stringify(nextState);
-        persistLocalBackup(nextState, updatedAt);
-        saveToDb(nextState, updatedAt);
+        // Version-Controlled State: Increment version on every committed change
+        const stateWithMeta = { ...nextState, version: (stateRef.current.version || 0) + 1, updatedAt };
+        
+        lastStateRef.current = JSON.stringify(stateWithMeta);
+        stateRef.current = stateWithMeta;
+        setState(stateWithMeta);
+        
+        localStorage.setItem(snakeBackupKey.current, lastStateRef.current);
+        hasUnsavedChangesRef.current = true;
+
         if (options?.broadcast !== false) {
-            sendMessage?.('game_move', { game: 'snake', state: nextState, updatedAt });
+            sendMessage?.('game_move', { game: 'snake', state: stateWithMeta, updatedAt }, { reliable: true });
         }
-    }, [sendMessage, saveToDb, persistLocalBackup]);
+
+        // Guaranteed Final Save Event: Sync immediately on win or critical states
+        if (nextState.winner) {
+            saveToDb(stateWithMeta, true);
+        }
+    }, [sendMessage, roomId, saveToDb]);
 
     const buildPath = (from: number, to: number) => {
         const path: number[] = [];
@@ -162,71 +230,74 @@ export function SnakeLadder({
         return path;
     };
 
-    const applyRemoteState = useCallback((nextState: SnakeLadderState, incomingUpdatedAt: number, shouldBackup = false) => {
-        if (!nextState) return;
-        const normalizedUpdatedAt = Number.isFinite(incomingUpdatedAt) ? incomingUpdatedAt : 0;
-        if (normalizedUpdatedAt && normalizedUpdatedAt < latestUpdatedAtRef.current) return;
-        if (normalizedUpdatedAt) {
-            latestUpdatedAtRef.current = normalizedUpdatedAt;
-        }
-
-        if (isAnimatingRef.current) {
-            pendingStateRef.current = nextState;
-            if (shouldBackup) {
-                persistLocalBackup(nextState, latestUpdatedAtRef.current || Date.now());
-            }
+    const applyRemoteState = useCallback((remoteState: SnakeLadderState, updatedAt: number, isSync = false) => {
+        if (!remoteState) return;
+        const current = stateRef.current;
+        
+        // Version-Controlled State Rules:
+        // Increment version on every committed change
+        // When receiving state: if (incoming.version > current.version) → accept else → ignore
+        if (remoteState.version <= (current.version || 0) && !isSync) {
+            console.log(`[RTC] Ignored stale Snake sync (v${remoteState.version} <= v${current.version})`);
             return;
         }
 
-        if (nextState.lastRollValue !== undefined) {
-            setLastRoll(nextState.lastRollValue);
+        console.log(`[RTC] Snake sync received (version ${remoteState.version})`);
+        const serialized = JSON.stringify(remoteState);
+        
+        if (isAnimatingRef.current) {
+            pendingStateRef.current = remoteState;
+            localStorage.setItem(snakeBackupKey.current, serialized);
+            return;
+        }
+
+        if (remoteState.lastRollValue !== undefined) {
+            setLastRoll(remoteState.lastRollValue);
         }
 
         const p1From = visualP1Ref.current;
         const p2From = visualP2Ref.current;
-        const p1To = nextState.player1Position;
-        const p2To = nextState.player2Position;
+        const p1To = remoteState.player1Position;
+        const p2To = remoteState.player2Position;
 
-        const p1Changed = p1From !== p1To;
-        const p2Changed = p2From !== p2To;
-
-        if (p1Changed && !p2Changed) {
-            const path = (nextState.lastPathPlayer === 1 && nextState.lastPath?.length) ? nextState.lastPath : buildPath(p1From, p1To);
+        if (p1From !== p1To && p2From === p2To) {
+            const path = (remoteState.lastPathPlayer === 1 && remoteState.lastPath?.length) ? remoteState.lastPath : buildPath(p1From, p1To);
             if (path.length > 0) {
-                playAnimationAndSync(1, path, nextState);
-                if (shouldBackup) {
-                    persistLocalBackup(nextState, latestUpdatedAtRef.current || Date.now());
-                }
+                playAnimationAndSync(1, path, remoteState);
+                localStorage.setItem(snakeBackupKey.current, serialized);
                 return;
             }
-        } else if (!p1Changed && p2Changed) {
-            const path = (nextState.lastPathPlayer === 2 && nextState.lastPath?.length) ? nextState.lastPath : buildPath(p2From, p2To);
+        } else if (p1From === p1To && p2From !== p2To) {
+            const path = (remoteState.lastPathPlayer === 2 && remoteState.lastPath?.length) ? remoteState.lastPath : buildPath(p2From, p2To);
             if (path.length > 0) {
-                playAnimationAndSync(2, path, nextState);
-                if (shouldBackup) {
-                    persistLocalBackup(nextState, latestUpdatedAtRef.current || Date.now());
-                }
+                playAnimationAndSync(2, path, remoteState);
+                localStorage.setItem(snakeBackupKey.current, serialized);
                 return;
             }
         }
 
-        lastStateRef.current = JSON.stringify(nextState);
-        setState(nextState);
-        if (shouldBackup) {
-            persistLocalBackup(nextState, latestUpdatedAtRef.current || Date.now());
-        }
-    }, [persistLocalBackup]);
+        lastStateRef.current = serialized;
+        stateRef.current = remoteState;
+        setState(remoteState);
+        localStorage.setItem(snakeBackupKey.current, serialized);
+        hasUnsavedChangesRef.current = true;
+    }, [buildPath, playAnimationAndSync]);
 
     useEffect(() => {
         const init = async () => {
             if (hasInitializedRef.current) return;
             hasInitializedRef.current = true;
             try {
-                const backupRaw = localStorage.getItem(snakeBackupKey);
+                // Local Backup Safety: Use localStorage key format love_space_<roomId>_<feature>
+                const backupRaw = localStorage.getItem(snakeBackupKey.current);
                 if (backupRaw) {
-                    const backup = JSON.parse(backupRaw);
-                    if (backup?.state) {
-                        applyRemoteState(backup.state as SnakeLadderState, parseUpdatedAt(backup.updatedAt), false);
+                    try {
+                        const backup = JSON.parse(backupRaw);
+                        if (backup) {
+                            applyRemoteState(backup as SnakeLadderState, backup.updatedAt || 0, false);
+                        }
+                    } catch (e) {
+                        console.error("[SYNC] Local backup parse error:", e);
                     }
                 }
 
@@ -250,7 +321,7 @@ export function SnakeLadder({
             init();
         }
 
-    }, [roomId, members.length, applyRemoteState, requestSync, snakeBackupKey]);
+    }, [roomId, members.length, applyRemoteState, requestSync]);
 
     // Set initial turn when members load
     useEffect(() => {
@@ -272,10 +343,14 @@ export function SnakeLadder({
         const handleDiceResolved = (payload: any) => {
             if (!payload || payload.playerNum === myPlayerNum) return;
             setRolling(false);
-            const roll = payload.roll;
-            const state = payload.state;
-            const updatedAt = parseUpdatedAt(payload.updatedAt);
-            applyRemoteState(state, updatedAt, true);
+            const roll = payload.rollValue || payload.roll;
+            if (roll !== undefined) {
+                setLastRoll(roll);
+            }
+            
+            if (payload.state) {
+                applyRemoteState(payload.state, parseUpdatedAt(payload.updatedAt), true);
+            }
         };
 
         const handleGameMove = (payload: any) => {
@@ -292,11 +367,17 @@ export function SnakeLadder({
         const handleSyncRequest = (payload: any) => {
             if (!payload || payload.senderId === currentMember.id) return;
             if (payload.game && payload.game !== 'snake') return;
-            sendMessage?.('sync_state', {
-                game: 'snake',
-                state: stateRef.current,
-                updatedAt: latestUpdatedAtRef.current || Date.now(),
-            });
+
+            // Host Authority System: Only host responds to sync_request
+            if (isHost && sendMessage) {
+                console.log("[RTC] Responding to sync request as HOST (Snake)");
+                const currentState = JSON.parse(lastStateRef.current || JSON.stringify(INITIAL_STATE));
+                sendMessage('sync_state', {
+                    game: 'snake',
+                    state: currentState,
+                    updatedAt: currentState.updatedAt,
+                });
+            }
         };
 
         const handleSyncState = (payload: any) => {
@@ -319,7 +400,7 @@ export function SnakeLadder({
             unregisterHandler('sync_request', handleSyncRequest);
             unregisterHandler('sync_state', handleSyncState);
         };
-    }, [registerHandler, unregisterHandler, applyRemoteState, currentMember.id, sendMessage, requestSync]);
+    }, [registerHandler, unregisterHandler, applyRemoteState, currentMember.id, sendMessage, requestSync, isHost]);
 
     useEffect(() => {
         if (otherOnline && !lastOnlineStateRef.current) {
@@ -368,7 +449,7 @@ export function SnakeLadder({
         playDiceSound();
 
         if (sendMessage) {
-            sendMessage('dice_start', { playerNum: myPlayerNum });
+            sendMessage('dice_start', { playerNum: myPlayerNum }, { reliable: true });
         }
 
         try {
@@ -422,7 +503,7 @@ export function SnakeLadder({
             setRolling(false);
 
             if (sendMessage) {
-                sendMessage('dice_resolved', { playerNum: myPlayerNum, rollValue: roll });
+                sendMessage('dice_resolved', { playerNum: myPlayerNum, rollValue: roll }, { reliable: true });
             }
 
             commitState(newState);
@@ -452,7 +533,9 @@ export function SnakeLadder({
             winner: null,
             lastActionMessage: null,
             lastPath: [],
-            lastPathPlayer: undefined
+            lastPathPlayer: undefined,
+            version: state.version + 1,
+            updatedAt: Date.now()
         };
         setState(newState);
         setLastRoll(null);
@@ -510,6 +593,30 @@ export function SnakeLadder({
                 <h2 className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1 sm:mb-2 flex items-center justify-center gap-1.5 sm:gap-2">
                     Snake & Ladder <Dices className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                 </h2>
+
+                {/* Sync Status Badge */}
+                <div className="flex justify-center mb-1">
+                    {syncStatus === 'syncing' && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 text-[10px] font-bold text-blue-600 dark:text-blue-400 animate-pulse">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Syncing...
+                        </div>
+                    )}
+                    {syncStatus === 'saved' && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/30 text-[10px] font-bold text-green-600 dark:text-green-400">
+                            Saved ✅
+                        </div>
+                    )}
+                    {syncStatus === 'error' && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 text-[10px] font-bold text-red-600 dark:text-red-400">
+                            Sync Failed ⚠️
+                        </div>
+                    )}
+                    {syncStatus === 'idle' && hasUnsavedChangesRef.current && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                            Unsaved Changes
+                        </div>
+                    )}
+                </div>
                 <div className="flex gap-2 sm:gap-3 justify-center text-[10px] sm:text-xs items-center">
                     <div className={`px-3 sm:px-4 py-0.5 sm:py-1 rounded-full text-white shadow-sm flex items-center gap-1.5 sm:gap-2 ${myColor}`}>
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" /> You
@@ -550,7 +657,7 @@ export function SnakeLadder({
                                 {/* Player 1 Box */}
                                 <div
                                     onClick={() => myPlayerNum === 1 && !rolling && !isAnimating && isMyTurn ? rollDice(1) : undefined}
-                                    className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl border ${myPlayerNum === 1 && isMyTurn && !rolling && !isAnimating ? 'border-pink-400 dark:border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] cursor-pointer hover:bg-pink-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all`}
+                                    className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl border ${myPlayerNum === 1 && isMyTurn && !rolling && !isAnimating ? 'border-pink-400 dark:border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] cursor-pointer hover:bg-pink-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all relative`}
                                 >
                                     <p className="text-xs sm:text-sm font-bold text-pink-600 dark:text-pink-400 mb-0.5 sm:mb-2 whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
                                         {members[0] ? (members[0].nickname === currentMember.nickname ? 'You (P1)' : members[0].nickname) : 'Player 1'}
@@ -571,7 +678,7 @@ export function SnakeLadder({
                                 {/* Player 2 Box */}
                                 <div
                                     onClick={() => myPlayerNum === 2 && !rolling && !isAnimating && isMyTurn ? rollDice(2) : undefined}
-                                    className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl border ${myPlayerNum === 2 && isMyTurn && !rolling && !isAnimating && !state.winner ? 'border-blue-400 dark:border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] cursor-pointer hover:bg-blue-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all`}
+                                    className={`flex flex-col items-center bg-gray-50 dark:bg-slate-800 p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl border ${myPlayerNum === 2 && isMyTurn && !rolling && !isAnimating && !state.winner ? 'border-blue-400 dark:border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] cursor-pointer hover:bg-blue-50' : 'border-gray-200 dark:border-slate-700 opacity-80'} w-1/2 transition-all relative`}
                                 >
                                     <p className="text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 mb-0.5 sm:mb-2 whitespace-nowrap overflow-hidden text-ellipsis w-full text-center">
                                         {members[1] ? (members[1].nickname === currentMember.nickname ? 'You (P2)' : members[1].nickname) : 'Player 2'}
@@ -617,7 +724,7 @@ export function SnakeLadder({
                         )}
 
                         {/* Fixed-height container to prevent board from shifting up and down */}
-                        <div className="h-12 sm:h-16 w-full flex flex-col items-center justify-start z-10">
+                        <div className="h-16 sm:h-20 w-full flex flex-col items-center justify-start z-10 gap-2">
                             {!otherOnline ? (
                                 <div className="text-xs sm:text-sm font-bold text-red-500 animate-pulse bg-red-100 dark:bg-red-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
                                     Partner Offline
@@ -625,6 +732,15 @@ export function SnakeLadder({
                             ) : isMyTurn && !rolling && !isAnimating && !state.winner ? (
                                 <div className="text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400 animate-bounce bg-orange-100 dark:bg-orange-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
                                     Tap to Roll!
+                                </div>
+                            ) : !isMyTurn && !state.winner && otherOnline ? (
+                                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                    <WakeUpButton 
+                                        sendMessage={sendMessage} 
+                                        currentMember={currentMember} 
+                                        targetNickname={members.find(m => m.id !== currentMember.id)?.nickname || 'Partner'}
+                                        gameName="snake"
+                                    />
                                 </div>
                             ) : lastRoll === 6 && !rolling ? (
                                 <p className="text-xs sm:text-sm font-bold text-orange-500 animate-pulse bg-orange-50 dark:bg-orange-900/20 px-3 py-1 rounded-full">

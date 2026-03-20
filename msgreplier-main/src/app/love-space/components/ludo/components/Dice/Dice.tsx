@@ -81,7 +81,9 @@ function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true }:
 
   return (
     <div className={clsx(styles.diceContainer, styles[colour])}>
-      <span className={styles.playerName}>{playerName}</span>
+      <div className="relative inline-block">
+        <span className={styles.playerName}>{playerName}</span>
+      </div>
       <button
         className={clsx(styles.dice, {
           [styles.active]: !isDiceDisabled,

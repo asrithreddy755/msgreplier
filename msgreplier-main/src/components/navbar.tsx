@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, MessageSquare, ChevronDown } from "lucide-react";
+import { Menu, X, MessageSquare, ChevronDown, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
@@ -33,6 +33,9 @@ export function Navbar() {
           <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground/60">
             Home
           </Link>
+          <Link href="/love-space" className="text-pink-500 font-bold transition-all hover:scale-105 flex items-center gap-1.5 bg-pink-50 dark:bg-pink-900/20 px-3 py-1.5 rounded-full border border-pink-100 dark:border-pink-900/30 shadow-sm">
+            <Heart className="h-4 w-4 fill-pink-500" /> Love Space
+          </Link>
           <Link href="/blog" className="transition-colors hover:text-foreground/80 text-foreground/60">
             Blog
           </Link>
@@ -42,9 +45,6 @@ export function Navbar() {
               Tools <ChevronDown className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center">
-              <DropdownMenuItem asChild>
-                <Link href="/love-score">Love Score Quiz</Link>
-              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/flames">FLAMES Calculator</Link>
               </DropdownMenuItem>
@@ -69,7 +69,7 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-2">
           <ThemeToggle />
           <Button asChild size="sm">
-            <Link href="/love-score">Get Started</Link>
+            <Link href="/love-space">Get Started</Link>
           </Button>
         </div>
 
@@ -103,13 +103,6 @@ export function Navbar() {
             <div className="flex flex-col gap-2 pl-4 border-l-2 border-muted">
               <span className="text-xs font-semibold text-muted-foreground uppercase">Tools</span>
               <Link
-                href="/love-score"
-                className="text-sm font-medium transition-colors hover:text-primary"
-                onClick={() => setIsOpen(false)}
-              >
-                Love Score Quiz
-              </Link>
-              <Link
                 href="/flames"
                 className="text-sm font-medium transition-colors hover:text-primary"
                 onClick={() => setIsOpen(false)}
@@ -139,7 +132,7 @@ export function Navbar() {
               Contact
             </Link>
             <Button asChild className="w-full mt-2">
-              <Link href="/love-score" onClick={() => setIsOpen(false)}>Get Started</Link>
+              <Link href="/love-space" onClick={() => setIsOpen(false)}>Get Started</Link>
             </Button>
           </div>
         </div>

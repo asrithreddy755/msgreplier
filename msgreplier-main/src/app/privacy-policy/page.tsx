@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 
 export default async function PrivacyPolicyPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
   const resolvedSearchParams = await searchParams;
-  const fromLoveScore = resolvedSearchParams?.from === "love-score";
-  const backHref = fromLoveScore ? "/love-score" : "/";
-  const backText = fromLoveScore ? "Back to Love Score" : "Back to Home";
+  const fromLoveSpace = resolvedSearchParams?.from === "love-space";
+  const backHref = fromLoveSpace ? "/love-space" : "/";
+  const backText = fromLoveSpace ? "Back to Love Space" : "Back to Home";
 
   return (
     <div className="container max-w-3xl py-12 px-4 md:px-6 mx-auto">
@@ -34,7 +34,7 @@ export default async function PrivacyPolicyPage({ searchParams }: { searchParams
             All processing is done entirely in your browser.
           </p>
           <p className="font-medium text-foreground">
-            <strong>Exception for the Love Score Feature:</strong> To allow the Love Score quiz feature to function, we temporarily and securely store the quiz originator's name, the intended receiver's name, the custom questions created, and the final percentage score. This information is only accessible via the secret link generated and is never sold or shared with any third parties.
+            <strong>Exception for the Love-Space Feature:</strong> To provide real-time chat and game synchronization in Love-Space, we use secure WebRTC connections. Message history is temporarily stored in your browser's local storage and optionally persisted to our secure database to allow for session recovery. This data is private to your specific room, encrypted, and automatically deleted after periods of inactivity.
           </p>
         </div>
 

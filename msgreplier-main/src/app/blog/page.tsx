@@ -43,7 +43,7 @@ export default function BlogPage() {
             <h2 className="text-2xl font-bold tracking-tight">Recent Articles</h2>
           </div>
 
-          {/* New Article 0: Love Score Guide */}
+          {/* New Article 0: Love Space Guide */}
           <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="currentColor" stroke="none" className="text-rose-500">
@@ -55,29 +55,29 @@ export default function BlogPage() {
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2.5 py-0.5 rounded-full font-medium text-xs">
-                    <Tag className="h-3 w-3" /> Love & Fun
+                    <Tag className="h-3 w-3" /> Love & Connection
                   </span>
                   <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" /> Feb 24, 2026
+                    <Calendar className="h-3 w-3" /> March 19, 2026
                   </span>
                   <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" /> 5 min read
+                    <Clock className="h-3 w-3" /> 6 min read
                   </span>
                 </div>
                 <h3 className="text-2xl md:text-3xl font-bold group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
-                  The Ultimate Guide to the Love Score Quiz
+                  Love-Space: The Ultimate Private Room for Couples
                 </h3>
               </div>
             </div>
 
             <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
               <p>
-                Want to know if your partner was actually listening when you told them your favorite movie? Put them to the test with our custom countdown trivia game.
+                Discover how to create a 100% private, secure space for you and your partner. Chat, play games like Ludo and XOX, and stay connected with no login required.
               </p>
               <div className="not-prose">
                 <Button asChild className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white">
-                  <Link href="/blog/love-score-guide" className="inline-flex items-center gap-2">
-                    Read the Guide <ArrowRight className="h-4 w-4" />
+                  <Link href="/blog/love-space-guide" className="inline-flex items-center gap-2">
+                    Explore Love-Space <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
               </div>

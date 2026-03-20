@@ -1,6 +1,6 @@
 // src/lib/webrtc/dataChannel.ts
 
-export type WebRTCMessageType = 'chat' | 'game_move' | 'dice_roll' | 'dice_resolved' | 'dice_start' | 'token_moving' | 'sync_request' | 'sync_state' | 'chat_sync_request' | 'chat_sync_state' | 'ping' | 'pong' | 'player_ready' | 'heartbeat' | 'ack' | 'typing' | 'reaction';
+export type WebRTCMessageType = 'chat' | 'game_move' | 'dice_roll' | 'dice_resolved' | 'dice_start' | 'token_moving' | 'sync_request' | 'sync_state' | 'chat_sync_request' | 'chat_sync_state' | 'ping' | 'pong' | 'player_ready' | 'heartbeat' | 'ack' | 'typing' | 'reaction' | 'flames_reveal' | 'flames_sync' | 'presence_update';
 
 export interface WebRTCMessage {
     type: WebRTCMessageType;
@@ -39,6 +39,11 @@ export class WebRTCDataChannelManager {
     // Optional callbacks for stats
     private onLatencyUpdateCallback: ((latency: number) => void) | null = null;
 
+    // Reliable messaging tracking
+    private pendingAcks: Map<string, { type: WebRTCMessageType, payload: any, attempts: number, timer: NodeJS.Timeout }> = new Map();
+    private readonly MAX_ACK_ATTEMPTS = 5;
+    private readonly ACK_TIMEOUT_MS = 3000;
+
     constructor() {
         // Register default internal handlers
         this.registerHandler('ping', (payload) => {
@@ -55,6 +60,17 @@ export class WebRTCDataChannelManager {
                      this.onLatencyUpdateCallback(this.latencyMs);
                  }
              }
+        });
+
+        this.registerHandler('ack', (payload) => {
+            if (payload && payload.id) {
+                const pending = this.pendingAcks.get(payload.id);
+                if (pending) {
+                    clearTimeout(pending.timer);
+                    this.pendingAcks.delete(payload.id);
+                    console.log(`[WebRTC] ACK received for ${payload.id}`);
+                }
+            }
         });
     }
 
@@ -125,8 +141,14 @@ export class WebRTCDataChannelManager {
         this.messageQueue = [];
     }
 
-    private routeMessage(msg: WebRTCMessage) {
+    private routeMessage(msg: WebRTCMessage & { id?: string }) {
         this.messagesReceived++;
+
+        // Automatically ACK reliable messages
+        if (msg.id && msg.type !== 'ack') {
+            this.sendMessage('ack', { id: msg.id });
+        }
+
         const handlers = this.messageHandlers.get(msg.type);
         
         if (handlers && handlers.size > 0) {
@@ -217,8 +239,14 @@ export class WebRTCDataChannelManager {
         }
     }
 
-    public sendMessage(type: WebRTCMessageType, payload?: any) {
-        const msg: WebRTCMessage = { type, payload };
+    public sendMessage(type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean, id?: string }) {
+        const id = options?.id || (options?.reliable ? crypto.randomUUID() : undefined);
+        const msg: WebRTCMessage & { id?: string } = { type, payload };
+        if (id) msg.id = id;
+
+        if (options?.reliable && id) {
+            this.trackReliableMessage(id, type, payload);
+        }
 
         if (!this.dataChannel || this.dataChannel.readyState !== 'open') {
             console.log(`DataChannel not open, queueing message payload:`, type);
@@ -232,6 +260,30 @@ export class WebRTCDataChannelManager {
         } catch (error) {
             console.error("Error sending DataChannel message:", error);
         }
+    }
+
+    private trackReliableMessage(id: string, type: WebRTCMessageType, payload: any) {
+        const attempt = (attempts: number) => {
+            if (attempts >= this.MAX_ACK_ATTEMPTS) {
+                console.error(`[WebRTC] Reliable message ${id} (${type}) failed after ${this.MAX_ACK_ATTEMPTS} attempts`);
+                this.pendingAcks.delete(id);
+                return;
+            }
+
+            const timer = setTimeout(() => {
+                const pending = this.pendingAcks.get(id);
+                if (pending) {
+                    console.warn(`[WebRTC] No ACK for ${id} (${type}), resending (attempt ${attempts + 1})`);
+                    pending.attempts++;
+                    this.sendMessage(type, payload, { id }); // Send again with same ID
+                    attempt(pending.attempts);
+                }
+            }, this.ACK_TIMEOUT_MS);
+
+            this.pendingAcks.set(id, { type, payload, attempts, timer });
+        };
+
+        attempt(1);
     }
 
     // 3. Add Heartbeat Ping System

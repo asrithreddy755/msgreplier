@@ -1,597 +1,336 @@
-
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { LoveRoomMember } from '@/types/love-space';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Heart, Sparkles, Send, PlusCircle, Trash2, CheckCircle2, Timer, Trophy, ArrowRight, Wand2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { Heart, Trophy, PenTool, CheckCircle, Loader2, XCircle, Wand2 } from 'lucide-react';
-import presetQuestions from '@/data/love-questions.json';
-import { supabase } from '@/lib/supabase';
-
-interface QuizQuestion {
-    id: string;
-    text: string;
-    options: string[];
-    correctAnswer: number;
-}
-
-interface LoveQuiz {
-    id: string;
-    room_id: string;
-    creator_id: string;
-    taker_id?: string;
-    title: string;
-    questions: QuizQuestion[];
-    score: number | null;
-    status: 'pending' | 'completed';
-    created_at: string;
-    taker_answers?: number[];
-}
+import { motion, AnimatePresence } from 'framer-motion';
+import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
+import presetQuestions from "@/data/love-questions.json";
 
 interface LoveQuizProps {
     roomId: string;
-    currentMember: LoveRoomMember;
-    members: LoveRoomMember[];
+    currentMember: { id: string; nickname: string };
+    members: { id: string; nickname: string }[];
+    sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
+    registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
+    unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
 }
 
-export function LoveQuiz({ roomId, currentMember, members }: LoveQuizProps) {
-    const [quizzes, setQuizzes] = useState<LoveQuiz[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [view, setView] = useState<'dashboard' | 'create' | 'take' | 'details'>('dashboard');
-    const [currentQuiz, setCurrentQuiz] = useState<LoveQuiz | null>(null);
-    const fetchInFlightRef = useRef(false);
-    const fetchCooldownUntilRef = useRef(0);
-    const fetchAbortRef = useRef<AbortController | null>(null);
-
-    // Quiz Creation State
-    const [questions, setQuestions] = useState<QuizQuestion[]>([
-        { id: '1', text: '', options: ['', '', '', ''], correctAnswer: 0 }
-    ]);
-
-    // Quiz Taking State
+export function LoveQuiz({ roomId, currentMember, members, sendMessage, registerHandler, unregisterHandler }: LoveQuizProps) {
+    const [view, setView] = useState<'start' | 'create' | 'taking' | 'result'>('start');
+    const [questions, setQuestions] = useState<any[]>([]);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<number[]>([]);
+    const [score, setScore] = useState<number | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [otherMemberResult, setOtherMemberResult] = useState<any>(null);
 
     const otherMember = members.find(m => m.id !== currentMember.id);
-    const partnerName = otherMember ? otherMember.nickname : 'your partner';
 
-    const fetchQuizzes = useCallback(async (force?: boolean) => {
-        if (!roomId) return;
-        const now = Date.now();
-        if (!force && (fetchInFlightRef.current || now < fetchCooldownUntilRef.current)) return;
-        fetchInFlightRef.current = true;
-        const controller = new AbortController();
-        if (fetchAbortRef.current) {
-            fetchAbortRef.current.abort();
-        }
-        fetchAbortRef.current = controller;
-        try {
-            const res = await fetch(`/api/love-space/quiz?roomId=${roomId}`, {
-                signal: controller.signal,
-                cache: 'no-store',
-            });
-            if (!res.ok) throw new Error(`Quiz fetch failed (${res.status})`);
-            const data = await res.json();
-            if (data.quizzes) setQuizzes(data.quizzes);
-        } catch (error) {
-            if (!controller.signal.aborted) {
-                console.error('Error fetching quizzes:', error);
-                fetchCooldownUntilRef.current = Date.now() + 10000;
-            }
-        } finally {
-            if (!controller.signal.aborted) setLoading(false);
-            fetchInFlightRef.current = false;
-        }
-    }, [roomId]);
-
-    // Keep a stable ref to fetchQuizzes so the Realtime channel doesn't need it in its dep array
-    const fetchQuizzesRef = useRef(fetchQuizzes);
-    useEffect(() => { fetchQuizzesRef.current = fetchQuizzes; }, [fetchQuizzes]);
-
+    // Sync Handlers
     useEffect(() => {
-        fetchQuizzes();
-        return () => {
-            if (fetchAbortRef.current) {
-                fetchAbortRef.current.abort();
-            }
+        if (!registerHandler || !unregisterHandler) return;
+
+        const handleIncomingQuiz = (payload: any) => {
+            if (payload.senderId === currentMember.id) return;
+            setQuestions(payload.questions);
+            setView('taking');
+            toast(`${payload.senderNickname} sent you a Love Quiz! 💌`);
         };
-        // Only re-run once on mount / roomId change. fetchQuizzes identity is intentionally excluded
-        // because it's stable via useCallback([roomId]) — adding it here would cause unnecessary re-runs.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [roomId]);
 
-    // Realtime sync so both partners see quiz updates without manual refresh or spam polling.
-    useEffect(() => {
-        if (!roomId) return;
-
-        const channel = supabase
-            .channel(`public:love_quizzes:${roomId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: '*', // INSERT, UPDATE, DELETE
-                    schema: 'public',
-                    table: 'love_quizzes',
-                    filter: `room_id=eq.${roomId}`
-                },
-                () => {
-                    // Access via ref so this effect's dep array can stay [roomId] only
-                    fetchQuizzesRef.current(true);
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
+        const handleIncomingResult = (payload: any) => {
+            if (payload.senderId === currentMember.id) return;
+            setOtherMemberResult(payload);
+            toast(`${payload.senderNickname} finished your quiz! Score: ${payload.score}% 🏆`);
         };
-        // CRITICAL: dep array must only contain roomId. fetchQuizzesRef is a ref — stable by design.
-    }, [roomId]);
+
+        registerHandler('game_move', (payload: any) => {
+            if (payload.game !== 'quiz') return;
+            if (payload.type === 'new_quiz') handleIncomingQuiz(payload);
+            if (payload.type === 'quiz_result') handleIncomingResult(payload);
+        });
+
+        return () => unregisterHandler('game_move');
+    }, [registerHandler, unregisterHandler, currentMember.id]);
 
     const handleAddQuestion = () => {
-        setQuestions([
-            ...questions,
-            { id: Date.now().toString(), text: '', options: ['', '', '', ''], correctAnswer: 0 }
-        ]);
+        setQuestions([...questions, { text: '', options: ['', ''], correctOptionIndex: 0 }]);
     };
 
-    const handleQuestionChange = (index: number, field: keyof QuizQuestion, value: any) => {
+    const handleRemoveQuestion = (index: number) => {
+        setQuestions(questions.filter((_, i) => i !== index));
+    };
+
+    const handleUpdateQuestion = (index: number, field: string, value: any) => {
         const updated = [...questions];
         updated[index] = { ...updated[index], [field]: value };
         setQuestions(updated);
     };
 
-    const handleOptionChange = (qIndex: number, oIndex: number, value: string) => {
+    const handleUpdateOption = (qIndex: number, optIndex: number, value: string) => {
         const updated = [...questions];
-        updated[qIndex].options[oIndex] = value;
+        updated[qIndex].options[optIndex] = value;
         setQuestions(updated);
     };
 
-    const handlePresets = () => {
-        if (!presetQuestions || presetQuestions.length === 0) {
-            toast.error("The preset questions list is empty.");
+    const handleAddOption = (qIndex: number) => {
+        if (questions[qIndex].options.length >= 4) return;
+        const updated = [...questions];
+        updated[qIndex].options.push('');
+        setQuestions(updated);
+    };
+
+    const handleSendQuiz = () => {
+        if (questions.length === 0) {
+            toast.error("Add at least one question!");
             return;
         }
+        if (questions.some(q => !q.text.trim() || q.options.some((o: string) => !o.trim()))) {
+            toast.error("Please fill in all questions and options!");
+            return;
+        }
+
+        sendMessage?.('game_move', {
+            game: 'quiz',
+            type: 'new_quiz',
+            questions,
+            senderId: currentMember.id,
+            senderNickname: currentMember.nickname
+        });
+
+        toast.success("Quiz sent to your partner!");
+        setView('start');
+    };
+
+    const handleSubmitAnswer = () => {
+        const currentAnswer = answers[currentQuestionIndex];
+        if (currentAnswer === undefined) {
+            toast.error("Please select an answer!");
+            return;
+        }
+
+        if (currentQuestionIndex < questions.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+        } else {
+            // Calculate Score
+            let correctCount = 0;
+            questions.forEach((q, i) => {
+                if (q.correctOptionIndex === answers[i]) correctCount++;
+            });
+            const finalScore = Math.round((correctCount / questions.length) * 100);
+            setScore(finalScore);
+            setView('result');
+
+            sendMessage?.('game_move', {
+                game: 'quiz',
+                type: 'quiz_result',
+                score: finalScore,
+                senderId: currentMember.id,
+                senderNickname: currentMember.nickname
+            });
+        }
+    };
+
+    const loadPresets = () => {
         const shuffled = [...presetQuestions].sort(() => 0.5 - Math.random());
-        const selected = shuffled.slice(0, 5).map((q, idx) => ({
-            id: Date.now().toString() + idx,
+        setQuestions(shuffled.slice(0, 3).map(q => ({
             text: q.text,
             options: q.options,
-            correctAnswer: (q as any).correctOptionIndex || 0
-        }));
-        setQuestions(selected);
-        toast.success("Loaded 5 random questions!");
+            correctOptionIndex: q.correctOptionIndex
+        })));
+        toast.success("Loaded 3 random questions!");
     };
-
-    const handleSinglePreset = (index: number) => {
-        if (!presetQuestions || presetQuestions.length === 0) return;
-
-        const currentTexts = questions.map(q => q.text);
-        const available = presetQuestions.filter(p => !currentTexts.includes(p.text));
-
-        if (available.length === 0) {
-            toast.error("You are already using all available preset questions!");
-            return;
-        }
-
-        const randomPreset = available[Math.floor(Math.random() * available.length)];
-        const updated = [...questions];
-        updated[index] = {
-            ...updated[index],
-            text: randomPreset.text,
-            options: randomPreset.options,
-            correctAnswer: (randomPreset as any).correctOptionIndex || 0
-        };
-        setQuestions(updated);
-    };
-
-    const handleCreateQuiz = async () => {
-        if (questions.some(q => !q.text.trim() || q.options.some(o => !o.trim()))) {
-            toast.error('Please fill in all questions and options');
-            return;
-        }
-
-        try {
-            const res = await fetch('/api/love-space/quiz', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'create',
-                    quizData: {
-                        room_id: roomId,
-                        creator_id: currentMember.id,
-                        title: `Quiz for ${partnerName}`,
-                        questions,
-                        status: 'pending'
-                    }
-                })
-            });
-
-            if (res.ok) {
-                toast.success('Quiz created successfully!');
-                setView('dashboard');
-                fetchQuizzes(true);
-                // Reset form
-                setQuestions([{ id: '1', text: '', options: ['', '', '', ''], correctAnswer: 0 }]);
-            } else {
-                toast.error('Failed to create quiz');
-            }
-        } catch (error) {
-            console.error('Error creating quiz:', error);
-            toast.error('Something went wrong');
-        }
-    };
-
-    const handleTakeQuiz = (quiz: LoveQuiz) => {
-        setCurrentQuiz(quiz);
-        setAnswers(new Array(quiz.questions.length).fill(-1));
-        setView('take');
-    };
-
-    const handleSubmitQuiz = async () => {
-        if (!currentQuiz) return;
-        if (answers.some(a => a === -1)) {
-            toast.error('Please answer all questions');
-            return;
-        }
-
-        try {
-            const res = await fetch('/api/love-space/quiz', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'submit',
-                    quizId: currentQuiz.id,
-                    answers,
-                    takerId: currentMember.id
-                })
-            });
-
-            if (res.ok) {
-                toast.success('Quiz submitted!');
-                setView('dashboard');
-                fetchQuizzes(true);
-            } else {
-                toast.error('Failed to submit quiz');
-            }
-        } catch (error) {
-            console.error('Error submitting quiz:', error);
-            toast.error('Something went wrong');
-        }
-    };
-
-    const myQuiz = quizzes.find(q => q.creator_id === currentMember.id);
-    const partnerQuiz = quizzes.find(q => q.creator_id !== currentMember.id);
-
-    // Calculate Final Love Score
-    const finalScore = (myQuiz?.score !== undefined && myQuiz.score !== null && partnerQuiz?.score !== undefined && partnerQuiz.score !== null)
-        ? Math.round((myQuiz.score + partnerQuiz.score) / 2)
-        : null;
-
-    if (loading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin text-pink-500" /></div>;
-
-    if (view === 'create') {
-        return (
-            <div className="space-y-6 max-w-2xl mx-auto p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-pink-100 dark:border-pink-900/50">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-pink-600 dark:text-pink-400">Create Quiz for {partnerName}</h2>
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={handlePresets} className="text-pink-600 border-pink-200 hover:bg-pink-50">
-                            <Wand2 className="w-4 h-4 mr-2" />
-                            Presets
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setView('dashboard')}>Cancel</Button>
-                    </div>
-                </div>
-
-                <div className="space-y-4">
-                    {questions.map((q, qIndex) => (
-                        <Card key={q.id} className="p-4 border-pink-100 dark:border-pink-900/30 relative flex flex-col pt-10">
-                            <button
-                                type="button"
-                                onClick={() => handleSinglePreset(qIndex)}
-                                className="absolute top-2 right-2 text-pink-500 hover:text-pink-600 bg-pink-50 hover:bg-pink-100 dark:bg-pink-900/20 dark:hover:bg-pink-900/40 p-2 rounded-full transition-colors shadow-sm"
-                                title="Random Preset"
-                            >
-                                <Wand2 className="w-4 h-4" />
-                            </button>
-                            <div className="space-y-3">
-                                <div>
-                                    <Label>Question {qIndex + 1}</Label>
-                                    <Input
-                                        value={q.text}
-                                        onChange={(e) => handleQuestionChange(qIndex, 'text', e.target.value)}
-                                        placeholder="Type your question..."
-                                        className="mt-1"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {q.options.map((opt, oIndex) => (
-                                        <div key={oIndex} className="flex items-center gap-2">
-                                            <Input
-                                                value={opt}
-                                                onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
-                                                placeholder={`Option ${oIndex + 1}`}
-                                            />
-                                            <input
-                                                type="radio"
-                                                name={`correct-${qIndex}`}
-                                                checked={q.correctAnswer === oIndex}
-                                                onChange={() => handleQuestionChange(qIndex, 'correctAnswer', oIndex)}
-                                                className="w-4 h-4 text-pink-600 focus:ring-pink-500 cursor-pointer"
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                                <p className="text-xs text-gray-400 italic">* Select the radio button next to the correct answer</p>
-                            </div>
-                        </Card>
-                    ))}
-
-                    <Button variant="outline" onClick={handleAddQuestion} className="w-full border-dashed border-pink-300 text-pink-500 hover:bg-pink-50">
-                        + Add Another Question
-                    </Button>
-
-                    <Button onClick={handleCreateQuiz} className="w-full bg-pink-500 hover:bg-pink-600 text-white mt-4">
-                        Save Quiz
-                    </Button>
-                </div>
-            </div>
-        );
-    }
-
-    if (view === 'take' && currentQuiz) {
-        return (
-            <div className="space-y-6 max-w-2xl mx-auto p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-pink-100 dark:border-pink-900/50">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-pink-600 dark:text-pink-400">{currentQuiz.title}</h2>
-                    <Button variant="ghost" onClick={() => setView('dashboard')}>Cancel</Button>
-                </div>
-
-                <div className="space-y-6">
-                    {currentQuiz.questions.map((q, qIndex) => (
-                        <Card key={qIndex} className="p-4 border-pink-100 dark:border-pink-900/30">
-                            <h3 className="font-semibold text-lg mb-3">{q.text}</h3>
-                            <RadioGroup value={answers[qIndex]?.toString()} onValueChange={(val) => {
-                                const newAnswers = [...answers];
-                                newAnswers[qIndex] = parseInt(val);
-                                setAnswers(newAnswers);
-                            }}>
-                                {q.options.map((opt, oIndex) => (
-                                    <div key={oIndex} className="flex items-center space-x-2">
-                                        <RadioGroupItem
-                                            value={oIndex.toString()}
-                                            id={`q${qIndex}-opt${oIndex}`}
-                                            className="border-slate-300 dark:border-slate-600 text-pink-500 w-5 h-5 focus:ring-pink-500"
-                                        />
-                                        <Label
-                                            htmlFor={`q${qIndex}-opt${oIndex}`}
-                                            className="cursor-pointer flex-1 bg-slate-50 hover:bg-pink-50 dark:bg-slate-950 dark:hover:bg-slate-800/80 border dark:border-slate-800 p-4 rounded-lg transition-colors text-base"
-                                        >
-                                            {opt}
-                                        </Label>
-                                    </div>
-                                ))}
-                            </RadioGroup>
-                        </Card>
-                    ))}
-
-                    <Button onClick={handleSubmitQuiz} className="w-full bg-pink-500 hover:bg-pink-600 text-white mt-4">
-                        Submit Answers
-                    </Button>
-                </div>
-            </div>
-        );
-    }
-
-    if (view === 'details' && currentQuiz) {
-        const isMyQuiz = currentQuiz.creator_id === currentMember.id;
-        const takerName = isMyQuiz ? partnerName : 'You';
-
-        return (
-            <div className="space-y-6 w-full max-w-2xl mx-auto pb-8">
-                <div className="flex justify-between items-center mb-4 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-pink-100 dark:border-pink-900/50">
-                    <div>
-                        <h2 className="text-xl font-bold text-pink-600 dark:text-pink-400">Quiz Results: {currentQuiz.title}</h2>
-                        <p className="text-sm text-gray-500">Taken by {takerName}</p>
-                    </div>
-                    <Button variant="ghost" onClick={() => setView('dashboard')}>Back</Button>
-                </div>
-
-                <div className="space-y-6">
-                    {currentQuiz.questions.map((q, qIndex) => {
-                        const correctIndex = q.correctAnswer ?? (q as any).correctOptionIndex;
-                        const takerAnswerIndex = Array.isArray(currentQuiz.taker_answers)
-                            ? currentQuiz.taker_answers[qIndex]
-                            : (currentQuiz.taker_answers as any)?.[q.id];
-
-                        const isCorrect = takerAnswerIndex === correctIndex;
-
-                        return (
-                            <Card key={qIndex} className="border-2 border-pink-100 dark:border-pink-900/50 shadow-md bg-white dark:bg-slate-900">
-                                <CardHeader className="pb-4 bg-pink-50/50 dark:bg-pink-900/10 border-b dark:border-pink-900/30">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold text-pink-500 tracking-wider uppercase drop-shadow-sm">Question {qIndex + 1} of {currentQuiz.questions.length}</span>
-                                        {isCorrect ? (
-                                            <CheckCircle className="w-5 h-5 text-emerald-500" />
-                                        ) : (
-                                            <XCircle className="w-5 h-5 text-rose-500" />
-                                        )}
-                                    </div>
-                                    <CardTitle className="text-lg sm:text-xl leading-relaxed text-slate-800 dark:text-slate-100 mt-2">{q.text}</CardTitle>
-                                </CardHeader>
-                                <CardContent className="pt-5 space-y-2">
-                                    {q.options.map((option, optIndex) => {
-                                        const isThisCorrect = optIndex === correctIndex;
-                                        const isThisUser = optIndex === takerAnswerIndex;
-                                        const isWrongUser = isThisUser && !isThisCorrect;
-
-                                        const baseClass = "flex items-center justify-between rounded-lg border px-3 py-2 text-sm sm:text-base";
-                                        const statusClass = isThisCorrect
-                                            ? "border-emerald-400 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
-                                            : isWrongUser
-                                                ? "border-rose-400 bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300"
-                                                : "border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-950";
-
-                                        return (
-                                            <div key={optIndex} className={`${baseClass} ${statusClass}`}>
-                                                <span>{option}</span>
-                                                {isThisCorrect ? (
-                                                    <CheckCircle className="w-4 h-4" />
-                                                ) : isWrongUser ? (
-                                                    <XCircle className="w-4 h-4" />
-                                                ) : null}
-                                            </div>
-                                        );
-                                    })}
-                                    <div className="pt-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                                        {takerName}'s answer: <span className="font-semibold text-slate-700 dark:text-slate-200">
-                                            {takerAnswerIndex !== undefined && takerAnswerIndex !== null && q.options[takerAnswerIndex] ? q.options[takerAnswerIndex] : "No Answer"}
-                                        </span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    }
 
     return (
-        <div className="space-y-6 w-full max-w-4xl mx-auto">
-            {/* Main Score Dashboard */}
-            <Card className="border-none shadow-md bg-gradient-to-br from-pink-50 to-purple-50 dark:from-slate-900 dark:to-slate-800 overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <Heart className="w-32 h-32 text-pink-500" />
-                </div>
-                <CardHeader className="pb-2 text-center relative z-10">
-                    <CardTitle className="text-2xl font-bold text-gray-800 dark:text-white flex items-center justify-center gap-2">
-                        <Heart className="w-6 h-6 text-pink-500 fill-pink-500" /> Love Score
-                    </CardTitle>
-                    <CardDescription>How well do you know each other?</CardDescription>
-                </CardHeader>
-                <CardContent className="text-center relative z-10 pb-8">
-                    {finalScore !== null ? (
-                        <div className="animate-in zoom-in duration-500 bg-white dark:bg-slate-950 rounded-2xl p-6 shadow-inner border border-pink-100 dark:border-pink-900/30">
-                            <div className="mx-auto bg-amber-100 dark:bg-amber-900/30 p-4 rounded-full w-fit mb-4">
-                                <Trophy className="w-12 h-12 text-amber-500 fill-amber-500/20" />
-                            </div>
-                            <span className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-rose-500 to-red-600 drop-shadow-sm">
-                                {finalScore}%
-                            </span>
-                            <p className="text-2xl font-bold text-slate-800 dark:text-slate-200 mt-4">
-                                {finalScore === 100 ? "Perfect Soulmates! 💘" : finalScore >= 80 ? "It's True Love! ❤️" : finalScore >= 50 ? "Getting There! 💕" : "We Need To Talk... 💔"}
-                            </p>
-                            <p className="text-sm text-gray-500 mt-2">Combined Match Rate</p>
-                        </div>
-                    ) : (
-                        <div className="py-4">
-                            <p className="text-lg text-gray-600 dark:text-gray-300 font-medium">
-                                {myQuiz && partnerQuiz ? "Waiting for results..." : "Complete both quizzes to reveal your score!"}
-                            </p>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* My Quiz Status */}
-                <Card className="border-pink-100 dark:border-pink-900/30 shadow-sm hover:shadow-md transition-shadow">
-                    <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                            <PenTool className="w-5 h-5 text-purple-500" />
-                            Your Quiz for {partnerName}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {myQuiz ? (
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500">Status:</span>
-                                    <span className={`font-semibold px-2 py-0.5 rounded-full ${myQuiz.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                                        {myQuiz.status === 'completed' ? 'Completed' : 'Pending Partner'}
-                                    </span>
+        <div className="flex flex-col gap-4 p-2 sm:p-4 max-w-2xl mx-auto w-full">
+            <AnimatePresence mode="wait">
+                {view === 'start' && (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-4">
+                        <Card className="border-pink-100 dark:border-pink-900/30 shadow-sm bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-3xl overflow-hidden">
+                            <CardHeader className="text-center pb-2">
+                                <div className="mx-auto bg-pink-100 dark:bg-pink-900/30 w-16 h-16 rounded-2xl flex items-center justify-center mb-4 text-pink-500 shadow-inner">
+                                    <Trophy className="w-8 h-8" />
                                 </div>
-                                {myQuiz.status === 'completed' && (
-                                    <>
-                                        <div className="flex justify-between items-center text-sm mt-2">
-                                            <span className="text-gray-500">{partnerName}'s Score:</span>
-                                            <span className="font-bold text-lg text-pink-600">{myQuiz.score}%</span>
-                                        </div>
-                                        <div className="mt-4">
-                                            <Button variant="outline" onClick={() => { setCurrentQuiz(myQuiz); setView('details'); }} className="w-full text-pink-600 border-pink-200 hover:bg-pink-50">
-                                                View Answers
-                                            </Button>
-                                        </div>
-                                    </>
-                                )}
-                                {myQuiz.status === 'pending' && (
-                                    <p className="text-xs text-gray-400 italic mt-2">Waiting for {partnerName} to take it...</p>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="text-center py-4">
-                                <p className="text-sm text-gray-500 mb-4">Create a quiz to test {partnerName}'s knowledge about you!</p>
-                                <Button onClick={() => setView('create')} className="w-full bg-purple-500 hover:bg-purple-600 text-white">
-                                    Create Quiz
-                                </Button>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Partner's Quiz Status */}
-                <Card className="border-pink-100 dark:border-pink-900/30 shadow-sm hover:shadow-md transition-shadow">
-                    <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                            <Trophy className="w-5 h-5 text-orange-500" />
-                            {partnerName}'s Quiz for You
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {partnerQuiz ? (
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-500">Status:</span>
-                                    <span className={`font-semibold px-2 py-0.5 rounded-full ${partnerQuiz.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                                        {partnerQuiz.status === 'completed' ? 'Completed' : 'Ready to Take'}
-                                    </span>
+                                <CardTitle className="text-2xl font-black text-gray-800 dark:text-pink-100">Love Score Quiz</CardTitle>
+                                <CardDescription>Test how well your partner knows you!</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-4 pt-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <Button 
+                                        onClick={() => setView('create')}
+                                        className="h-24 rounded-2xl flex flex-col gap-2 bg-pink-500 hover:bg-pink-600 text-white border-0 shadow-md group"
+                                    >
+                                        <PlusCircle className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                        <span className="font-bold">Create Quiz</span>
+                                    </Button>
+                                    <Card className="h-24 rounded-2xl flex flex-col items-center justify-center bg-muted/30 border-dashed">
+                                        <p className="text-xs text-muted-foreground text-center px-4">
+                                            Wait for your partner to send a quiz!
+                                        </p>
+                                    </Card>
                                 </div>
-                                {partnerQuiz.status === 'completed' ? (
-                                    <>
-                                        <div className="flex justify-between items-center text-sm mt-2">
-                                            <span className="text-gray-500">Your Score:</span>
-                                            <span className="font-bold text-lg text-pink-600">{partnerQuiz.score}%</span>
+
+                                {otherMemberResult && (
+                                    <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/50 rounded-2xl flex items-center gap-4">
+                                        <div className="bg-green-500 text-white p-2 rounded-xl">
+                                            <Trophy className="w-5 h-5" />
                                         </div>
-                                        <div className="mt-4">
-                                            <Button variant="outline" onClick={() => { setCurrentQuiz(partnerQuiz); setView('details'); }} className="w-full text-pink-600 border-pink-200 hover:bg-pink-50">
-                                                View Your Answers
-                                            </Button>
+                                        <div>
+                                            <p className="text-sm font-bold text-green-800 dark:text-green-300">
+                                                {otherMemberResult.senderNickname} scored {otherMemberResult.score}%
+                                            </p>
+                                            <p className="text-[10px] text-green-600 dark:text-green-400 uppercase font-black">Latest Result</p>
                                         </div>
-                                    </>
-                                ) : (
-                                    <div className="mt-4">
-                                        <Button onClick={() => handleTakeQuiz(partnerQuiz)} className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                                            Take Quiz Now
-                                        </Button>
                                     </div>
                                 )}
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                )}
+
+                {view === 'create' && (
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <Button variant="ghost" onClick={() => setView('start')} className="text-muted-foreground">Cancel</Button>
+                            <Button onClick={loadPresets} variant="outline" size="sm" className="text-pink-500 border-pink-200">
+                                <Wand2 className="w-4 h-4 mr-2" /> Presets
+                            </Button>
+                        </div>
+
+                        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 hide-scrollbar">
+                            {questions.map((q, qIndex) => (
+                                <Card key={qIndex} className="p-4 rounded-2xl border-pink-100 relative">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => handleRemoveQuestion(qIndex)}
+                                        className="absolute top-2 right-2 text-red-400 hover:text-red-500"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                    <div className="space-y-3">
+                                        <Label className="text-xs font-black text-pink-500 uppercase">Question {qIndex + 1}</Label>
+                                        <Input 
+                                            placeholder="What's my favorite color?" 
+                                            value={q.text} 
+                                            onChange={(e) => handleUpdateQuestion(qIndex, 'text', e.target.value)}
+                                            className="rounded-xl"
+                                        />
+                                        <div className="space-y-2 pl-4 border-l-2 border-pink-100">
+                                            {q.options.map((opt: string, oIndex: number) => (
+                                                <div key={oIndex} className="flex items-center gap-2">
+                                                    <div 
+                                                        onClick={() => handleUpdateQuestion(qIndex, 'correctOptionIndex', oIndex)}
+                                                        className={`w-5 h-5 rounded-full border-2 cursor-pointer flex-shrink-0 flex items-center justify-center ${q.correctOptionIndex === oIndex ? 'bg-pink-500 border-pink-500' : 'border-gray-300'}`}
+                                                    >
+                                                        {q.correctOptionIndex === oIndex && <div className="w-2 h-2 bg-white rounded-full" />}
+                                                    </div>
+                                                    <Input 
+                                                        placeholder={`Option ${oIndex + 1}`} 
+                                                        value={opt} 
+                                                        onChange={(e) => handleUpdateOption(qIndex, oIndex, e.target.value)}
+                                                        className="h-8 rounded-lg text-sm"
+                                                    />
+                                                </div>
+                                            ))}
+                                            {q.options.length < 4 && (
+                                                <Button variant="ghost" size="sm" onClick={() => handleAddOption(qIndex)} className="text-[10px] uppercase font-black text-pink-400">
+                                                    + Add Option
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+
+                        <Button onClick={handleAddQuestion} variant="outline" className="w-full border-dashed rounded-2xl py-6 border-pink-200 text-pink-500">
+                            <PlusCircle className="w-5 h-5 mr-2" /> Add Question
+                        </Button>
+
+                        <Button onClick={handleSendQuiz} className="w-full bg-pink-500 hover:bg-pink-600 text-white rounded-2xl h-14 font-bold text-lg shadow-lg">
+                            <Send className="w-5 h-5 mr-2" /> Send to Partner
+                        </Button>
+                    </motion.div>
+                )}
+
+                {view === 'taking' && (
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6 text-center">
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center px-2">
+                                <span className="text-xs font-black text-pink-500 uppercase">Question {currentQuestionIndex + 1} of {questions.length}</span>
+                                <div className="h-1.5 flex-1 mx-4 bg-gray-100 rounded-full overflow-hidden">
+                                    <motion.div 
+                                        className="h-full bg-pink-500" 
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+                                    />
+                                </div>
                             </div>
-                        ) : (
-                            <div className="text-center py-6">
-                                <p className="text-sm text-gray-400 italic">
-                                    {partnerName} hasn't created a quiz for you yet.
-                                </p>
+                            <h2 className="text-2xl font-black text-gray-800 dark:text-white pt-4">
+                                {questions[currentQuestionIndex].text}
+                            </h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-3">
+                            {questions[currentQuestionIndex].options.map((opt: string, i: number) => (
+                                <Button
+                                    key={i}
+                                    variant={answers[currentQuestionIndex] === i ? 'default' : 'outline'}
+                                    onClick={() => {
+                                        const newAnswers = [...answers];
+                                        newAnswers[currentQuestionIndex] = i;
+                                        setAnswers(newAnswers);
+                                    }}
+                                    className={`h-16 rounded-2xl text-lg font-bold border-2 ${answers[currentQuestionIndex] === i ? 'bg-pink-500 border-pink-500 shadow-md scale-[1.02]' : 'hover:border-pink-200'}`}
+                                >
+                                    {opt}
+                                </Button>
+                            ))}
+                        </div>
+
+                        <Button onClick={handleSubmitAnswer} className="w-full h-14 rounded-2xl bg-gray-800 hover:bg-gray-900 text-white font-bold text-lg mt-4">
+                            {currentQuestionIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
+                            <ArrowRight className="w-5 h-5 ml-2" />
+                        </Button>
+                    </motion.div>
+                )}
+
+                {view === 'result' && (
+                    <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6 py-8">
+                        <div className="relative inline-block">
+                            <div className="w-32 h-32 rounded-full border-8 border-pink-100 dark:border-pink-900/30 flex items-center justify-center text-4xl font-black text-pink-500">
+                                {score}%
                             </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
+                            <motion.div 
+                                animate={{ scale: [1, 1.2, 1] }} 
+                                transition={{ repeat: Infinity, duration: 2 }}
+                                className="absolute -top-2 -right-2 bg-yellow-400 text-white p-2 rounded-full shadow-md"
+                            >
+                                <Trophy className="w-5 h-5" />
+                            </motion.div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-black text-gray-800 dark:text-white">Love Score Result!</h2>
+                            <p className="text-muted-foreground font-medium px-8">
+                                {score! >= 80 ? "You know your partner perfectly! ❤️" : 
+                                 score! >= 50 ? "Not bad! You're getting there! 🥰" : 
+                                 "Time to spend more time talking! 😅"}
+                            </p>
+                        </div>
+
+                        <Button onClick={() => { setView('start'); setAnswers([]); setCurrentQuestionIndex(0); setQuestions([]); }} className="bg-pink-500 hover:bg-pink-600 text-white rounded-full px-8 h-12 font-bold">
+                            Back to Home
+                        </Button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

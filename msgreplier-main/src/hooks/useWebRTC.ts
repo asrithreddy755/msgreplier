@@ -152,10 +152,13 @@ export function useWebRTC(roomId: string, localMemberId: string, isCreator: bool
                     () => {
                         if (!isMounted) return;
                         setConnectionState('Opponent disconnected');
+                        reconnect();
                     },
                     () => {
                         if (!isMounted) return;
+                        console.warn("[WebRTC] Silent freeze detected (missed heartbeats). Forcing reconnect...");
                         setConnectionState('Opponent disconnected');
+                        reconnect();
                     },
                     (latency) => {
                         if (!isMounted) return;
@@ -281,11 +284,13 @@ export function useWebRTC(roomId: string, localMemberId: string, isCreator: bool
          return () => clearInterval(interval);
     }, [connectionState]);
 
-    const sendMessage = useCallback((type: WebRTCMessageType, payload?: any) => {
-        if (manager) {
-            manager.sendMessage(type, payload);
+    const sendMessage = useCallback((type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => {
+        if (dataChannelManagerRef.current) {
+            dataChannelManagerRef.current.sendMessage(type, payload, options);
+        } else {
+            console.warn(`[WebRTC] Manager not ready, message ${type} will be dropped (no persistent queue in hook yet)`);
         }
-    }, [manager]);
+    }, []);
 
     const registerHandler = useCallback((type: WebRTCMessageType, handler: (payload: any) => void) => {
         if (manager) {

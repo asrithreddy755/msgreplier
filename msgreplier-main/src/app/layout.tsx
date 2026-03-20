@@ -21,11 +21,11 @@ const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-1XPYWEPPGJ";
 export const metadata: Metadata = {
   metadataBase: new URL('https://msgreplier.com'),
   title: {
-    default: "MsgReplier - Free Text Repeater, Slang Dictionary & AI Reply Generator",
+    default: "MsgReplier - Private Love Space, Slang Dictionary & AI Messaging Tools",
     template: "%s | MsgReplier",
   },
   description:
-    "The ultimate messaging toolkit. distinct features include a Text Repeater for WhatsApp/Instagram, a Gen Z Slang Dictionary (Shortcutpedia), and an AI Reply Generator. No login required.",
+    "The ultimate messaging toolkit. Create a private Love-Space for couples, decode Gen Z slang with Shortcutpedia, and use our AI messaging tools. No login required.",
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png" },
@@ -40,9 +40,9 @@ export const metadata: Metadata = {
     type: "website",
     url: siteUrl,
     siteName: "MsgReplier",
-    title: "MsgReplier – Shortcut Meanings & Text Repeater",
+    title: "MsgReplier – Private Love Space & Slang Dictionary",
     description:
-      "Understand chat shortcuts and slang meanings, and repeat text easily for any platform. Simple, fast, and privacy-friendly.",
+      "Create a private Love-Space for you and your partner, decode chat shortcuts, and use AI messaging tools. Simple, fast, and 100% private.",
     images: [
       {
         url: "/opengraph-image",
@@ -54,9 +54,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "MsgReplier – Shortcut Meanings & Text Repeater",
+    title: "MsgReplier – Private Love Space & Slang Dictionary",
     description:
-      "Understand chat shortcuts and slang meanings, and repeat text easily for any platform character limit. Simple, fast, and privacy-friendly.",
+      "Create a private Love-Space for you and your partner, decode chat shortcuts, and use AI messaging tools. Simple, fast, and 100% private.",
     images: ["/twitter-image"],
   },
   verification: {

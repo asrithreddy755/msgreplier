@@ -263,6 +263,24 @@ export default function LoveSpacePage() {
                     </div>
                 </section>
 
+                {/* Content + Use-cases Section */}
+                <section className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 border border-pink-100 dark:border-pink-900/30 shadow-sm text-center sm:text-left">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-pink-100 mb-4">The Ultimate Private Space for Couples</h2>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                        Love-Space is a secure, real-time platform designed specifically for couples to bond. Whether you're in a long-distance relationship or just looking for a private digital corner, our rooms provide everything you need to connect instantly.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+                        <div className="p-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl">
+                            <h3 className="font-bold text-pink-600 dark:text-pink-400 mb-1">Private Chat Rooms</h3>
+                            <p className="text-gray-500 dark:text-gray-400">Encrypted, real-time messaging with no logs and automatic deletion.</p>
+                        </div>
+                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+                            <h3 className="font-bold text-purple-600 dark:text-purple-400 mb-1">Interactive Games</h3>
+                            <p className="text-gray-500 dark:text-gray-400">Play classic games like Ludo, Tic Tac Toe, and Snake & Ladder together.</p>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Privacy and Terms */}
                 <section className="bg-white/30 dark:bg-slate-900/20 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
                     <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3 text-base">Privacy Policy & Terms of Use</h3>

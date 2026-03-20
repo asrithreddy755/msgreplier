@@ -5,10 +5,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     {
+      url: `${baseUrl}/love-space`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 1.0,
+    },
+    {
       url: baseUrl,
       lastModified: new Date(),
       changeFrequency: "weekly",
-      priority: 1,
+      priority: 0.7,
     },
     {
       url: `${baseUrl}/flames`,

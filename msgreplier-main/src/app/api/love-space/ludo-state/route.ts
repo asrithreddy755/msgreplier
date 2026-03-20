@@ -21,9 +21,10 @@ export async function GET(request: Request) {
         }
 
         const { data, error } = await supabaseAdmin
-            .from('ludo_games')
-            .select('room_id, game_state, last_updated')
+            .from('love_games')
+            .select('room_id, game_state, updated_at')
             .eq('room_id', roomId)
+            .eq('game_type', 'ludo')
             .maybeSingle();
 
         if (error) {
@@ -35,8 +36,14 @@ export async function GET(request: Request) {
             return response;
         }
 
+        // Map updated_at back to last_updated for frontend compatibility if needed
+        const mappedData = data ? {
+            ...data,
+            last_updated: data.updated_at
+        } : null;
+
         console.log(`[Ludo State GET] Found game state for roomId ${roomId}:`, !!data);
-        const response = NextResponse.json({ game: data ?? null });
+        const response = NextResponse.json({ game: mappedData });
         response.headers.set('Cache-Control', 'no-store, max-age=0');
         return response;
 
@@ -74,12 +81,17 @@ export async function POST(request: Request) {
             : new Date().toISOString();
 
         const { data, error } = await supabaseAdmin
-            .from('ludo_games')
+            .from('love_games')
             .upsert(
-                { room_id: roomId, game_state: gameState, last_updated: timestampIso },
-                { onConflict: 'room_id' }
+                { 
+                    room_id: roomId, 
+                    game_type: 'ludo',
+                    game_state: gameState, 
+                    updated_at: timestampIso 
+                },
+                { onConflict: 'room_id,game_type' }
             )
-            .select('room_id, game_state, last_updated')
+            .select('room_id, game_state, updated_at')
             .single();
 
         if (error) {
@@ -88,8 +100,14 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Failed to save game state', details: error.message }, { status: 502 });
         }
 
+        // Map updated_at back to last_updated for frontend compatibility
+        const mappedData = data ? {
+            ...data,
+            last_updated: data.updated_at
+        } : null;
+
         console.log(`[Ludo State POST] Successfully saved state for roomId ${roomId}`);
-        return NextResponse.json({ game: data });
+        return NextResponse.json({ game: mappedData });
 
     } catch (e: any) {
         console.error(`[Ludo State POST] Unhandled exception for roomId ${roomId}:`, e);
