@@ -231,6 +231,8 @@ export function SnakeLadder({
         if (nextState.winner) {
             saveToDb(stateWithMeta, true);
         }
+
+        return stateWithMeta;
     }, [sendMessage, roomId, saveToDb]);
 
     const buildPath = useCallback((from: number, to: number) => {
@@ -520,12 +522,10 @@ export function SnakeLadder({
                 sendMessage('dice_resolved', { playerNum: myPlayerNum, rollValue: roll }, { reliable: true });
             }
 
-            commitState(newState);
+            const stateWithMeta = commitState(newState);
 
             if (path.length > 0) {
-                await playAnimationAndSync(myPlayerNum, path, newState);
-            } else {
-                setState(newState);
+                await playAnimationAndSync(myPlayerNum, path, stateWithMeta);
             }
         } finally {
             setIsProcessing(false);
@@ -551,7 +551,6 @@ export function SnakeLadder({
             version: state.version + 1,
             updatedAt: Date.now()
         };
-        setState(newState);
         setLastRoll(null);
         commitState(newState);
     };

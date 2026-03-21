@@ -460,7 +460,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 setHasPresenceSynced(true);
 
                 if (hasNewMembers && !fetchingMembersRef.current) {
-                    console.log('[Presence] Unknown member detected, waiting for postgres_changes...');
+                    console.log('[Presence] Unknown member detected, falling back to manual fetch...');
+                    loadMembers();
                 }
             })
             .on('presence', { event: 'join' }, ({ key, newPresences }) => {
@@ -472,7 +473,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 });
 
                 if (key !== currentMember.id && !membersRef.current.find(m => m.id === key) && !fetchingMembersRef.current) {
-                    // Let postgres_changes handle the member fetch.
+                    console.log('[Presence] Unknown member joined, refetching members...');
+                    loadMembers();
                 }
 
                 if (key !== currentMember.id && newPresences && newPresences.length > 0) {
