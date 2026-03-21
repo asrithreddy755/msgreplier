@@ -103,12 +103,15 @@ export function Ludo({
         const currentVersion = currentVersionRef.current;
 
         // Version-Controlled Acceptance
-        if (incomingVersion <= currentVersion && !shouldBackup) {
+        if (incomingVersion > currentVersion) {
+            console.log(`[RTC] Ludo sync received (version ${incomingVersion})`);
+        } else if (incomingVersion === currentVersion && hasUnsavedChangesRef.current && !shouldBackup) {
+            console.log(`[RTC] Ignored Ludo sync with matching version (v${incomingVersion}) due to pending local state.`);
+            return;
+        } else if (!shouldBackup) {
             console.log(`[RTC] Ignored stale Ludo sync (v${incomingVersion} <= v${currentVersion})`);
             return;
         }
-
-        console.log(`[RTC] Ludo sync received (version ${incomingVersion})`);
         const serialized = serializeState(incomingState);
         if (serialized !== lastBroadcastStateRef.current) {
             lastBroadcastStateRef.current = serialized;
@@ -209,12 +212,24 @@ export function Ludo({
         return () => clearInterval(interval);
     }, [roomId]);
 
-    const requestSync = useCallback((reason: string) => {
+    const requestSync = useCallback((reason: string, attempt = 1) => {
         if (!sendMessage) return;
         const now = Date.now();
-        if (now - lastSyncRequestAtRef.current < 1200) return;
+        if (attempt === 1 && now - lastSyncRequestAtRef.current < 1200) return;
         lastSyncRequestAtRef.current = now;
+        
+        console.log(`[Ludo] Requesting sync (reason: ${reason}, attempt: ${attempt})`);
         sendMessage('sync_request', { game: 'ludo', roomId, senderId: currentMemberId, reason, sentAt: now });
+
+        // One-time fallback if no state received
+        if (attempt === 1) {
+             setTimeout(() => {
+                 if (currentVersionRef.current === 0) {
+                     console.warn("[Ludo] Sync timeout - retrying sync_request...");
+                     requestSync(reason, 2);
+                 }
+             }, 3000);
+        }
     }, [sendMessage, roomId, currentMemberId]);
 
     const persistState = useCallback(debounce((stateToSave: any) => {
@@ -281,12 +296,8 @@ export function Ludo({
     }, [roomId]);
 
     useEffect(() => {
-        if (hasInitializedRef.current) return;
-
-        const init = async () => {
-            const currentMembers = membersRef.current;
-            if (!roomId || currentMembers.length === 0) return;
-
+        const currentMembers = membersRef.current;
+        if (roomId && currentMembers.length > 0) {
             const initialPlayers = [
                 { name: currentMembers[0]?.nickname || 'Player 1', isBot: false },
                 { name: currentMembers[1]?.nickname || 'Player 2', isBot: false },
@@ -295,7 +306,11 @@ export function Ludo({
             const idx = currentMembers.findIndex(m => m.id === currentMemberId);
             const sequence: TPlayerColour[] = ['blue', 'green'];
             setMyColour(sequence[idx === -1 ? 0 : idx] || 'blue');
+        }
 
+        if (hasInitializedRef.current) return;
+
+        const init = async () => {
             hasInitializedRef.current = true;
             try {
                 const backupRaw = localStorage.getItem(ludoBackupKey.current);
@@ -318,7 +333,7 @@ export function Ludo({
             }
         };
 
-        if (roomId && membersRef.current.length > 0) {
+        if (roomId && currentMembers.length > 0) {
             init();
         }
     }, [roomId, members.length, currentMemberId, ludoBackupKey, applyIncomingState, requestSync]);

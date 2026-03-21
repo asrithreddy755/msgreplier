@@ -169,6 +169,14 @@
   word-break: break-word;
 }
 
+@media (prefers-color-scheme: dark) {
+  .playerName {
+    background: color-mix(in srgb, var(--player-colour) 25%, #1e293b);
+    color: color-mix(in srgb, var(--player-colour) 40%, #f8fafc);
+    border: 1px solid color-mix(in srgb, var(--player-colour) 40%, #334155);
+  }
+}
+
 .diceContainer.green .playerName,
 .diceContainer.yellow .playerName {
   text-align: center;

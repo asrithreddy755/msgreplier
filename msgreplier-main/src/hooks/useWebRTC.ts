@@ -6,303 +6,249 @@ import { WebRTCDataChannelManager, WebRTCMessageType } from '@/lib/webrtc/dataCh
 
 export type WebRTCConnectionState = 'Connecting...' | 'Waiting for opponent' | 'Connected' | 'Opponent disconnected';
 
-export function useWebRTC(roomId: string, localMemberId: string, isCreator: boolean) {
+export function useWebRTC(
+    roomId: string, 
+    localMemberId: string, 
+    isCreator: boolean, 
+    isLeader: boolean = true
+) {
     const [connectionState, setConnectionState] = useState<WebRTCConnectionState>('Connecting...');
     const [latencyMs, setLatencyMs] = useState<number>(0);
     const [rtcStats, setRtcStats] = useState<any>(null);
-    
+
     const connectionRef = useRef<WebRTCConnection | null>(null);
     const signalingRef = useRef<WebRTCSignaling | null>(null);
-    const dataChannelManagerRef = useRef<WebRTCDataChannelManager | null>(null);
-    const [manager, setManager] = useState<WebRTCDataChannelManager | null>(null);
-    const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
-    const reconnectInProgressRef = useRef(false);
-    const wasEverConnectedRef = useRef(false);
+    const dcManagerRef = useRef<WebRTCDataChannelManager | null>(null);
     
-    // Limits & Tracking
+    const isReconnectingRef = useRef(false);
     const reconnectAttemptsRef = useRef(0);
-    const MAX_RECONNECT_ATTEMPTS = 5;
-    const RECONNECT_DELAY_MS = 3000;
+    const MAX_RECONNECT_ATTEMPTS = 10;
+    const wasEverConnectedRef = useRef(false);
+    const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const connectionWatchdogRef = useRef<NodeJS.Timeout | null>(null);
+    const connectionStateRef = useRef<WebRTCConnectionState>('Connecting...');
+    const initWebRTCRef = useRef<() => Promise<void>>(null as any);
+    const lastInitParamsRef = useRef<string>('');
 
-    useEffect(() => {
-        if (!roomId || !localMemberId) return;
+    const handlersRef = useRef<Map<WebRTCMessageType, Set<(payload: any) => void>>>(new Map());
 
-        let isMounted = true;
+    const teardown = useCallback(() => {
+        console.log("[RTC] Tearing down WebRTC stack...");
+        if (reconnectTimerRef.current) {
+            clearTimeout(reconnectTimerRef.current);
+            reconnectTimerRef.current = null;
+        }
+        if (connectionWatchdogRef.current) {
+            clearTimeout(connectionWatchdogRef.current);
+            connectionWatchdogRef.current = null;
+        }
+
+        if (dcManagerRef.current) dcManagerRef.current.close();
+        if (signalingRef.current) signalingRef.current.disconnect();
+        if (connectionRef.current) connectionRef.current.close();
         
-        // Function to fully tear down any existing connection
-        const teardown = () => {
-             console.log("[WebRTC] Tearing down all instances...");
-             isMounted = false; // Prevent any async operations from continuing
+        connectionRef.current = null;
+        signalingRef.current = null;
+        dcManagerRef.current = null;
+        setConnectionState('Opponent disconnected');
+        connectionStateRef.current = 'Opponent disconnected';
+    }, []);
 
-             if (reconnectTimerRef.current) {
-                clearTimeout(reconnectTimerRef.current);
-                reconnectTimerRef.current = null;
-             }
-             
-             // Close connections and channels
-             connectionRef.current?.close();
-             signalingRef.current?.disconnect();
-             dataChannelManagerRef.current?.close();
-
-             // Nullify refs to release memory and prevent reuse
-             connectionRef.current = null;
-             signalingRef.current = null;
-             dataChannelManagerRef.current = null;
-             setManager(null);
-             
-             reconnectInProgressRef.current = false;
-        };
-
-        const reconnect = () => {
-            if (!isMounted) return;
-            if (reconnectInProgressRef.current) return;
-            if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
-                console.error("Max WebRTC reconnect attempts reached. Connection failed completely.");
-                setConnectionState('Opponent disconnected');
+    const internalReconnect = useCallback(async (options: { soft: boolean }) => {
+        if (!roomId || !localMemberId || isReconnectingRef.current || !isLeader) return;
+        
+        if (options.soft) {
+            if (!isCreator) {
+                console.log("[RTC] Soft reconnect: Host-only duty. Passive waiting.");
                 return;
             }
 
-            reconnectInProgressRef.current = true;
-            reconnectAttemptsRef.current++;
-            setConnectionState('Connecting...');
-            console.log(`[WebRTC] Connection lost. Reconnecting... (Attempt ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS})`);
-
-            // Fully tear down before re-initializing
-            teardown();
-
-            // Re-initialize after a delay
-            reconnectTimerRef.current = setTimeout(() => {
-                if (isMounted) {
-                    initWebRTC();
-                }
-            }, RECONNECT_DELAY_MS);
-        };
-
-        const initWebRTC = async () => {
-            try {
-                // Each mount gets its own fresh start
-                if (!isMounted) return;
-
-                const conn = new WebRTCConnection();
-                const sig = new WebRTCSignaling(roomId, localMemberId);
-                const dcManager = new WebRTCDataChannelManager();
-
-                // 1. Connection Callbacks
-                conn.setCallbacks(
-                    (state) => {
-                        if (!isMounted) return;
-                        if (state === 'connected') {
-                            setConnectionState('Connected');
-                            reconnectAttemptsRef.current = 0;
-                            reconnectInProgressRef.current = false;
-                            wasEverConnectedRef.current = true;
-                        } else if (state === 'disconnected' || state === 'failed') {
-                            reconnect();
-                        }
-                    },
-                    (iceState) => {
-                        if (!isMounted) return;
-                        console.log("WebRTC ICE State Change:", iceState);
-                        // Delay signaling disconnect until ICE is stable
-                        if (iceState === 'connected' || iceState === 'completed') {
-                            setTimeout(() => {
-                                if (isMounted && signalingRef.current && connectionRef.current?.peerConnection?.iceConnectionState.match(/connected|completed/)) {
-                                    console.log("WebRTC ICE stable, closing Supabase signaling...");
-                                    signalingRef.current.disconnect();
-                                }
-                            }, 5000); // 5 second grace period
-                        }
-                    },
-                    (candidate) => {
-                        sig.sendIceCandidate(candidate).catch(e => console.error("Error sending ICE candidate:", e));
-                    }
-                );
-
-                sig.setCallbacks(
-                    async (offer, senderId) => {
-                        if (!isMounted || isCreator) return; // Only non-creators handle offers in this flow
-                        console.log("Processing incoming offer from", senderId);
-                        const answer = await conn.handleOffer(offer);
-                        if (answer) {
-                            await sig.sendAnswer(answer);
-                        }
-                    },
-                    async (answer, senderId) => {
-                        if (!isMounted || !isCreator) return; // Only creators handle answers in this flow
-                        console.log("Processing incoming answer from", senderId);
-                        await conn.handleAnswer(answer);
-                    },
-                    async (candidateInit, senderId) => {
-                        if (!isMounted) return;
-                        await conn.handleIceCandidate(candidateInit);
-                    }
-                );
-
-                dcManager.setCallbacks(
-                    () => {
-                        if (!isMounted) return;
-                        setConnectionState('Connected');
-                        if (wasEverConnectedRef.current || reconnectAttemptsRef.current > 0) {
-                            dcManager.sendMessage('sync_request', { reason: 'channel_open_recovery', timestamp: Date.now() });
-                        }
-                        wasEverConnectedRef.current = true;
-                        reconnectAttemptsRef.current = 0;
-                        reconnectInProgressRef.current = false;
-                    },
-                    () => {
-                        if (!isMounted) return;
-                        setConnectionState('Opponent disconnected');
-                        reconnect();
-                    },
-                    () => {
-                        if (!isMounted) return;
-                        console.warn("[WebRTC] Silent freeze detected (missed heartbeats). Forcing reconnect...");
-                        setConnectionState('Opponent disconnected');
-                        reconnect();
-                    },
-                    (latency) => {
-                        if (!isMounted) return;
-                        setLatencyMs(latency);
-                    }
-                );
-
-                if (isCreator && conn.peerConnection) {
-                    setConnectionState('Waiting for opponent');
-                    // Creator establishes the data channel BEFORE signaling connects
-                    dcManager.createDataChannel(conn.peerConnection);
-                } else if (conn.peerConnection) {
-                    setConnectionState('Connecting...');
-                    // CRITICAL: Set ondatachannel BEFORE sig.connect() so it is in place
-                    // before any incoming offer/answer/ICE can complete the negotiation
-                    conn.peerConnection.ondatachannel = (event) => {
-                        console.log("[WebRTC] ondatachannel fired — attaching channel");
-                        dcManager.attachDataChannel(event.channel);
-                    };
-                }
-
-                await sig.connect();
-                if (!isMounted) {
-                    sig.disconnect();
-                    conn.close();
+            // Critical check: only restart ICE if we are actually connected according to the Ref
+            if (connectionRef.current && connectionStateRef.current === 'Connected') {
+                const offer = await connectionRef.current.restartIce();
+                if (offer && signalingRef.current) {
+                    await signalingRef.current.sendOffer(offer);
                     return;
-                }
-                
-                console.log("Signaling connected");
-
-                // Assign to refs only after success and if still mounted
-                connectionRef.current = conn;
-                signalingRef.current = sig;
-                dataChannelManagerRef.current = dcManager;
-                setManager(dcManager);
-
-                // If creator, start the offer process after signaling is ready
-                if (isCreator) {
-                     // Fire repeatedly until the peer connection is established to prevent race conditions
-                     // where the non-creator joins just after the first offer is sent.
-                     const offerIntervalId = setInterval(async () => {
-                         if (!isMounted || !connectionRef.current || !signalingRef.current) {
-                             clearInterval(offerIntervalId);
-                             return;
-                         }
-                         if (connectionRef.current.peerConnection?.connectionState === 'connected') {
-                             clearInterval(offerIntervalId);
-                             return;
-                         }
-
-                         try {
-                             const offer = await connectionRef.current.createOffer();
-                             if (offer) {
-                                 await signalingRef.current.sendOffer(offer);
-                             }
-                         } catch (e) {
-                             console.warn("Failed to generate/send polling offer:", e);
-                         }
-                     }, 3000); // Poll every 3 seconds
-
-                     // Also do an immediate attempt after 1 second so fast joiners don't have to wait 3s
-                     setTimeout(async () => {
-                         if (isMounted && connectionRef.current && signalingRef.current && connectionRef.current.peerConnection?.connectionState !== 'connected') {
-                             const offer = await connectionRef.current.createOffer();
-                             if (offer) await signalingRef.current.sendOffer(offer);
-                         }
-                     }, 1000);
-                }
-
-            } catch (error) {
-                console.error("WebRTC Initialization failed:", error);
-                if (isMounted) {
-                    setConnectionState('Opponent disconnected');
+                } else if (!offer) {
+                    console.warn("[RTC] Soft reconnect failed or aborted. Escalating to Hard Reconnect.");
                 }
             }
-        };
-
-
-        initWebRTC();
-
-        return () => {
-            isMounted = false;
-            teardown();
-        };
-    }, [roomId, localMemberId, isCreator]);
-
-    // Polling loop for pc.getStats() and DataChannel metrics
-    useEffect(() => {
-         const interval = setInterval(async () => {
-              if (connectionState === 'Connected' && connectionRef.current?.peerConnection) {
-                   try {
-                       const stats = await connectionRef.current.peerConnection.getStats();
-                       let parsedStats: any = {
-                           messagesSent: dataChannelManagerRef.current?.messagesSent || 0,
-                           messagesReceived: dataChannelManagerRef.current?.messagesReceived || 0,
-                           packetLoss: 0,
-                           jitter: 0,
-                           currentRoundTripTime: 0,
-                           connectionType: 'unknown',
-                           remoteCandidateType: 'unknown'
-                       };
-
-                       stats.forEach(report => {
-                            if (report.type === 'remote-inbound-rtp') {
-                                parsedStats.packetLoss = report.packetsLost;
-                                parsedStats.jitter = report.jitter;
-                                parsedStats.currentRoundTripTime = report.roundTripTime;
-                            } else if (report.type === 'candidate-pair' && report.state === 'succeeded') {
-                                const localCandidate = stats.get(report.localCandidateId);
-                                const remoteCandidate = stats.get(report.remoteCandidateId);
-                                if (localCandidate) parsedStats.connectionType = localCandidate.candidateType;
-                                if (remoteCandidate) parsedStats.remoteCandidateType = remoteCandidate.candidateType;
-                            }
-                       });
-
-                       setRtcStats(parsedStats);
-                   } catch (e) {
-                       console.error("Failed to parse getStats:", e);
-                   }
-              }
-         }, 2000);
-
-         return () => clearInterval(interval);
-    }, [connectionState]);
-
-    const sendMessage = useCallback((type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => {
-        if (dataChannelManagerRef.current) {
-            dataChannelManagerRef.current.sendMessage(type, payload, options);
-        } else {
-            console.warn(`[WebRTC] Manager not ready, message ${type} will be dropped (no persistent queue in hook yet)`);
         }
-    }, []);
+
+        if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
+            console.error("[RTC] Max reconnect attempts reached.");
+            teardown();
+            return;
+        }
+
+        isReconnectingRef.current = true;
+        reconnectAttemptsRef.current++;
+        lastInitParamsRef.current = ""; // 🧨 Clear guard to force reset
+        
+        const delay = Math.min(30000, 2000 * Math.pow(1.5, reconnectAttemptsRef.current - 1));
+        console.log(`[RTC] Hard reconnect in ${Math.round(delay)}ms (Attempt ${reconnectAttemptsRef.current})`);
+        
+        if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = setTimeout(() => {
+            initWebRTCRef.current?.();
+            isReconnectingRef.current = false;
+        }, delay);
+    }, [roomId, localMemberId, isCreator, isLeader, teardown]);
+
+    const initWebRTC = useCallback(async () => {
+        const updateState = (state: WebRTCConnectionState) => {
+            setConnectionState(state);
+            connectionStateRef.current = state;
+        };
+
+        if (!isLeader) {
+            updateState('Waiting for opponent');
+            return;
+        }
+
+        // 🧨 Guard: Only fully re-initialize if core params changed
+        const currentParams = JSON.stringify({ roomId, localMemberId, isCreator, isLeader });
+        if (lastInitParamsRef.current === currentParams && connectionRef.current) {
+            console.log("[RTC] initWebRTC: Params unchanged, skipping full reset.");
+            return;
+        }
+        lastInitParamsRef.current = currentParams;
+
+        try {
+            teardown();
+            
+            // 🧨 Initial immediate state update to avoid "Opponent disconnected" hang
+            // MUST be after teardown() so teardown doesn't overwrite it
+            updateState('Connecting...');
+            
+            console.log("[RTC] Initializing (Active Leader)...");
+            const conn = new WebRTCConnection(!isCreator);
+            const sig = new WebRTCSignaling(roomId, localMemberId);
+            const dcManager = new WebRTCDataChannelManager();
+
+            connectionRef.current = conn;
+            signalingRef.current = sig;
+            dcManagerRef.current = dcManager;
+
+            // 🧨 Connection Watchdog: 15s to reach "Connected"
+            // Gives signaling (10 retries * 1.2s = 12s) time to finish
+            if (connectionWatchdogRef.current) clearTimeout(connectionWatchdogRef.current);
+            connectionWatchdogRef.current = setTimeout(() => {
+                if (connectionStateRef.current !== 'Connected') {
+                    console.error(`[RTC] Connection Watchdog Triggered: Stuck in ${connectionStateRef.current} state > 15s.`);
+                    internalReconnect({ soft: false });
+                }
+            }, 15000);
+            conn.setCallbacks(
+                (state) => {
+                    const mappedState = state === 'connected' ? 'Connected' : 'Connecting...';
+                    updateState(mappedState);
+                    if (state === 'connected' && connectionWatchdogRef.current) {
+                        clearTimeout(connectionWatchdogRef.current);
+                        connectionWatchdogRef.current = null;
+                    }
+                },
+                (channel) => dcManager.attachDataChannel(channel),
+                (candidate) => sig.sendIceCandidate(candidate)
+            );
+
+            sig.setCallbacks(
+                async (offer) => {
+                    const answer = await conn.handleOffer(offer);
+                    if (answer) await sig.sendAnswer(answer);
+                },
+                async (answer) => await conn.handleAnswer(answer),
+                async (candidate) => await conn.handleIceCandidate(candidate),
+                () => {
+                    console.error("[RTC] Signaling ACK failure. Escalating Reconnect (Soft).");
+                    internalReconnect({ soft: true });
+                }
+            );
+
+            dcManager.setCallbacks(
+                () => {
+                    updateState('Connected');
+                    if (connectionWatchdogRef.current) {
+                        clearTimeout(connectionWatchdogRef.current);
+                        connectionWatchdogRef.current = null;
+                    }
+                    if (wasEverConnectedRef.current || reconnectAttemptsRef.current > 0) {
+                        dcManager.sendMessage('sync_request', { reason: 'recovery', timestamp: Date.now() });
+                    }
+                    wasEverConnectedRef.current = true;
+                    reconnectAttemptsRef.current = 0;
+                },
+                () => internalReconnect({ soft: false }),
+                () => internalReconnect({ soft: false }),
+                (lat) => setLatencyMs(lat),
+                () => internalReconnect({ soft: true }),
+                () => {
+                    console.error("[RTC] DataChannel ACK failure. Escalating Reconnect.");
+                    internalReconnect({ soft: false });
+                }
+            );
+
+            handlersRef.current.forEach((handlerSet, type) => {
+                handlerSet.forEach(handler => dcManager.registerHandler(type, handler));
+            });
+            await sig.connect();
+            
+            if (isCreator) {
+                // 🧨 Critical: Creator MUST initiate a DataChannel before the offer
+                const channel = conn.createDataChannel("messaging");
+                if (channel) dcManager.attachDataChannel(channel);
+
+                setTimeout(async () => {
+                    const offer = await conn.createOffer();
+                    if (offer) await sig.sendOffer(offer);
+                }, 1000);
+            }
+        } catch (error) {
+            internalReconnect({ soft: false });
+        }
+    }, [roomId, localMemberId, isCreator, isLeader, internalReconnect, teardown]);
+
+    // Keep the ref up to date
+    useEffect(() => {
+        initWebRTCRef.current = initWebRTC;
+    }, [initWebRTC]);
+
+    useEffect(() => {
+        if (!roomId || !localMemberId) return;
+        initWebRTC();
+        return () => teardown();
+    }, [roomId, localMemberId, initWebRTC, teardown]);
+
+    const sendMessage = useCallback((type: WebRTCMessageType, payload?: any, options?: any) => {
+        if (!isLeader) return;
+        if (dcManagerRef.current) dcManagerRef.current.sendMessage(type, payload, options);
+    }, [isLeader]);
 
     const registerHandler = useCallback((type: WebRTCMessageType, handler: (payload: any) => void) => {
-        if (manager) {
-            manager.registerHandler(type, handler);
+        if (!handlersRef.current.has(type)) {
+            handlersRef.current.set(type, new Set());
         }
-    }, [manager]);
+        handlersRef.current.get(type)!.add(handler);
+        if (dcManagerRef.current) dcManagerRef.current.registerHandler(type, handler);
+    }, []);
 
     const unregisterHandler = useCallback((type: WebRTCMessageType, handler?: (payload: any) => void) => {
-        if (manager) {
-            manager.unregisterHandler(type, handler);
+        if (handler && handlersRef.current.has(type)) {
+            handlersRef.current.get(type)!.delete(handler);
+            if (handlersRef.current.get(type)!.size === 0) {
+                handlersRef.current.delete(type);
+            }
+        } else {
+            handlersRef.current.delete(type);
         }
-    }, [manager]);
+        if (dcManagerRef.current) dcManagerRef.current.unregisterHandler(type, handler);
+    }, []);
+
+    const reconnect = useCallback(() => {
+        reconnectAttemptsRef.current = 0;
+        lastInitParamsRef.current = ""; // 🧨 Force reset
+        internalReconnect({ soft: false });
+    }, [internalReconnect]);
 
     return {
         connectionState,
@@ -311,5 +257,7 @@ export function useWebRTC(roomId: string, localMemberId: string, isCreator: bool
         sendMessage,
         registerHandler,
         unregisterHandler,
+        reconnect,
+        teardown
     };
 }

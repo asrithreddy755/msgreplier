@@ -92,7 +92,7 @@ export function SnakeLadder({
         }
     }, [state.player1Position, state.player2Position, isAnimating]);
 
-    const playAnimationAndSync = async (playerNum: number, path: number[], finalState: SnakeLadderState) => {
+    const playAnimationAndSync = useCallback(async (playerNum: number, path: number[], finalState: SnakeLadderState) => {
         setIsAnimating(true);
         try {
             const setVisual = playerNum === 1 ? setVisualP1 : setVisualP2;
@@ -106,7 +106,7 @@ export function SnakeLadder({
         } finally {
             setIsAnimating(false);
         }
-    };
+    }, [setState]);
 
     const visualP1Ref = useRef(visualP1);
     const visualP2Ref = useRef(visualP2);
@@ -190,12 +190,25 @@ export function SnakeLadder({
         return () => clearInterval(interval);
     }, [roomId]);
 
-    const requestSync = useCallback((reason: string) => {
+    const requestSync = useCallback((reason: string, attempt = 1) => {
         if (!sendMessage) return;
         const now = Date.now();
-        if (now - lastSyncRequestAtRef.current < 1200) return;
+        if (attempt === 1 && now - lastSyncRequestAtRef.current < 1250) return;
         lastSyncRequestAtRef.current = now;
+        
+        console.log(`[Snake] Requesting sync (reason: ${reason}, attempt: ${attempt})`);
         sendMessage('sync_request', { game: 'snake', roomId, senderId: currentMember.id, reason, sentAt: now });
+
+        // One-time fallback if no state received
+        if (attempt === 1) {
+             setTimeout(() => {
+                 // Stop retrying if we got ANY state (even version 0) or if we are no longer at v0
+                 if (stateRef.current.version === 0 && !lastStateRef.current) {
+                     console.warn("[Snake] Sync timeout - retrying sync_request...");
+                     requestSync(reason, 2);
+                 }
+             }, 3500);
+        }
     }, [sendMessage, roomId, currentMember.id]);
 
     const commitState = useCallback((nextState: SnakeLadderState, options?: { broadcast?: boolean }) => {
@@ -220,7 +233,7 @@ export function SnakeLadder({
         }
     }, [sendMessage, roomId, saveToDb]);
 
-    const buildPath = (from: number, to: number) => {
+    const buildPath = useCallback((from: number, to: number) => {
         const path: number[] = [];
         if (to > from) {
             for (let i = from + 1; i <= to; i++) path.push(i);
@@ -228,21 +241,22 @@ export function SnakeLadder({
             path.push(to);
         }
         return path;
-    };
+    }, []);
 
     const applyRemoteState = useCallback((remoteState: SnakeLadderState, updatedAt: number, isSync = false) => {
         if (!remoteState) return;
         const current = stateRef.current;
         
-        // Version-Controlled State Rules:
-        // Increment version on every committed change
         // When receiving state: if (incoming.version > current.version) → accept else → ignore
-        if (remoteState.version <= (current.version || 0) && !isSync) {
+        if (remoteState.version > (current.version || 0)) {
+             console.log(`[RTC] Snake sync received (version ${remoteState.version})`);
+        } else if (remoteState.version === (current.version || 0) && hasUnsavedChangesRef.current) {
+             console.log(`[RTC] Ignored Snake sync with matching version (v${remoteState.version}) due to pending local state.`);
+             return;
+        } else if (!isSync) {
             console.log(`[RTC] Ignored stale Snake sync (v${remoteState.version} <= v${current.version})`);
             return;
         }
-
-        console.log(`[RTC] Snake sync received (version ${remoteState.version})`);
         const serialized = JSON.stringify(remoteState);
         
         if (isAnimatingRef.current) {
@@ -318,7 +332,7 @@ export function SnakeLadder({
         };
 
         if (roomId && members.length > 0) {
-            init();
+             init();
         }
 
     }, [roomId, members.length, applyRemoteState, requestSync]);
@@ -326,7 +340,7 @@ export function SnakeLadder({
     // Set initial turn when members load
     useEffect(() => {
         if (members.length > 0) {
-            setState(s => (s.currentTurn ? s : { ...s, currentTurn: members[0].nickname }));
+            setState(s => (s.currentTurn ? s : { ...s, currentTurn: members[0].id }));
         }
     }, [members]);
 
@@ -371,7 +385,7 @@ export function SnakeLadder({
             // Host Authority System: Only host responds to sync_request
             if (isHost && sendMessage) {
                 console.log("[RTC] Responding to sync request as HOST (Snake)");
-                const currentState = JSON.parse(lastStateRef.current || JSON.stringify(INITIAL_STATE));
+                const currentState = lastStateRef.current ? JSON.parse(lastStateRef.current) : { ...INITIAL_STATE, updatedAt: Date.now() };
                 sendMessage('sync_state', {
                     game: 'snake',
                     state: currentState,
@@ -422,24 +436,24 @@ export function SnakeLadder({
 
     useEffect(() => {
         if (state.winner || members.length === 0) return;
-        const hasTurn = state.currentTurn && members.some(m => m.nickname === state.currentTurn);
+        const hasTurn = state.currentTurn && members.some(m => m.id === state.currentTurn);
         if (!hasTurn) {
-            const next = members[0].nickname;
+            const next = members[0].id;
             setState(s => (s.currentTurn === next ? s : { ...s, currentTurn: next }));
         }
     }, [members, state.currentTurn, state.winner]);
 
-    const getPlayerIndex = (nickname: string) => {
+    const getPlayerIndex = (id: string) => {
         if (!members || members.length === 0) return 1;
         // The creator (first to join) is always Player 1
         const player1 = members[0];
-        return player1.nickname === nickname ? 1 : 2;
+        return player1.id === id ? 1 : 2;
     };
 
     const roomCreator = members.length > 0 ? members[0] : null;
 
-    const isMyTurn = state.currentTurn === currentMember.nickname;
-    const myPlayerNum = getPlayerIndex(currentMember.nickname);
+    const isMyTurn = state.currentTurn === currentMember.id;
+    const myPlayerNum = getPlayerIndex(currentMember.id);
 
     const rollDice = async (forPlayerNum: number) => {
         if (!isMyTurn || state.winner || rolling || isAnimating || isProcessing || myPlayerNum !== forPlayerNum || !otherOnline) return;
@@ -480,18 +494,18 @@ export function SnakeLadder({
 
             let winner = null;
             if (newPos === 50) {
-                winner = currentMember.nickname;
+                winner = currentMember.id;
                 actionMessage = `${currentMember.nickname} reached square 50 and won the game! 🎉`;
             }
 
-            const other = members.find(m => m.nickname !== currentMember.nickname);
-            const nextTurn = other ? other.nickname : currentMember.nickname;
+            const other = members.find(m => m.id !== currentMember.id);
+            const nextTurn = other ? other.id : currentMember.id;
 
             const newState: SnakeLadderState = {
                 ...state,
                 player1Position: myPlayerNum === 1 ? newPos : state.player1Position,
                 player2Position: myPlayerNum === 2 ? newPos : state.player2Position,
-                currentTurn: winner ? null : (roll === 6 ? currentMember.nickname : nextTurn), // Roll 6 = extra turn
+                currentTurn: winner ? null : (roll === 6 ? currentMember.id : nextTurn), // Roll 6 = extra turn
                 winner,
                 lastActionMessage: actionMessage || (roll === 6 ? `${currentMember.nickname} rolled a 6 and gets another turn!` : undefined),
                 lastPath: path,
@@ -525,11 +539,11 @@ export function SnakeLadder({
             return;
         }
 
-        const nextTurnNick = members[0]?.nickname || null;
+        const nextTurnId = members[0]?.id || null;
         const newState: SnakeLadderState = {
             player1Position: 1,
             player2Position: 1,
-            currentTurn: nextTurnNick,
+            currentTurn: nextTurnId,
             winner: null,
             lastActionMessage: null,
             lastPath: [],
@@ -631,8 +645,8 @@ export function SnakeLadder({
                 state.winner ? (
                     <div className="bg-orange-50 dark:bg-orange-900/10 p-4 sm:p-6 rounded-2xl sm:rounded-3xl text-center border border-orange-200 dark:border-orange-900/50 shadow-inner w-full animate-in zoom-in slide-in-from-bottom-4">
                         <Trophy className="w-10 h-10 sm:w-16 sm:h-16 text-yellow-500 mx-auto mb-1 sm:mb-2" />
-                        <h3 className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-0.5 sm:mb-1">{state.winner} wins!</h3>
-                        <p className="text-gray-500 dark:text-gray-400 mb-3 sm:mb-4 text-sm">{state.winner === currentMember.nickname ? 'You conquered the board! 🎉' : 'Better luck next time! 🥺'}</p>
+                        <h3 className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-0.5 sm:mb-1">{members.find(m => m.id === state.winner)?.nickname || 'Someone'} wins!</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-3 sm:mb-4 text-sm">{state.winner === currentMember.id ? 'You conquered the board! 🎉' : 'Better luck next time! 🥺'}</p>
                         <Button
                             onClick={resetGame}
                             className={`w-full rounded-xl ${roomCreator && currentMember.id !== roomCreator.id ? 'bg-gray-400 cursor-not-allowed opacity-70' : 'bg-orange-500 hover:bg-orange-600 text-white'}`}
@@ -668,7 +682,7 @@ export function SnakeLadder({
                                             <span className="text-2xl sm:text-3xl font-black text-slate-700 dark:text-slate-200">{state.player1Position}</span>
                                         </div>
                                     </div>
-                                    {state.currentTurn === (members[0]?.nickname || '') && !state.winner && (
+                                    {state.currentTurn === (members[0]?.id || '') && !state.winner && (
                                         <div className="mt-1 sm:mt-3 text-[9px] sm:text-[10px] font-bold text-white bg-pink-500 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-wider animate-pulse shadow-sm">
                                             Current Turn
                                         </div>
@@ -689,7 +703,7 @@ export function SnakeLadder({
                                             <span className="text-2xl sm:text-3xl font-black text-slate-700 dark:text-slate-200">{state.player2Position}</span>
                                         </div>
                                     </div>
-                                    {state.currentTurn === (members[1]?.nickname || '') && !state.winner && (
+                                    {state.currentTurn === (members[1]?.id || '') && !state.winner && (
                                         <div className="mt-1 sm:mt-3 text-[9px] sm:text-[10px] font-bold text-white bg-blue-500 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-wider animate-pulse shadow-sm">
                                             Current Turn
                                         </div>
@@ -713,9 +727,9 @@ export function SnakeLadder({
                                     <SnakeDice
                                         isRolling={rolling}
                                         diceNumber={lastRoll}
-                                        colour={state.currentTurn === roomCreator?.nickname ? 'red' : 'blue'}
+                                        colour={state.currentTurn === roomCreator?.id ? 'red' : 'blue'}
                                         onDiceClick={() => isMyTurn && !rolling && !isAnimating && !isProcessing && !state.winner ? rollDice(myPlayerNum) : undefined}
-                                        playerName={state.currentTurn || 'Rolling...'}
+                                        playerName={state.currentTurn ? (members.find(m => m.id === state.currentTurn)?.nickname || 'Rolling...') : 'Rolling...'}
                                         isMyTurn={isMyTurn && !isProcessing}
                                         disabled={!isMyTurn || rolling || isAnimating || isProcessing || !!state.winner}
                                     />

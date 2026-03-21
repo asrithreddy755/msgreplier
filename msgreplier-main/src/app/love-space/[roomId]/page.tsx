@@ -2,7 +2,7 @@
 
 export const runtime = 'edge';
 
-import { useEffect, useState, use, useRef } from 'react';
+import { useEffect, useState, use, useRef, useCallback } from 'react';
 import { LoveRoom, LoveRoomMember } from '@/types/love-space';
 import { JoinRoom } from '../components/join-room';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -67,19 +67,38 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     };
 
     const [room, setRoom] = useState<LoveRoom | null>(null);
-    const [currentMember, setCurrentMember] = useState<LoveRoomMember | null>(null);
+    const [currentMember, setCurrentMember] = useState<LoveRoomMember | null>(() => {
+        if (typeof window === 'undefined' || !roomId) return null;
+        try {
+            const saved = localStorage.getItem(`loveRoom_${roomId}`);
+            return saved ? JSON.parse(saved) : null;
+        } catch { return null; }
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
 
     // Presence & Notification State
-    const [activeTab, setActiveTab] = useState('home');
+    const [activeTab, setActiveTab] = useState(() => {
+        if (typeof window === 'undefined') return 'home';
+        return localStorage.getItem(`activeTab_${roomId}`) || 'home';
+    });
     const [otherMemberTab, setOtherMemberTab] = useState<string | null>(null);
     const [wakingUpTab, setWakingUpTab] = useState<string | null>(null);
     const [unreadCount, setUnreadCount] = useState(0);
+
+    // Persist activeTab
+    useEffect(() => {
+        if (roomId) {
+            localStorage.setItem(`activeTab_${roomId}`, activeTab);
+        }
+    }, [activeTab, roomId]);
     const [showGameChat, setShowGameChat] = useState(false);
     const [members, setMembers] = useState<LoveRoomMember[]>([]);
     const membersRef = useRef<LoveRoomMember[]>([]);
+    useEffect(() => {
+        membersRef.current = members;
+    }, [members]);
     const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
     const [hasPresenceSynced, setHasPresenceSynced] = useState(false);
 
@@ -101,11 +120,142 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     // The first person in the room (sorted by join time) is the Host.
     const isHost = members.length > 0 ? members[0].id === currentMember?.id : isCreatorFromStorage;
 
-    const { connectionState, latencyMs, rtcStats, sendMessage, registerHandler, unregisterHandler } = useWebRTC(
+    // Tab Identity & Leadership
+    const [tabInfo] = useState(() => ({
+        id: crypto.randomUUID(),
+        startTime: Date.now()
+    }));
+    const [isLeader, setIsLeader] = useState(true);
+    const activeTabsRef = useRef<Map<string, { startTime: number, lastSeen: number }>>(new Map());
+
+    const connectionStateRef = useRef<string>('Connecting...');
+
+    const { connectionState, latencyMs, sendMessage, registerHandler, unregisterHandler, reconnect, teardown } = useWebRTC(
         roomId || '',
         currentMember?.id || '',
-        isHost  // Use dynamic host status instead of static creator flag
+        isHost,
+        isLeader
     );
+
+    useEffect(() => {
+        connectionStateRef.current = connectionState;
+    }, [connectionState]);
+
+    // Section: Multi-Tab Coordination (Leader Election)
+    useEffect(() => {
+        if (!roomId || !currentMember) return;
+        
+        const bc = new BroadcastChannel(`love-room-tabs-${roomId}`);
+        
+        const electLeader = () => {
+            const now = Date.now();
+            let leaderId = tabInfo.id;
+            let minTime = tabInfo.startTime;
+
+            // Cleanup stale tabs (+5s)
+            activeTabsRef.current.forEach((info, id) => {
+                if (now - info.lastSeen > 5000) {
+                    activeTabsRef.current.delete(id);
+                    return;
+                }
+                if (info.startTime < minTime || (info.startTime === minTime && id < leaderId)) {
+                    minTime = info.startTime;
+                    leaderId = id;
+                }
+            });
+
+            const newLeaderStatus = leaderId === tabInfo.id;
+            
+            if (newLeaderStatus && !isLeader) {
+                // 🧨 1% Fix: CLAIM Phase (200ms delay to prevent simultaneous claims)
+                console.log(`[RTC] Tab is a candidate for leadership. Confirming...`);
+                setTimeout(() => {
+                    // Check again after delay
+                    let stillWinner = true;
+                    activeTabsRef.current.forEach((info, id) => {
+                        if (info.startTime < tabInfo.startTime || (info.startTime === tabInfo.startTime && id < tabInfo.id)) {
+                            stillWinner = false;
+                        }
+                    });
+
+                    if (stillWinner) {
+                        console.log(`[RTC] Tab leadership confirmed: LEADER`);
+                        setIsLeader(true);
+                        bc.postMessage({ type: 'tab_claim', tabId: tabInfo.id, startTime: tabInfo.startTime });
+                    }
+                }, 200);
+            } else if (!newLeaderStatus && isLeader) {
+                console.log(`[RTC] Tab leadership relinquished: PASSIVE`);
+                setIsLeader(false);
+            }
+        };
+
+        const handleTabClosing = (closingTabId: string) => {
+             console.log(`[RTC] Tab ${closingTabId} is closing. Electing new leader...`);
+             activeTabsRef.current.delete(closingTabId);
+             electLeader();
+        };
+
+        const sendHeartbeat = () => {
+            bc.postMessage({ 
+                type: 'tab_heartbeat', 
+                tabId: tabInfo.id, 
+                startTime: tabInfo.startTime,
+                memberId: currentMember.id 
+            });
+            electLeader();
+        };
+
+        const heartbeatInterval = setInterval(sendHeartbeat, 2000);
+
+        bc.onmessage = (event) => {
+            if (event.data.type === 'tab_heartbeat') {
+                activeTabsRef.current.set(event.data.tabId, { 
+                    startTime: event.data.startTime, 
+                    lastSeen: Date.now() 
+                });
+            } else if (event.data.type === 'tab_closing') {
+                handleTabClosing(event.data.tabId);
+            } else if (event.data.type === 'tab_claim') {
+                // Another tab claimed leader, update our local view
+                activeTabsRef.current.set(event.data.tabId, { 
+                    startTime: event.data.startTime || 0, // In case claim doesn't have it
+                    lastSeen: Date.now() 
+                });
+                electLeader();
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && isLeader && connectionStateRef.current === 'Opponent disconnected') {
+                console.log("[RTC] Leader tab became visible & disconnected. Attempting recovery...");
+                reconnect();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('online', reconnect);
+
+        // Initial election
+        sendHeartbeat();
+
+        return () => {
+            clearInterval(heartbeatInterval);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('online', reconnect);
+            bc.close();
+        };
+    }, [roomId, currentMember, reconnect, tabInfo, isLeader]);
+
+    // Section 4: Cleanup (Prevent Ghost Users)
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+             console.log("[RTC] Page unloading. Cleaning up...");
+             teardown();
+        };
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }, [teardown]);
 
     // Global "Wake Up" & Sync Handlers
     useEffect(() => {
@@ -211,6 +361,11 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             if (savedMember) {
                 try {
                     const parsed = JSON.parse(savedMember) as LoveRoomMember;
+                    // Development fix to prevent identical testing locks across tabs
+                    if (process.env.NODE_ENV === 'development' && window.location.search.includes('test=true')) {
+                        parsed.id = crypto.randomUUID();
+                        parsed.nickname = `${parsed.nickname} (Test)`;
+                    }
                     setCurrentMember(parsed);
                 } catch (e) {
                     console.error("Parse error:", e);
@@ -323,6 +478,13 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 if (key !== currentMember.id && newPresences && newPresences.length > 0) {
                     setOtherMemberTab(newPresences[0].activeTab);
                 }
+
+                // If the other member joins and they are already in our list, it's likely a RE-JOIN (reload).
+                // Trigger WebRTC reconnect ONLY if we are currently disconnected.
+                if (key !== currentMember.id && membersRef.current.find(m => m.id === key) && connectionStateRef.current === 'Opponent disconnected') {
+                    console.log(`[Presence] Partner ${key} re-joined & disconnected. Triggering WebRTC reconnect...`);
+                    reconnect();
+                }
             })
             .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
                 if (!isMounted) return;
@@ -391,25 +553,30 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         setTimeout(() => setCopied(false), 2000);
     };
 
-    // Fetch members to know other member name
-    useEffect(() => {
+    // Move loadMembers to a stable useCallback so it can be triggered manually
+    const loadMembers = useCallback(async () => {
         if (!roomId) return;
-        const loadMembers = async () => {
-            try {
-                const res = await fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' });
-                const data = await res.json();
-                if (Array.isArray(data?.members)) {
-                    const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
-                        new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
-                    );
-                    setMembers(sorted);
-                }
-            } catch {
-                // ignore
+        try {
+            const res = await fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' });
+            const data = await res.json();
+            if (Array.isArray(data?.members)) {
+                const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) => {
+                    const timeA = new Date(a.joined_at).getTime();
+                    const timeB = new Date(b.joined_at).getTime();
+                    if (timeA !== timeB) return timeA - timeB;
+                    return a.id.localeCompare(b.id);
+                });
+                setMembers(sorted);
             }
-        };
-        loadMembers();
+        } catch {
+            // ignore
+        }
     }, [roomId]);
+
+    // Initial load
+    useEffect(() => {
+        loadMembers();
+    }, [loadMembers]);
 
     // Subscribe to member changes via Supabase Realtime instead of polling
     useEffect(() => {
@@ -427,19 +594,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 },
                 async () => {
                     // Refetch members once on any change
-                    try {
-                        const res = await fetch(`/api/love-space/members?roomId=${roomId}`, { cache: 'no-store' });
-                        const data = await res.json();
-                        if (Array.isArray(data?.members)) {
-                            const sorted = data.members.sort((a: LoveRoomMember, b: LoveRoomMember) =>
-                                new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime()
-                            );
-                            setMembers(sorted);
-                        }
-                    } catch {
-                        // ignore transient errors
-                    }
-                }
+                    loadMembers();                }
             )
             .subscribe();
 
@@ -488,7 +643,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         // --- FRONTEND EXPIRATION LOGIC ---
         // If the other player is currently offline (via presence) OR the WebRTC connection is lost (and we have 2 members), 
         // start a 10 min countdown. If they come back or reconnect, this effect re-runs, clearing the timeout.
-        const isPeerOffline = !isOtherOnline || (connectionState !== 'Connected' && connectionState !== 'Waiting for opponent');
+        const isPeerOffline = !isOtherOnline || connectionState === 'Opponent disconnected';
 
         if (membersRef.current.length >= 2 && isPeerOffline) {
              console.log(`[Expiration] Peer offline or connection lost. Starting 10m timeout. Connection: ${connectionState}, Presence: ${isOtherOnline}`);
@@ -557,7 +712,10 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     }
 
     if (!currentMember) {
-        return <JoinRoom room={room} onJoined={(m) => setCurrentMember(m)} />;
+        return <JoinRoom room={room} onJoined={(m) => {
+            setCurrentMember(m);
+            loadMembers(); // Crucial: explicitly refetch now that they joined!
+        }} />;
     }
 
     return (
@@ -574,7 +732,6 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     <GameConnection 
                          connectionState={connectionState} 
                          latencyMs={latencyMs}
-                         rtcStats={rtcStats}
                     />
                     <Button
                         variant="outline"
@@ -591,16 +748,16 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             {/* Main Content Area Using Tabs */}
             <div className="flex-1 overflow-hidden flex flex-col z-10 w-full pt-3 sm:pt-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full w-full">
-                    <TabsList className="flex w-[calc(100%-2rem)] bg-white/80 dark:bg-slate-900/80 p-1.5 mx-auto my-2 rounded-2xl sm:rounded-xl backdrop-blur-md h-14 border border-pink-200 dark:border-pink-900/50 shadow-[0_8px_30px_rgb(236,72,153,0.12)] overflow-x-auto hide-scrollbar flex-shrink-0 relative gap-1">
+                    <TabsList className="flex w-[calc(100%-2rem)] bg-white/80 dark:bg-slate-900/80 p-1 mx-auto my-2 rounded-2xl sm:rounded-xl backdrop-blur-md h-12 border border-pink-200 dark:border-pink-900/50 shadow-[0_8px_30px_rgb(236,72,153,0.12)] flex-shrink-0 relative gap-1">
                         {/* Mobile Invite Button (Absolute positioned inside the tabs area or just below it if preferred) */}
 
-                        <TabsTrigger value="home" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
+                        <TabsTrigger value="home" className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all focus-visible:ring-0">
                             Home
                             {isOtherOnline && (
                                 <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'home' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'}`} />
                             )}
                         </TabsTrigger>
-                        <TabsTrigger value="xox" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
+                        <TabsTrigger value="xox" className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all">
                             XOX
                             {isOtherOnline && (
                                 <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'xox' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'} ${wakingUpTab === 'xox' ? 'animate-bounce scale-125' : ''}`}>
@@ -610,7 +767,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 </div>
                             )}
                         </TabsTrigger>
-                        <TabsTrigger value="ludo" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
+                        <TabsTrigger value="ludo" className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all">
                             Ludo
                             {isOtherOnline && (
                                 <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'ludo' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'} ${wakingUpTab === 'ludo' ? 'animate-bounce scale-125' : ''}`}>
@@ -620,7 +777,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 </div>
                             )}
                         </TabsTrigger>
-                        <TabsTrigger value="snake" className="relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-2 transition-all">
+                        <TabsTrigger value="snake" className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all">
                             Snake
                             {isOtherOnline && (
                                 <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'snake' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'} ${wakingUpTab === 'snake' ? 'animate-bounce scale-125' : ''}`}>
@@ -856,7 +1013,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 <button
                                     type="button"
                                     onClick={() => setShowGameChat(true)}
-                                    className="absolute top-3 right-3 h-9 w-9 rounded-full bg-purple-500 hover:bg-purple-600 text-white flex items-center justify-center shadow-md border border-white/60"
+                                    className="absolute top-3 right-3 h-9 w-9 rounded-full bg-purple-500 hover:bg-purple-600 text-white flex items-center justify-center shadow-md border border-white/60 z-40"
                                 >
                                     <MessageCircle className="w-4 h-4" />
                                     {unreadCount > 0 && (
@@ -881,7 +1038,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 <button
                                     type="button"
                                     onClick={() => setShowGameChat(true)}
-                                    className="absolute top-3 right-3 h-9 w-9 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-md border border-white/60"
+                                    className="absolute top-3 right-3 h-9 w-9 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-md border border-white/60 z-40"
                                 >
                                     <MessageCircle className="w-4 h-4" />
                                     {unreadCount > 0 && (
@@ -906,7 +1063,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 <button
                                     type="button"
                                     onClick={() => setShowGameChat(true)}
-                                    className="absolute top-3 right-3 h-9 w-9 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md border border-white/60"
+                                    className="absolute top-3 right-3 h-9 w-9 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md border border-white/60 z-40"
                                 >
                                     <MessageCircle className="w-4 h-4" />
                                     {unreadCount > 0 && (

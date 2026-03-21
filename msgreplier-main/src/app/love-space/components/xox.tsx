@@ -134,8 +134,9 @@ export function XOX({
 
     // Determine player assignment and load state
     useEffect(() => {
-        if (hasInitializedRef.current) return;
-        if (!roomId || members.length === 0) return;
+        let isMounted = true;
+        if (hasInitializedRef.current) return () => { isMounted = false; };
+        if (!roomId || members.length === 0) return () => { isMounted = false; };
 
         const init = async () => {
             hasInitializedRef.current = true;
@@ -151,11 +152,30 @@ export function XOX({
                 const stateRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`).then(res => res.json());
                 const dbState = stateRes?.game?.game_state as XOXGameState | undefined;
 
-                // 3. WebRTC Sync Request (handled in WebRTC useEffect)
-                if (sendMessage) {
-                    console.log("[RTC] Sync requested");
-                    sendMessage('sync_request', { game: 'xox' });
-                }
+                // 3. WebRTC Sync Request with Retry
+                const requestSync = (reason: string, attempt = 1) => {
+                    if (!sendMessage) return;
+                    console.log(`[XOX] Requesting sync (reason: ${reason}, attempt: ${attempt})`);
+                    sendMessage('sync_request', { 
+                        roomId, 
+                        senderId: currentMember.id, 
+                        game: 'xox',
+                        reason, 
+                        sentAt: Date.now() 
+                    });
+
+                    // One-time fallback if no state received
+                    if (attempt === 1) {
+                         setTimeout(() => {
+                             if (isMounted && hasInitializedRef.current && (lastStateRef.current === null || JSON.parse(lastStateRef.current).version === 0)) {
+                                 console.warn("[XOX] Sync timeout - retrying sync_request...");
+                                 requestSync(reason, 2);
+                             }
+                         }, 2500);
+                    }
+                };
+
+                requestSync('init');
 
                 // Apply latest between Local and DB
                 let stateToApply = INITIAL_STATE;
@@ -186,7 +206,8 @@ export function XOX({
         };
 
         init();
-    }, [roomId, members.length, currentMember.id]);
+        return () => { isMounted = false; };
+    }, [roomId, members.length, currentMember.id, sendMessage]);
 
     // WebRTC Real-time state sync
     useEffect(() => {
@@ -199,14 +220,16 @@ export function XOX({
 
             // Version-Controlled Acceptance
             if (incoming.version > current.version) {
-                console.log(`[RTC] Sync received (version ${incoming.version})`);
+                console.log(`[RTC] XOX sync received (version ${incoming.version})`);
                 const serialized = JSON.stringify(incoming);
                 lastStateRef.current = serialized;
                 setGameState(incoming);
                 localStorage.setItem(xoxBackupKey.current, serialized);
                 hasUnsavedChangesRef.current = true; // Mark dirty so it syncs to DB later
+            } else if (incoming.version === current.version && hasUnsavedChangesRef.current) {
+                console.log(`[RTC] Ignored XOX sync with matching version (v${incoming.version}) due to pending local state.`);
             } else {
-                console.log(`[RTC] Ignored stale sync (v${incoming.version} <= v${current.version})`);
+                console.log(`[RTC] Ignored stale XOX sync (v${incoming.version} < v${current.version})`);
             }
         };
 

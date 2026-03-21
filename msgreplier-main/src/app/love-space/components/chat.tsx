@@ -239,7 +239,7 @@ export function Chat({
         const interval = setInterval(() => {
             if (!sendMessage) return;
             pendingMessagesRef.current.forEach((data, id) => {
-                if (data.attempts >= 5) {
+                if (data.attempts >= 10) {
                     console.error("Max retries reached for message:", id);
                     pendingMessagesRef.current.delete(id);
                     return;
@@ -247,7 +247,7 @@ export function Chat({
                 data.attempts++;
                 sendMessage('chat', data.payload);
             });
-        }, 3000); // 3 seconds retry interval
+        }, 4000); // 4 seconds retry interval
 
         return () => clearInterval(interval);
     }, [sendMessage]);

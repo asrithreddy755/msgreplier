@@ -43,6 +43,13 @@ export function useAssetPreloader(assets: string[]) {
         img.src = src;
       }
     });
+
+    // Failsafe: Never let the user stuck on loading screen if network stalls
+    const timeout = setTimeout(() => {
+        if (!isLoaded) setIsLoaded(true);
+    }, 3000);
+
+    return () => clearTimeout(timeout);
   }, [assets]);
 
   return { progress, isLoaded };

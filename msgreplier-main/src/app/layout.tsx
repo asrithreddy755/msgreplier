@@ -103,18 +103,22 @@ export default function RootLayout({
         )}
       </head>
       <body className="font-body antialiased">
-        <Script
-          async
-          src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', '${gaId}');`}
-        </Script>
-        <ServiceWorkerRegistration />
+        {process.env.NODE_ENV === "production" && (
+          <>
+            <Script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${gaId}');`}
+            </Script>
+          </>
+        )}
+        {process.env.NODE_ENV === "production" && <ServiceWorkerRegistration />}
 
         <ThemeProvider
           attribute="class"
