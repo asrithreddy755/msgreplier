@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { LoveRoomMember, SnakeLadderState } from '@/types/love-space';
+import { LoveRoomMember, SnakeLadderState, SnakeLadderPlayer } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -32,9 +32,9 @@ const parseUpdatedAt = (value: unknown) => {
 };
 
 const INITIAL_STATE: SnakeLadderState = {
-    player1Position: 1,
-    player2Position: 1,
+    players: {},
     currentTurn: null,
+    diceValue: null,
     winner: null,
     version: 0,
     updatedAt: Date.now()
@@ -45,6 +45,7 @@ export function SnakeLadder({
     currentMember, 
     otherOnline, 
     members = [],
+    connectionState,
     sendMessage,
     registerHandler,
     unregisterHandler
@@ -53,12 +54,15 @@ export function SnakeLadder({
     currentMember: LoveRoomMember; 
     otherOnline?: boolean; 
     members?: LoveRoomMember[];
+    connectionState?: string;
     sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
     registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
     unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
 }) {
     const [state, setState] = useState<SnakeLadderState>(INITIAL_STATE);
     const [loading, setLoading] = useState(true);
+    const [isSynced, setIsSynced] = useState(false);
+    const [pendingMoves, setPendingMoves] = useState<any[]>([]);
     const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'saved' | 'error'>('idle');
     const [rolling, setRolling] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -66,9 +70,11 @@ export function SnakeLadder({
     const lastStateRef = useRef<string | null>(null);
     const hasUnsavedChangesRef = useRef(false);
     const lastSyncRequestAtRef = useRef(0);
+    const syncRetryCountRef = useRef(0);
     const pendingStateRef = useRef<SnakeLadderState | null>(null);
     const isAnimatingRef = useRef(false);
     const hasInitializedRef = useRef(false);
+    const hostHasInitializedRef = useRef(false);
     const lastOnlineStateRef = useRef(Boolean(otherOnline));
     const stateRef = useRef(state);
     const snakeBackupKey = useRef(`love_space_${roomId}_snake`);
@@ -87,10 +93,12 @@ export function SnakeLadder({
     useEffect(() => {
         isAnimatingRef.current = isAnimating;
         if (!isAnimating) {
-            setVisualP1(state.player1Position);
-            setVisualP2(state.player2Position);
+            const p1Pos = (members[0] && state.players && state.players[members[0].id]) ? state.players[members[0].id].position : 1;
+            const p2Pos = (members[1] && state.players && state.players[members[1].id]) ? state.players[members[1].id].position : 1;
+            setVisualP1(p1Pos);
+            setVisualP2(p2Pos);
         }
-    }, [state.player1Position, state.player2Position, isAnimating]);
+    }, [state.players, members, isAnimating]);
 
     const playAnimationAndSync = useCallback(async (playerNum: number, path: number[], finalState: SnakeLadderState) => {
         setIsAnimating(true);
@@ -192,24 +200,33 @@ export function SnakeLadder({
 
     const requestSync = useCallback((reason: string, attempt = 1) => {
         if (!sendMessage) return;
+        
+        const isConnected = connectionState === 'Connected';
+        
+        // Only allow sync if connection is open
+        if (!isConnected) {
+            console.log(`[Snake] sync_request postponed at channel state: connecting (${reason})`);
+            return;
+        }
+
         const now = Date.now();
         if (attempt === 1 && now - lastSyncRequestAtRef.current < 1250) return;
         lastSyncRequestAtRef.current = now;
         
-        console.log(`[Snake] Requesting sync (reason: ${reason}, attempt: ${attempt})`);
+        console.log(`[Snake] sync_request sent at channel state: open (reason: ${reason}, attempt: ${attempt})`);
         sendMessage('sync_request', { game: 'snake', roomId, senderId: currentMember.id, reason, sentAt: now });
 
-        // One-time fallback if no state received
-        if (attempt === 1) {
+        // Retry mechanism: up to 3 times every 3 seconds if not synced
+        if (attempt < 4) {
              setTimeout(() => {
                  // Stop retrying if we got ANY state (even version 0) or if we are no longer at v0
-                 if (stateRef.current.version === 0 && !lastStateRef.current) {
-                     console.warn("[Snake] Sync timeout - retrying sync_request...");
-                     requestSync(reason, 2);
+                 if (!stateRef.current.version && !lastStateRef.current) {
+                     console.warn(`[Snake] Sync attempt ${attempt} timed out - retrying...`);
+                     requestSync(reason, attempt + 1);
                  }
-             }, 3500);
+             }, 3000);
         }
-    }, [sendMessage, roomId, currentMember.id]);
+    }, [sendMessage, roomId, currentMember.id, connectionState]);
 
     const commitState = useCallback((nextState: SnakeLadderState, options?: { broadcast?: boolean }) => {
         const updatedAt = Date.now();
@@ -232,6 +249,9 @@ export function SnakeLadder({
             saveToDb(stateWithMeta, true);
         }
 
+        // Part B: Activity ping
+        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
+
         return stateWithMeta;
     }, [sendMessage, roomId, saveToDb]);
 
@@ -248,17 +268,29 @@ export function SnakeLadder({
     const applyRemoteState = useCallback((remoteState: SnakeLadderState, updatedAt: number, isSync = false) => {
         if (!remoteState) return;
         const current = stateRef.current;
-        
-        // When receiving state: if (incoming.version > current.version) → accept else → ignore
-        if (remoteState.version > (current.version || 0)) {
-             console.log(`[RTC] Snake sync received (version ${remoteState.version})`);
-        } else if (remoteState.version === (current.version || 0) && hasUnsavedChangesRef.current) {
-             console.log(`[RTC] Ignored Snake sync with matching version (v${remoteState.version}) due to pending local state.`);
-             return;
-        } else if (!isSync) {
-            console.log(`[RTC] Ignored stale Snake sync (v${remoteState.version} <= v${current.version})`);
-            return;
+
+        // Version safety: always reject state that is strictly older than what we have.
+        // isSync gets slightly relaxed acceptance (>=) so the authoritative full state
+        // from the host can replace an equal-version local state.
+        // game_move packets use strict (>) to prevent out-of-order overwrites.
+        const currentVersion = current.version || 0;
+        if (isSync) {
+            if (remoteState.version < currentVersion) {
+                console.log(`[RTC] Ignored stale SYNC_STATE (v${remoteState.version} < v${currentVersion})`);
+                return;
+            }
+        } else {
+            if (remoteState.version <= currentVersion && hasUnsavedChangesRef.current) {
+                console.log(`[RTC] Ignored Snake move with matching/older version (v${remoteState.version}) due to pending local state.`);
+                return;
+            }
+            if (remoteState.version < currentVersion) {
+                console.log(`[RTC] Ignored stale Snake move (v${remoteState.version} < v${currentVersion})`);
+                return;
+            }
         }
+        console.log(`[RTC] Snake state accepted (v${remoteState.version}, isSync=${isSync})`);
+
         const serialized = JSON.stringify(remoteState);
         
         if (isAnimatingRef.current) {
@@ -267,24 +299,24 @@ export function SnakeLadder({
             return;
         }
 
-        if (remoteState.lastRollValue !== undefined) {
-            setLastRoll(remoteState.lastRollValue);
+        if (remoteState.diceValue !== undefined) {
+            setLastRoll(remoteState.diceValue);
         }
 
         const p1From = visualP1Ref.current;
         const p2From = visualP2Ref.current;
-        const p1To = remoteState.player1Position;
-        const p2To = remoteState.player2Position;
+        const p1To = (members[0] && remoteState.players && remoteState.players[members[0].id]) ? remoteState.players[members[0].id].position : 1;
+        const p2To = (members[1] && remoteState.players && remoteState.players[members[1].id]) ? remoteState.players[members[1].id].position : 1;
 
         if (p1From !== p1To && p2From === p2To) {
-            const path = (remoteState.lastPathPlayer === 1 && remoteState.lastPath?.length) ? remoteState.lastPath : buildPath(p1From, p1To);
+            const path = (remoteState.lastPathPlayer === (members[0]?.id) && remoteState.lastPath?.length) ? remoteState.lastPath : buildPath(p1From, p1To);
             if (path.length > 0) {
                 playAnimationAndSync(1, path, remoteState);
                 localStorage.setItem(snakeBackupKey.current, serialized);
                 return;
             }
         } else if (p1From === p1To && p2From !== p2To) {
-            const path = (remoteState.lastPathPlayer === 2 && remoteState.lastPath?.length) ? remoteState.lastPath : buildPath(p2From, p2To);
+            const path = (remoteState.lastPathPlayer === (members[1]?.id) && remoteState.lastPath?.length) ? remoteState.lastPath : buildPath(p2From, p2To);
             if (path.length > 0) {
                 playAnimationAndSync(2, path, remoteState);
                 localStorage.setItem(snakeBackupKey.current, serialized);
@@ -329,7 +361,9 @@ export function SnakeLadder({
                 hasInitializedRef.current = false;
             } finally {
                 setLoading(false);
-                requestSync('init');
+                if (members.length > 0 && members[0].id === currentMember.id) {
+                    setIsSynced(true);
+                }
             }
         };
 
@@ -337,14 +371,76 @@ export function SnakeLadder({
              init();
         }
 
-    }, [roomId, members.length, applyRemoteState, requestSync]);
+    }, [roomId, members.length, applyRemoteState]);
 
-    // Set initial turn when members load
+    // Trigger sync when DataChannel opens
     useEffect(() => {
-        if (members.length > 0) {
-            setState(s => (s.currentTurn ? s : { ...s, currentTurn: members[0].id }));
+        if (connectionState === 'Connected' && !isSynced && !loading) {
+            console.log('[Snake] DataChannel is open, requesting sync');
+            requestSync('channel_open');
         }
-    }, [members]);
+    }, [connectionState, isSynced, loading, requestSync]);
+
+    // FIX 3: Host initialises full authoritative state EXACTLY ONCE when both members are ready
+    useEffect(() => {
+        if (!isHost || hostHasInitializedRef.current) return;
+        if (members.length < 2) return;
+        
+        // Only init if state is still at version 0 (untouched)
+        if (stateRef.current.version > 0) {
+            hostHasInitializedRef.current = true;
+            // Even if we already initialized, we should broadcast our state to the newcomer
+            if (sendMessage) {
+                const s = stateRef.current;
+                console.log('[Snake] Host broadcasting existing state to newcomer');
+                sendMessage('sync_state', { game: 'snake', state: s, updatedAt: s.updatedAt });
+            }
+            return;
+        }
+
+        hostHasInitializedRef.current = true;
+        const initialPlayers: Record<string, SnakeLadderPlayer> = {};
+        members.forEach(m => { initialPlayers[m.id] = { position: 1 }; });
+        const initState: SnakeLadderState = {
+            players: initialPlayers,
+            currentTurn: members[0].id,
+            diceValue: null,
+            winner: null,
+            version: 1,
+            updatedAt: Date.now()
+        };
+        console.log('[Snake] Host initialising authoritative state');
+        lastStateRef.current = JSON.stringify(initState);
+        stateRef.current = initState;
+        setState(initState);
+        setIsSynced(true);
+        hasUnsavedChangesRef.current = true;
+
+        // Broadcast state to newcomer immediately
+        if (sendMessage) {
+            sendMessage('sync_state', { game: 'snake', state: initState, updatedAt: initState.updatedAt });
+        }
+    }, [isHost, members, sendMessage]);
+
+    // Non-host: ensure local players map is populated when members arrive (no version bump)
+    useEffect(() => {
+        if (isHost) return;
+        if (members.length === 0) return;
+        setState(s => {
+            const newPlayers = { ...(s.players || {}) };
+            let changed = false;
+            members.forEach(m => {
+                if (!newPlayers[m.id]) {
+                    newPlayers[m.id] = { position: 1 };
+                    changed = true;
+                }
+            });
+            if (changed) {
+                return { ...s, players: newPlayers };
+            }
+            return s;
+        });
+    }, [isHost, members]);
 
     // WebRTC Real-time state sync
     useEffect(() => {
@@ -363,20 +459,31 @@ export function SnakeLadder({
             if (roll !== undefined) {
                 setLastRoll(roll);
             }
-            
             if (payload.state) {
                 applyRemoteState(payload.state, parseUpdatedAt(payload.updatedAt), true);
+                // A dice_resolved with state = complete sync checkpoint
+                const s = payload.state as SnakeLadderState;
+                if (!isSynced && s.currentTurn && s.players && Object.keys(s.players).length >= 2) {
+                    setIsSynced(true);
+                }
             }
         };
 
         const handleGameMove = (payload: any) => {
             if (!payload || payload.game !== 'snake') return;
             const parsed = payload.state as SnakeLadderState;
+
+            if (!isSynced) {
+                console.log('[Snake] Buffering move - not yet synced');
+                setPendingMoves(prev => [...prev, payload]);
+                return;
+            }
+
             const serialized = JSON.stringify(parsed);
             if (serialized !== lastStateRef.current) {
                 setRolling(false);
                 setIsProcessing(false);
-                applyRemoteState(parsed, parseUpdatedAt(payload.updatedAt), true);
+                applyRemoteState(parsed, parseUpdatedAt(payload.updatedAt), false);
             }
         };
 
@@ -384,10 +491,26 @@ export function SnakeLadder({
             if (!payload || payload.senderId === currentMember.id) return;
             if (payload.game && payload.game !== 'snake') return;
 
-            // Host Authority System: Only host responds to sync_request
-            if (isHost && sendMessage) {
-                console.log("[RTC] Responding to sync request as HOST (Snake)");
-                const currentState = lastStateRef.current ? JSON.parse(lastStateRef.current) : { ...INITIAL_STATE, updatedAt: Date.now() };
+            // Responder: Always send current state regardless of version or host status
+            if (sendMessage) {
+                const currentState: SnakeLadderState = lastStateRef.current
+                    ? JSON.parse(lastStateRef.current)
+                    : stateRef.current;
+
+                // If we have no state yet (v0), wait 500ms and try once more
+                if (currentState.version === 0) {
+                    console.log('[RTC] Snake sync_request received but local state is v0. Retrying response in 500ms...');
+                    setTimeout(() => {
+                        const stateNow = lastStateRef.current ? JSON.parse(lastStateRef.current) : stateRef.current;
+                        if (stateNow.version > 0) {
+                            console.log('[RTC] Snake delayed sync response sending (state loaded)');
+                            sendMessage('sync_state', { game: 'snake', state: stateNow, updatedAt: stateNow.updatedAt });
+                        }
+                    }, 500);
+                    return;
+                }
+
+                console.log('[RTC] Responding to Snake sync request');
                 sendMessage('sync_state', {
                     game: 'snake',
                     state: currentState,
@@ -398,7 +521,9 @@ export function SnakeLadder({
 
         const handleSyncState = (payload: any) => {
             if (!payload || payload.game !== 'snake') return;
+            console.log(`[Snake] sync received, version ${payload.state?.version || 0}`);
             applyRemoteState(payload.state as SnakeLadderState, parseUpdatedAt(payload.updatedAt), true);
+            setIsSynced(true);
         };
 
         registerHandler('dice_start', handleDiceStart);
@@ -407,8 +532,6 @@ export function SnakeLadder({
         registerHandler('sync_request', handleSyncRequest);
         registerHandler('sync_state', handleSyncState);
 
-        requestSync('handler_registered');
-
         return () => {
             unregisterHandler('dice_start', handleDiceStart);
             unregisterHandler('dice_resolved', handleDiceResolved);
@@ -416,7 +539,7 @@ export function SnakeLadder({
             unregisterHandler('sync_request', handleSyncRequest);
             unregisterHandler('sync_state', handleSyncState);
         };
-    }, [registerHandler, unregisterHandler, applyRemoteState, currentMember.id, sendMessage, requestSync, isHost]);
+    }, [registerHandler, unregisterHandler, applyRemoteState, currentMember.id, sendMessage, requestSync]);
 
     useEffect(() => {
         if (otherOnline && !lastOnlineStateRef.current) {
@@ -424,6 +547,37 @@ export function SnakeLadder({
         }
         lastOnlineStateRef.current = Boolean(otherOnline);
     }, [otherOnline, requestSync]);
+
+    useEffect(() => {
+        if (isSynced && pendingMoves.length > 0) {
+            console.log(`[Snake] Flushing ${pendingMoves.length} pending moves`);
+            pendingMoves.forEach(payload => {
+                const parsed = payload.state as SnakeLadderState;
+                applyRemoteState(parsed, parseUpdatedAt(payload.updatedAt), false);
+            });
+            setPendingMoves([]);
+        }
+    }, [isSynced, pendingMoves, applyRemoteState]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!isSynced && !loading) {
+                requestSync('periodic_sync_check');
+            }
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [isSynced, loading, requestSync]);
+
+    useEffect(() => {
+        if (loading) return;
+        const t = setTimeout(() => {
+            setIsSynced(prev => {
+                if (!prev) console.warn('[Snake] isSynced safety timeout fired — unlocking UI');
+                return true;
+            });
+        }, 8000);
+        return () => clearTimeout(t);
+    }, [loading]);
 
     useEffect(() => {
         if (!isAnimating && pendingStateRef.current) {
@@ -473,7 +627,7 @@ export function SnakeLadder({
             await new Promise(r => setTimeout(r, 800));
 
             const roll = Math.floor(Math.random() * 6) + 1;
-            let newPos = myPlayerNum === 1 ? state.player1Position : state.player2Position;
+            let newPos = (state.players && state.players[currentMember.id]) ? state.players[currentMember.id].position : 1;
             let actionMessage: string | null = null;
             const path: number[] = [];
 
@@ -505,14 +659,16 @@ export function SnakeLadder({
 
             const newState: SnakeLadderState = {
                 ...state,
-                player1Position: myPlayerNum === 1 ? newPos : state.player1Position,
-                player2Position: myPlayerNum === 2 ? newPos : state.player2Position,
+                players: {
+                    ...(state.players || {}),
+                    [currentMember.id]: { position: newPos }
+                },
                 currentTurn: winner ? null : (roll === 6 ? currentMember.id : nextTurn), // Roll 6 = extra turn
                 winner,
                 lastActionMessage: actionMessage || (roll === 6 ? `${currentMember.nickname} rolled a 6 and gets another turn!` : undefined),
                 lastPath: path,
-                lastPathPlayer: myPlayerNum,
-                lastRollValue: roll
+                lastPathPlayer: currentMember.id,
+                diceValue: roll
             };
 
             setLastRoll(roll);
@@ -540,10 +696,12 @@ export function SnakeLadder({
         }
 
         const nextTurnId = members[0]?.id || null;
+        const newPlayers: Record<string, SnakeLadderPlayer> = {};
+        members.forEach(m => { newPlayers[m.id] = { position: 1 }; });
         const newState: SnakeLadderState = {
-            player1Position: 1,
-            player2Position: 1,
+            players: newPlayers,
             currentTurn: nextTurnId,
+            diceValue: null,
             winner: null,
             lastActionMessage: null,
             lastPath: [],
@@ -634,8 +792,8 @@ export function SnakeLadder({
                     <div className={`px-3 sm:px-4 py-0.5 sm:py-1 rounded-full text-white shadow-sm flex items-center gap-1.5 sm:gap-2 ${myColor}`}>
                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" /> You
                     </div>
-                    <div className={`px-3 sm:px-4 py-0.5 sm:py-1 rounded-full ${isMyTurn ? 'bg-orange-500 text-white shadow-md animate-pulse' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400'}`}>
-                        {state.winner ? 'Game Over' : (isMyTurn ? 'Your Turn' : 'Waiting...')}
+                    <div className={`px-3 sm:px-4 py-0.5 sm:py-1 rounded-full ${!otherOnline ? 'bg-red-100 text-red-500 animate-pulse shadow-sm' : (isMyTurn ? 'bg-orange-500 text-white shadow-md animate-pulse' : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400')}`}>
+                        {!otherOnline ? 'Partner Offline' : (state.winner ? 'Game Over' : (isMyTurn ? 'Your Turn' : 'Waiting...'))}
                     </div>
                 </div>
             </div>
@@ -659,7 +817,7 @@ export function SnakeLadder({
                 ) : (
                     <div className="flex flex-col items-center gap-2 sm:gap-6 w-full">
                         {/* Interactive Player Hub — skeleton while initial fetch is in-flight */}
-                        {loading ? (
+                        {(loading || !isSynced) ? (
                             <div className="flex gap-2 sm:gap-4 w-full justify-between items-stretch">
                                 <div className="w-1/2 h-24 rounded-2xl sm:rounded-3xl bg-slate-200 dark:bg-slate-700 animate-pulse" />
                                 <div className="w-1/2 h-24 rounded-2xl sm:rounded-3xl bg-slate-200 dark:bg-slate-700 animate-pulse" />
@@ -678,7 +836,7 @@ export function SnakeLadder({
                                     <div className="flex items-center justify-center w-full sm:mt-2">
                                         <div className="flex flex-col items-center">
                                             <span className="text-[9px] sm:text-[10px] text-gray-400 uppercase font-black">Position</span>
-                                            <span className="text-2xl sm:text-3xl font-black text-slate-700 dark:text-slate-200">{state.player1Position}</span>
+                                            <span className="text-2xl sm:text-3xl font-black text-slate-700 dark:text-slate-200">{(members[0] && state.players && state.players[members[0].id] ? state.players[members[0].id].position : 1)}</span>
                                         </div>
                                     </div>
                                     {state.currentTurn === (members[0]?.id || '') && !state.winner && (
@@ -699,7 +857,7 @@ export function SnakeLadder({
                                     <div className="flex items-center justify-center w-full sm:mt-2">
                                         <div className="flex flex-col items-center">
                                             <span className="text-[9px] sm:text-[10px] text-gray-400 uppercase font-black">Position</span>
-                                            <span className="text-2xl sm:text-3xl font-black text-slate-700 dark:text-slate-200">{state.player2Position}</span>
+                                            <span className="text-2xl sm:text-3xl font-black text-slate-700 dark:text-slate-200">{(members[1] && state.players && state.players[members[1].id] ? state.players[members[1].id].position : 1)}</span>
                                         </div>
                                     </div>
                                     {state.currentTurn === (members[1]?.id || '') && !state.winner && (
@@ -713,7 +871,7 @@ export function SnakeLadder({
                         )}
 
                         {/* Central Single Dice — skeleton while initial fetch is in-flight */}
-                        {loading ? (
+                        {(loading || !isSynced) ? (
                             <div className="flex flex-col items-center justify-center my-2 sm:my-6 w-full">
                                 <div className="w-16 h-16 sm:w-28 sm:h-28 rounded-2xl sm:rounded-3xl bg-slate-200 dark:bg-slate-700 animate-pulse" />
                             </div>
@@ -727,10 +885,10 @@ export function SnakeLadder({
                                         isRolling={rolling}
                                         diceNumber={lastRoll}
                                         colour={state.currentTurn === roomCreator?.id ? 'red' : 'blue'}
-                                        onDiceClick={() => isMyTurn && !rolling && !isAnimating && !isProcessing && !state.winner ? rollDice(myPlayerNum) : undefined}
+                                        onDiceClick={() => otherOnline && isMyTurn && !rolling && !isAnimating && !isProcessing && !state.winner ? rollDice(myPlayerNum) : undefined}
                                         playerName={state.currentTurn ? (members.find(m => m.id === state.currentTurn)?.nickname || 'Rolling...') : 'Rolling...'}
-                                        isMyTurn={isMyTurn && !isProcessing}
-                                        disabled={!isMyTurn || rolling || isAnimating || isProcessing || !!state.winner}
+                                        isMyTurn={isMyTurn && !isProcessing && !!otherOnline}
+                                        disabled={!otherOnline || !isMyTurn || rolling || isAnimating || isProcessing || !!state.winner}
                                     />
                                 </div>
                             </div>
@@ -739,8 +897,11 @@ export function SnakeLadder({
                         {/* Fixed-height container to prevent board from shifting up and down */}
                         <div className="h-16 sm:h-20 w-full flex flex-col items-center justify-start z-10 gap-2">
                             {!otherOnline ? (
-                                <div className="text-xs sm:text-sm font-bold text-red-500 animate-pulse bg-red-100 dark:bg-red-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
-                                    Partner Offline
+                                <div className="flex flex-col items-center gap-1.5">
+                                    <div className="text-xs sm:text-sm font-bold text-red-500 animate-pulse bg-red-100 dark:bg-red-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+                                        Partner Offline
+                                    </div>
+                                    <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 italic">Waiting for your partner to reconnect…</p>
                                 </div>
                             ) : isMyTurn && !rolling && !isAnimating && !state.winner ? (
                                 <div className="text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400 animate-bounce bg-orange-100 dark:bg-orange-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">

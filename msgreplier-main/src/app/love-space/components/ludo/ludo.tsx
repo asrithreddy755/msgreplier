@@ -1,24 +1,28 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { WakeUpButton } from '../WakeUpButton';
 import { LoveRoomMember } from '@/types/love-space';
 import { Provider } from 'react-redux';
 import { store, setSyncCallback } from './state/store';
 import Game from './components/Game/Game';
 import { TPlayerInitData, TPlayerColour } from './types';
-import { debounce, throttle } from 'lodash-es';
+import { debounce } from 'lodash-es';
 import { setIsPlaceholderShowing } from './state/slices/diceSlice';
 import { changeCoordsOfToken } from './state/slices/playersSlice';
 import { setTokenTransitionTime } from './utils/setTokenTransitionTime';
 import { FORWARD_TOKEN_TRANSITION_TIME } from './game/tokens/constants';
 import { toast } from 'sonner';
-import { Bell, Loader2 } from 'lucide-react';
+import { Loader2, RotateCcw } from 'lucide-react';
 import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
 import { useAssetPreloader } from '../../hooks/useAssetPreloader';
 import { GamePreloader } from '../GamePreloader';
 import { playDiceSound } from './utils/diceSound';
 import bgAsset from './assets/bg.jpg';
+
+// Module-level Map: guarantees DB/localStorage restore runs exactly once per roomId
+// per page load, surviving multiple tab switches.
+const initializedRooms = new Map<string, boolean>();
 
 interface LudoProps {
     roomId: string;
@@ -66,7 +70,7 @@ export function Ludo({
     const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'saved' | 'error'>('idle');
     const [myColour, setMyColour] = useState<TPlayerColour | null>(null);
     const [currentPlayerColour, setCurrentPlayerColour] = useState<string | null>(null);
-    const hasInitializedRef = useRef(false);
+    // hasInitializedRef replaced by module-level initializedRooms Map (1b)
     const membersRef = useRef(members);
     const myColourRef = useRef<TPlayerColour | null>(null);
     const lastOnlineStateRef = useRef(otherOnline);
@@ -269,6 +273,9 @@ export function Ludo({
             return;
         }
 
+        // Part B: Activity ping
+        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
+
         sendMessage?.('game_move', { game: 'ludo', state: payloadState, updatedAt }, { reliable: true });
         saveToDb(payloadState, updatedAt);
     }, 400), [sendMessage, saveToDb, roomId]);
@@ -279,21 +286,9 @@ export function Ludo({
         });
     }, [persistState]);
 
-    useEffect(() => {
-        hasInitializedRef.current = false;
-        setLoading(true);
-        latestStateRef.current = null;
-        latestUpdatedAtRef.current = 0;
-        lastBroadcastStateRef.current = null;
-        lastDbStateRef.current = null;
-        moveHistoryRef.current = [];
-        
-        // Reset Redux store on roomId change to prevent stale state issues
-        store.dispatch({ type: 'players/clearPlayersState' });
-        store.dispatch({ type: 'dice/clearDiceState' });
-        store.dispatch({ type: 'board/clearBoardState' });
-        store.dispatch({ type: 'session/clearSessionState' });
-    }, [roomId]);
+    // 1a: Removed the destructive clear-on-roomId-change useEffect.
+    // The Redux store holds its state while the component is unmounted (tab switch).
+    // Init is guarded by initializedRooms Map so it never re-runs on remount.
 
     useEffect(() => {
         const currentMembers = membersRef.current;
@@ -308,10 +303,10 @@ export function Ludo({
             setMyColour(sequence[idx === -1 ? 0 : idx] || 'blue');
         }
 
-        if (hasInitializedRef.current) return;
+        if (initializedRooms.get(roomId)) return;
 
         const init = async () => {
-            hasInitializedRef.current = true;
+            initializedRooms.set(roomId, true);
             try {
                 const backupRaw = localStorage.getItem(ludoBackupKey.current);
                 if (backupRaw) {
@@ -326,7 +321,7 @@ export function Ludo({
                 }
             } catch (err) {
                 console.error('[Ludo] Failed to initialize state', err);
-                hasInitializedRef.current = false;
+                initializedRooms.delete(roomId); // allow retry on next mount
             } finally {
                 setLoading(false);
                 requestSync('init');
@@ -343,6 +338,25 @@ export function Ludo({
 
         const handleGameMove = (payload: any) => {
             if (!payload || payload.game !== 'ludo') return;
+
+            // Handle reset sentinel broadcast from host's New Game action
+            if (payload.reset) {
+                store.dispatch({ type: 'players/clearPlayersState' });
+                store.dispatch({ type: 'dice/clearDiceState' });
+                store.dispatch({ type: 'board/clearBoardState' });
+                store.dispatch({ type: 'session/clearSessionState' });
+                localStorage.removeItem(ludoBackupKey.current);
+                latestStateRef.current = null;
+                latestUpdatedAtRef.current = 0;
+                lastBroadcastStateRef.current = null;
+                lastDbStateRef.current = null;
+                moveHistoryRef.current = [];
+                currentVersionRef.current = 0;
+                hasUnsavedChangesRef.current = false;
+                initializedRooms.delete(roomId);
+                return;
+            }
+
             const state = payload.state;
             const updatedAt = parseUpdatedAt(payload.updatedAt) || Date.now();
             applyIncomingState(state, updatedAt, true);
@@ -485,6 +499,49 @@ export function Ludo({
         };
     }, [registerHandler, unregisterHandler, sendMessage, currentMemberId]);
 
+    // 1c: New Game handler — host only
+    const roomCreator = members.length > 0 ? members[0] : null;
+    const handleNewGame = useCallback(async () => {
+        if (!roomCreator || currentMemberId !== roomCreator.id) {
+            toast.error(`Only ${roomCreator?.nickname || 'the host'} can start a new game!`);
+            return;
+        }
+
+        // 1. Clear Redux
+        store.dispatch({ type: 'players/clearPlayersState' });
+        store.dispatch({ type: 'dice/clearDiceState' });
+        store.dispatch({ type: 'board/clearBoardState' });
+        store.dispatch({ type: 'session/clearSessionState' });
+
+        // 2. Clear all refs
+        localStorage.removeItem(ludoBackupKey.current);
+        latestStateRef.current = null;
+        latestUpdatedAtRef.current = 0;
+        lastBroadcastStateRef.current = null;
+        lastDbStateRef.current = null;
+        moveHistoryRef.current = [];
+        currentVersionRef.current = 0;
+        hasUnsavedChangesRef.current = false;
+
+        // 3. Allow init to re-run on next mount
+        initializedRooms.delete(roomId);
+
+        // 4. Clear DB state
+        try {
+            await fetch(`/api/love-space/ludo-state?roomId=${roomId}`, { method: 'DELETE' });
+        } catch (e) {
+            console.error('[Ludo] Failed to clear DB state on new game:', e);
+        }
+
+        // 5. Broadcast reset sentinel so non-creator peer also clears
+        sendMessage?.('game_move', { game: 'ludo', reset: true }, { reliable: true });
+
+        // Part B: Activity ping
+        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
+
+        toast.success('New game started!');
+    }, [currentMemberId, roomCreator, roomId, sendMessage, ludoBackupKey]);
+
     if (!isLoaded) {
         return (
             <div className="absolute inset-0 p-2 sm:p-4 flex items-center justify-center bg-white dark:bg-slate-900 rounded-2xl w-full h-full">
@@ -521,9 +578,31 @@ export function Ludo({
                 </div>
 
                 <Game initData={initData} myColour={myColour || 'blue'} otherOnline={otherOnline} />
-                
+
+                {/* New Game button — host only */}
+                <div className="absolute top-4 right-4 z-50">
+                    <button
+                        onClick={handleNewGame}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border transition-all ${
+                            roomCreator && currentMemberId === roomCreator.id
+                                ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/40 text-red-600 dark:text-red-400 hover:bg-red-100 cursor-pointer'
+                                : 'bg-gray-100 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 cursor-not-allowed opacity-60'
+                        }`}
+                        title={roomCreator && currentMemberId !== roomCreator.id ? `Only ${roomCreator.nickname} can restart` : 'Start a new game'}
+                    >
+                        <RotateCcw className="w-3 h-3" /> New Game
+                    </button>
+                </div>
+
                 {/* Wake Up Button for Ludo */}
-                {otherOnline && currentPlayerColour && myColour && currentPlayerColour !== myColour && (
+                {!otherOnline ? (
+                    <div className="mt-4 flex flex-col items-center gap-1">
+                        <div className="px-4 py-1.5 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30 text-xs font-bold text-red-600 dark:text-red-400 animate-pulse shadow-sm">
+                            Partner Offline
+                        </div>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 italic">Waiting for your partner to reconnect…</p>
+                    </div>
+                ) : currentPlayerColour && myColour && currentPlayerColour !== myColour && (
                     <div className="mt-4 z-50 animate-in fade-in slide-in-from-bottom-2 duration-500">
                         <WakeUpButton 
                             sendMessage={sendMessage} 

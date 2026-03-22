@@ -2,6 +2,7 @@ export type RoomStatus = 'active' | 'expired';
 
 export interface LoveRoom {
     id: string;
+    room_code: string;
     created_at: string;
     status: RoomStatus;
     expires_at: string;
@@ -47,16 +48,18 @@ export interface XOXGameState {
 
 // Ludo State — defined in src/app/love-space/components/ludo/types.ts
 
-// Snake and Ladder State
+export interface SnakeLadderPlayer {
+    position: number;
+}
+
 export interface SnakeLadderState {
-    player1Position: number;
-    player2Position: number;
-    currentTurn: string | null; // Nickname
-    winner: string | null;
+    players: Record<string, SnakeLadderPlayer>; // user ID -> player state
+    currentTurn: string | null; // user ID
+    diceValue: number | null;
+    winner: string | null; // user ID
     lastActionMessage?: string | null;
     lastPath?: number[];
-    lastPathPlayer?: number;
-    lastRollValue?: number;
+    lastPathPlayer?: string; // user ID
     version: number;
     updatedAt: number;
 }

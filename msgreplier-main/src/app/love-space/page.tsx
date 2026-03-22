@@ -1,22 +1,81 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Heart, Sparkles, Loader2, Copy, Share2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Heart, Sparkles, Loader2, Copy, Share2, CheckCircle2, ArrowRight, UserPlus, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function LoveSpacePage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [isJoining, setIsJoining] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [joinError, setJoinError] = useState<string | null>(null);
     const [creatorName, setCreatorName] = useState("");
+
+    // OTP State
+    const [otp, setOtp] = useState<string[]>(['', '', '', '', '']);
+    const inputRefs = [
+        useRef<HTMLInputElement>(null),
+        useRef<HTMLInputElement>(null),
+        useRef<HTMLInputElement>(null),
+        useRef<HTMLInputElement>(null),
+        useRef<HTMLInputElement>(null)
+    ];
+
+    const handleOtpChange = (index: number, value: string) => {
+        if (!/^\d*$/.test(value)) return;
+        
+        const newOtp = [...otp];
+        newOtp[index] = value.slice(-1);
+        setOtp(newOtp);
+
+        if (value && index < 4) {
+            inputRefs[index + 1].current?.focus();
+        }
+    };
+
+    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+            inputRefs[index - 1].current?.focus();
+        }
+    };
+
+    const joinByCode = async () => {
+        const code = otp.join('');
+        if (code.length !== 5) {
+            setJoinError("Please enter a valid 5-digit code.");
+            return;
+        }
+
+        setIsJoining(true);
+        setJoinError(null);
+
+        try {
+            const response = await fetch(`/api/love-space/join-by-code?code=${code}`);
+            const data = await response.json();
+
+            if (response.ok && data.roomId) {
+                router.push(`/love-space/${data.roomId}`);
+            } else {
+                setJoinError(data.error || "No active room found. Check the code and try again.");
+            }
+        } catch (err) {
+            setJoinError("Something went wrong. Please try again.");
+        } finally {
+            setIsJoining(false);
+        }
+    };
 
     // Modal State
     const [createdRoomId, setCreatedRoomId] = useState<string | null>(null);
     const [createdRoomUrl, setCreatedRoomUrl] = useState<string>("");
+    const [createdRoomCode, setCreatedRoomCode] = useState<string>("");
     const [copied, setCopied] = useState(false);
+    const [copiedCode, setCopiedCode] = useState(false);
 
     const createRoom = async () => {
         if (!creatorName.trim()) {
@@ -44,6 +103,7 @@ export default function LoveSpacePage() {
             const url = `${window.location.origin}/love-space/${data.room.id}`;
             setCreatedRoomUrl(url);
             setCreatedRoomId(data.room.id);
+            setCreatedRoomCode(data.room.room_code);
         } catch (apiErr: any) {
             setError(apiErr.message || "Something went wrong.");
         } finally {
@@ -90,6 +150,32 @@ export default function LoveSpacePage() {
                     </CardHeader>
 
                     <CardContent className="flex flex-col gap-4 mt-6">
+                        {/* Room Code Display */}
+                        <div className="flex flex-col items-center gap-2 p-4 bg-pink-50/50 dark:bg-pink-900/10 rounded-2xl border border-pink-100 dark:border-pink-900/30">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-pink-500 dark:text-pink-400">Your Room Code</span>
+                            <div className="flex gap-2">
+                                {createdRoomCode.split('').map((digit, i) => (
+                                    <div key={i} className="w-10 h-12 bg-white dark:bg-slate-800 rounded-xl flex items-center justify-center border border-pink-100 dark:border-pink-900/50 shadow-sm">
+                                        <span className="text-2xl font-black font-mono text-pink-600 dark:text-pink-400">{digit}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="mt-1 h-7 text-[10px] font-bold text-pink-500 hover:bg-pink-100/50"
+                                onClick={() => {
+                                    navigator.clipboard.writeText(createdRoomCode);
+                                    setCopiedCode(true);
+                                    toast.success("Room code copied!");
+                                    setTimeout(() => setCopiedCode(false), 2000);
+                                }}
+                            >
+                                {copiedCode ? <CheckCircle2 className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
+                                {copiedCode ? "Code Copied" : "Copy Code"}
+                            </Button>
+                        </div>
+
                         <div className="flex items-center gap-2 bg-pink-50 dark:bg-slate-800 border border-pink-200 dark:border-slate-700 p-3 rounded-xl overflow-hidden shadow-inner">
                             <span className="flex-1 text-sm text-gray-500 dark:text-gray-400 break-all px-2">
                                 {createdRoomUrl}
@@ -144,67 +230,78 @@ export default function LoveSpacePage() {
                     </CardFooter>
                 </Card>
             ) : (
-                <Card className="w-full max-w-md shadow-xl border-pink-200 dark:border-pink-900/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10">
-                    <CardHeader className="text-center pb-2">
-                        <div className="mx-auto bg-pink-100 dark:bg-pink-900/30 w-16 h-16 rounded-full flex items-center justify-center mb-4 text-pink-500 dark:text-pink-400 shadow-inner">
-                            <Heart className="w-8 h-8 fill-current" />
-                        </div>
-                        <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 dark:from-pink-400 dark:to-purple-400">
-                            Love Space
-                        </CardTitle>
-                        <CardDescription className="text-gray-600 dark:text-gray-300 text-lg mt-2">
-                            A private room for just the two of you. Play games, chat, and connect.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex flex-col gap-6 pt-4">
-                        <div className="space-y-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-                            <p className="flex items-center justify-center gap-2">
-                                <span className="bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">1</span>
-                                Create a private room
-                            </p>
-                            <p className="flex items-center justify-center gap-2">
-                                <span className="bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">2</span>
-                                Share the secret link
-                            </p>
-                            <p className="flex items-center justify-center gap-2">
-                                <span className="bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 rounded-full w-6 h-6 flex items-center justify-center font-bold">3</span>
-                                Play, chat & bond in real-time
-                            </p>
-                        </div>
-
-                        {error && (
-                            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 text-sm rounded-md text-center border border-red-100 dark:border-red-900/50">
-                                {error}
+                <div className="flex flex-col gap-6 w-full max-w-md z-20">
+                    {/* Create Room Card */}
+                    <Card className="shadow-2xl border-pink-100 dark:border-pink-900/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md overflow-hidden">
+                        <CardHeader className="text-center pb-2">
+                            <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">Create a New Room</CardTitle>
+                            <CardDescription>Enter your nickname to get started</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Input
+                                    placeholder="Your nickname (e.g. Romeo)"
+                                    value={creatorName}
+                                    onChange={(e) => setCreatorName(e.target.value)}
+                                    className="h-12 rounded-xl border-pink-100 focus-visible:ring-pink-500"
+                                />
+                                {error && <p className="text-xs text-red-500 font-medium px-1">{error}</p>}
                             </div>
-                        )}
+                            <Button
+                                onClick={createRoom}
+                                disabled={isLoading}
+                                className="w-full h-12 bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white rounded-xl font-bold shadow-lg shadow-pink-500/20 transition-all active:scale-95"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                ) : (
+                                    <Heart className="w-5 h-5 mr-2" />
+                                )}
+                                {isLoading ? "Creating..." : "Create Love Space"}
+                            </Button>
+                        </CardContent>
+                    </Card>
 
-                        <div className="space-y-2">
-                            <label htmlFor="creatorName" className="text-sm font-medium text-pink-700 dark:text-pink-300 ml-1">Your Nickname</label>
-                            <input
-                                id="creatorName"
-                                type="text"
-                                placeholder="e.g. Pookie, Hubby..."
-                                value={creatorName}
-                                onChange={(e) => setCreatorName(e.target.value)}
-                                maxLength={20}
-                                className="flex h-12 w-full rounded-xl border border-pink-200 dark:border-pink-800 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-center font-medium ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-pink-300 dark:placeholder:text-pink-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:text-white"
-                            />
-                        </div>
-
-                        <Button
-                            onClick={createRoom}
-                            disabled={isLoading}
-                            className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white shadow-md text-lg h-14 rounded-xl transition-all hover:scale-105 active:scale-95"
-                        >
-                            {isLoading ? (
-                                <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                            ) : (
-                                <Heart className="w-5 h-5 mr-2" />
-                            )}
-                            {isLoading ? "Creating..." : "Create Love Space"}
-                        </Button>
-                    </CardContent>
-                </Card>
+                    {/* Join with Code Card */}
+                    <Card className="shadow-xl border-purple-100 dark:border-purple-900/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md overflow-hidden">
+                        <CardHeader className="text-center pb-2">
+                            <CardTitle className="text-xl font-bold text-gray-800 dark:text-gray-100">Join with Code</CardTitle>
+                            <CardDescription>Enter the 5-digit code from your partner</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex justify-center gap-2">
+                                {otp.map((digit, index) => (
+                                    <input
+                                        key={index}
+                                        ref={inputRefs[index]}
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={1}
+                                        value={digit}
+                                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(index, e)}
+                                        className="w-12 h-14 text-center text-2xl font-black font-mono bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-900/50 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                                    />
+                                ))}
+                            </div>
+                            {joinError && <p className="text-xs text-red-500 font-medium text-center">{joinError}</p>}
+                            <Button
+                                onClick={joinByCode}
+                                disabled={isJoining}
+                                variant="outline"
+                                className="w-full h-12 border-purple-200 text-purple-600 hover:bg-purple-50 rounded-xl font-bold transition-all active:scale-95"
+                            >
+                                {isJoining ? (
+                                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                ) : (
+                                    <UserPlus className="w-5 h-5 mr-2" />
+                                )}
+                                {isJoining ? "Joining..." : "Join Room"}
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
             )}
 
             <div className="mt-12 w-full max-w-2xl px-4 z-10 space-y-8 pb-8 text-center sm:text-left">
@@ -278,6 +375,19 @@ export default function LoveSpacePage() {
                             <h3 className="font-bold text-purple-600 dark:text-purple-400 mb-1">Interactive Games</h3>
                             <p className="text-gray-500 dark:text-gray-400">Play classic games like Ludo, Tic Tac Toe, and Snake & Ladder together.</p>
                         </div>
+                    </div>
+                </section>
+
+                {/* Privacy and Terms */}
+                <section className="bg-white/30 dark:bg-slate-900/20 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
+                    <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-3 text-base">Privacy Policy & Terms of Use</h3>
+                    <div className="space-y-3">
+                        <p>
+                            <strong className="text-gray-600 dark:text-gray-300">Total Privacy:</strong> We strictly do not ask for any personal information. All messages, nicknames, and game data are strictly confined to your temporary room environment.
+                        </p>
+                        <p>
+                            <strong className="text-gray-600 dark:text-gray-300">Terms of Use:</strong> This service is provided loosely {"\"as is\""} and is designed exclusively for fun and lighthearted entertainment. Love Rooms and absolutely all their contents are automatically and irretrievably <strong>deleted after 24 hours</strong>, or after 10 minutes of complete inactivity by both partners. Please do not use this space to share sensitive personal information.
+                        </p>
                     </div>
                 </section>
 

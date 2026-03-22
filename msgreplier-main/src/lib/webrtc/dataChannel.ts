@@ -1,6 +1,6 @@
 // src/lib/webrtc/dataChannel.ts
 
-export type WebRTCMessageType = 'chat' | 'game_move' | 'dice_roll' | 'dice_resolved' | 'dice_start' | 'token_moving' | 'sync_request' | 'sync_state' | 'chat_sync_request' | 'chat_sync_state' | 'ping' | 'pong' | 'player_ready' | 'heartbeat' | 'ack' | 'typing' | 'reaction' | 'flames_reveal' | 'flames_sync' | 'presence_update';
+export type WebRTCMessageType = 'chat' | 'game_move' | 'dice_roll' | 'dice_resolved' | 'dice_start' | 'token_moving' | 'sync_request' | 'sync_state' | 'chat_sync_request' | 'chat_sync_state' | 'ping' | 'pong' | 'player_ready' | 'heartbeat' | 'ack' | 'typing' | 'reaction' | 'flames_reveal' | 'flames_sync' | 'presence_update' | 'room_closed';
 
 export interface WebRTCMessage {
     type: WebRTCMessageType;

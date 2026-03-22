@@ -2,7 +2,7 @@
 
 export const runtime = 'edge';
 
-import { useEffect, useState, use, useRef, useCallback } from 'react';
+import { useEffect, useState, use, useRef, useCallback, useMemo } from 'react';
 import { LoveRoom, LoveRoomMember } from '@/types/love-space';
 import { JoinRoom } from '../components/join-room';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { Chat, XOX, Ludo, SnakeLadder, LoveQuiz } from '../components/games';
 import { LoveSpaceFlames } from '../components/LoveSpaceFlames';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut, Trophy, Send, Sparkles, MessageSquare } from 'lucide-react';
+import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut, Trophy, Send, Sparkles, MessageSquare, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useWebRTC } from '@/hooks/useWebRTC';
@@ -77,6 +77,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [copiedCode, setCopiedCode] = useState(false);
+    const [copiedLink, setCopiedLink] = useState(false);
 
     // Presence & Notification State
     const [activeTab, setActiveTab] = useState(() => {
@@ -86,6 +88,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [otherMemberTab, setOtherMemberTab] = useState<string | null>(null);
     const [wakingUpTab, setWakingUpTab] = useState<string | null>(null);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [isRoomClosed, setIsRoomClosed] = useState(false);
 
     // Persist activeTab
     useEffect(() => {
@@ -101,6 +104,15 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     }, [members]);
     const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
     const [hasPresenceSynced, setHasPresenceSynced] = useState(false);
+    const [isInitialSyncing, setIsInitialSyncing] = useState(true);
+
+    // Give presence a 2s grace period to populate correctly on first join
+    useEffect(() => {
+        if (hasPresenceSynced) {
+            const timer = setTimeout(() => setIsInitialSyncing(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [hasPresenceSynced]);
 
     const isCreator = members.length > 0 && currentMember?.id === members[0].id;
     
@@ -292,8 +304,18 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             }
         };
 
+        const handleRoomClosed = (payload: any) => {
+            console.log(`[RTC] Room closed: ${payload.reason}`);
+            setIsRoomClosed(true);
+        };
+
         registerHandler('sync_request', handleSyncRequest);
-        return () => unregisterHandler('sync_request', handleSyncRequest);
+        registerHandler('room_closed', handleRoomClosed);
+        
+        return () => {
+            unregisterHandler('sync_request', handleSyncRequest);
+            unregisterHandler('room_closed', handleRoomClosed);
+        };
     }, [registerHandler, unregisterHandler, currentMember?.id, sendMessage]);
 
 
@@ -305,7 +327,6 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [networkQuality, setNetworkQuality] = useState<'good' | 'fair' | 'poor'>('good');
     const channelRef = useRef<RealtimeChannel | null>(null);
     const presenceCleanupRef = useRef(false);
-    const presenceDisabledRef = useRef(false);
     // Prevents parallel /members fetches during rapid reconnect bursts
     const fetchingMembersRef = useRef(false);
     const hasSupabaseConfig = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
@@ -380,8 +401,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
     // Handle Presence Channel
     useEffect(() => {
-        if (!currentMember || !roomId || presenceDisabledRef.current || !hasSupabaseConfig) {
-            presenceDisabledRef.current = true;
+        if (!currentMember || !roomId || !hasSupabaseConfig) {
             return;
         }
 
@@ -421,20 +441,21 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             channel = supabase.channel(channelName, {
                 config: {
                     presence: {
-                        key: currentMember.id,
+                        key: String(currentMember.id),
                     },
                 },
             });
-        } catch {
-            presenceDisabledRef.current = true;
+        } catch (e) {
+            console.error('[Presence] Failed to create channel:', e);
+            return;
         }
-        if (!channel || presenceDisabledRef.current) return;
+        if (!channel) return;
 
         channel
             .on('presence', { event: 'sync' }, () => {
                 if (!isMounted) return;
                 const presenceState = channel.presenceState();
-                console.log('[Presence] Sync event. State:', presenceState);
+                console.log('[Presence] Sync event. Keys:', Object.keys(presenceState));
 
                 let otherTab = null;
                 const online = new Set<string>();
@@ -443,13 +464,14 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 for (const key in presenceState) {
                     const stateGroup = presenceState[key] as any[];
                     if (stateGroup && stateGroup.length > 0) {
-                        online.add(key);
-                        if (key !== currentMember.id) {
+                        const normalizedKey = String(key);
+                        online.add(normalizedKey);
+                        if (normalizedKey !== String(currentMember.id)) {
                             otherTab = stateGroup[0].activeTab;
                         }
 
                         // If we see a user ID that is not in our members list, trigger a reload
-                        if (!membersRef.current.find(m => m.id === key)) {
+                        if (!membersRef.current.find(m => String(m.id) === normalizedKey)) {
                             hasNewMembers = true;
                         }
                     }
@@ -460,44 +482,47 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 setHasPresenceSynced(true);
 
                 if (hasNewMembers && !fetchingMembersRef.current) {
-                    console.log('[Presence] Unknown member detected, falling back to manual fetch...');
+                    console.log('[Presence] Unknown member detected, refetching...');
                     loadMembers();
                 }
             })
             .on('presence', { event: 'join' }, ({ key, newPresences }) => {
                 if (!isMounted) return;
+                const normalizedKey = String(key);
+                console.log('[Presence] Join event:', normalizedKey);
+                
                 setOnlineIds(prev => {
                     const next = new Set(prev);
-                    next.add(key);
+                    next.add(normalizedKey);
                     return next;
                 });
 
-                if (key !== currentMember.id && !membersRef.current.find(m => m.id === key) && !fetchingMembersRef.current) {
-                    console.log('[Presence] Unknown member joined, refetching members...');
+                if (normalizedKey !== String(currentMember.id) && !membersRef.current.find(m => String(m.id) === normalizedKey) && !fetchingMembersRef.current) {
                     loadMembers();
                 }
 
-                if (key !== currentMember.id && newPresences && newPresences.length > 0) {
+                if (normalizedKey !== String(currentMember.id) && newPresences && newPresences.length > 0) {
                     setOtherMemberTab(newPresences[0].activeTab);
                 }
 
-                // If the other member joins and they are already in our list, it's likely a RE-JOIN (reload).
-                // Trigger WebRTC reconnect ONLY if we are currently disconnected.
-                if (key !== currentMember.id && membersRef.current.find(m => m.id === key) && connectionStateRef.current === 'Opponent disconnected') {
-                    console.log(`[Presence] Partner ${key} re-joined & disconnected. Triggering WebRTC reconnect...`);
+                if (normalizedKey !== String(currentMember.id) && membersRef.current.find(m => String(m.id) === normalizedKey) && connectionStateRef.current === 'Opponent disconnected') {
                     reconnect();
                 }
             })
-            .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+            .on('presence', { event: 'leave' }, ({ key }) => {
                 if (!isMounted) return;
+                const normalizedKey = String(key);
+                console.log('[Presence] Leave event:', normalizedKey);
+                
                 setOnlineIds(prev => {
                     const next = new Set(prev);
-                    next.delete(key);
+                    next.delete(normalizedKey);
                     return next;
                 });
             })
             .subscribe(async (status) => {
                 if (!isMounted) return;
+                console.log('[Presence] Status:', status);
                 if (status === 'SUBSCRIBED') {
                     if (subscribeTimeout) {
                         clearTimeout(subscribeTimeout);
@@ -511,16 +536,13 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     } catch (error) {
                         console.error('Error tracking self:', error);
                     }
-                } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-                    presenceDisabledRef.current = true;
-                    cleanupChannel();
                 }
             });
+
         subscribeTimeout = setTimeout(() => {
             if (!isMounted) return;
-            presenceDisabledRef.current = true;
-            cleanupChannel();
-        }, 4000);
+            console.warn('[Presence] Subscription timeout');
+        }, 6000);
 
         channelRef.current = channel;
 
@@ -528,9 +550,6 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             isMounted = false;
             cleanupChannel();
         };
-        // CRITICAL: Use currentMember.id (primitive) not currentMember (object) in dep array.
-        // The full object reference changes on every render even if the data is the same,
-        // which would cause the presence channel to disconnect and reconnect in a tight loop.
     }, [currentMember?.id, roomId]);
 
     // Track activeTab changes
@@ -553,6 +572,23 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         setCopied(true);
         toast("Link copied to clipboard!");
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const copyCode = () => {
+        if (!room?.room_code) return;
+        navigator.clipboard.writeText(room.room_code);
+        setCopiedCode(true);
+        toast.success("Room code copied!");
+        setTimeout(() => setCopiedCode(false), 2000);
+    };
+
+    const copyInviteLink = () => {
+        if (!room?.room_code) return;
+        const url = `${window.location.origin}/love-space/join?code=${room.room_code}`;
+        navigator.clipboard.writeText(url);
+        setCopiedLink(true);
+        toast.success("Invite link copied!");
+        setTimeout(() => setCopiedLink(false), 2000);
     };
 
     // Move loadMembers to a stable useCallback so it can be triggered manually
@@ -610,9 +646,31 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     // Live Frontend Expiration Sweeper
     // If the room is older than 10 minutes AND the other member is offline, terminate.
     const otherMember = currentMember && members.length > 0
-        ? members.find(m => m.id !== currentMember.id) || null
+        ? members.find(m => String(m.id) !== String(currentMember.id)) || null
         : null;
-    const isOtherOnline = (!hasPresenceSynced || members.length < 2) ? true : !!(otherMember && onlineIds.has(otherMember.id));
+    
+    // Stable presence check: 
+    // - Default to TRUE (Connected) if we haven't synced yet OR if we are in the initial grace period.
+    // - Trust onlineIds only after the 2s grace period ends.
+    // - Also consider WebRTC connection status as a source of truth.
+    const isOtherOnline = useMemo(() => {
+        // Source 1: WebRTC Data Channel (Most accurate for game interactions)
+        if (connectionState === 'Connected') return true;
+
+        // Grace period / Loading state
+        if (!hasPresenceSynced || isInitialSyncing || members.length < 2) return true;
+        
+        // Source 2: Supabase Presence
+        if (!otherMember) return false;
+        const isOnlineViaPresence = onlineIds.has(String(otherMember.id));
+
+        // Log for debugging
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`[Status] Partner ${otherMember.nickname}: WebRTC=${connectionState}, Presence=${isOnlineViaPresence ? 'Online' : 'Offline'}`);
+        }
+
+        return isOnlineViaPresence;
+    }, [connectionState, hasPresenceSynced, isInitialSyncing, members.length, otherMember, onlineIds]);
 
     useEffect(() => {
         if (!room || !currentMember || !hasSupabaseConfig) return;
@@ -692,6 +750,44 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         };
     }, [room, currentMember, isOtherOnline, connectionState]);
 
+    // PART D: Move-based Inactivity Checker
+    useEffect(() => {
+        if (!room || !roomId || isRoomClosed) return;
+
+        const checkInactivity = async () => {
+             try {
+                 const res = await fetch(`/api/love-space/get-room?roomId=${roomId}`, { cache: 'no-store' });
+                 const data = await res.json();
+                 if (data?.room) {
+                     const lastActivity = new Date(data.room.last_activity_at || data.room.created_at).getTime();
+                     const now = Date.now();
+                     const inactiveMs = now - lastActivity;
+
+                     if (inactiveMs >= 10 * 60 * 1000) {
+                         console.log(`[Inactivity] 10m limit reached (DB verify). Closing room.`);
+                         setIsRoomClosed(true);
+                         
+                         // 1. Broadcast to peer
+                         if (sendMessage) {
+                             sendMessage('room_closed', { reason: 'inactivity' }, { reliable: true });
+                         }
+
+                         // 2. Update DB
+                         fetch('/api/love-space/update-room-status', { 
+                             method: 'POST', 
+                             body: JSON.stringify({ roomId, isActive: false, status: 'closed' }) 
+                         }).catch(() => {});
+                     }
+                 }
+             } catch (e) {
+                 console.error('[Inactivity] Check failed:', e);
+             }
+        };
+
+        const interval = setInterval(checkInactivity, 60 * 1000);
+        return () => clearInterval(interval);
+    }, [room, roomId, isRoomClosed, sendMessage]);
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-pink-50">
@@ -722,6 +818,38 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
     return (
         <div className="min-h-[100dvh] h-[100dvh] sm:h-[calc(100vh-2rem)] bg-gradient-to-b from-pink-50 to-purple-50 dark:from-pink-950 dark:to-purple-950 flex flex-col overflow-hidden max-w-md mx-auto shadow-lg relative sm:my-4 sm:rounded-3xl sm:border sm:border-pink-200 dark:sm:border-pink-900/50">
+
+            {/* Inactivity Room-Close Overlay */}
+            <AnimatePresence>
+                {isRoomClosed && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-8 text-center"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            <div className="w-20 h-20 bg-pink-100 dark:bg-pink-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <LogOut className="w-10 h-10 text-pink-500" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Room Closed</h2>
+                            <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-[280px] mx-auto">
+                                This room was closed due to inactivity. You can create a new room anytime.
+                            </p>
+                            <Button 
+                                onClick={() => window.location.href = '/'}
+                                className="bg-gradient-to-r from-pink-500 to-rose-400 text-white px-8 py-6 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all"
+                            >
+                                <Home className="w-5 h-5 mr-2" /> Go Home
+                            </Button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Header Area */}
             <header className="hidden sm:flex px-4 py-3 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border-b border-pink-100 dark:border-pink-900/50 items-center justify-between z-20 sticky top-0">
@@ -955,6 +1083,40 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     </div>
                                 </div>
 
+                                {/* Room Code Section (Moved to bottom) */}
+                                <div className="mt-6 bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-pink-100 dark:border-pink-900/50 shadow-sm flex flex-col items-center gap-4 text-center">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Room code</span>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex gap-2">
+                                                {room?.room_code?.split('').map((digit, i) => (
+                                                    <div key={i} className="w-10 h-12 bg-pink-50 dark:bg-pink-900/20 rounded-xl flex items-center justify-center border border-pink-100 dark:border-pink-900/50">
+                                                        <span className="text-2xl font-black font-mono text-pink-600 dark:text-pink-400">{digit}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-2 w-full">
+                                        <Button 
+                                            onClick={copyCode}
+                                            variant="outline"
+                                            className="flex-1 rounded-xl h-12 border-pink-100 dark:border-pink-900/50 text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-900/20 text-xs"
+                                        >
+                                            {copiedCode ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                                            {copiedCode ? "Copied" : "Copy code"}
+                                        </Button>
+                                        <Button 
+                                            onClick={copyInviteLink}
+                                            className="flex-1 bg-gradient-to-r from-pink-500 to-rose-400 text-white rounded-xl h-12 shadow-md hover:shadow-lg transition-all text-xs"
+                                        >
+                                            {copiedLink ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Share2 className="w-4 h-4 mr-2" />}
+                                            {copiedLink ? "Copied" : "Copy invite link"}
+                                        </Button>
+                                    </div>
+                                </div>
+
                                 {/* Leave Room Action */}
                                 <div className="mt-6 flex justify-center pb-8 border-t border-pink-100 dark:border-pink-900/30 pt-4">
                                     <AlertDialog>
@@ -1079,6 +1241,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     currentMember={currentMember} 
                                     members={members} 
                                     otherOnline={isOtherOnline} 
+                                    connectionState={connectionState}
                                     sendMessage={sendMessage}
                                     registerHandler={registerHandler}
                                     unregisterHandler={unregisterHandler}

@@ -43,10 +43,14 @@ function SnakeDice({
 
   return (
     <div className={clsx(styles.diceContainer, styles[colour])}>
-      <span className={styles.playerName}>{playerName}</span>
+      <span className={clsx(styles.playerName, {
+        [styles.active]: isMyTurn,
+        [styles.inactive]: !isMyTurn,
+      })}>{playerName}</span>
       <button
         className={clsx(styles.dice, {
-          [styles.active]: !disabled && isMyTurn,
+          [styles.turnActive]: isMyTurn,
+          [styles.turnInactive]: !isMyTurn,
           [styles.rolling]: isRolling,
         })}
         tabIndex={disabled ? -1 : undefined}
@@ -70,7 +74,7 @@ function SnakeDice({
         </div>
       </button>
       {interactiveMsg && (
-        <span className="text-[10px] mt-1 font-bold text-gray-500 animate-pulse">{interactiveMsg}</span>
+        <span className="text-[10px] mt-1 font-bold text-gray-500 dark:text-gray-400 animate-pulse">{interactiveMsg}</span>
       )}
     </div>
   );

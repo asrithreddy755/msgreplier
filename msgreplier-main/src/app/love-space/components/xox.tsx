@@ -213,19 +213,27 @@ export function XOX({
     useEffect(() => {
         if (!registerHandler || !unregisterHandler) return;
 
-        const handleIncomingMove = (payload: any) => {
+        const handleIncomingMove = (payload: any, isSync = false) => {
             if (payload.game !== 'xox') return;
             const incoming = payload.state as XOXGameState;
             const current = JSON.parse(lastStateRef.current || JSON.stringify(INITIAL_STATE));
 
             // Version-Controlled Acceptance
-            if (incoming.version > current.version) {
-                console.log(`[RTC] XOX sync received (version ${incoming.version})`);
+            const isNewer = incoming.version > current.version;
+            const isSameAndInitial = isSync && incoming.version === current.version;
+
+            if (isNewer || isSameAndInitial) {
+                console.log(`[RTC] XOX sync received (version ${incoming.version}, isSync: ${isSync})`);
                 const serialized = JSON.stringify(incoming);
                 lastStateRef.current = serialized;
                 setGameState(incoming);
                 localStorage.setItem(xoxBackupKey.current, serialized);
-                hasUnsavedChangesRef.current = true; // Mark dirty so it syncs to DB later
+                
+                // If it's a newer version from peer, we should mark as NOT dirty (since we just caught up)
+                // UNLESS we had our own unsaved changes at the same version (unlikely with strict versioning)
+                if (isNewer) {
+                    hasUnsavedChangesRef.current = false;
+                }
             } else if (incoming.version === current.version && hasUnsavedChangesRef.current) {
                 console.log(`[RTC] Ignored XOX sync with matching version (v${incoming.version}) due to pending local state.`);
             } else {
@@ -237,16 +245,16 @@ export function XOX({
             if (!payload || payload.senderId === currentMember.id) return;
             if (payload.game && payload.game !== 'xox') return;
             
-            // Host Authority System: Only host responds to sync_request
-            if (isHost && sendMessage) {
-                console.log("[RTC] Responding to sync request as HOST");
+            // Responder: Always send current state regardless of version or host status
+            if (sendMessage) {
+                console.log("[RTC] Responding to XOX sync request");
                 const state = JSON.parse(lastStateRef.current || JSON.stringify(INITIAL_STATE));
                 sendMessage('sync_state', { game: 'xox', state });
             }
         };
 
-        registerHandler('game_move', handleIncomingMove);
-        registerHandler('sync_state', handleIncomingMove); // reuse same logic
+        registerHandler('game_move', (p) => handleIncomingMove(p, false));
+        registerHandler('sync_state', (p) => handleIncomingMove(p, true));
         registerHandler('sync_request', handleSyncRequest);
 
         return () => {
@@ -254,7 +262,7 @@ export function XOX({
             unregisterHandler('sync_state');
             unregisterHandler('sync_request');
         };
-    }, [registerHandler, unregisterHandler, isHost, sendMessage]);
+    }, [registerHandler, unregisterHandler, currentMember.id, sendMessage]);
 
     const checkWinner = (board: XOXPlayer[]): XOXGameState['winner'] => {
         for (let combo of WINNING_COMBOS) {
@@ -341,9 +349,19 @@ export function XOX({
         if (winner) {
             saveToDb(newState, true);
         }
+
+        // Part B: Activity ping
+        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
     };
 
     const roomCreator = members.length > 0 ? members[0] : null;
+    const player1 = members.length > 0 ? members[0] : null;
+    const player2 = members.length > 1 ? members[1] : null;
+
+    const getPlayerNickname = (player: 'X' | 'O') => {
+        if (player === 'X') return player1?.nickname || 'Player X';
+        return player2?.nickname || 'Player O';
+    };
 
     const resetGame = async () => {
         if (roomCreator && currentMember.id !== roomCreator.id) {
@@ -373,6 +391,9 @@ export function XOX({
         
         // Immediate sync on reset
         saveToDb(newState, true);
+
+        // Part B: Activity ping
+        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
     };
 
     if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse w-full text-center">Loading Game...</div>;
@@ -422,20 +443,20 @@ export function XOX({
                 <div className="flex flex-col items-center gap-3 mb-4 w-full">
                     <div className="flex justify-center items-center gap-4 bg-white dark:bg-slate-800 rounded-full px-4 py-2 shadow-sm border border-purple-100 dark:border-purple-900/30 w-fit mx-auto relative">
                         <div className="flex items-center gap-2">
-                            <span className={`font-bold ${myPlayer === 'X' ? 'text-pink-600 dark:text-pink-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                                Player X {myPlayer === 'X' && '(You)'}
+                            <span className={`font-bold text-xs sm:text-sm max-w-[80px] truncate ${myPlayer === 'X' ? 'text-pink-600 dark:text-pink-400' : 'text-gray-500 dark:text-gray-400'}`} title={getPlayerNickname('X')}>
+                                {getPlayerNickname('X')} {myPlayer === 'X' && '(You)'}
                             </span>
                             <span className="bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-300 px-2.5 py-0.5 rounded-full font-bold text-sm">
                                 {gameState.scores?.X || 0}
                             </span>
                         </div>
-                        <div className="text-gray-300 dark:text-gray-600 font-bold">VS</div>
+                        <div className="text-gray-300 dark:text-gray-600 font-bold text-xs">VS</div>
                         <div className="flex items-center gap-2">
                             <span className="bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-pink-300 px-2.5 py-0.5 rounded-full font-bold text-sm">
                                 {gameState.scores?.O || 0}
                             </span>
-                            <span className={`font-bold ${myPlayer === 'O' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                                Player O {myPlayer === 'O' && '(You)'}
+                            <span className={`font-bold text-xs sm:text-sm max-w-[80px] truncate ${myPlayer === 'O' ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'}`} title={getPlayerNickname('O')}>
+                                {getPlayerNickname('O')} {myPlayer === 'O' && '(You)'}
                             </span>
                         </div>
                     </div>
@@ -453,10 +474,13 @@ export function XOX({
                     )}
                 </div>
 
-                <div className="flex gap-4 justify-center text-sm">
-                    <div className={`px-4 py-1 rounded-full ${!otherOnline ? 'bg-red-100 text-red-500 animate-pulse' : (gameState.currentTurn === myPlayer && !gameState.winner ? 'bg-purple-500 text-white shadow-md animate-pulse' : 'bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-gray-500')}`}>
+                <div className="flex flex-col gap-2 justify-center text-sm items-center">
+                    <div className={`px-4 py-1 rounded-full ${!otherOnline ? 'bg-red-100 text-red-500 animate-pulse shadow-sm' : (gameState.winner ? 'bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-gray-500' : (gameState.currentTurn === myPlayer ? 'bg-purple-500 text-white shadow-md animate-pulse' : 'bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-gray-500'))}`}>
                         {!otherOnline ? 'Partner Offline' : (gameState.winner ? 'Game Over' : (gameState.currentTurn === myPlayer ? 'Your Turn' : "Opponent's Turn"))}
                     </div>
+                    {!otherOnline && (
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 italic">Waiting for your partner to reconnect…</p>
+                    )}
                 </div>
             </div>
 
@@ -484,10 +508,10 @@ export function XOX({
                     <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-20 rounded-3xl flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
                         <Trophy className={`w-16 h-16 mb-2 ${gameState.winner === 'Draw' ? 'text-gray-400 dark:text-gray-500' : 'text-yellow-400'}`} />
                         <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 dark:from-pink-400 dark:to-purple-400">
-                            {gameState.winner === 'Draw' ? "It's a draw!" : `${gameState.winner} wins!`}
+                            {gameState.winner === 'Draw' ? "It's a draw!" : `${getPlayerNickname(gameState.winner)} wins!`}
                         </h3>
                         <p className="text-gray-500 dark:text-gray-400 mb-6 mt-1 text-center">
-                            {gameState.winner === myPlayer ? "You won! 💖" : (gameState.winner !== 'Draw' ? "Better luck next time! 🥺" : "A perfect match! 🤝")}
+                            {gameState.winner === myPlayer ? "You won! 💖" : (gameState.winner !== 'Draw' ? `${getPlayerNickname(gameState.winner as 'X' | 'O')} was too fast! 🥺` : "A perfect match! 🤝")}
                         </p>
                         <Button
                             onClick={resetGame}

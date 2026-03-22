@@ -7,9 +7,13 @@ CREATE TABLE public.love_rooms (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   status TEXT DEFAULT 'active'::text NOT NULL,
   created_by TEXT NOT NULL, -- The nickname of the person who created the room
+  room_code TEXT UNIQUE, -- 5-digit code for joining the room
   is_active BOOLEAN DEFAULT true NOT NULL,
   expires_at TIMESTAMP WITH TIME ZONE DEFAULT (now() + interval '24 hours') NOT NULL
 );
+
+-- Index for room_code
+CREATE UNIQUE INDEX IF NOT EXISTS love_rooms_room_code_idx ON love_rooms(room_code);
 
 -- Enable RLS
 ALTER TABLE public.love_rooms ENABLE ROW LEVEL SECURITY;

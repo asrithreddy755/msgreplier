@@ -1,72 +1,87 @@
 .diceContainer {
-  --dice-size: 64px;
   padding: 12px;
   margin: 0;
   display: flex;
   align-items: center;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   border-radius: 12px;
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
-  width: max-content;
-  min-width: 110px;
+  width: 120px; /* Standardized width to accommodate 100px dice */
 }
 
-.diceContainer * {
-  user-select: none;
+.playerName {
+  padding: 4px 12px;
+  border-radius: 12px;
+  text-align: center;
+  background: color-mix(in srgb, var(--player-colour) 16%, #ffffff);
+  color: color-mix(in srgb, var(--player-colour) 80%, #000000);
+  border: 1px solid color-mix(in srgb, var(--player-colour) 35%, #ffffff);
+  font-size: 14px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: block;
+}
+
+:global(.dark) .playerName {
+  background: color-mix(in srgb, var(--player-colour) 25%, #1e293b);
+  color: color-mix(in srgb, var(--player-colour) 10%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--player-colour) 40%, #334155);
+}
+
+.playerName.active {
+  font-weight: 800;
+  opacity: 1;
+}
+
+.playerName.inactive {
+  font-weight: 500;
+  opacity: 0.5;
 }
 
 .dice {
-  background: radial-gradient(ellipse at 30% 30%, #ffffff, #f3f3f3 60%, #ececec);
-  border: 2px solid color-mix(in srgb, var(--player-colour) 70%, #ffffff);
-  height: var(--dice-size);
-  width: var(--dice-size);
+  background: #0f172a; /* Dark navy outer card */
+  height: 100px; /* Standardized larger size */
+  width: 100px;
   flex-shrink: 0;
   aspect-ratio: 1 / 1;
-  border-radius: 10px;
-  padding: 6px;
-  cursor: pointer;
+  border-radius: 16px;
+  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: not-allowed;
-  opacity: 0.5;
-  filter: grayscale(0.5);
-  box-shadow:
-    0 2px 5px rgba(0, 0, 0, 0.15),
-    inset 0 1px 2px rgba(0, 0, 0, 0.06);
-  transition: transform 150ms ease, box-shadow 150ms ease, background 200ms ease, opacity 200ms ease;
+  transition: all 0.3s ease;
+  border: none;
+  outline: none;
 }
 
-.dice.active {
-  cursor: pointer;
+.dice.turnActive {
+  border: 2px solid var(--player-colour);
+  box-shadow: 0 0 15px 4px color-mix(in srgb, var(--player-colour) 50%, transparent);
   opacity: 1;
-  filter: grayscale(0);
-  animation: pulse 1s ease-in-out infinite;
-  box-shadow:
-    0 3px 8px rgba(0, 0, 0, 0.2),
-    0 0 8px 1px color-mix(in srgb, var(--player-colour) 40%, transparent);
+}
+
+.dice.turnInactive {
+  opacity: 0.6;
+  border: none;
 }
 
 .diceFace {
-  width: 100%;
-  height: 100%;
-  border-radius: 6px;
-  background: white;
+  width: 64px; /* Standardized inner face size */
+  height: 64px;
+  border-radius: 10px;
+  background: #cbd5e1; /* Muted grey background for inactive */
   display: grid;
   padding: 15%;
   grid-template-areas:
     "a . c"
     "e g f"
     "d . b";
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
-.dice.active .diceFace {
-  background: color-mix(in srgb, var(--player-colour) 10%, white);
+.dice.turnActive .diceFace {
+  background: #ffffff; /* White background for active */
 }
 
 .dot {
@@ -74,8 +89,13 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background-color: var(--player-colour);
-  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.3);
+  background-color: #475569; /* Muted grey pips for inactive */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.dice.turnActive .dot {
+  background-color: var(--player-colour); /* Player color pips for active */
 }
 
 /* Dot Positions */
@@ -146,58 +166,18 @@
   100% { transform: rotate(0deg)   scale(1.00) translateX(0px); }
 }
 
-.diceContainer.green {
-  flex-direction: column;
-}
-
-.diceContainer.yellow {
-  flex-direction: column;
-}
-
-.playerName {
-  padding: 4px 10px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: default;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 120px;
-  text-align: center;
-  background: color-mix(in srgb, var(--player-colour) 16%, #ffffff);
-  color: color-mix(in srgb, var(--player-colour) 70%, #0f172a);
-  border: 1px solid color-mix(in srgb, var(--player-colour) 35%, #ffffff);
-  word-break: break-word;
-}
-
-@media (prefers-color-scheme: dark) {
-  .playerName {
-    background: color-mix(in srgb, var(--player-colour) 25%, #1e293b);
-    color: color-mix(in srgb, var(--player-colour) 40%, #f8fafc);
-    border: 1px solid color-mix(in srgb, var(--player-colour) 40%, #334155);
-  }
-}
-
-.diceContainer.green .playerName,
-.diceContainer.yellow .playerName {
-  text-align: center;
-}
-
 @media (max-width: 640px) {
   .diceContainer {
-    --dice-size: 52px;
-    padding: 10px;
-    border-radius: 10px;
-    min-width: 90px;
+    width: 100px;
+    padding: 8px;
   }
-
   .dice {
-    height: var(--dice-size);
-    width: var(--dice-size);
+    width: 80px;
+    height: 80px;
   }
-
-  .playerName {
-    font-size: 12px;
-    padding: 3px 8px;
+  .diceFace {
+    width: 50px;
+    height: 50px;
   }
 }
 

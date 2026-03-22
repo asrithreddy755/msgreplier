@@ -114,3 +114,45 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Internal Server Error', details: e.message }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const roomId = searchParams.get('roomId');
+    console.log(`[Ludo State DELETE] Received request for roomId: ${roomId}`);
+
+    if (!roomId) {
+        return NextResponse.json({ error: 'roomId is required' }, { status: 400 });
+    }
+
+    try {
+        const { client: supabaseAdmin, envStatus } = getSupabaseAdmin();
+        if (!supabaseAdmin) {
+            console.error('[Ludo State DELETE] Supabase admin client is not available.', envStatus);
+            return NextResponse.json({ error: 'Server misconfiguration: missing Supabase config.', env: envStatus }, { status: 500 });
+        }
+
+        const { error } = await supabaseAdmin
+            .from('love_games')
+            .upsert(
+                {
+                    room_id: roomId,
+                    game_type: 'ludo',
+                    game_state: {},
+                    updated_at: new Date().toISOString(),
+                },
+                { onConflict: 'room_id,game_type' }
+            );
+
+        if (error) {
+            console.error(`[Ludo State DELETE] Supabase error clearing state for roomId ${roomId}:`, error);
+            return NextResponse.json({ error: 'Failed to clear game state', details: error.message }, { status: 502 });
+        }
+
+        console.log(`[Ludo State DELETE] Successfully cleared state for roomId ${roomId}`);
+        return NextResponse.json({ success: true });
+
+    } catch (e: any) {
+        console.error(`[Ludo State DELETE] Unhandled exception for roomId ${roomId}:`, e);
+        return NextResponse.json({ error: 'Internal Server Error', details: e.message }, { status: 500 });
+    }
+}

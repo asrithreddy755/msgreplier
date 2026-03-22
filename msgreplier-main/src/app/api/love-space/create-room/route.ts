@@ -19,11 +19,39 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Server misconfiguration: missing Supabase config.', env: envStatus }, { status: 500 });
         }
 
+        // Generate unique 5-digit room code
+        let roomCode = '';
+        let attempts = 0;
+        let isUnique = false;
+
+        while (attempts < 10 && !isUnique) {
+            roomCode = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+            const { data: existingRoom, error: checkError } = await supabaseAdmin
+                .from('love_rooms')
+                .select('id')
+                .eq('room_code', roomCode)
+                .maybeSingle();
+            
+            if (!existingRoom && !checkError) {
+                isUnique = true;
+            } else {
+                attempts++;
+            }
+        }
+
+        if (!isUnique) {
+            return NextResponse.json(
+                { error: 'Could not generate unique room code' },
+                { status: 500 }
+            );
+        }
+
         const { data: room, error: insertDbError } = await supabaseAdmin
             .from('love_rooms')
             .insert([{ 
                 status: 'active', 
                 created_by: createdBy.trim(),
+                room_code: roomCode,
                 expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
             }])
             .select()
