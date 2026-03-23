@@ -99,14 +99,19 @@ export function Chat({
         messagesRef.current = merged;
         setMessages(merged);
         persistMessagesBackup(merged);
+        
+        // Increment version to track state changes for sync logic if needed
+        versionRef.current++;
+        
         return merged;
     }, [persistMessagesBackup]);
 
     const requestSync = useCallback((reason: string) => {
         if (!sendMessage) return;
         const now = Date.now();
-        if (now - lastSyncRequestAtRef.current < 1200) return;
+        if (now - lastSyncRequestAtRef.current < 2000) return;
         lastSyncRequestAtRef.current = now;
+        console.log(`[Chat] Requesting sync (reason: ${reason})`);
         sendMessage('chat_sync_request', { roomId, senderId: currentMember.id, reason, sentAt: now });
     }, [sendMessage, roomId, currentMember.id]);
 
@@ -201,9 +206,9 @@ export function Chat({
         const handleSyncRequest = (payload: any) => {
             if (!payload || payload.senderId === currentMember.id) return;
             
-            // Host Authority: Only host responds to sync_request
-            if (isHost && sendMessage) {
-                console.log("[RTC] Responding to chat sync request as HOST");
+            // Responder: Always send current state regardless of host status
+            if (sendMessage) {
+                console.log("[RTC] Responding to chat sync request");
                 sendMessage('chat_sync_state', {
                     messages: messagesRef.current.slice(-500),
                     updatedAt: Date.now(),
@@ -213,6 +218,7 @@ export function Chat({
 
         const handleSyncState = (payload: any) => {
             if (!payload || !Array.isArray(payload.messages)) return;
+            console.log(`[Chat] sync received, count: ${payload.messages.length}`);
             mergeMessages(payload.messages);
         };
 
@@ -222,7 +228,6 @@ export function Chat({
         registerHandler('reaction', handleReaction);
         registerHandler('chat_sync_request', handleSyncRequest);
         registerHandler('chat_sync_state', handleSyncState);
-        requestSync('handler_registered');
 
         return () => {
              unregisterHandler('chat', handleIncomingChat);
@@ -232,7 +237,14 @@ export function Chat({
              unregisterHandler('chat_sync_request', handleSyncRequest);
              unregisterHandler('chat_sync_state', handleSyncState);
         };
-    }, [registerHandler, unregisterHandler, roomId, sendMessage, mergeMessages, requestSync, currentMember.id]);
+    }, [registerHandler, unregisterHandler, roomId, sendMessage, mergeMessages, currentMember.id]);
+
+    // --- SYNC LOGIC ---
+    useEffect(() => {
+        if (sendMessage && !messages.length) {
+            requestSync('empty_messages');
+        }
+    }, [sendMessage, messages.length, requestSync]);
 
     // Retry loop for unacknowledged messages
     useEffect(() => {
@@ -331,6 +343,27 @@ export function Chat({
         return () => clearInterval(interval);
     }, [roomId]);
 
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        if (!sendMessage) return;
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        
+        sendMessage('typing', { value: true });
+        
+        typingTimeoutRef.current = setTimeout(() => {
+            sendMessage('typing', { value: false });
+        }, 3000);
+    };
+
+    const handleSendReaction = (emoji: string) => {
+        if (!sendMessage) return;
+        sendMessage('reaction', { emoji });
+        const id = crypto.randomUUID();
+        setActiveReactions(prev => [...prev, { id, emoji }]);
+        setTimeout(() => {
+            setActiveReactions(prev => prev.filter(r => r.id !== id));
+        }, 3000);
+    };
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newMessage.trim() || isLoading) return;
@@ -347,55 +380,23 @@ export function Chat({
 
         mergeMessages([msgData]);
         setNewMessage('');
-
-        // Add to unsaved queue for 15s throttled sync
-        unsavedMessagesRef.current.push(msgData);
-        hasUnsavedChangesRef.current = true;
-
-        // Send via WebRTC DataChannel with ID for ACK tracking (IMMEDIATE)
-        if (sendMessage) {
-            const payload = {
-                id: uniqueId,
-                sender_nickname: currentMember.nickname,
-                message: msgData.message,
-                created_at: msgData.created_at
-            };
-            
-            pendingMessagesRef.current.set(uniqueId, { payload, attempts: 1 });
-            sendMessage('chat', payload);
-            
-            // Clear typing state
-            sendMessage('typing', { value: false });
+        
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+            sendMessage?.('typing', { value: false });
         }
 
+        // Broadcast to peer immediately via RTC
+        if (sendMessage) {
+            sendMessage('chat', msgData);
+            // Track for acknowledgement
+            pendingMessagesRef.current.set(uniqueId, { payload: msgData, attempts: 0 });
+        }
+
+        // Add to unsaved buffer for lazy DB persistence
+        unsavedMessagesRef.current.push(msgData);
+        hasUnsavedChangesRef.current = true;
         setIsLoading(false);
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-         setNewMessage(e.target.value);
-         
-         if (sendMessage) {
-             sendMessage('typing', { value: true });
-             
-             if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-             
-             typingTimeoutRef.current = setTimeout(() => {
-                 sendMessage('typing', { value: false });
-             }, 2000);
-         }
-    };
-
-    const handleSendReaction = (emoji: string) => {
-         // Optimistic UI for sender
-         const id = crypto.randomUUID();
-         setActiveReactions(prev => [...prev, { id, emoji }]);
-         setTimeout(() => {
-             setActiveReactions(prev => prev.filter(r => r.id !== id));
-         }, 3000);
-
-         if (sendMessage) {
-             sendMessage('reaction', { emoji });
-         }
     };
 
     return (

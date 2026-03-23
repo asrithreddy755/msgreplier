@@ -12,7 +12,7 @@
   position: absolute;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.85);
-  backdrop-blur: 8px;
+  backdrop-filter: blur(8px);
   z-index: 10;
 }
 
@@ -32,16 +32,24 @@
   text-align: center;
 }
 
-.trophyContainer {
+.trophyContainer, .sadContainer {
   margin-bottom: 1.5rem;
-  background: linear-gradient(to bottom right, #fbbf24, #f59e0b);
   padding: 1rem;
-  rounded: 2rem;
   border-radius: 2rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.trophyContainer {
+  background: linear-gradient(to bottom right, #fbbf24, #f59e0b);
   box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.4);
 }
 
-.trophyIcon {
+.sadContainer {
+  background: linear-gradient(to bottom right, #94a3b8, #64748b);
+  box-shadow: 0 10px 15px -3px rgba(100, 116, 139, 0.4);
+}
+
+.trophyIcon, .sadIcon {
   width: 4rem;
   height: 4rem;
   color: white;

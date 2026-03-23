@@ -25,9 +25,10 @@ type Props = {
   initData: TPlayerInitData[];
   myColour: TPlayerColour;
   otherOnline?: boolean;
+  connectionStatus?: string;
 };
 
-function Game({ initData, myColour, otherOnline = true }: Props) {
+function Game({ initData, myColour, otherOnline = true, connectionStatus }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const boardTileSize = useSelector((state: RootState) => state.board.boardTileSize);
   const { playerSequence, isGameEnded, playerFinishOrder, currentPlayerColour, players } =
@@ -113,12 +114,13 @@ function Game({ initData, myColour, otherOnline = true }: Props) {
             playerName={players.find((p: any) => p.colour === d.colour)?.name as string}
             key={d.colour}
             otherOnline={otherOnline}
+            connectionStatus={connectionStatus}
           />
         ))}
         <MuteButton className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2" />
       </div>
 
-      {isGameEnded && <GameFinishedScreen playerFinishOrder={playerFinishOrder} />}
+      {isGameEnded && <GameFinishedScreen playerFinishOrder={playerFinishOrder} myColour={myColour} />}
     </div>
   );
 }

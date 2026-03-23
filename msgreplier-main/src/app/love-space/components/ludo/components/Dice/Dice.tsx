@@ -16,10 +16,12 @@ type Props = {
   onDiceClick: (colour: TPlayerColour, diceNumber: number) => void;
   myColour: TPlayerColour;
   otherOnline?: boolean;
+  connectionStatus?: string;
 };
 
-function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true }: Props) {
+function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true, connectionStatus }: Props) {
   const dispatch = useDispatch<AppDispatch>();
+  const isConnected = !connectionStatus || connectionStatus === 'Connected';
   const {
     isAnyTokenMoving,
     isGameEnded,
@@ -43,14 +45,15 @@ function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true }:
     isGameEnded ||
     isPlaceholderShowing ||
     isBot ||
-    !otherOnline;
+    !otherOnline ||
+    !isConnected;
 
   const handleDiceClick = useCallback(() => {
     if (isDiceDisabled) return;
-    if (!otherOnline) return; // Added this line
+    if (!otherOnline || !isConnected) return;
     playDiceSound(); // Instant sound for the local roller
     dispatch(rollDiceThunk(colour, (rolledNumber) => onDiceClick(colour, rolledNumber)));
-  }, [colour, dispatch, isDiceDisabled, onDiceClick, otherOnline]); // Added otherOnline to dependencies
+  }, [colour, dispatch, isDiceDisabled, onDiceClick, otherOnline, isConnected]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -94,9 +97,10 @@ function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true }:
           [styles.turnActive]: isCurrentPlayer,
           [styles.turnInactive]: !isCurrentPlayer,
           [styles.rolling]: isPlaceholderShowing,
+          [styles.disconnected]: !isConnected
         })}
         tabIndex={isDiceDisabled ? -1 : undefined}
-        title={!isDiceDisabled ? 'Roll Dice (Press D)' : undefined}
+        title={!isDiceDisabled ? 'Roll Dice (Press D)' : (isConnected ? undefined : 'Waiting for partner...')}
         style={{ '--player-colour': playerColours[colour] } as React.CSSProperties}
         type="button"
         onClick={handleDiceClick}
@@ -111,6 +115,9 @@ function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true }:
           <span className={clsx(styles.dot, styles.dot7)} />
         </div>
       </button>
+      {!isConnected && (
+        <span className="text-[10px] font-bold text-amber-500 animate-pulse mt-1">Waiting for partner...</span>
+      )}
     </div>
   );
 }

@@ -7,10 +7,10 @@ import { LoveRoom, LoveRoomMember } from '@/types/love-space';
 import { JoinRoom } from '../components/join-room';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { Chat, XOX, Ludo, SnakeLadder, LoveQuiz } from '../components/games';
+import { Chat, XOX, Ludo, SnakeLadder, LoveQuiz, NetworkStatus } from '../components/games';
 import { LoveSpaceFlames } from '../components/LoveSpaceFlames';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut, Trophy, Send, Sparkles, MessageSquare, Share2 } from 'lucide-react';
+import { Signal, SignalLow, SignalZero, Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut, Trophy, Send, Sparkles, MessageSquare, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useWebRTC } from '@/hooks/useWebRTC';
@@ -859,6 +859,13 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 </div>
 
                 <div className="flex items-center gap-4">
+                    <NetworkStatus 
+                        connectionStatus={
+                            connectionState === 'Connected' ? 'connected' :
+                            connectionState === 'Connecting...' ? 'reconnecting' :
+                            'disconnected'
+                        } 
+                    />
                     <GameConnection 
                          connectionState={connectionState} 
                          latencyMs={latencyMs}
@@ -879,6 +886,17 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             <div className="flex-1 overflow-hidden flex flex-col z-10 w-full pt-3 sm:pt-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full w-full">
                     <TabsList className="flex w-[calc(100%-2rem)] bg-white/80 dark:bg-slate-900/80 p-1 mx-auto my-2 rounded-2xl sm:rounded-xl backdrop-blur-md h-12 border border-pink-200 dark:border-pink-900/50 shadow-[0_8px_30px_rgb(236,72,153,0.12)] flex-shrink-0 relative gap-1">
+                        {/* Network Status Indicator */}
+                        <div className="absolute -top-12 right-0 z-50 sm:hidden">
+                            <NetworkStatus 
+                                connectionStatus={
+                                    connectionState === 'Connected' ? 'connected' :
+                                    connectionState === 'Connecting...' ? 'reconnecting' :
+                                    'disconnected'
+                                } 
+                            />
+                        </div>
+                        
                         {/* Mobile Invite Button (Absolute positioned inside the tabs area or just below it if preferred) */}
 
                         <TabsTrigger value="home" className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all focus-visible:ring-0">
@@ -934,9 +952,24 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         {otherMember.nickname}
                                     </span>
                                 </div>
-                                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/60 dark:bg-slate-900/40 border border-pink-200/50 dark:border-pink-800/30 text-[9px] uppercase tracking-widest text-pink-600/80 dark:text-pink-300/80 font-bold backdrop-blur-sm -mt-0.5">
-                                    <span className={`w-1.5 h-1.5 rounded-full ${isOtherOnline ? 'bg-green-500 shadow-[0_0_5px_rgba(34,197,94,1)] animate-pulse' : 'bg-gray-400'}`} />
-                                    {isOtherOnline ? 'Connected' : 'Away'}
+                                <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/60 dark:bg-slate-900/40 border border-pink-200/50 dark:border-pink-800/30 text-[9px] uppercase tracking-widest font-bold backdrop-blur-sm -mt-0.5">
+                                    <div className="flex items-center gap-1.5 text-pink-600/80 dark:text-pink-300/80">
+                                        <span className={`w-1.5 h-1.5 rounded-full ${isOtherOnline ? 'bg-green-500 shadow-[0_0_5px_rgba(34,197,94,1)] animate-pulse' : 'bg-gray-400'}`} />
+                                        {isOtherOnline ? 'Connected' : 'Away'}
+                                    </div>
+                                    {isOtherOnline && latencyMs > 0 && (
+                                        <>
+                                            <div className="w-[1px] h-2 bg-pink-200 dark:bg-pink-800/50" />
+                                            <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500 lowercase tracking-normal">
+                                                <div className="flex gap-[1px] items-end h-2 pb-[1px]">
+                                                    <div className={`w-[1.5px] h-[3px] rounded-full ${latencyMs < 300 ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                                    <div className={`w-[1.5px] h-[5px] rounded-full ${latencyMs < 200 ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                                    <div className={`w-[1.5px] h-[7px] rounded-full ${latencyMs < 100 ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                                </div>
+                                                <span>{latencyMs}ms</span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         ) : (
@@ -1117,6 +1150,22 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     </div>
                                 </div>
 
+                                {/* Network & Latency Stats (Home Tab Footer) */}
+                                {isOtherOnline && latencyMs > 0 && (
+                                    <div className="flex justify-center items-center gap-2 py-2">
+                                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-50/50 dark:bg-pink-900/10 border border-pink-100 dark:border-pink-900/30">
+                                            <div className="flex gap-[1px] items-end h-2.5 pb-[1px]">
+                                                <div className={`w-[2px] h-[4px] rounded-full ${latencyMs < 300 ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                                <div className={`w-[2px] h-[6px] rounded-full ${latencyMs < 200 ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                                <div className={`w-[2px] h-[8px] rounded-full ${latencyMs < 100 ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-pink-600/60 dark:text-pink-400/60">
+                                                Ping: <span className={latencyMs < 200 ? 'text-green-500' : 'text-amber-500'}>{latencyMs}ms</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Leave Room Action */}
                                 <div className="mt-6 flex justify-center pb-8 border-t border-pink-100 dark:border-pink-900/30 pt-4">
                                     <AlertDialog>
@@ -1141,6 +1190,16 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
+                                </div>
+
+                                {/* Feedback Section */}
+                                <div className="mt-2 flex flex-col items-center gap-1 pb-8">
+                                    <a 
+                                        href="mailto:care.msgreplier@gmail.com" 
+                                        className="text-[9px] text-pink-500/60 dark:text-pink-400/40 hover:text-pink-500 transition-colors font-bold uppercase tracking-widest"
+                                    >
+                                        Feedback: care.msgreplier@gmail.com
+                                    </a>
                                 </div>
                             </div>
                         </TabsContent>
@@ -1216,6 +1275,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     currentMember={currentMember} 
                                     members={members} 
                                     otherOnline={isOtherOnline}
+                                    connectionState={connectionState}
                                     sendMessage={sendMessage}
                                     registerHandler={registerHandler}
                                     unregisterHandler={unregisterHandler}

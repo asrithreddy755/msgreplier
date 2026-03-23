@@ -67,6 +67,8 @@ export function SnakeLadder({
     const [rolling, setRolling] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [lastRoll, setLastRoll] = useState<number | null>(null);
+    const [showDisconnectBanner, setShowDisconnectBanner] = useState(false);
+    
     const lastStateRef = useRef<string | null>(null);
     const hasUnsavedChangesRef = useRef(false);
     const lastSyncRequestAtRef = useRef(0);
@@ -79,6 +81,11 @@ export function SnakeLadder({
     const stateRef = useRef(state);
     const snakeBackupKey = useRef(`love_space_${roomId}_snake`);
     const isHost = members.length > 0 && members[0].id === currentMember.id;
+
+    // Disconnect handling refs
+    const frozenTurnRef = useRef<string | null>(null);
+    const pendingRollRef = useRef<{ roll: number, state: SnakeLadderState } | null>(null);
+    const disconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const [visualP1, setVisualP1] = useState(1);
     const [visualP2, setVisualP2] = useState(1);
@@ -453,7 +460,13 @@ export function SnakeLadder({
         };
 
         const handleDiceResolved = (payload: any) => {
-            if (!payload || payload.playerNum === myPlayerNum) return;
+            if (!payload || payload.playerNum === myPlayerNum) {
+                // If we received our own dice_resolved (echo), clear pending
+                if (payload.playerNum === myPlayerNum) {
+                    pendingRollRef.current = null;
+                }
+                return;
+            }
             setRolling(false);
             const roll = payload.rollValue || payload.roll;
             if (roll !== undefined) {
@@ -472,6 +485,11 @@ export function SnakeLadder({
         const handleGameMove = (payload: any) => {
             if (!payload || payload.game !== 'snake') return;
             const parsed = payload.state as SnakeLadderState;
+
+            // Peer received our move if their version is >= ours
+            if (parsed.version >= stateRef.current.version) {
+                pendingRollRef.current = null;
+            }
 
             if (!isSynced) {
                 console.log('[Snake] Buffering move - not yet synced');
@@ -674,11 +692,14 @@ export function SnakeLadder({
             setLastRoll(roll);
             setRolling(false);
 
-            if (sendMessage) {
-                sendMessage('dice_resolved', { playerNum: myPlayerNum, rollValue: roll }, { reliable: true });
-            }
-
             const stateWithMeta = commitState(newState);
+            
+            // Store for recovery if disconnect happens before peer confirms
+            pendingRollRef.current = { roll, state: stateWithMeta };
+
+            if (sendMessage) {
+                sendMessage('dice_resolved', { playerNum: myPlayerNum, rollValue: roll, state: stateWithMeta }, { reliable: true });
+            }
 
             if (path.length > 0) {
                 await playAnimationAndSync(myPlayerNum, path, stateWithMeta);
@@ -712,6 +733,62 @@ export function SnakeLadder({
         setLastRoll(null);
         commitState(newState);
     };
+
+    // --- CONNECTION HANDLING ---
+    useEffect(() => {
+        if (!connectionState) return;
+
+        const isDisconnected = connectionState === 'disconnected' || connectionState === 'failed' || connectionState === 'Opponent disconnected';
+        const isConnected = connectionState === 'Connected';
+
+        if (isDisconnected) {
+            console.log("[Snake] Disconnect detected - freezing dice");
+            setRolling(false);
+            setIsProcessing(false);
+            
+            if (state.currentTurn && !frozenTurnRef.current) {
+                frozenTurnRef.current = state.currentTurn;
+            }
+
+            if (!disconnectTimerRef.current) {
+                disconnectTimerRef.current = setTimeout(() => {
+                    setShowDisconnectBanner(true);
+                }, 10000);
+            }
+        } else if (isConnected) {
+            console.log("[Snake] Reconnected - resuming game");
+            if (disconnectTimerRef.current) {
+                clearTimeout(disconnectTimerRef.current);
+                disconnectTimerRef.current = null;
+            }
+            setShowDisconnectBanner(false);
+
+            // Restore turn if frozen
+            if (frozenTurnRef.current) {
+                const turn = frozenTurnRef.current;
+                frozenTurnRef.current = null;
+                setState(s => ({ ...s, currentTurn: turn }));
+            }
+
+            // Flush pending roll
+            if (pendingRollRef.current && sendMessage) {
+                const { roll, state: s } = pendingRollRef.current;
+                console.log("[Snake] Flushing pending roll:", roll);
+                sendMessage('dice_resolved', { playerNum: myPlayerNum, rollValue: roll, state: s }, { reliable: true });
+                // We clear it after resending - in a real app we'd wait for ACK, 
+                // but resending on connect is a good baseline recovery.
+                pendingRollRef.current = null;
+            }
+
+            requestSync('reconnect');
+        }
+
+        return () => {
+            if (disconnectTimerRef.current) {
+                clearTimeout(disconnectTimerRef.current);
+            }
+        };
+    }, [connectionState, myPlayerNum, sendMessage, requestSync]);
 
     // Board generation (memoized to avoid regenerating on every render/state update)
     const flattenedRows = useMemo(() => {
@@ -760,6 +837,16 @@ export function SnakeLadder({
     return (
         <div className="flex flex-col items-center w-full max-w-sm mx-auto pb-4 sm:pb-8 gap-2 sm:gap-3 relative">
             <MuteButton />
+            
+            {/* Disconnect Banner */}
+            {showDisconnectBanner && (
+                <div className="absolute -top-4 left-0 right-0 z-50 animate-in slide-in-from-top-4 duration-500">
+                    <div className="bg-red-500/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold py-2 px-4 rounded-xl shadow-lg border border-white/20 text-center">
+                        Partner disconnected. The game will resume when they reconnect.
+                    </div>
+                </div>
+            )}
+
             <div className="text-center w-full">
                 <h2 className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1 sm:mb-2 flex items-center justify-center gap-1.5 sm:gap-2">
                     Snake & Ladder <Dices className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
@@ -896,7 +983,14 @@ export function SnakeLadder({
 
                         {/* Fixed-height container to prevent board from shifting up and down */}
                         <div className="h-16 sm:h-20 w-full flex flex-col items-center justify-start z-10 gap-2">
-                            {!otherOnline ? (
+                            {connectionState !== 'Connected' ? (
+                                <div className="flex flex-col items-center gap-1.5">
+                                    <div className="text-xs sm:text-sm font-bold text-amber-500 animate-pulse bg-amber-100 dark:bg-amber-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
+                                        Waiting for partner...
+                                    </div>
+                                    <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 italic">Connection lost. Reconnecting...</p>
+                                </div>
+                            ) : !otherOnline ? (
                                 <div className="flex flex-col items-center gap-1.5">
                                     <div className="text-xs sm:text-sm font-bold text-red-500 animate-pulse bg-red-100 dark:bg-red-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-sm">
                                         Partner Offline

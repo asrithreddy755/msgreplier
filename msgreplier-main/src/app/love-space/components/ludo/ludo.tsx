@@ -29,6 +29,7 @@ interface LudoProps {
     currentMember: LoveRoomMember;
     members?: LoveRoomMember[];
     otherOnline?: boolean;
+    connectionState?: string;
     sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
     registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
     unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
@@ -60,6 +61,7 @@ export function Ludo({
     currentMember,
     members = [],
     otherOnline = true,
+    connectionState,
     sendMessage,
     registerHandler,
     unregisterHandler
@@ -70,6 +72,8 @@ export function Ludo({
     const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'saved' | 'error'>('idle');
     const [myColour, setMyColour] = useState<TPlayerColour | null>(null);
     const [currentPlayerColour, setCurrentPlayerColour] = useState<string | null>(null);
+    const [showDisconnectBanner, setShowDisconnectBanner] = useState(false);
+
     // hasInitializedRef replaced by module-level initializedRooms Map (1b)
     const membersRef = useRef(members);
     const myColourRef = useRef<TPlayerColour | null>(null);
@@ -83,6 +87,11 @@ export function Ludo({
     const ludoBackupKey = useRef(`love_space_${roomId}_ludo`);
     const hasUnsavedChangesRef = useRef(false);
     const currentVersionRef = useRef(0);
+
+    // Disconnect handling refs
+    const frozenTurnRef = useRef<string | null>(null);
+    const pendingRollRef = useRef<{ colour: string, diceNumber: number } | null>(null);
+    const disconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const isHost = members.length > 0 && members[0].id === currentMember.id;
 
@@ -98,6 +107,83 @@ export function Ludo({
     useEffect(() => {
         myColourRef.current = myColour;
     }, [myColour]);
+
+    const requestSync = useCallback((reason: string, attempt = 1) => {
+        if (!sendMessage) return;
+        const now = Date.now();
+        if (attempt === 1 && now - lastSyncRequestAtRef.current < 1200) return;
+        lastSyncRequestAtRef.current = now;
+        
+        console.log(`[Ludo] Requesting sync (reason: ${reason}, attempt: ${attempt})`);
+        sendMessage('sync_request', { game: 'ludo', roomId, senderId: currentMemberId, reason, sentAt: now });
+
+        // One-time fallback if no state received
+        if (attempt === 1) {
+             setTimeout(() => {
+                 if (currentVersionRef.current === 0) {
+                     console.warn("[Ludo] Sync timeout - retrying sync_request...");
+                     requestSync(reason, 2);
+                 }
+             }, 3000);
+        }
+    }, [sendMessage, roomId, currentMemberId]);
+
+    // --- CONNECTION HANDLING ---
+    useEffect(() => {
+        if (!connectionState) return;
+
+        const isDisconnected = connectionState === 'disconnected' || connectionState === 'failed' || connectionState === 'Opponent disconnected';
+        const isConnected = connectionState === 'Connected';
+
+        if (isDisconnected) {
+            console.log("[Ludo] Disconnect detected - freezing dice");
+            // Dice freezing is handled via otherOnline prop in Game/Dice components,
+            // but we can also clear any ongoing local roll placeholders if needed.
+            store.dispatch(setIsPlaceholderShowing({ colour: 'blue', isPlaceholderShowing: false }));
+            store.dispatch(setIsPlaceholderShowing({ colour: 'green', isPlaceholderShowing: false }));
+            
+            const state = store.getState();
+            if (state.players?.currentPlayerColour && !frozenTurnRef.current) {
+                frozenTurnRef.current = state.players.currentPlayerColour;
+            }
+
+            if (!disconnectTimerRef.current) {
+                disconnectTimerRef.current = setTimeout(() => {
+                    setShowDisconnectBanner(true);
+                }, 10000);
+            }
+        } else if (isConnected) {
+            console.log("[Ludo] Reconnected - resuming game");
+            if (disconnectTimerRef.current) {
+                clearTimeout(disconnectTimerRef.current);
+                disconnectTimerRef.current = null;
+            }
+            setShowDisconnectBanner(false);
+
+            // Restore turn if frozen
+            if (frozenTurnRef.current) {
+                const turn = frozenTurnRef.current;
+                frozenTurnRef.current = null;
+                // Note: Ludo turn is in Redux, normally it doesn't change unless synced.
+            }
+
+            // Flush pending roll
+            if (pendingRollRef.current && sendMessage) {
+                const { colour, diceNumber } = pendingRollRef.current;
+                console.log("[Ludo] Flushing pending roll:", diceNumber);
+                sendMessage('dice_resolved', { colour, diceNumber, senderId: currentMemberId }, { reliable: true });
+                pendingRollRef.current = null;
+            }
+
+            requestSync('reconnect');
+        }
+
+        return () => {
+            if (disconnectTimerRef.current) {
+                clearTimeout(disconnectTimerRef.current);
+            }
+        };
+    }, [connectionState, currentMemberId, sendMessage, requestSync]);
 
     const applyIncomingState = useCallback((incomingState: any, incomingUpdatedAt: number, shouldBackup = false) => {
         if (!incomingState || Object.keys(incomingState).length === 0) return;
@@ -215,26 +301,6 @@ export function Ludo({
         }, 15000);
         return () => clearInterval(interval);
     }, [roomId]);
-
-    const requestSync = useCallback((reason: string, attempt = 1) => {
-        if (!sendMessage) return;
-        const now = Date.now();
-        if (attempt === 1 && now - lastSyncRequestAtRef.current < 1200) return;
-        lastSyncRequestAtRef.current = now;
-        
-        console.log(`[Ludo] Requesting sync (reason: ${reason}, attempt: ${attempt})`);
-        sendMessage('sync_request', { game: 'ludo', roomId, senderId: currentMemberId, reason, sentAt: now });
-
-        // One-time fallback if no state received
-        if (attempt === 1) {
-             setTimeout(() => {
-                 if (currentVersionRef.current === 0) {
-                     console.warn("[Ludo] Sync timeout - retrying sync_request...");
-                     requestSync(reason, 2);
-                 }
-             }, 3000);
-        }
-    }, [sendMessage, roomId, currentMemberId]);
 
     const persistState = useCallback(debounce((stateToSave: any) => {
         const serialized = serializeState(stateToSave);
@@ -462,7 +528,9 @@ export function Ludo({
                             sendMessage('dice_start', { colour: dice.colour, senderId: currentMemberId }, { reliable: true });
                         }
                         if (!isSpinning && wasSpinning) {
-                            sendMessage('dice_resolved', { colour: dice.colour, diceNumber: dice.diceNumber, senderId: currentMemberId }, { reliable: true });
+                            const diceNumber = dice.diceNumber;
+                            pendingRollRef.current = { colour: dice.colour, diceNumber };
+                            sendMessage('dice_resolved', { colour: dice.colour, diceNumber, senderId: currentMemberId }, { reliable: true });
                         }
                     }
                     prevSpinnerState[dice.colour] = isSpinning;
@@ -470,6 +538,7 @@ export function Ludo({
             }
 
             if (state.players?.isAnyTokenMoving && state.players?.players) {
+                pendingRollRef.current = null;
                 if (state.players.currentPlayerColour !== currentMyColour) return;
 
                 for (const player of state.players.players) {
@@ -553,6 +622,15 @@ export function Ludo({
     return (
         <Provider store={store}>
             <div className="absolute inset-0 p-2 sm:p-4 flex flex-col items-center justify-center ludo-wrapper overflow-y-auto overflow-x-hidden">
+                {/* Disconnect Banner */}
+                {showDisconnectBanner && (
+                    <div className="absolute top-0 left-0 right-0 z-[100] animate-in slide-in-from-top-4 duration-500">
+                        <div className="bg-red-500/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold py-2 px-4 rounded-xl shadow-lg border border-white/20 text-center">
+                            Partner disconnected. The game will resume when they reconnect.
+                        </div>
+                    </div>
+                )}
+
                 {/* Sync Status Badge for Ludo */}
                 <div className="absolute top-4 left-4 z-50">
                     {syncStatus === 'syncing' && (
@@ -577,22 +655,12 @@ export function Ludo({
                     )}
                 </div>
 
-                <Game initData={initData} myColour={myColour || 'blue'} otherOnline={otherOnline} />
-
-                {/* New Game button — host only */}
-                <div className="absolute top-4 right-4 z-50">
-                    <button
-                        onClick={handleNewGame}
-                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border transition-all ${
-                            roomCreator && currentMemberId === roomCreator.id
-                                ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/40 text-red-600 dark:text-red-400 hover:bg-red-100 cursor-pointer'
-                                : 'bg-gray-100 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 cursor-not-allowed opacity-60'
-                        }`}
-                        title={roomCreator && currentMemberId !== roomCreator.id ? `Only ${roomCreator.nickname} can restart` : 'Start a new game'}
-                    >
-                        <RotateCcw className="w-3 h-3" /> New Game
-                    </button>
-                </div>
+                <Game 
+                    initData={initData} 
+                    myColour={myColour || 'blue'} 
+                    otherOnline={otherOnline} 
+                    connectionStatus={connectionState}
+                />
 
                 {/* Wake Up Button for Ludo */}
                 {!otherOnline ? (
