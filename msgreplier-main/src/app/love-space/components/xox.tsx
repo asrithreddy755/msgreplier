@@ -47,6 +47,11 @@ export function XOX({
     const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'saved' | 'error'>('idle');
     const lastStateRef = useRef<string | null>(null);
     const hasUnsavedChangesRef = useRef(false);
+    
+    // Nudge & Pulse animation state
+    const [nudge, setNudge] = useState<{ from: string } | null>(null);
+    const [boardPulse, setBoardPulse] = useState(false);
+
     // Prevents re-running init when the parent re-renders with a new members array reference
     const hasInitializedRef = useRef(false);
     const xoxBackupKey = useRef(`love_space_${roomId}_xox`);
@@ -253,14 +258,40 @@ export function XOX({
             }
         };
 
+        const handleWakeUp = (payload: any) => {
+            if (!payload || payload.game !== 'xox' || payload.senderId === currentMember.id) return;
+            
+            // Layer 1: Partner Animation (visual only)
+            setNudge({ from: payload.from || 'Your partner' });
+            setBoardPulse(true);
+            setTimeout(() => {
+                setNudge(null);
+                setBoardPulse(false);
+            }, 3000);
+
+            // Layer 2: Hidden Sync (background only)
+            // Trigger sync from init function logic
+            if (sendMessage) {
+                sendMessage('sync_request', { 
+                    roomId, 
+                    senderId: currentMember.id, 
+                    game: 'xox',
+                    reason: 'wake_up_received', 
+                    sentAt: Date.now() 
+                });
+            }
+        };
+
         registerHandler('game_move', (p) => handleIncomingMove(p, false));
         registerHandler('sync_state', (p) => handleIncomingMove(p, true));
         registerHandler('sync_request', handleSyncRequest);
+        registerHandler('wake_up', handleWakeUp);
 
         return () => {
             unregisterHandler('game_move');
             unregisterHandler('sync_state');
             unregisterHandler('sync_request');
+            unregisterHandler('wake_up');
         };
     }, [registerHandler, unregisterHandler, currentMember.id, sendMessage]);
 
@@ -410,6 +441,28 @@ export function XOX({
 
     return (
         <div className="flex flex-col items-center w-full max-w-sm mx-auto">
+            {/* Nudge Toast */}
+            {nudge && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="bg-slate-900/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold py-2 px-4 rounded-xl shadow-lg border border-white/10 flex items-center gap-2">
+                        <Bell className="w-3 h-3 text-orange-400" />
+                        <span>{nudge.from} is waiting for you! 👋</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Board Pulse Animation */}
+            <style jsx global>{`
+                @keyframes pulse-glow {
+                    0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); }
+                    50% { box-shadow: 0 0 20px 10px rgba(168, 85, 247, 0.2); }
+                    100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+                }
+                .animate-pulse-glow {
+                    animation: pulse-glow 1s ease-in-out infinite;
+                }
+            `}</style>
+            
             <div className="mb-6 text-center w-full">
                 <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2 flex items-center justify-center gap-2">
                     Tic Tac Toe <Heart className="w-5 h-5 text-pink-500 fill-pink-500" />
@@ -469,6 +522,17 @@ export function XOX({
                                 currentMember={currentMember!} 
                                 targetNickname={members.find(m => m.id !== currentMember.id)?.nickname || 'Partner'}
                                 gameName="xox"
+                                onRequestSync={() => {
+                                    if (sendMessage) {
+                                        sendMessage('sync_request', { 
+                                            roomId, 
+                                            senderId: currentMember.id, 
+                                            game: 'xox',
+                                            reason: 'wake_up_clicked', 
+                                            sentAt: Date.now() 
+                                        });
+                                    }
+                                }}
                             />
                         </div>
                     )}
@@ -484,7 +548,7 @@ export function XOX({
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 grid-rows-3 gap-3 bg-purple-100 dark:bg-purple-900/20 p-4 rounded-3xl shadow-inner w-full aspect-square relative">
+            <div className={`grid grid-cols-3 grid-rows-3 gap-3 bg-purple-100 dark:bg-purple-900/20 p-4 rounded-3xl shadow-inner w-full aspect-square relative ${boardPulse ? 'animate-pulse-glow' : ''}`}>
                 {winningLineCoords && (
                     <svg className="absolute inset-4 pointer-events-none z-10 overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
                         <line

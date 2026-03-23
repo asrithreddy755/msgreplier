@@ -325,6 +325,29 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         membersRef.current = members;
     }, [members]);
     const [networkQuality, setNetworkQuality] = useState<'good' | 'fair' | 'poor'>('good');
+
+    // Helper component for tab presence dots
+    const TabPresence = ({ tabValue }: { tabValue: string }) => {
+        const isPartnerOnTab = isOtherOnline && otherMemberTab === tabValue;
+        const isWakingUp = wakingUpTab === tabValue;
+
+        if (!isPartnerOnTab && !isWakingUp) return null;
+
+        return (
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-20">
+                <div className={`relative group/partner ${isWakingUp ? 'animate-bounce scale-125' : ''}`}>
+                    <div className={`w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] ${isPartnerOnTab ? '' : 'opacity-40'}`} />
+                    {isPartnerOnTab && (
+                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75" />
+                    )}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white text-[10px] rounded opacity-0 group-hover/partner:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
+                        {otherMember?.nickname || 'Partner'} is here
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const channelRef = useRef<RealtimeChannel | null>(null);
     const presenceCleanupRef = useRef(false);
     // Prevents parallel /members fetches during rapid reconnect bursts
@@ -899,41 +922,33 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                         
                         {/* Mobile Invite Button (Absolute positioned inside the tabs area or just below it if preferred) */}
 
-                        <TabsTrigger value="home" className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all focus-visible:ring-0">
+                        <TabsTrigger 
+                            value="home" 
+                            className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all focus-visible:ring-0"
+                        >
                             Home
-                            {isOtherOnline && (
-                                <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'home' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'}`} />
-                            )}
+                            <TabPresence tabValue="home" />
                         </TabsTrigger>
-                        <TabsTrigger value="xox" className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all">
+                        <TabsTrigger 
+                            value="xox" 
+                            className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all"
+                        >
                             XOX
-                            {isOtherOnline && (
-                                <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'xox' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'} ${wakingUpTab === 'xox' ? 'animate-bounce scale-125' : ''}`}>
-                                    {wakingUpTab === 'xox' && (
-                                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping" />
-                                    )}
-                                </div>
-                            )}
+                            <TabPresence tabValue="xox" />
                         </TabsTrigger>
-                        <TabsTrigger value="ludo" className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all">
+                        <TabsTrigger 
+                            value="ludo" 
+                            className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all"
+                        >
                             Ludo
-                            {isOtherOnline && (
-                                <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'ludo' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'} ${wakingUpTab === 'ludo' ? 'animate-bounce scale-125' : ''}`}>
-                                    {wakingUpTab === 'ludo' && (
-                                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping" />
-                                    )}
-                                </div>
-                            )}
+                            <TabPresence tabValue="ludo" />
                         </TabsTrigger>
-                        <TabsTrigger value="snake" className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all">
+                        <TabsTrigger 
+                            value="snake" 
+                            className="flex-1 relative h-10 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-400 data-[state=active]:text-white data-[state=active]:shadow-md text-xs font-medium whitespace-nowrap px-3 transition-all"
+                        >
                             Snake
-                            {isOtherOnline && (
-                                <div className={`absolute top-1 right-1 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,1)] z-20 ${otherMemberTab === 'snake' ? 'bg-green-500 animate-pulse' : 'bg-green-500/40'} ${wakingUpTab === 'snake' ? 'animate-bounce scale-125' : ''}`}>
-                                    {wakingUpTab === 'snake' && (
-                                        <div className="absolute inset-0 bg-green-400 rounded-full animate-ping" />
-                                    )}
-                                </div>
-                            )}
+                            <TabPresence tabValue="snake" />
                         </TabsTrigger>
                     </TabsList>
                     {/* Presence status chip / Crazy Title */}

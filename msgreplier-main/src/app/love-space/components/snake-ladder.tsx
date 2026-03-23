@@ -90,6 +90,10 @@ export function SnakeLadder({
     const [visualP1, setVisualP1] = useState(1);
     const [visualP2, setVisualP2] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
+    
+    // Nudge & Shake animation state
+    const [nudge, setNudge] = useState<{ from: string } | null>(null);
+    const [diceShake, setDiceShake] = useState(false);
 
     // Preload heavy static assets
     const { isLoaded, progress } = useAssetPreloader([
@@ -214,6 +218,14 @@ export function SnakeLadder({
         if (!isConnected) {
             console.log(`[Snake] sync_request postponed at channel state: connecting (${reason})`);
             return;
+        }
+
+        // Layer 2: Pending Roll Flush
+        if (pendingRollRef.current) {
+            const { roll, state: s } = pendingRollRef.current;
+            console.log("[Snake] Flushing pending roll during requestSync:", roll);
+            sendMessage('dice_resolved', { playerNum: myPlayerNum, rollValue: roll, state: s }, { reliable: true });
+            pendingRollRef.current = null;
         }
 
         const now = Date.now();
@@ -544,11 +556,27 @@ export function SnakeLadder({
             setIsSynced(true);
         };
 
+        const handleWakeUp = (payload: any) => {
+            if (!payload || payload.game !== 'snake' || payload.senderId === currentMember.id) return;
+            
+            // Layer 1: Partner Animation (visual only)
+            setNudge({ from: payload.from || 'Your partner' });
+            setDiceShake(true);
+            setTimeout(() => {
+                setNudge(null);
+                setDiceShake(false);
+            }, 3000);
+
+            // Layer 2: Hidden Sync (background only)
+            requestSync('wake_up_received');
+        };
+
         registerHandler('dice_start', handleDiceStart);
         registerHandler('dice_resolved', handleDiceResolved);
         registerHandler('game_move', handleGameMove);
         registerHandler('sync_request', handleSyncRequest);
         registerHandler('sync_state', handleSyncState);
+        registerHandler('wake_up', handleWakeUp);
 
         return () => {
             unregisterHandler('dice_start', handleDiceStart);
@@ -556,6 +584,7 @@ export function SnakeLadder({
             unregisterHandler('game_move', handleGameMove);
             unregisterHandler('sync_request', handleSyncRequest);
             unregisterHandler('sync_state', handleSyncState);
+            unregisterHandler('wake_up', handleWakeUp);
         };
     }, [registerHandler, unregisterHandler, applyRemoteState, currentMember.id, sendMessage, requestSync]);
 
@@ -837,6 +866,37 @@ export function SnakeLadder({
     return (
         <div className="flex flex-col items-center w-full max-w-sm mx-auto pb-4 sm:pb-8 gap-2 sm:gap-3 relative">
             <MuteButton />
+
+            {/* Nudge Toast */}
+            {nudge && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="bg-slate-900/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold py-2 px-4 rounded-xl shadow-lg border border-white/10 flex items-center gap-2">
+                        <Bell className="w-3 h-3 text-orange-400" />
+                        <span>{nudge.from} is waiting for you! 👋</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Dice Shake Animation */}
+            <style jsx global>{`
+                @keyframes shake {
+                    0% { transform: translate(1px, 1px) rotate(0deg); }
+                    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+                    20% { transform: translate(-3px, 0px) rotate(1deg); }
+                    30% { transform: translate(3px, 2px) rotate(0deg); }
+                    40% { transform: translate(1px, -1px) rotate(1deg); }
+                    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+                    60% { transform: translate(-3px, 1px) rotate(0deg); }
+                    70% { transform: translate(3px, 1px) rotate(-1deg); }
+                    80% { transform: translate(-1px, -1px) rotate(1deg); }
+                    90% { transform: translate(1px, 2px) rotate(0deg); }
+                    100% { transform: translate(1px, -2px) rotate(-1deg); }
+                }
+                .animate-shake {
+                    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+                    animation-iteration-count: 2;
+                }
+            `}</style>
             
             {/* Disconnect Banner */}
             {showDisconnectBanner && (
@@ -967,7 +1027,7 @@ export function SnakeLadder({
                                 {isMyTurn && !rolling && !isAnimating && !state.winner && !isProcessing && (
                                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-r from-orange-400/30 to-rose-400/30 animate-pulse blur-xl z-0 pointer-events-none"></div>
                                 )}
-                                <div className="z-10 relative mt-2 sm:mt-4 transform scale-[1.2] sm:scale-[1.6]">
+                                <div className={`z-10 relative mt-2 sm:mt-4 transform scale-[1.2] sm:scale-[1.6] ${diceShake ? 'animate-shake' : ''}`}>
                                     <SnakeDice
                                         isRolling={rolling}
                                         diceNumber={lastRoll}
@@ -1004,11 +1064,12 @@ export function SnakeLadder({
                             ) : !isMyTurn && !state.winner && otherOnline ? (
                                 <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                                     <WakeUpButton 
-                                        sendMessage={sendMessage} 
-                                        currentMember={currentMember} 
-                                        targetNickname={members.find(m => m.id !== currentMember.id)?.nickname || 'Partner'}
-                                        gameName="snake"
-                                    />
+                                sendMessage={sendMessage} 
+                                currentMember={currentMember} 
+                                targetNickname={members.find(m => m.id !== currentMember.id)?.nickname || 'Partner'}
+                                gameName="snake"
+                                onRequestSync={() => requestSync('wake_up_clicked')}
+                            />
                                 </div>
                             ) : lastRoll === 6 && !rolling ? (
                                 <p className="text-xs sm:text-sm font-bold text-orange-500 animate-pulse bg-orange-50 dark:bg-orange-900/20 px-3 py-1 rounded-full">

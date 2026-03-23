@@ -13,7 +13,7 @@ import { changeCoordsOfToken } from './state/slices/playersSlice';
 import { setTokenTransitionTime } from './utils/setTokenTransitionTime';
 import { FORWARD_TOKEN_TRANSITION_TIME } from './game/tokens/constants';
 import { toast } from 'sonner';
-import { Loader2, RotateCcw } from 'lucide-react';
+import { Loader2, RotateCcw, Bell } from 'lucide-react';
 import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
 import { useAssetPreloader } from '../../hooks/useAssetPreloader';
 import { GamePreloader } from '../GamePreloader';
@@ -73,6 +73,10 @@ export function Ludo({
     const [myColour, setMyColour] = useState<TPlayerColour | null>(null);
     const [currentPlayerColour, setCurrentPlayerColour] = useState<string | null>(null);
     const [showDisconnectBanner, setShowDisconnectBanner] = useState(false);
+    
+    // Nudge & Shake animation state
+    const [nudge, setNudge] = useState<{ from: string } | null>(null);
+    const [diceShake, setDiceShake] = useState(false);
 
     // hasInitializedRef replaced by module-level initializedRooms Map (1b)
     const membersRef = useRef(members);
@@ -110,6 +114,15 @@ export function Ludo({
 
     const requestSync = useCallback((reason: string, attempt = 1) => {
         if (!sendMessage) return;
+
+        // Layer 2: Pending Roll Flush
+        if (pendingRollRef.current) {
+            const { colour, diceNumber } = pendingRollRef.current;
+            console.log("[Ludo] Flushing pending roll during requestSync:", diceNumber);
+            sendMessage('dice_resolved', { colour, diceNumber, senderId: currentMemberId }, { reliable: true });
+            pendingRollRef.current = null;
+        }
+
         const now = Date.now();
         if (attempt === 1 && now - lastSyncRequestAtRef.current < 1200) return;
         lastSyncRequestAtRef.current = now;
@@ -448,9 +461,25 @@ export function Ludo({
             applyIncomingState(state, updatedAt, true);
         };
 
+        const handleWakeUp = (payload: any) => {
+            if (!payload || payload.game !== 'ludo' || payload.senderId === currentMemberId) return;
+            
+            // Layer 1: Partner Animation (visual only)
+            setNudge({ from: payload.from || 'Your partner' });
+            setDiceShake(true);
+            setTimeout(() => {
+                setNudge(null);
+                setDiceShake(false);
+            }, 3000);
+
+            // Layer 2: Hidden Sync (background only)
+            requestSync('wake_up_received');
+        };
+
         registerHandler('game_move', handleGameMove);
         registerHandler('sync_request', handleSyncRequest);
         registerHandler('sync_state', handleSyncState);
+        registerHandler('wake_up', handleWakeUp);
 
         requestSync('handler_registered');
 
@@ -458,6 +487,7 @@ export function Ludo({
             unregisterHandler('game_move', handleGameMove);
             unregisterHandler('sync_request', handleSyncRequest);
             unregisterHandler('sync_state', handleSyncState);
+            unregisterHandler('wake_up', handleWakeUp);
         };
     }, [registerHandler, unregisterHandler, sendMessage, currentMemberId, applyIncomingState, requestSync, isHost]);
 
@@ -622,6 +652,37 @@ export function Ludo({
     return (
         <Provider store={store}>
             <div className="absolute inset-0 p-2 sm:p-4 flex flex-col items-center justify-center ludo-wrapper overflow-y-auto overflow-x-hidden">
+                {/* Nudge Toast */}
+                {nudge && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="bg-slate-900/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold py-2 px-4 rounded-xl shadow-lg border border-white/10 flex items-center gap-2">
+                            <Bell className="w-3 h-3 text-orange-400" />
+                            <span>{nudge.from} is waiting for you! 👋</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Dice Shake Animation */}
+                <style jsx global>{`
+                    @keyframes shake {
+                        0% { transform: translate(1px, 1px) rotate(0deg); }
+                        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+                        20% { transform: translate(-3px, 0px) rotate(1deg); }
+                        30% { transform: translate(3px, 2px) rotate(0deg); }
+                        40% { transform: translate(1px, -1px) rotate(1deg); }
+                        50% { transform: translate(-1px, 2px) rotate(-1deg); }
+                        60% { transform: translate(-3px, 1px) rotate(0deg); }
+                        70% { transform: translate(3px, 1px) rotate(-1deg); }
+                        80% { transform: translate(-1px, -1px) rotate(1deg); }
+                        90% { transform: translate(1px, 2px) rotate(0deg); }
+                        100% { transform: translate(1px, -2px) rotate(-1deg); }
+                    }
+                    .animate-shake {
+                        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+                        animation-iteration-count: 2;
+                    }
+                `}</style>
+                
                 {/* Disconnect Banner */}
                 {showDisconnectBanner && (
                     <div className="absolute top-0 left-0 right-0 z-[100] animate-in slide-in-from-top-4 duration-500">
@@ -660,6 +721,7 @@ export function Ludo({
                     myColour={myColour || 'blue'} 
                     otherOnline={otherOnline} 
                     connectionStatus={connectionState}
+                    diceShake={diceShake}
                 />
 
                 {/* Wake Up Button for Ludo */}
@@ -675,8 +737,9 @@ export function Ludo({
                         <WakeUpButton 
                             sendMessage={sendMessage} 
                             currentMember={currentMember} 
-                            targetNickname={members.find(m => m.id !== currentMember.id)?.nickname || 'Partner'}
+                            targetNickname={members.find(m => m.id !== currentMemberId)?.nickname || 'Partner'}
                             gameName="ludo"
+                            onRequestSync={() => requestSync('wake_up_clicked')}
                         />
                     </div>
                 )}

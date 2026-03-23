@@ -26,9 +26,10 @@ type Props = {
   myColour: TPlayerColour;
   otherOnline?: boolean;
   connectionStatus?: string;
+  diceShake?: boolean;
 };
 
-function Game({ initData, myColour, otherOnline = true, connectionStatus }: Props) {
+function Game({ initData, myColour, otherOnline = true, connectionStatus, diceShake }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const boardTileSize = useSelector((state: RootState) => state.board.boardTileSize);
   const { playerSequence, isGameEnded, playerFinishOrder, currentPlayerColour, players } =
@@ -107,15 +108,16 @@ function Game({ initData, myColour, otherOnline = true, connectionStatus }: Prop
       {/* The Locked-in Dice Container */}
       <div className="relative mt-2 sm:mt-4 p-3 sm:p-4 min-w-[200px] w-full bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 z-10 flex flex-wrap justify-center items-center gap-4 shrink-0">
         {dice.map((d: any) => (
-          <Dice
-            colour={d.colour}
-            myColour={myColour}
-            onDiceClick={handleDiceRoll}
-            playerName={players.find((p: any) => p.colour === d.colour)?.name as string}
-            key={d.colour}
-            otherOnline={otherOnline}
-            connectionStatus={connectionStatus}
-          />
+          <div key={d.colour} className={diceShake ? 'animate-shake' : ''}>
+            <Dice
+              colour={d.colour}
+              myColour={myColour}
+              onDiceClick={handleDiceRoll}
+              playerName={players.find((p: any) => p.colour === d.colour)?.name as string}
+              otherOnline={otherOnline}
+              connectionStatus={connectionStatus}
+            />
+          </div>
         ))}
         <MuteButton className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2" />
       </div>

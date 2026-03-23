@@ -11,9 +11,10 @@ interface WakeUpButtonProps {
     currentMember: { id: string; nickname: string };
     targetNickname: string;
     gameName: string;
+    onRequestSync?: () => void;
 }
 
-export function WakeUpButton({ sendMessage, currentMember, targetNickname, gameName }: WakeUpButtonProps) {
+export function WakeUpButton({ sendMessage, currentMember, targetNickname, gameName, onRequestSync }: WakeUpButtonProps) {
     const [cooldown, setCooldown] = useState(0);
     const COOLDOWN_TIME = 5;
 
@@ -29,12 +30,17 @@ export function WakeUpButton({ sendMessage, currentMember, targetNickname, gameN
     const handleWakeUp = () => {
         if (cooldown > 0 || !sendMessage) return;
 
-        sendMessage('sync_request', { 
+        // Layer 1: Send wake_up message
+        sendMessage('wake_up', { 
             game: gameName, 
-            reason: 'wake_up', 
-            senderNickname: currentMember.nickname,
+            from: currentMember.nickname,
             senderId: currentMember.id
         });
+
+        // Layer 2: Trigger silent sync
+        if (onRequestSync) {
+            onRequestSync();
+        }
         
         setCooldown(COOLDOWN_TIME);
     };
