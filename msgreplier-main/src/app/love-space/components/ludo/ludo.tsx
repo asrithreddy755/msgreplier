@@ -145,7 +145,7 @@ export function Ludo({
     useEffect(() => {
         if (!connectionState) return;
 
-        const isDisconnected = connectionState === 'disconnected' || connectionState === 'failed' || connectionState === 'Opponent disconnected';
+        const isDisconnected = connectionState !== 'Connected';
         const isConnected = connectionState === 'Connected';
 
         if (isDisconnected) {
@@ -649,6 +649,9 @@ export function Ludo({
         );
     }
 
+    const isMyTurn = currentPlayerColour === myColour;
+    const canRoll = connectionState === 'Connected' && !pendingRollRef.current && isMyTurn;
+
     return (
         <Provider store={store}>
             <div className="absolute inset-0 p-2 sm:p-4 flex flex-col items-center justify-center ludo-wrapper overflow-y-auto overflow-x-hidden">
@@ -687,7 +690,7 @@ export function Ludo({
                 {showDisconnectBanner && (
                     <div className="absolute top-0 left-0 right-0 z-[100] animate-in slide-in-from-top-4 duration-500">
                         <div className="bg-red-500/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold py-2 px-4 rounded-xl shadow-lg border border-white/20 text-center">
-                            Partner disconnected. The game will resume when they reconnect.
+                            ⚠️ Partner offline or connection lost. The game will resume when both are back.
                         </div>
                     </div>
                 )}
@@ -722,6 +725,7 @@ export function Ludo({
                     otherOnline={otherOnline} 
                     connectionStatus={connectionState}
                     diceShake={diceShake}
+                    isDisabled={!canRoll}
                 />
 
                 {/* Wake Up Button for Ludo */}

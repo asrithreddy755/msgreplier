@@ -658,6 +658,8 @@ export function SnakeLadder({
     const isMyTurn = state.currentTurn === currentMember.id;
     const myPlayerNum = getPlayerIndex(currentMember.id);
 
+    const canRoll = connectionState === 'Connected' && isSynced && !pendingRollRef.current && isMyTurn && !rolling && !isAnimating && !isProcessing && !state.winner;
+
     const rollDice = async (forPlayerNum: number) => {
         if (!isMyTurn || state.winner || rolling || isAnimating || isProcessing || myPlayerNum !== forPlayerNum || !otherOnline) return;
 
@@ -767,7 +769,7 @@ export function SnakeLadder({
     useEffect(() => {
         if (!connectionState) return;
 
-        const isDisconnected = connectionState === 'disconnected' || connectionState === 'failed' || connectionState === 'Opponent disconnected';
+        const isDisconnected = connectionState !== 'Connected';
         const isConnected = connectionState === 'Connected';
 
         if (isDisconnected) {
@@ -902,7 +904,7 @@ export function SnakeLadder({
             {showDisconnectBanner && (
                 <div className="absolute -top-4 left-0 right-0 z-50 animate-in slide-in-from-top-4 duration-500">
                     <div className="bg-red-500/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold py-2 px-4 rounded-xl shadow-lg border border-white/20 text-center">
-                        Partner disconnected. The game will resume when they reconnect.
+                        ⚠️ Partner offline or connection lost. The game will resume when both are back.
                     </div>
                 </div>
             )}
@@ -1032,10 +1034,10 @@ export function SnakeLadder({
                                         isRolling={rolling}
                                         diceNumber={lastRoll}
                                         colour={state.currentTurn === roomCreator?.id ? 'red' : 'blue'}
-                                        onDiceClick={() => otherOnline && isMyTurn && !rolling && !isAnimating && !isProcessing && !state.winner ? rollDice(myPlayerNum) : undefined}
+                                        onDiceClick={() => canRoll ? rollDice(myPlayerNum) : undefined}
                                         playerName={state.currentTurn ? (members.find(m => m.id === state.currentTurn)?.nickname || 'Rolling...') : 'Rolling...'}
-                                        isMyTurn={isMyTurn && !isProcessing && !!otherOnline}
-                                        disabled={!otherOnline || !isMyTurn || rolling || isAnimating || isProcessing || !!state.winner}
+                                        isMyTurn={canRoll}
+                                        disabled={!canRoll}
                                     />
                                 </div>
                             </div>

@@ -17,9 +17,10 @@ type Props = {
   myColour: TPlayerColour;
   otherOnline?: boolean;
   connectionStatus?: string;
+  isDisabled?: boolean;
 };
 
-function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true, connectionStatus }: Props) {
+function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true, connectionStatus, isDisabled }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const isConnected = !connectionStatus || connectionStatus === 'Connected';
   const {
@@ -45,15 +46,13 @@ function Dice({ colour, onDiceClick, playerName, myColour, otherOnline = true, c
     isGameEnded ||
     isPlaceholderShowing ||
     isBot ||
-    !otherOnline ||
-    !isConnected;
+    isDisabled;
 
   const handleDiceClick = useCallback(() => {
     if (isDiceDisabled) return;
-    if (!otherOnline || !isConnected) return;
     playDiceSound(); // Instant sound for the local roller
     dispatch(rollDiceThunk(colour, (rolledNumber) => onDiceClick(colour, rolledNumber)));
-  }, [colour, dispatch, isDiceDisabled, onDiceClick, otherOnline, isConnected]);
+  }, [colour, dispatch, isDiceDisabled, onDiceClick]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

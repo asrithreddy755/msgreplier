@@ -680,17 +680,17 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         // Source 1: WebRTC Data Channel (Most accurate for game interactions)
         if (connectionState === 'Connected') return true;
 
-        // Grace period / Loading state
-        if (!hasPresenceSynced || isInitialSyncing || members.length < 2) return true;
+        // If we are still initializing or don't have enough members, 
+        // we assume offline until presence or RTC confirms otherwise.
+        if (!hasPresenceSynced || members.length < 2) return false;
         
         // Source 2: Supabase Presence
         if (!otherMember) return false;
         const isOnlineViaPresence = onlineIds.has(String(otherMember.id));
 
-        // Log for debugging
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`[Status] Partner ${otherMember.nickname}: WebRTC=${connectionState}, Presence=${isOnlineViaPresence ? 'Online' : 'Offline'}`);
-        }
+        // Source 3: During initial sync grace period, we still check presence 
+        // to avoid showing "Online" if they are truly offline.
+        if (isInitialSyncing) return isOnlineViaPresence;
 
         return isOnlineViaPresence;
     }, [connectionState, hasPresenceSynced, isInitialSyncing, members.length, otherMember, onlineIds]);
@@ -970,7 +970,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/60 dark:bg-slate-900/40 border border-pink-200/50 dark:border-pink-800/30 text-[9px] uppercase tracking-widest font-bold backdrop-blur-sm -mt-0.5">
                                     <div className="flex items-center gap-1.5 text-pink-600/80 dark:text-pink-300/80">
                                         <span className={`w-1.5 h-1.5 rounded-full ${isOtherOnline ? 'bg-green-500 shadow-[0_0_5px_rgba(34,197,94,1)] animate-pulse' : 'bg-gray-400'}`} />
-                                        {isOtherOnline ? 'Connected' : 'Away'}
+                                        {isOtherOnline ? 'Connected' : 'Offline'}
                                     </div>
                                     {isOtherOnline && latencyMs > 0 && (
                                         <>
@@ -1243,6 +1243,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     sendMessage={sendMessage}
                                     registerHandler={registerHandler}
                                     unregisterHandler={unregisterHandler}
+                                    otherOnline={isOtherOnline}
+                                    connectionState={connectionState}
                                 />
                             </div>
                         </TabsContent>
@@ -1260,11 +1262,12 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         </span>
                                     )}
                                 </button>
-                                <XOX 
-                                    roomId={roomId} 
-                                    currentMember={currentMember} 
-                                    members={members} 
+                                <XOX
+                                    roomId={roomId}
+                                    currentMember={currentMember}
+                                    members={members}
                                     otherOnline={isOtherOnline}
+                                    connectionState={connectionState}
                                     sendMessage={sendMessage}
                                     registerHandler={registerHandler}
                                     unregisterHandler={unregisterHandler}

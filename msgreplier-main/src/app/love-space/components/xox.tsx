@@ -29,6 +29,7 @@ export function XOX({
     currentMember, 
     members = [], 
     otherOnline = true,
+    connectionState,
     sendMessage,
     registerHandler,
     unregisterHandler
@@ -37,6 +38,7 @@ export function XOX({
     currentMember: LoveRoomMember;
     members?: LoveRoomMember[];
     otherOnline?: boolean;
+    connectionState?: string;
     sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
     registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
     unregisterHandler?: (type: WebRTCMessageType) => void;
@@ -439,8 +441,20 @@ export function XOX({
         );
     }
 
+    const otherMember = members.find(m => m.id !== currentMember.id);
+    const isPartnerOffline = !otherOnline || connectionState === 'Opponent disconnected' || connectionState === 'disconnected' || connectionState === 'failed';
+
     return (
-        <div className="flex flex-col items-center w-full max-w-sm mx-auto">
+        <div className="flex flex-col items-center w-full max-w-sm mx-auto relative">
+            {/* Disconnect Banner */}
+            {isPartnerOffline && (
+                <div className="absolute -top-4 left-0 right-0 z-50 animate-in slide-in-from-top-4 duration-500">
+                    <div className="bg-red-500/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold py-2 px-4 rounded-xl shadow-lg border border-white/20 text-center">
+                        ⚠️ Partner offline or connection lost. The game will resume when both are back.
+                    </div>
+                </div>
+            )}
+            
             {/* Nudge Toast */}
             {nudge && (
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-4 duration-500">

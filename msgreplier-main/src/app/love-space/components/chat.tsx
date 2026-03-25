@@ -14,7 +14,9 @@ export function Chat({
     onNewMessage,
     sendMessage,
     registerHandler,
-    unregisterHandler
+    unregisterHandler,
+    otherOnline,
+    connectionState
 }: { 
     roomId: string;
     currentMember: LoveRoomMember;
@@ -23,6 +25,8 @@ export function Chat({
     sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
     registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
     unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
+    otherOnline?: boolean;
+    connectionState?: string;
 }) {
     const [messages, setMessages] = useState<LoveMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
@@ -399,10 +403,21 @@ export function Chat({
         setIsLoading(false);
     };
 
+    const otherMember = members.find(m => m.id !== currentMember.id);
+    const isPartnerOffline = !otherOnline || connectionState === 'Opponent disconnected' || connectionState === 'disconnected' || connectionState === 'failed';
+
     return (
         <div className="flex flex-col h-full bg-[#fffefe] dark:bg-slate-800 relative">
             {/* E2E Encryption Badge & Sync Status */}
             <div className="flex flex-col items-center py-2 bg-pink-50/30 dark:bg-pink-900/10 border-b border-pink-100/50 dark:border-pink-900/20 gap-1.5">
+                {/* Offline Banner */}
+                {isPartnerOffline && otherMember && (
+                    <div className="w-full px-4 py-1.5 bg-amber-500/10 border-b border-amber-500/20 flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <span className="text-amber-600 dark:text-amber-400 text-[10px] font-bold text-center">
+                            ⚠️ {otherMember.nickname} is offline. Messages will deliver when they reconnect.
+                        </span>
+                    </div>
+                )}
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 dark:bg-slate-900/80 shadow-sm border border-pink-100/50 dark:border-pink-900/30">
                     <div className="w-3 h-3 flex items-center justify-center">
                         <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-pink-500/70" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -503,23 +518,10 @@ export function Chat({
             ))}
 
             {/* Floating Gemini-style Chat Input */}
-            <div className="absolute bottom-4 left-0 right-0 px-4 z-10 pointer-events-none flex flex-col items-center gap-2">
-                {/* Emoji Bar */}
-                <div className="pointer-events-auto flex items-center gap-2 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md px-3 py-1.5 rounded-full shadow-[0_4px_15px_rgb(0,0,0,0.05)] border border-white/20 dark:border-slate-800">
-                    {['❤️', '😂', '🥺', '🔥', '✨'].map(emoji => (
-                         <button 
-                             key={emoji}
-                             onClick={() => handleSendReaction(emoji)}
-                             className="hover:scale-125 transition-transform text-xl active:scale-95"
-                         >
-                             {emoji}
-                         </button>
-                    ))}
-                </div>
-
+            <div className="absolute bottom-4 left-0 right-0 px-4 z-10 pointer-events-none w-full">
                 <form
                     onSubmit={handleSendMessage}
-                    className="flex max-w-3xl mx-auto items-end gap-2 p-2 bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 dark:border-slate-700 pointer-events-auto transition-all focus-within:ring-2 focus-within:ring-pink-200 dark:focus-within:ring-pink-900"
+                    className="w-full flex flex-col gap-2 p-3 bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 dark:border-slate-700 pointer-events-auto transition-all focus-within:ring-2 focus-within:ring-pink-200 dark:focus-within:ring-pink-900 relative"
                 >
                     <textarea
                         value={newMessage}
@@ -534,24 +536,18 @@ export function Chat({
                             }
                         }}
                         placeholder="Type a sweet message..."
-                        className="flex-1 min-h-[44px] max-h-32 border-0 bg-transparent focus:ring-0 focus:outline-none px-3 py-2.5 dark:text-white dark:placeholder:text-gray-500 shadow-none text-sm resize-none hide-scrollbar"
+                        className="w-full min-h-[48px] max-h-[120px] border-0 bg-transparent focus:ring-0 focus:outline-none px-4 py-2 dark:text-white dark:placeholder:text-gray-500 shadow-none text-sm resize-none hide-scrollbar overflow-y-auto"
                         maxLength={500}
-                        rows={1}
-                        style={{ height: 'auto' }}
-                        ref={(el) => {
-                            if (el) {
-                                el.style.height = 'auto';
-                                el.style.height = el.scrollHeight + 'px';
-                            }
-                        }}
                     />
-                    <Button
-                        type="submit"
-                        disabled={!newMessage.trim() || isLoading}
-                        className="rounded-full w-10 h-10 p-0 bg-pink-500 hover:bg-pink-600 shadow-md text-white transition-transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100 mb-0.5"
-                    >
-                        <Send className="w-4 h-4 ml-0.5" />
-                    </Button>
+                    <div className="flex justify-end">
+                        <Button
+                            type="submit"
+                            disabled={!newMessage.trim() || isLoading}
+                            className="rounded-full w-10 h-10 p-0 bg-pink-500 hover:bg-pink-600 shadow-md text-white transition-transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100"
+                        >
+                            <Send className="w-4 h-4 ml-0.5" />
+                        </Button>
+                    </div>
                 </form>
             </div>
         </div>

@@ -27,9 +27,10 @@ type Props = {
   otherOnline?: boolean;
   connectionStatus?: string;
   diceShake?: boolean;
+  isDisabled?: boolean;
 };
 
-function Game({ initData, myColour, otherOnline = true, connectionStatus, diceShake }: Props) {
+function Game({ initData, myColour, otherOnline = true, connectionStatus, diceShake, isDisabled }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const boardTileSize = useSelector((state: RootState) => state.board.boardTileSize);
   const { playerSequence, isGameEnded, playerFinishOrder, currentPlayerColour, players } =
@@ -116,6 +117,7 @@ function Game({ initData, myColour, otherOnline = true, connectionStatus, diceSh
               playerName={players.find((p: any) => p.colour === d.colour)?.name as string}
               otherOnline={otherOnline}
               connectionStatus={connectionStatus}
+              isDisabled={isDisabled}
             />
           </div>
         ))}
