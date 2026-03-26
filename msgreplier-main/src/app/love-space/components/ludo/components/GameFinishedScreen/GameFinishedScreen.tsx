@@ -10,9 +10,10 @@ import styles from './GameFinishedScreen.module.css';
 type Props = {
   playerFinishOrder: TPlayerNameAndColour[];
   myColour: TPlayerColour;
+  onRestart?: () => void;
 };
 
-function GameFinishedScreen({ playerFinishOrder, myColour }: Props) {
+function GameFinishedScreen({ playerFinishOrder, myColour, onRestart }: Props) {
   const { width, height } = useWindowSize();
   const dispatch = useDispatch<AppDispatch>();
 
@@ -20,11 +21,15 @@ function GameFinishedScreen({ playerFinishOrder, myColour }: Props) {
   const isWinner = winner?.colour === myColour;
 
   const handleRestart = () => {
-    // These actions are picked up by ludo.tsx's store subscription and broadcast
-    dispatch({ type: 'players/clearPlayersState' });
-    dispatch({ type: 'dice/clearDiceState' });
-    dispatch({ type: 'board/clearBoardState' });
-    dispatch({ type: 'session/clearSessionState' });
+    if (onRestart) {
+        onRestart();
+    } else {
+        // Fallback for standalone usage
+        dispatch({ type: 'players/clearPlayersState' });
+        dispatch({ type: 'dice/clearDiceState' });
+        dispatch({ type: 'board/clearBoardState' });
+        dispatch({ type: 'session/clearSessionState' });
+    }
   };
 
   return (

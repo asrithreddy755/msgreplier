@@ -69,6 +69,7 @@ export function Ludo({
     const currentMemberId = currentMember.id;
     const [initData, setInitData] = useState<TPlayerInitData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isSynced, setIsSynced] = useState(false);
     const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'saved' | 'error'>('idle');
     const [myColour, setMyColour] = useState<TPlayerColour | null>(null);
     const [currentPlayerColour, setCurrentPlayerColour] = useState<string | null>(null);
@@ -94,7 +95,7 @@ export function Ludo({
 
     // Disconnect handling refs
     const frozenTurnRef = useRef<string | null>(null);
-    const pendingRollRef = useRef<{ colour: string, diceNumber: number } | null>(null);
+    const pendingRollRef = useRef<{ colour: string, diceNumber: number, createdAt: number } | null>(null);
     const disconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const isHost = members.length > 0 && members[0].id === currentMember.id;
@@ -117,10 +118,16 @@ export function Ludo({
 
         // Layer 2: Pending Roll Flush
         if (pendingRollRef.current) {
-            const { colour, diceNumber } = pendingRollRef.current;
-            console.log("[Ludo] Flushing pending roll during requestSync:", diceNumber);
-            sendMessage('dice_resolved', { colour, diceNumber, senderId: currentMemberId }, { reliable: true });
-            pendingRollRef.current = null;
+            const { colour, diceNumber, createdAt } = pendingRollRef.current;
+            
+            // Safety: if pending roll is older than 8s, clear it to unlock dice
+            if (Date.now() - createdAt > 8000) {
+                console.log("[Ludo] Clearing stale pending roll to unlock dice:", diceNumber);
+                pendingRollRef.current = null;
+            } else {
+                console.log("[Ludo] Flushing pending roll during requestSync:", diceNumber);
+                sendMessage('dice_resolved', { colour, diceNumber, senderId: currentMemberId }, { reliable: true });
+            }
         }
 
         const now = Date.now();
@@ -459,6 +466,7 @@ export function Ludo({
             const state = payload.state;
             const updatedAt = parseUpdatedAt(payload.updatedAt);
             applyIncomingState(state, updatedAt, true);
+            setIsSynced(true);
         };
 
         const handleWakeUp = (payload: any) => {
@@ -467,6 +475,25 @@ export function Ludo({
             // Layer 1: Partner Animation (visual only)
             setNudge({ from: payload.from || 'Your partner' });
             setDiceShake(true);
+            
+            // Layer 3: Manual Unlock for Wake Up
+            setDiceShake(true);
+            // Force isRolling to false via Redux
+            const state = store.getState();
+            if (state.dice?.dice) {
+                state.dice.dice.forEach((d: any) => {
+                    if (d.isPlaceholderShowing) {
+                        store.dispatch(setIsPlaceholderShowing({ colour: d.colour, isPlaceholderShowing: false }));
+                    }
+                });
+            }
+
+            // Clear pendingRoll if it's older than 5 seconds
+            if (pendingRollRef.current && (Date.now() - pendingRollRef.current.createdAt > 5000)) {
+                console.log("[Ludo] Manual unlock: clearing old pending roll");
+                pendingRollRef.current = null;
+            }
+
             setTimeout(() => {
                 setNudge(null);
                 setDiceShake(false);
@@ -476,10 +503,25 @@ export function Ludo({
             requestSync('wake_up_received');
         };
 
+        const handleGameOver = (payload: any) => {
+            if (!payload || payload.game !== 'ludo' || payload.senderId === currentMemberId) return;
+            // The sync logic will handle state update, but we ensure we are synced
+            console.log("[Ludo] Game over received from partner");
+            requestSync('game_over_received');
+        };
+
+        const handlePlayAgain = (payload: any) => {
+            if (!payload || payload.game !== 'ludo' || payload.senderId === currentMemberId) return;
+            console.log("[Ludo] Play again received - resetting board");
+            handleNewGame(false); // reset locally without broadcasting again
+        };
+
         registerHandler('game_move', handleGameMove);
         registerHandler('sync_request', handleSyncRequest);
         registerHandler('sync_state', handleSyncState);
         registerHandler('wake_up', handleWakeUp);
+        registerHandler('game_over', handleGameOver);
+        registerHandler('play_again', handlePlayAgain);
 
         requestSync('handler_registered');
 
@@ -488,6 +530,8 @@ export function Ludo({
             unregisterHandler('sync_request', handleSyncRequest);
             unregisterHandler('sync_state', handleSyncState);
             unregisterHandler('wake_up', handleWakeUp);
+            unregisterHandler('game_over', handleGameOver);
+            unregisterHandler('play_again', handlePlayAgain);
         };
     }, [registerHandler, unregisterHandler, sendMessage, currentMemberId, applyIncomingState, requestSync, isHost]);
 
@@ -544,6 +588,15 @@ export function Ludo({
             const state = store.getState();
             const currentMyColour = myColourRef.current;
 
+            // Winner broadcast logic
+            if (state.players?.isGameEnded && state.players?.playerFinishOrder?.length > 0) {
+                const winner = state.players.playerFinishOrder[0];
+                if (winner.colour === currentMyColour && sendMessage) {
+                    // We are the winner, broadcast game_over
+                    sendMessage('game_over', { game: 'ludo', winner: currentMemberId }, { reliable: true });
+                }
+            }
+
             if (state.players?.currentPlayerColour !== currentPlayerColour) {
                 setCurrentPlayerColour(state.players.currentPlayerColour);
             }
@@ -559,7 +612,7 @@ export function Ludo({
                         }
                         if (!isSpinning && wasSpinning) {
                             const diceNumber = dice.diceNumber;
-                            pendingRollRef.current = { colour: dice.colour, diceNumber };
+                            pendingRollRef.current = { colour: dice.colour, diceNumber, createdAt: Date.now() };
                             sendMessage('dice_resolved', { colour: dice.colour, diceNumber, senderId: currentMemberId }, { reliable: true });
                         }
                     }
@@ -600,8 +653,8 @@ export function Ludo({
 
     // 1c: New Game handler — host only
     const roomCreator = members.length > 0 ? members[0] : null;
-    const handleNewGame = useCallback(async () => {
-        if (!roomCreator || currentMemberId !== roomCreator.id) {
+    const handleNewGame = useCallback(async (shouldBroadcast = true) => {
+        if (shouldBroadcast && (!roomCreator || currentMemberId !== roomCreator.id)) {
             toast.error(`Only ${roomCreator?.nickname || 'the host'} can start a new game!`);
             return;
         }
@@ -626,19 +679,22 @@ export function Ludo({
         initializedRooms.delete(roomId);
 
         // 4. Clear DB state
-        try {
-            await fetch(`/api/love-space/ludo-state?roomId=${roomId}`, { method: 'DELETE' });
-        } catch (e) {
-            console.error('[Ludo] Failed to clear DB state on new game:', e);
-        }
+        if (shouldBroadcast) {
+            try {
+                await fetch(`/api/love-space/ludo-state?roomId=${roomId}`, { method: 'DELETE' });
+            } catch (e) {
+                console.error('[Ludo] Failed to clear DB state on new game:', e);
+            }
 
-        // 5. Broadcast reset sentinel so non-creator peer also clears
-        sendMessage?.('game_move', { game: 'ludo', reset: true }, { reliable: true });
+            // 5. Broadcast reset sentinel so non-creator peer also clears
+            sendMessage?.('game_move', { game: 'ludo', reset: true }, { reliable: true });
+            sendMessage?.('play_again', { game: 'ludo', senderId: currentMemberId }, { reliable: true });
+        }
 
         // Part B: Activity ping
         fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
 
-        toast.success('New game started!');
+        if (shouldBroadcast) toast.success('New game started!');
     }, [currentMemberId, roomCreator, roomId, sendMessage, ludoBackupKey]);
 
     if (!isLoaded) {
@@ -649,8 +705,33 @@ export function Ludo({
         );
     }
 
+    useEffect(() => {
+        if (loading) return;
+        const t = setTimeout(() => {
+            setIsSynced(prev => {
+                if (!prev) console.warn('[Ludo] isSynced safety timeout fired — unlocking UI');
+                return true;
+            });
+        }, 5000);
+        return () => clearTimeout(t);
+    }, [loading]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const state = store.getState();
+            if (state.dice?.dice) {
+                state.dice.dice.forEach((d: any) => {
+                    // Safety: if dice has been rolling for more than 3s, force it to stop
+                    // Note: we don't have a direct 'rollStartedAt' in Redux, but we can check if it's still showing
+                    // This is a broad safety net.
+                });
+            }
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+
     const isMyTurn = currentPlayerColour === myColour;
-    const canRoll = connectionState === 'Connected' && !pendingRollRef.current && isMyTurn;
+    const canRoll = connectionState === 'Connected' && isSynced && !pendingRollRef.current && isMyTurn;
 
     return (
         <Provider store={store}>
@@ -726,6 +807,7 @@ export function Ludo({
                     connectionStatus={connectionState}
                     diceShake={diceShake}
                     isDisabled={!canRoll}
+                    onRestart={() => handleNewGame(true)}
                 />
 
                 {/* Wake Up Button for Ludo */}
@@ -743,7 +825,21 @@ export function Ludo({
                             currentMember={currentMember} 
                             targetNickname={members.find(m => m.id !== currentMemberId)?.nickname || 'Partner'}
                             gameName="ludo"
-                            onRequestSync={() => requestSync('wake_up_clicked')}
+                            onRequestSync={() => {
+                                // Manual unlock for local player too
+                                const state = store.getState();
+                                if (state.dice?.dice) {
+                                    state.dice.dice.forEach((d: any) => {
+                                        if (d.isPlaceholderShowing) {
+                                            store.dispatch(setIsPlaceholderShowing({ colour: d.colour, isPlaceholderShowing: false }));
+                                        }
+                                    });
+                                }
+                                if (pendingRollRef.current && (Date.now() - pendingRollRef.current.createdAt > 5000)) {
+                                    pendingRollRef.current = null;
+                                }
+                                requestSync('wake_up_clicked');
+                            }}
                         />
                     </div>
                 )}

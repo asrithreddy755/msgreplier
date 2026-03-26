@@ -28,9 +28,10 @@ type Props = {
   connectionStatus?: string;
   diceShake?: boolean;
   isDisabled?: boolean;
+  onRestart?: () => void;
 };
 
-function Game({ initData, myColour, otherOnline = true, connectionStatus, diceShake, isDisabled }: Props) {
+function Game({ initData, myColour, otherOnline = true, connectionStatus, diceShake, isDisabled, onRestart }: Props) {
   const dispatch = useDispatch<AppDispatch>();
   const boardTileSize = useSelector((state: RootState) => state.board.boardTileSize);
   const { playerSequence, isGameEnded, playerFinishOrder, currentPlayerColour, players } =
@@ -124,7 +125,7 @@ function Game({ initData, myColour, otherOnline = true, connectionStatus, diceSh
         <MuteButton className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2" />
       </div>
 
-      {isGameEnded && <GameFinishedScreen playerFinishOrder={playerFinishOrder} myColour={myColour} />}
+      {isGameEnded && <GameFinishedScreen playerFinishOrder={playerFinishOrder} myColour={myColour} onRestart={onRestart} />}
     </div>
   );
 }
