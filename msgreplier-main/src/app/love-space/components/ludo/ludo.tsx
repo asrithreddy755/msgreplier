@@ -697,14 +697,6 @@ export function Ludo({
         if (shouldBroadcast) toast.success('New game started!');
     }, [currentMemberId, roomCreator, roomId, sendMessage, ludoBackupKey]);
 
-    if (!isLoaded) {
-        return (
-            <div className="absolute inset-0 p-2 sm:p-4 flex items-center justify-center bg-white dark:bg-slate-900 rounded-2xl w-full h-full">
-                <GamePreloader progress={progress} gameName="Ludo" />
-            </div>
-        );
-    }
-
     useEffect(() => {
         if (loading) return;
         const t = setTimeout(() => {
@@ -729,6 +721,14 @@ export function Ludo({
         }, 3000);
         return () => clearInterval(interval);
     }, []);
+
+    if (!isLoaded) {
+        return (
+            <div className="absolute inset-0 p-2 sm:p-4 flex items-center justify-center bg-white dark:bg-slate-900 rounded-2xl w-full h-full">
+                <GamePreloader progress={progress} gameName="Ludo" />
+            </div>
+        );
+    }
 
     const isMyTurn = currentPlayerColour === myColour;
     const canRoll = connectionState === 'Connected' && isSynced && !pendingRollRef.current && isMyTurn;

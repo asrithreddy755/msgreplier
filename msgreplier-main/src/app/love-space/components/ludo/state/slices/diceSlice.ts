@@ -13,10 +13,8 @@ export const initialState: TDiceState = {
   rollBag: { blue: [], red: [], green: [], yellow: [] },
 };
 
-export function getDice(state: TDiceState, colour: TPlayerColour): TDice {
-  const dice = state.dice.find((d) => d.colour === colour);
-  if (!dice) throw new Error(ERRORS.diceDoesNotExist(colour));
-  return dice;
+export function getDice(state: TDiceState, colour: TPlayerColour): TDice | undefined {
+  return state.dice.find((d) => d.colour === colour);
 }
 
 export function generateRollBag(): number[] {
@@ -46,17 +44,21 @@ const reducers = {
     action: PayloadAction<{ colour: TPlayerColour; isPlaceholderShowing: boolean }>
   ) => {
     const dice = getDice(state, action.payload.colour);
-    dice.isPlaceholderShowing = action.payload.isPlaceholderShowing;
+    if (dice) {
+      dice.isPlaceholderShowing = action.payload.isPlaceholderShowing;
+    }
   },
   setDiceNumber: (
     state: TDiceState,
     action: PayloadAction<{ colour: TPlayerColour; randomIndex: number }>
   ) => {
     const dice = getDice(state, action.payload.colour);
-    dice.diceNumber = state.rollBag[action.payload.colour][action.payload.randomIndex];
-    state.rollBag[action.payload.colour] = state.rollBag[action.payload.colour].filter(
-      (_, i) => i !== action.payload.randomIndex
-    );
+    if (dice) {
+      dice.diceNumber = state.rollBag[action.payload.colour][action.payload.randomIndex];
+      state.rollBag[action.payload.colour] = state.rollBag[action.payload.colour].filter(
+        (_, i) => i !== action.payload.randomIndex
+      );
+    }
   },
   // Atomically resolves a roll: stops the spinner AND sets the final number in one
   // state update → one React render → Dice.tsx useEffect fires exactly once per roll.
@@ -65,19 +67,23 @@ const reducers = {
     action: PayloadAction<{ colour: TPlayerColour; randomIndex: number }>
   ) => {
     const dice = getDice(state, action.payload.colour);
-    dice.isPlaceholderShowing = false;
-    dice.diceNumber = state.rollBag[action.payload.colour][action.payload.randomIndex];
-    state.rollBag[action.payload.colour] = state.rollBag[action.payload.colour].filter(
-      (_, i) => i !== action.payload.randomIndex
-    );
+    if (dice) {
+      dice.isPlaceholderShowing = false;
+      dice.diceNumber = state.rollBag[action.payload.colour][action.payload.randomIndex];
+      state.rollBag[action.payload.colour] = state.rollBag[action.payload.colour].filter(
+        (_, i) => i !== action.payload.randomIndex
+      );
+    }
   },
   resolveBroadcastRoll: (
     state: TDiceState,
     action: PayloadAction<{ colour: TPlayerColour; diceNumber: number }>
   ) => {
     const dice = getDice(state, action.payload.colour);
-    dice.isPlaceholderShowing = false;
-    dice.diceNumber = action.payload.diceNumber;
+    if (dice) {
+      dice.isPlaceholderShowing = false;
+      dice.diceNumber = action.payload.diceNumber;
+    }
   },
   renewRollBag: (state: TDiceState, action: PayloadAction<TPlayerColour>) => {
     state.rollBag[action.payload] = generateRollBag();

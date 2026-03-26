@@ -487,14 +487,14 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 for (const key in presenceState) {
                     const stateGroup = presenceState[key] as any[];
                     if (stateGroup && stateGroup.length > 0) {
-                        const normalizedKey = String(key);
+                        const normalizedKey = String(key).toLowerCase();
                         online.add(normalizedKey);
-                        if (normalizedKey !== String(currentMember.id)) {
+                        if (normalizedKey !== String(currentMember.id).toLowerCase()) {
                             otherTab = stateGroup[0].activeTab;
                         }
 
                         // If we see a user ID that is not in our members list, trigger a reload
-                        if (!membersRef.current.find(m => String(m.id) === normalizedKey)) {
+                        if (!membersRef.current.find(m => String(m.id).toLowerCase() === normalizedKey)) {
                             hasNewMembers = true;
                         }
                     }
@@ -511,7 +511,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             })
             .on('presence', { event: 'join' }, ({ key, newPresences }) => {
                 if (!isMounted) return;
-                const normalizedKey = String(key);
+                const normalizedKey = String(key).toLowerCase();
                 console.log('[Presence] Join event:', normalizedKey);
                 
                 setOnlineIds(prev => {
@@ -520,21 +520,21 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     return next;
                 });
 
-                if (normalizedKey !== String(currentMember.id) && !membersRef.current.find(m => String(m.id) === normalizedKey) && !fetchingMembersRef.current) {
+                if (normalizedKey !== String(currentMember.id).toLowerCase() && !membersRef.current.find(m => String(m.id).toLowerCase() === normalizedKey) && !fetchingMembersRef.current) {
                     loadMembers();
                 }
 
-                if (normalizedKey !== String(currentMember.id) && newPresences && newPresences.length > 0) {
+                if (normalizedKey !== String(currentMember.id).toLowerCase() && newPresences && newPresences.length > 0) {
                     setOtherMemberTab(newPresences[0].activeTab);
                 }
 
-                if (normalizedKey !== String(currentMember.id) && membersRef.current.find(m => String(m.id) === normalizedKey) && connectionStateRef.current === 'Opponent disconnected') {
+                if (normalizedKey !== String(currentMember.id).toLowerCase() && membersRef.current.find(m => String(m.id).toLowerCase() === normalizedKey) && connectionStateRef.current === 'Opponent disconnected') {
                     reconnect();
                 }
             })
             .on('presence', { event: 'leave' }, ({ key }) => {
                 if (!isMounted) return;
-                const normalizedKey = String(key);
+                const normalizedKey = String(key).toLowerCase();
                 console.log('[Presence] Leave event:', normalizedKey);
                 
                 setOnlineIds(prev => {
@@ -680,19 +680,18 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         // Source 1: WebRTC Data Channel (Most accurate for game interactions)
         if (connectionState === 'Connected') return true;
 
-        // If we are still initializing or don't have enough members, 
-        // we assume offline until presence or RTC confirms otherwise.
-        if (!hasPresenceSynced || members.length < 2) return false;
-        
         // Source 2: Supabase Presence
-        if (!otherMember) return false;
-        const isOnlineViaPresence = onlineIds.has(String(otherMember.id));
+        if (otherMember && onlineIds.has(String(otherMember.id).toLowerCase())) return true;
 
-        // Source 3: During initial sync grace period, we still check presence 
-        // to avoid showing "Online" if they are truly offline.
-        if (isInitialSyncing) return isOnlineViaPresence;
+        // Source 3: Initial Grace Period
+        // If we are still initializing but have a partner, assume online for the first 2s
+        // to prevent "Offline" flickering while presence/RTC connects.
+        if (isInitialSyncing && members.length >= 2) return true;
 
-        return isOnlineViaPresence;
+        // If we are still initializing presence sync, assume online if partner exists
+        if (!hasPresenceSynced && members.length >= 2) return true;
+
+        return false;
     }, [connectionState, hasPresenceSynced, isInitialSyncing, members.length, otherMember, onlineIds]);
 
     useEffect(() => {
