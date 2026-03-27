@@ -677,10 +677,16 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     // - Trust onlineIds only after the 2s grace period ends.
     // - Also consider WebRTC connection status as a source of truth.
     const isOtherOnline = useMemo(() => {
-        // Source 1: WebRTC Data Channel (Most accurate for game interactions)
-        if (connectionState === 'Connected') return true;
+        // Priority 1: Initial Grace Period
+        // If we are still initializing but have a partner record, assume online for the first 2s
+        // to prevent "Offline" flickering while presence/RTC connects.
+        if (isInitialSyncing && members.length >= 2) return true;
 
-        // Source 2: Supabase Presence
+        // Priority 2: Presence Loading State
+        // If we are still initializing presence sync but have a partner record, assume online.
+        if (!hasPresenceSynced && members.length >= 2) return true;
+
+        // Priority 3: Supabase Presence (Authoritative for presence)
         // We check if anyone else is online in the room. In a 2-person room, 
         // anyone who isn't the local user is the partner.
         if (onlineIds.size > 0) {
@@ -690,13 +696,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             }
         }
 
-        // Source 3: Initial Grace Period
-        // If we are still initializing but have a partner record, assume online for the first 2s
-        // to prevent "Offline" flickering while presence/RTC connects.
-        if (isInitialSyncing && members.length >= 2) return true;
-
-        // If we are still initializing presence sync, assume online if partner record exists
-        if (!hasPresenceSynced && members.length >= 2) return true;
+        // Priority 4: WebRTC Data Channel (Active game interaction)
+        if (connectionState === 'Connected') return true;
 
         return false;
     }, [connectionState, hasPresenceSynced, isInitialSyncing, members.length, currentMember?.id, onlineIds]);
@@ -1364,6 +1365,8 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         sendMessage={sendMessage}
                                         registerHandler={registerHandler}
                                         unregisterHandler={unregisterHandler}
+                                        otherOnline={isOtherOnline}
+                                        connectionState={connectionState}
                                     />
                                 </div>
                             </div>
