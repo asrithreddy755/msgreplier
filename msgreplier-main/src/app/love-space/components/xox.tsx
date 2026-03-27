@@ -442,7 +442,7 @@ export function XOX({
     }
 
     const otherMember = members.find(m => m.id !== currentMember.id);
-    const isPartnerOffline = !otherOnline || connectionState === 'Opponent disconnected' || connectionState === 'disconnected' || connectionState === 'failed';
+    const isPartnerOffline = !otherOnline;
 
     return (
         <div className="flex flex-col items-center w-full max-w-sm mx-auto relative">

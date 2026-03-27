@@ -404,7 +404,7 @@ export function Chat({
     };
 
     const otherMember = members.find(m => m.id !== currentMember.id);
-    const isPartnerOffline = !otherOnline || connectionState === 'Opponent disconnected' || connectionState === 'disconnected' || connectionState === 'failed';
+    const isPartnerOffline = !otherOnline;
 
     return (
         <div className="flex flex-col h-full bg-[#fffefe] dark:bg-slate-800 relative">

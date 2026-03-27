@@ -681,18 +681,25 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         if (connectionState === 'Connected') return true;
 
         // Source 2: Supabase Presence
-        if (otherMember && onlineIds.has(String(otherMember.id).toLowerCase())) return true;
+        // We check if anyone else is online in the room. In a 2-person room, 
+        // anyone who isn't the local user is the partner.
+        if (onlineIds.size > 0) {
+            const myId = String(currentMember?.id).toLowerCase();
+            for (const id of onlineIds) {
+                if (id !== myId) return true;
+            }
+        }
 
         // Source 3: Initial Grace Period
-        // If we are still initializing but have a partner, assume online for the first 2s
+        // If we are still initializing but have a partner record, assume online for the first 2s
         // to prevent "Offline" flickering while presence/RTC connects.
         if (isInitialSyncing && members.length >= 2) return true;
 
-        // If we are still initializing presence sync, assume online if partner exists
+        // If we are still initializing presence sync, assume online if partner record exists
         if (!hasPresenceSynced && members.length >= 2) return true;
 
         return false;
-    }, [connectionState, hasPresenceSynced, isInitialSyncing, members.length, otherMember, onlineIds]);
+    }, [connectionState, hasPresenceSynced, isInitialSyncing, members.length, currentMember?.id, onlineIds]);
 
     useEffect(() => {
         if (!room || !currentMember || !hasSupabaseConfig) return;
