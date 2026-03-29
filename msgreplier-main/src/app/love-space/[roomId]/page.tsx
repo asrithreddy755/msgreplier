@@ -1,6 +1,5 @@
 "use client";
 
-export const runtime = 'edge';
 
 import { useEffect, useState, use, useRef, useCallback, useMemo } from 'react';
 import { LoveRoom, LoveRoomMember } from '@/types/love-space';

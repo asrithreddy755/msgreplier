@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '../_supabase';
 
-export const runtime = 'edge';
 
 // This route is ONLY for the Love Space page quiz.
 // It uses its own dedicated table: love_space_quizzes
