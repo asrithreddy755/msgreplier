@@ -21,7 +21,6 @@ import { playDiceSound } from './utils/diceSound';
 import bgAsset from './assets/bg.jpg';
 
 // Module-level Map: guarantees DB/localStorage restore runs exactly once per roomId
-// per page load, surviving multiple tab switches.
 const initializedRooms = new Map<string, boolean>();
 
 interface LudoProps {
@@ -74,7 +73,7 @@ export function Ludo({
     const [myColour, setMyColour] = useState<TPlayerColour | null>(null);
     const [currentPlayerColour, setCurrentPlayerColour] = useState<string | null>(null);
     const [showDisconnectBanner, setShowDisconnectBanner] = useState(false);
-    
+
     // Nudge & Shake animation state
     const [nudge, setNudge] = useState<{ from: string } | null>(null);
     const [diceShake, setDiceShake] = useState(false);
@@ -119,7 +118,7 @@ export function Ludo({
         // Layer 2: Pending Roll Flush
         if (pendingRollRef.current) {
             const { colour, diceNumber, createdAt } = pendingRollRef.current;
-            
+
             // Safety: if pending roll is older than 8s, clear it to unlock dice
             if (Date.now() - createdAt > 8000) {
                 console.log("[Ludo] Clearing stale pending roll to unlock dice:", diceNumber);
@@ -133,18 +132,18 @@ export function Ludo({
         const now = Date.now();
         if (attempt === 1 && now - lastSyncRequestAtRef.current < 1200) return;
         lastSyncRequestAtRef.current = now;
-        
+
         console.log(`[Ludo] Requesting sync (reason: ${reason}, attempt: ${attempt})`);
         sendMessage('sync_request', { game: 'ludo', roomId, senderId: currentMemberId, reason, sentAt: now });
 
         // One-time fallback if no state received
         if (attempt === 1) {
-             setTimeout(() => {
-                 if (currentVersionRef.current === 0) {
-                     console.warn("[Ludo] Sync timeout - retrying sync_request...");
-                     requestSync(reason, 2);
-                 }
-             }, 3000);
+            setTimeout(() => {
+                if (currentVersionRef.current === 0) {
+                    console.warn("[Ludo] Sync timeout - retrying sync_request...");
+                    requestSync(reason, 2);
+                }
+            }, 3000);
         }
     }, [sendMessage, roomId, currentMemberId]);
 
@@ -161,7 +160,7 @@ export function Ludo({
             // but we can also clear any ongoing local roll placeholders if needed.
             store.dispatch(setIsPlaceholderShowing({ colour: 'blue', isPlaceholderShowing: false }));
             store.dispatch(setIsPlaceholderShowing({ colour: 'green', isPlaceholderShowing: false }));
-            
+
             const state = store.getState();
             if (state.players?.currentPlayerColour && !frozenTurnRef.current) {
                 frozenTurnRef.current = state.players.currentPlayerColour;
@@ -208,7 +207,7 @@ export function Ludo({
     const applyIncomingState = useCallback((incomingState: any, incomingUpdatedAt: number, shouldBackup = false) => {
         if (!incomingState || Object.keys(incomingState).length === 0) return;
         const normalizedUpdatedAt = Number.isFinite(incomingUpdatedAt) ? incomingUpdatedAt : 0;
-        
+
         const incomingVersion = incomingState.version || 0;
         const currentVersion = currentVersionRef.current;
 
@@ -231,7 +230,7 @@ export function Ludo({
         currentVersionRef.current = incomingVersion;
         latestStateRef.current = incomingState;
         latestUpdatedAtRef.current = normalizedUpdatedAt || Date.now();
-        
+
         if (Array.isArray(incomingState.moves)) {
             moveHistoryRef.current = incomingState.moves.slice(-200);
         }
@@ -248,10 +247,10 @@ export function Ludo({
     // --- DB PERSISTENCE LOGIC ---
     const saveToDb = async (stateToSave: any, updatedAt: number, isImmediate = false) => {
         if (!hasUnsavedChangesRef.current && !isImmediate) return;
-        
+
         const serialized = serializeState(stateToSave);
         if (serialized === lastDbStateRef.current && !isImmediate) return;
-        
+
         const version = stateToSave.version || currentVersionRef.current;
         console.log(`[SYNC] ${isImmediate ? 'Immediate' : 'Lazy'} sync triggered for Ludo (v${version})`);
         setSyncStatus('syncing');
@@ -275,7 +274,7 @@ export function Ludo({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ roomId, gameState: stateToSave, lastUpdated: updatedAt }),
             });
-            
+
             console.log(`[SYNC] Ludo state saved (version ${version})`);
             lastDbStateRef.current = serialized;
             hasUnsavedChangesRef.current = false;
@@ -360,7 +359,7 @@ export function Ludo({
         }
 
         // Part B: Activity ping
-        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
+        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => { });
 
         sendMessage?.('game_move', { game: 'ludo', state: payloadState, updatedAt }, { reliable: true });
         saveToDb(payloadState, updatedAt);
@@ -451,7 +450,7 @@ export function Ludo({
         const handleSyncRequest = (payload: any) => {
             if (!payload || payload.senderId === currentMemberId) return;
             if (payload.game && payload.game !== 'ludo') return;
-            
+
             // Host Authority System: Only host responds to sync_request
             if (isHost && sendMessage) {
                 console.log("[RTC] Responding to sync request as HOST (Ludo)");
@@ -471,11 +470,11 @@ export function Ludo({
 
         const handleWakeUp = (payload: any) => {
             if (!payload || payload.game !== 'ludo' || payload.senderId === currentMemberId) return;
-            
+
             // Layer 1: Partner Animation (visual only)
             setNudge({ from: payload.from || 'Your partner' });
             setDiceShake(true);
-            
+
             // Layer 3: Manual Unlock for Wake Up
             setDiceShake(true);
             // Force isRolling to false via Redux
@@ -572,7 +571,7 @@ export function Ludo({
         const handleSyncRequest = (payload: any) => {
             if (!payload || payload.senderId === currentMemberId) return;
             if (payload.game && payload.game !== 'ludo') return;
-            
+
             // Global handler in page.tsx now handles 'wake_up'
         };
 
@@ -692,7 +691,7 @@ export function Ludo({
         }
 
         // Part B: Activity ping
-        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
+        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => { });
 
         if (shouldBroadcast) toast.success('New game started!');
     }, [currentMemberId, roomCreator, roomId, sendMessage, ludoBackupKey]);
@@ -766,7 +765,7 @@ export function Ludo({
                         animation-iteration-count: 2;
                     }
                 `}</style>
-                
+
                 {/* Disconnect Banner */}
                 {showDisconnectBanner && (
                     <div className="absolute top-0 left-0 right-0 z-[100] animate-in slide-in-from-top-4 duration-500">
@@ -800,10 +799,10 @@ export function Ludo({
                     )}
                 </div>
 
-                <Game 
-                    initData={initData} 
-                    myColour={myColour || 'blue'} 
-                    otherOnline={otherOnline} 
+                <Game
+                    initData={initData}
+                    myColour={myColour || 'blue'}
+                    otherOnline={otherOnline}
                     connectionStatus={connectionState}
                     diceShake={diceShake}
                     isDisabled={!canRoll}
@@ -820,9 +819,9 @@ export function Ludo({
                     </div>
                 ) : currentPlayerColour && myColour && currentPlayerColour !== myColour && (
                     <div className="mt-4 z-50 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                        <WakeUpButton 
-                            sendMessage={sendMessage} 
-                            currentMember={currentMember} 
+                        <WakeUpButton
+                            sendMessage={sendMessage}
+                            currentMember={currentMember}
                             targetNickname={members.find(m => m.id !== currentMemberId)?.nickname || 'Partner'}
                             gameName="ludo"
                             onRequestSync={() => {
