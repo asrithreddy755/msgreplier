@@ -1,0 +1,389 @@
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { 
+  Heart, 
+  Sparkles, 
+  ArrowRight, 
+  Cake, 
+  Star, 
+  Send, 
+  PartyPopper,
+  MousePointer2,
+  Mail,
+  Zap,
+  Music,
+  ChevronDown,
+  Layers,
+  Image as ImageIcon
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import confetti from "canvas-confetti";
+
+const THEMES = [
+  { id: "hearts", icon: "💗", color: "text-rose-500", label: "Romance" },
+  { id: "stars", icon: "⭐", color: "text-yellow-500", label: "Celebration" },
+  { id: "sakura", icon: "🌸", color: "text-pink-400", label: "Friendship" },
+];
+
+const NEW_FEATURES = [
+  { 
+    title: "Cinematic Music", 
+    description: "Choose from curated romantic piano, chill lofi, or happy vibes to set the mood.",
+    icon: <Music className="w-8 h-8 text-rose-500" />,
+    preview: "🎵 Romantic Piano Playing..."
+  },
+  { 
+    title: "Interactive Reveals", 
+    description: "Go beyond envelopes with scratch cards and balloon pops that engage your lover.",
+    icon: <Layers className="w-8 h-8 text-orange-500" />,
+    preview: "✨ Scratch to Reveal Message"
+  },
+  { 
+    title: "Memory Gallery", 
+    description: "Upload your favorite photos to create a digital scrapbook of your special moments.",
+    icon: <ImageIcon className="w-8 h-8 text-blue-500" />,
+    preview: "📸 Photo Memories Included"
+  },
+];
+
+const TESTIMONIALS = [
+  { name: "Aarav", role: "Used for Anniversary", content: "She was so surprised when the envelope opened with our favorite song! Best digital gift ever." },
+  { name: "Priya", role: "Used for Bestie's Birthday", content: "The scratch-to-reveal feature is so fun. It's way better than a boring text message." },
+  { name: "Michael", role: "Used for 'Just Because'", content: "Immersive, beautiful, and so easy to create. I use it every month now!" },
+];
+
+export default function ImmersiveWishesLanding() {
+  const [activeTheme, setActiveTheme] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+  const { scrollYProgress } = useScroll({
+    offset: ["start start", "end end"]
+  });
+
+  const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.8]);
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+
+  useEffect(() => {
+    setIsMounted(true);
+    const interval = setInterval(() => {
+      setActiveTheme((prev) => (prev + 1) % THEMES.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const triggerMagic = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ["#ec4899", "#f43f5e", "#fb7185"],
+    });
+  };
+
+  return (
+    <div className="relative min-h-[300vh] bg-slate-950 text-white overflow-x-hidden selection:bg-rose-500/30">
+      
+      {/* Dynamic Background */}
+      <motion.div 
+        style={{ y: bgY }}
+        className="fixed inset-0 z-0 pointer-events-none w-full h-full"
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(244,63,94,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
+        
+        {/* Animated Orbs */}
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+            x: [0, 50, 0],
+            y: [0, 30, 0]
+          }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="absolute top-1/4 left-1/4 w-[250px] md:w-[400px] h-[250px] md:h-[400px] bg-rose-500/20 rounded-full blur-[80px] md:blur-[100px]"
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            opacity: [0.2, 0.4, 0.2],
+            x: [0, -40, 0],
+            y: [0, -20, 0]
+          }}
+          transition={{ duration: 8, repeat: Infinity }}
+          className="absolute bottom-1/4 right-1/4 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-purple-500/10 rounded-full blur-[100px] md:blur-[120px]"
+        />
+      </motion.div>
+
+      {/* Hero Section - Full Screen Immersive */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center p-4 md:p-6 z-10 overflow-hidden">
+        <motion.div 
+          style={{ opacity, scale }}
+          className="max-w-4xl w-full text-center space-y-4 md:space-y-10"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-center"
+          >
+            <Badge className="px-4 md:px-6 py-1.5 md:py-2 rounded-full bg-white/5 border border-white/10 text-rose-400 font-black text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] backdrop-blur-md">
+              <Sparkles className="w-3 h-3 md:w-4 md:h-4 mr-2 animate-pulse" /> The Future of Gifting
+            </Badge>
+          </motion.div>
+
+          <h1 className="text-4xl sm:text-6xl md:text-9xl font-black tracking-tighter leading-none px-2">
+            <span className="block text-white">BEYOND</span>
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-purple-500 to-orange-500 animate-gradient-x">WISHES.</span>
+          </h1>
+
+          <p className="text-base md:text-3xl text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed px-4">
+            Turn your emotions into <span className="text-white italic">interactive magic</span>. An immersive digital experience they'll never forget.
+          </p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 pt-4"
+          >
+            <Button 
+              asChild
+              onClick={triggerMagic}
+              className="w-full sm:w-auto h-16 md:h-20 px-8 md:px-12 text-xl md:text-2xl rounded-full bg-rose-500 hover:bg-rose-600 text-white shadow-[0_0_50px_rgba(244,63,94,0.3)] hover:scale-105 active:scale-95 transition-all group relative overflow-hidden"
+            >
+              <Link href="/digital-greeting/create">
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  START MAGIC <Send className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+              </Link>
+            </Button>
+            
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              className="hidden sm:flex items-center gap-4 text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm"
+            >
+              <div className="w-8 md:w-12 h-px bg-slate-800" />
+              SCROLL TO EXPLORE
+              <div className="w-8 md:w-12 h-px bg-slate-800" />
+            </motion.div>
+          </motion.div>
+        </motion.div>
+
+        <motion.div 
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+          className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 text-slate-500"
+        >
+          <ChevronDown className="w-8 h-8 md:w-10 md:h-10" />
+        </motion.div>
+      </section>
+
+      {/* Interactive Showcase - Second Screen */}
+      <section className="relative min-h-screen flex items-center justify-center p-4 md:p-6 z-10 overflow-hidden">
+        <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-20 items-center">
+          <div className="space-y-8 md:space-y-12">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="space-y-4 md:space-y-6"
+            >
+              <h2 className="text-4xl md:text-7xl font-black leading-none uppercase">
+                NEW: <span className="text-rose-500">PRO FEATURES</span>
+              </h2>
+              <p className="text-lg md:text-xl text-slate-400 leading-relaxed">
+                Take your digital gift to the next level with cinematic sound and interactive memories.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 gap-4 md:gap-6">
+              {NEW_FEATURES.map((feature, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.2 }}
+                  className={`p-6 md:p-8 rounded-2xl md:rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-4 md:gap-6 group cursor-pointer hover:bg-white/10 transition-all`}
+                >
+                  <div className={`text-3xl md:text-5xl group-hover:scale-125 transition-transform shrink-0`}>
+                    {feature.icon}
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl md:text-2xl font-bold">{feature.title}</h3>
+                    <p className="text-sm md:text-slate-500 font-medium line-clamp-2 md:line-clamp-none">{feature.description}</p>
+                    <Badge variant="outline" className="text-[9px] md:text-[10px] text-rose-400 border-rose-500/30 uppercase tracking-[0.1em] md:tracking-[0.2em]">{feature.preview}</Badge>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative mt-8 lg:mt-0">
+            {/* Interactive Mockup */}
+            <motion.div 
+              whileHover={{ rotateY: 15, rotateX: -5 }}
+              style={{ perspective: 1000 }}
+              className="relative w-full aspect-[4/5] bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2rem] md:rounded-[3rem] p-0.5 md:p-1 shadow-2xl overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-rose-500/10 opacity-50" />
+              <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-12 space-y-6 md:space-y-8 text-center">
+                <motion.div 
+                  animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                  transition={{ repeat: Infinity, duration: 4 }}
+                  className="w-16 md:w-24 h-16 md:h-24 bg-rose-500 rounded-full flex items-center justify-center text-3xl md:text-5xl shadow-[0_0_30px_rgba(244,63,94,0.5)]"
+                >
+                  💌
+                </motion.div>
+                <div className="space-y-2">
+                  <h4 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">SURPRISE!</h4>
+                  <p className="text-rose-500 font-bold tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs">ANIMATED PREVIEW</p>
+                </div>
+                <div className="w-1/2 h-px bg-white/10" />
+                <p className="text-sm md:text-slate-400 italic font-medium leading-relaxed">
+                  "Your receiver will experience a high-end cinematic opening..."
+                </p>
+                <Button className="rounded-full px-8 md:px-10 h-12 md:h-14 bg-white text-slate-900 font-black hover:bg-rose-500 hover:text-white transition-colors text-sm md:text-base">
+                  REPLAY DEMO
+                </Button>
+              </div>
+            </motion.div>
+            
+            {/* Floating UI */}
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              className="absolute -right-4 md:-right-10 top-1/4 p-4 md:p-6 bg-white/10 backdrop-blur-2xl rounded-2xl md:rounded-[2rem] border border-white/20 shadow-2xl z-20"
+            >
+              <div className="flex items-center gap-3 md:gap-4">
+                <PartyPopper className="text-rose-500 w-6 h-6 md:w-8 md:h-8" />
+                <div>
+                  <p className="font-black text-xs md:text-sm">MAGIC ENABLED</p>
+                  <p className="text-[9px] md:text-[10px] text-slate-500 uppercase tracking-widest">Confetti Ready</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="relative py-16 md:py-24 px-4 z-10">
+        <div className="w-full max-w-6xl mx-auto">
+          <div className="text-center mb-12 md:text-center mb-16">
+            <h2 className="text-3xl md:text-6xl font-black mb-4">LOVE BY <span className="text-rose-500">THOUSANDS</span></h2>
+            <p className="text-slate-400 text-base md:text-lg">Join the community of digital gift givers.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {TESTIMONIALS.map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-md space-y-4"
+              >
+                <div className="flex gap-1 text-rose-500">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 md:w-4 md:h-4 fill-current" />)}
+                </div>
+                <p className="text-sm md:text-slate-300 italic">"{t.content}"</p>
+                <div>
+                  <p className="font-bold text-white text-sm md:text-base">{t.name}</p>
+                  <p className="text-[10px] md:text-xs text-slate-500 uppercase tracking-widest">{t.role}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA - Third Screen */}
+      <section className="relative min-h-screen flex items-center justify-center p-4 md:p-6 z-10 overflow-hidden">
+        <div className="w-full max-w-4xl mx-auto text-center space-y-8 md:space-y-12">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="space-y-4 md:space-y-6"
+          >
+            <h2 className="text-5xl md:text-9xl font-black tracking-tighter leading-none px-2">
+              READY TO <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-rose-500 to-purple-500">IGNITE JOY?</span>
+            </h2>
+            <p className="text-lg md:text-3xl text-slate-400 font-medium px-4">
+              Create your masterpiece in 60 seconds. <br className="hidden md:block" />
+              100% Free. 100% Magical.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="px-4"
+          >
+            <Button 
+              asChild
+              className="w-full sm:w-auto h-20 md:h-24 px-10 md:px-16 text-2xl md:text-3xl rounded-full bg-white text-slate-950 hover:bg-rose-500 hover:text-white shadow-[0_20px_60px_rgba(255,255,255,0.1)] hover:scale-110 active:scale-95 transition-all font-black group relative overflow-hidden"
+            >
+              <Link href="/digital-greeting/create">
+                CREATE WISH <ArrowRight className="ml-3 w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-2 transition-transform" />
+                <div className="absolute inset-0 bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </Link>
+            </Button>
+          </motion.div>
+
+          <div className="pt-10 md:pt-20">
+            <Link href="/love-space" className="text-slate-600 hover:text-white transition-colors font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] text-[10px] md:text-xs flex items-center justify-center gap-2 md:gap-4">
+              <div className="w-6 md:w-10 h-px bg-slate-800" />
+              Explore Love Space Rooms
+              <div className="w-6 md:w-10 h-px bg-slate-800" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Cinematic Particles */}
+        <div className="absolute inset-0 pointer-events-none">
+          {isMounted && [...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-0.5 md:w-1 h-0.5 md:h-1 bg-white rounded-full opacity-20"
+              initial={{ 
+                x: Math.random() * 100 + "%", 
+                y: Math.random() * 100 + "%" 
+              }}
+              animate={{ 
+                y: ["0%", "100%"],
+                opacity: [0, 1, 0]
+              }}
+              transition={{ 
+                duration: Math.random() * 5 + 5, 
+                repeat: Infinity,
+                delay: Math.random() * 5 
+              }}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Global CSS for animations */}
+      <style jsx global>{`
+        @keyframes gradient-x {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient-x {
+          background-size: 200% 200%;
+          animation: gradient-x 5s ease infinite;
+        }
+      `}</style>
+    </div>
+  );
+}

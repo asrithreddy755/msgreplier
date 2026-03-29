@@ -46,6 +46,9 @@ export function Navbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center">
               <DropdownMenuItem asChild>
+                <Link href="/digital-greeting">Digital Greeting</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link href="/flames">FLAMES Calculator</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

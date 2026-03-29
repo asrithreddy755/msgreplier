@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CookieConsent } from "@/components/cookie-consent";
 import { Navbar } from "@/components/navbar";
 import Script from "next/script";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { headers } from "next/headers";
 
 const getSiteUrl = () => {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
@@ -71,11 +73,17 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-url") || "";
+  const isGreetingPage = pathname.includes("/greet/");
+  const isDigitalGreetingLanding = pathname === "/digital-greeting";
+  const hideLayout = isGreetingPage || isDigitalGreetingLanding;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -102,7 +110,26 @@ export default function RootLayout({
           ></script>
         )}
       </head>
-      <body className="font-body antialiased">
+      <body className="antialiased min-h-screen bg-background">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="flex flex-col min-h-screen relative">
+            {!hideLayout && <Navbar />}
+            <main id={hideLayout ? undefined : "main-content"} className="flex-grow">
+              {children}
+            </main>
+            {!hideLayout && <CookieConsent />}
+          </div>
+          <Toaster />
+          <SonnerToaster position="top-center" richColors />
+          {process.env.NODE_ENV === "production" && <ServiceWorkerRegistration />}
+        </ThemeProvider>
+
+        {/* Google Analytics */}
         {process.env.NODE_ENV === "production" && (
           <>
             <Script
@@ -112,25 +139,12 @@ export default function RootLayout({
             />
             <Script id="google-analytics" strategy="afterInteractive">
               {`window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${gaId}');`}
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}');`}
             </Script>
           </>
         )}
-        {process.env.NODE_ENV === "production" && <ServiceWorkerRegistration />}
-
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Navbar />
-          {children}
-          <Toaster />
-          <CookieConsent />
-        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, HeartPulse, Flame, BookOpen, Camera, CheckCircle, Shield, Zap, Heart, MessageSquareHeart } from "lucide-react";
+import { ArrowRight, HeartPulse, Flame, BookOpen, Camera, CheckCircle, Shield, Zap, Heart, MessageSquareHeart, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -143,6 +143,32 @@ export default function HomePage() {
                 >
                   <Link href="/prompt">
                     Open Prompts <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+            {/* Tool 5: Digital Greeting */}
+            <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Gift className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                </div>
+                <CardTitle>Digital Greeting</CardTitle>
+                <CardDescription>Surprise Greeting Cards</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                  Create a beautiful, animated digital greeting card for birthdays, anniversaries, or just because.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="w-full group-hover:bg-orange-50 dark:group-hover:bg-orange-900/20 group-hover:text-orange-600 dark:group-hover:text-orange-400"
+                >
+                  <Link href="/digital-greeting">
+                    Create Card <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </CardFooter>
