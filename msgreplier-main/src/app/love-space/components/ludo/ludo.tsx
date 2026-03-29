@@ -20,7 +20,6 @@ import { GamePreloader } from '../GamePreloader';
 import { playDiceSound } from './utils/diceSound';
 import bgAsset from './assets/bg.jpg';
 
-// Module-level Map: guarantees DB/localStorage restore runs exactly once per roomId
 const initializedRooms = new Map<string, boolean>();
 
 interface LudoProps {
