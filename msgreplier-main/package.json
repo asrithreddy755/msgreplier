@@ -49,7 +49,7 @@
     "lodash-es": "^4.17.23",
     "lucide-react": "^0.475.0",
     "msgreplier-root": "file:..",
-    "next": "15.5.9",
+    "next": "15.2.4",
     "next-themes": "^0.4.0",
     "node-fetch": "^3.3.2",
     "patch-package": "^8.0.0",
