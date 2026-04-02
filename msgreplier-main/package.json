@@ -48,7 +48,6 @@
     "html2canvas": "^1.4.1",
     "lodash-es": "^4.17.23",
     "lucide-react": "^0.475.0",
-    "msgreplier-root": "file:..",
     "next": "15.2.4",
     "next-themes": "^0.4.0",
     "node-fetch": "^3.3.2",
