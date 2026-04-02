@@ -71,8 +71,8 @@ function GreetingNavbar() {
                     href={item.href}
                     onClick={() => setShowTools(false)}
                     className={`block px-4 py-2.5 text-sm transition-colors ${pathname === item.href
-                        ? "text-rose-400 bg-rose-500/10"
-                        : "text-slate-300 hover:text-white hover:bg-white/5"
+                      ? "text-rose-400 bg-rose-500/10"
+                      : "text-slate-300 hover:text-white hover:bg-white/5"
                       }`}
                   >
                     {item.label}
@@ -140,35 +140,35 @@ function GreetingNavbar() {
 
 const THEMES = [
   { id: "hearts", icon: "💗", color: "text-rose-500", label: "Romance" },
-  { id: "stars", icon: "⭐", color: "text-yellow-500", label: "Celebration" },
+  { id: "stars", icon: "⭐", color: "text-yellow-500", label: "Birthday" },
   { id: "sakura", icon: "🌸", color: "text-pink-400", label: "Friendship" },
 ];
 
 const NEW_FEATURES = [
   {
-    title: "Cinematic Music",
-    description: "Choose from curated romantic piano, chill lofi, or happy vibes to set the mood.",
+    title: "Your Own Wish Page",
+    description: "Build a beautiful, personalized mini-website for your partner, friend, or family — no coding needed.",
     icon: <Music className="w-8 h-8 text-rose-500" />,
-    preview: "🎵 Romantic Piano Playing..."
+    preview: "🌐 Live Wish Website in Seconds"
   },
   {
-    title: "Interactive Reveals",
-    description: "Go beyond envelopes with scratch cards and balloon pops that engage your lover.",
+    title: "Interactive Surprise",
+    description: "Let them tap, scratch, or pop to reveal your heartfelt message — far more magical than a plain text.",
     icon: <Layers className="w-8 h-8 text-orange-500" />,
-    preview: "✨ Scratch to Reveal Message"
+    preview: "✨ They'll Be Totally Surprised"
   },
   {
-    title: "Memory Gallery",
-    description: "Upload your favorite photos to create a digital scrapbook of your special moments.",
+    title: "Share Instantly",
+    description: "Get a unique link for your wish website. Share it on WhatsApp, Instagram, or anywhere — zero installs.",
     icon: <ImageIcon className="w-8 h-8 text-blue-500" />,
-    preview: "📸 Photo Memories Included"
+    preview: "🔗 One Link. Infinite Love."
   },
 ];
 
 const TESTIMONIALS = [
-  { name: "Aarav", role: "Used for Anniversary", content: "She was so surprised when the envelope opened with our favorite song! Best digital gift ever." },
-  { name: "Priya", role: "Used for Bestie's Birthday", content: "The scratch-to-reveal feature is so fun. It's way better than a boring text message." },
-  { name: "Michael", role: "Used for 'Just Because'", content: "Immersive, beautiful, and so easy to create. I use it every month now!" },
+  { name: "Riya", role: "Built for Her Boyfriend's Birthday", content: "He literally cried when he opened the website I made for him. This is the most special gift I've ever given." },
+  { name: "Arjun", role: "Built for His Girlfriend's Anniversary", content: "I made a wish website instead of sending a boring text. She sent it to all her friends. So worth it!" },
+  { name: "Sarah", role: "Built for Her Best Friend", content: "Takes 2 minutes to build and feels like a million dollars. My bestie was absolutely speechless." },
 ];
 
 export default function ImmersiveWishesLanding() {
@@ -246,17 +246,17 @@ export default function ImmersiveWishesLanding() {
             className="flex justify-center"
           >
             <Badge className="px-4 md:px-6 py-1.5 md:py-2 rounded-full bg-white/5 border border-white/10 text-rose-400 font-black text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] backdrop-blur-md">
-              <Sparkles className="w-3 h-3 md:w-4 md:h-4 mr-2 animate-pulse" /> The Future of Gifting
+              <Sparkles className="w-3 h-3 md:w-4 md:h-4 mr-2 animate-pulse" /> Build A Website For Your Loved One
             </Badge>
           </motion.div>
 
           <h1 className="text-4xl sm:text-6xl md:text-9xl font-black tracking-tighter leading-none px-2">
-            <span className="block text-white">BEYOND</span>
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-purple-500 to-orange-500 animate-gradient-x">WISHES.</span>
+            <span className="block text-white">WISH THEM</span>
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-purple-500 to-orange-500 animate-gradient-x">ONLINE.</span>
           </h1>
 
           <p className="text-base md:text-3xl text-slate-400 max-w-2xl mx-auto font-medium leading-relaxed px-4">
-            Turn your emotions into <span className="text-white italic">interactive magic</span>. An immersive digital experience they'll never forget.
+            Build a <span className="text-white italic">personal wish website</span> for your loved one in minutes — no code, no download, pure love.
           </p>
 
           <motion.div
@@ -272,7 +272,7 @@ export default function ImmersiveWishesLanding() {
             >
               <Link href="/digital-greeting/create">
                 <span className="relative z-10 flex items-center justify-center gap-3">
-                  START MAGIC <Send className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  BUILD THEIR WEBSITE <Send className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               </Link>
@@ -283,7 +283,7 @@ export default function ImmersiveWishesLanding() {
               className="hidden sm:flex items-center gap-4 text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm"
             >
               <div className="w-8 md:w-12 h-px bg-slate-800" />
-              SCROLL TO EXPLORE
+              SEE HOW IT WORKS
               <div className="w-8 md:w-12 h-px bg-slate-800" />
             </motion.div>
           </motion.div>
@@ -309,10 +309,10 @@ export default function ImmersiveWishesLanding() {
               className="space-y-4 md:space-y-6"
             >
               <h2 className="text-4xl md:text-7xl font-black leading-none uppercase">
-                NEW: <span className="text-rose-500">PRO FEATURES</span>
+                A WEBSITE <span className="text-rose-500">JUST FOR THEM</span>
               </h2>
               <p className="text-lg md:text-xl text-slate-400 leading-relaxed">
-                Take your digital gift to the next level with cinematic sound and interactive memories.
+                Forget boring messages. Build a real wish website your loved one can open, tap, and feel your love through.
               </p>
             </motion.div>
 
@@ -353,18 +353,18 @@ export default function ImmersiveWishesLanding() {
                   transition={{ repeat: Infinity, duration: 4 }}
                   className="w-16 md:w-24 h-16 md:h-24 bg-rose-500 rounded-full flex items-center justify-center text-3xl md:text-5xl shadow-[0_0_30px_rgba(244,63,94,0.5)]"
                 >
-                  💌
+                  💝
                 </motion.div>
                 <div className="space-y-2">
-                  <h4 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">SURPRISE!</h4>
-                  <p className="text-rose-500 font-bold tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs">ANIMATED PREVIEW</p>
+                  <h4 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">THEIR WEBSITE</h4>
+                  <p className="text-rose-500 font-bold tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs">LIVE WISH PAGE PREVIEW</p>
                 </div>
                 <div className="w-1/2 h-px bg-white/10" />
                 <p className="text-sm md:text-slate-400 italic font-medium leading-relaxed">
-                  "Your receiver will experience a high-end cinematic opening..."
+                  "They open a real website — just for them — built by you with love."
                 </p>
                 <Button className="rounded-full px-8 md:px-10 h-12 md:h-14 bg-white text-slate-900 font-black hover:bg-rose-500 hover:text-white transition-colors text-sm md:text-base">
-                  REPLAY DEMO
+                  SEE EXAMPLE
                 </Button>
               </div>
             </motion.div>
@@ -378,8 +378,8 @@ export default function ImmersiveWishesLanding() {
               <div className="flex items-center gap-3 md:gap-4">
                 <PartyPopper className="text-rose-500 w-6 h-6 md:w-8 md:h-8" />
                 <div>
-                  <p className="font-black text-xs md:text-sm">MAGIC ENABLED</p>
-                  <p className="text-[9px] md:text-[10px] text-slate-500 uppercase tracking-widest">Confetti Ready</p>
+                  <p className="font-black text-xs md:text-sm">SHAREABLE LINK READY</p>
+                  <p className="text-[9px] md:text-[10px] text-slate-500 uppercase tracking-widest">Send Anywhere</p>
                 </div>
               </div>
             </motion.div>
@@ -391,8 +391,8 @@ export default function ImmersiveWishesLanding() {
       <section className="relative py-16 md:py-24 px-4 z-10">
         <div className="w-full max-w-6xl mx-auto">
           <div className="text-center mb-12 md:text-center mb-16">
-            <h2 className="text-3xl md:text-6xl font-black mb-4">LOVE BY <span className="text-rose-500">THOUSANDS</span></h2>
-            <p className="text-slate-400 text-base md:text-lg">Join the community of digital gift givers.</p>
+            <h2 className="text-3xl md:text-6xl font-black mb-4">REAL PEOPLE <span className="text-rose-500">REAL LOVE</span></h2>
+            <p className="text-slate-400 text-base md:text-lg">See what others built for their loved ones.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {TESTIMONIALS.map((t, i) => (
@@ -428,12 +428,12 @@ export default function ImmersiveWishesLanding() {
             className="space-y-4 md:space-y-6"
           >
             <h2 className="text-5xl md:text-9xl font-black tracking-tighter leading-none px-2">
-              READY TO <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-rose-500 to-purple-500">IGNITE JOY?</span>
+              READY TO BUILD <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-rose-500 to-purple-500">THEIR WEBSITE?</span>
             </h2>
             <p className="text-lg md:text-3xl text-slate-400 font-medium px-4">
-              Create your masterpiece in 60 seconds. <br className="hidden md:block" />
-              100% Free. 100% Magical.
+              Build their wish website in 60 seconds. <br className="hidden md:block" />
+              100% Free. Shared with a single link.
             </p>
           </motion.div>
 
@@ -449,7 +449,7 @@ export default function ImmersiveWishesLanding() {
               className="w-full sm:w-auto h-20 md:h-24 px-10 md:px-16 text-2xl md:text-3xl rounded-full bg-white text-slate-950 hover:bg-rose-500 hover:text-white shadow-[0_20px_60px_rgba(255,255,255,0.1)] hover:scale-110 active:scale-95 transition-all font-black group relative overflow-hidden"
             >
               <Link href="/digital-greeting/create">
-                CREATE WISH <ArrowRight className="ml-3 w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-2 transition-transform" />
+                BUILD THEIR WEBSITE <ArrowRight className="ml-3 w-6 h-6 md:w-8 md:h-8 group-hover:translate-x-2 transition-transform" />
                 <div className="absolute inset-0 bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
             </Button>
@@ -458,7 +458,7 @@ export default function ImmersiveWishesLanding() {
           <div className="pt-10 md:pt-20">
             <Link href="/love-space" className="text-slate-600 hover:text-white transition-colors font-bold uppercase tracking-[0.2em] md:tracking-[0.4em] text-[10px] md:text-xs flex items-center justify-center gap-2 md:gap-4">
               <div className="w-6 md:w-10 h-px bg-slate-800" />
-              Explore Love Space Rooms
+              Or Try Love Space Rooms Together
               <div className="w-6 md:w-10 h-px bg-slate-800" />
             </Link>
           </div>
