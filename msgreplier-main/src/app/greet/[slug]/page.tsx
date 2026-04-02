@@ -51,15 +51,15 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
   }, [countdown]);
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-8 md:space-y-12 scale-[0.85] sm:scale-100 md:scale-125 transition-transform">
+    <div className="flex flex-col items-center justify-center space-y-8 md:space-y-12 scale-[0.8] sm:scale-100 md:scale-125 transition-transform origin-center">
       <div className="relative">
         <AnimatePresence>
           {countdown !== null && countdown > 0 && (
             <motion.div
               key="countdown"
               initial={{ scale: 0, opacity: 0, rotate: -20 }}
-              animate={{ scale: 2, opacity: 1, rotate: 0 }}
-              exit={{ scale: 4, opacity: 0, filter: "blur(10px)" }}
+              animate={{ scale: 1.5, opacity: 1, rotate: 0 }}
+              exit={{ scale: 3, opacity: 0, filter: "blur(10px)" }}
               className="absolute -top-32 md:-top-40 left-1/2 -translate-x-1/2 text-7xl md:text-9xl font-black text-pink-500 z-50 pointer-events-none drop-shadow-[0_0_20px_rgba(236,72,153,0.5)]"
               style={{ fontFamily: 'var(--font-script)' }}
             >
@@ -76,50 +76,50 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
           onClick={startCountdown}
         >
           {/* Cake Stand */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-72 md:w-80 h-3 md:h-4 bg-slate-200 rounded-full shadow-lg" />
-          <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 w-16 md:w-20 h-6 md:h-8 bg-slate-100 rounded-t-lg" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 md:w-80 h-3 md:h-4 bg-slate-200 rounded-full shadow-lg" />
+          <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 w-14 md:w-20 h-6 md:h-8 bg-slate-100 rounded-t-lg" />
 
           {/* Bottom Layer */}
-          <div className="absolute bottom-10 md:bottom-12 left-1/2 -translate-x-1/2 w-56 md:w-64 h-28 md:h-32 bg-rose-300 rounded-3xl shadow-xl border-b-8 border-rose-400">
+          <div className="absolute bottom-10 md:bottom-12 left-1/2 -translate-x-1/2 w-52 md:w-64 h-28 md:h-32 bg-rose-300 rounded-3xl shadow-xl border-b-8 border-rose-400">
             <div className="absolute top-4 w-full h-4 bg-white/30" />
             <div className="absolute bottom-4 w-full h-4 bg-white/30" />
           </div>
 
           {/* Middle Layer */}
-          <div className="absolute bottom-32 md:bottom-36 left-1/2 -translate-x-1/2 w-40 md:w-48 h-20 md:h-24 bg-rose-200 rounded-2xl shadow-lg border-b-4 border-rose-300">
+          <div className="absolute bottom-32 md:bottom-36 left-1/2 -translate-x-1/2 w-36 md:w-48 h-20 md:h-24 bg-rose-200 rounded-2xl shadow-lg border-b-4 border-rose-300">
             <div className="absolute top-4 w-full h-2 bg-white/40" />
           </div>
 
           {/* Top Layer */}
-          <div className="absolute bottom-48 md:bottom-56 left-1/2 -translate-x-1/2 w-28 md:w-32 h-16 md:h-20 bg-rose-100 rounded-xl shadow-md border-b-2 border-rose-200" />
+          <div className="absolute bottom-48 md:bottom-56 left-1/2 -translate-x-1/2 w-24 md:w-32 h-16 md:h-20 bg-rose-100 rounded-xl shadow-md border-b-2 border-rose-200" />
 
           {/* Frosting Drips */}
-          <div className="absolute bottom-[225px] md:bottom-[260px] left-1/2 -translate-x-1/2 w-28 md:w-32 flex justify-around px-1">
+          <div className="absolute bottom-[225px] md:bottom-[260px] left-1/2 -translate-x-1/2 w-24 md:w-32 flex justify-around px-1">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="w-6 md:w-8 h-8 md:h-10 bg-white rounded-full -mt-4 border-b-2 border-pink-50 shadow-sm" />
+              <div key={i} className="w-5 md:w-8 h-8 md:h-10 bg-white rounded-full -mt-4 border-b-2 border-pink-50 shadow-sm" />
             ))}
           </div>
 
           {/* Strawberries/Toppings */}
-          <div className="absolute bottom-[240px] md:bottom-[275px] left-1/2 -translate-x-1/2 flex gap-1.5 md:gap-2">
-            <div className="w-5 md:w-6 h-5 md:h-6 bg-red-500 rounded-full shadow-inner" />
-            <div className="w-5 md:w-6 h-5 md:h-6 bg-red-500 rounded-full shadow-inner -mt-1 md:-mt-2" />
-            <div className="w-5 md:w-6 h-5 md:h-6 bg-red-500 rounded-full shadow-inner" />
+          <div className="absolute bottom-[240px] md:bottom-[275px] left-1/2 -translate-x-1/2 flex gap-1 md:gap-2">
+            <div className="w-4 md:w-6 h-4 md:h-6 bg-red-500 rounded-full shadow-inner" />
+            <div className="w-4 md:w-6 h-4 md:h-6 bg-red-500 rounded-full shadow-inner -mt-1 md:-mt-2" />
+            <div className="w-4 md:w-6 h-4 md:h-6 bg-red-500 rounded-full shadow-inner" />
           </div>
 
           {/* Candle */}
           {!isBlown && (
             <motion.div
-              className="absolute bottom-[290px] md:bottom-[330px] left-1/2 -translate-x-1/2 w-2.5 md:w-3 h-12 md:h-16 bg-gradient-to-b from-yellow-200 via-blue-200 to-yellow-300 rounded-full shadow-md"
+              className="absolute bottom-[290px] md:bottom-[330px] left-1/2 -translate-x-1/2 w-2 md:w-3 h-10 md:h-16 bg-gradient-to-b from-yellow-200 via-blue-200 to-yellow-300 rounded-full shadow-md"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               {/* Wick */}
-              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0.5 h-2.5 md:h-3 bg-slate-800" />
+              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0.5 h-2 md:h-3 bg-slate-800" />
 
               {/* Flame */}
               <motion.div
-                className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2 w-6 md:w-8 h-10 md:h-12 bg-gradient-to-t from-orange-600 via-yellow-400 to-transparent rounded-full blur-[1px] shadow-[0_0_30px_#f97316]"
+                className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2 w-5 md:w-8 h-8 md:h-12 bg-gradient-to-t from-orange-600 via-yellow-400 to-transparent rounded-full blur-[1px] shadow-[0_0_30px_#f97316]"
                 animate={{
                   scale: [1, 1.3, 1],
                   rotate: [-8, 8, -8],
@@ -128,7 +128,7 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
                 }}
                 transition={{ repeat: Infinity, duration: 0.4, ease: "easeInOut" }}
               >
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-3 md:w-4 h-5 md:h-6 bg-white/40 rounded-full blur-sm" />
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-2.5 md:w-4 h-4 md:h-6 bg-white/40 rounded-full blur-sm" />
               </motion.div>
             </motion.div>
           )}
@@ -146,8 +146,8 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
               }}
               transition={{ duration: 3 }}
             >
-              <div className="w-6 md:w-8 h-6 md:h-8 bg-slate-400/30 rounded-full blur-xl" />
-              <div className="w-4 md:w-6 h-4 md:h-6 bg-slate-300/20 rounded-full blur-lg -mt-4" />
+              <div className="w-5 md:w-8 h-5 md:h-8 bg-slate-400/30 rounded-full blur-xl" />
+              <div className="w-3 md:w-6 h-3 md:h-6 bg-slate-300/20 rounded-full blur-lg -mt-4" />
             </motion.div>
           )}
         </motion.div>
@@ -159,13 +159,13 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
           transition={{ repeat: Infinity, duration: 1.5 }}
           className="flex flex-col items-center gap-2"
         >
-          <p className="text-pink-500 font-black tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-sm uppercase flex items-center gap-2">
-            <CakeIcon className="w-3 h-3 md:w-4 md:h-4" /> Tap to light your wishes <CakeIcon className="w-3 h-3 md:w-4 md:h-4" />
+          <p className="text-pink-500 font-black tracking-[0.2em] text-[10px] md:text-sm uppercase flex items-center gap-2 px-4 text-center">
+            <CakeIcon className="w-3 h-3 md:w-4 md:h-4 shrink-0" /> Tap to light your wishes <CakeIcon className="w-3 h-3 md:w-4 md:h-4 shrink-0" />
           </p>
-          <div className="w-10 md:w-12 h-1 bg-pink-100 rounded-full overflow-hidden">
+          <div className="w-16 md:w-20 h-1 bg-pink-100 rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-pink-500"
-              animate={{ x: [-50, 50] }}
+              animate={{ x: [-80, 80] }}
               transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
             />
           </div>
@@ -183,6 +183,7 @@ export default function GreetingWebsite() {
   const [greeting, setGreeting] = useState<any>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [isCelebrationStarted, setIsCelebrationStarted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const cakeSectionRef = useRef<HTMLDivElement>(null);
 
@@ -191,19 +192,26 @@ export default function GreetingWebsite() {
   const [heartTrail, setHeartTrail] = useState<{ id: number; x: number; y: number; size: number; rotation: number; color: string }[]>([]);
 
   useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    
     const spawnHeart = (x: number, y: number) => {
-      if (Math.random() > 0.7) {
+      const threshold = window.innerWidth < 768 ? 0.85 : 0.7; // Spawn less hearts on mobile
+      if (Math.random() > threshold) {
         const id = Date.now() + Math.random();
         const colors = ["#fb7185", "#ec4899", "#f43f5e", "#fda4af"];
+        const sizeBase = window.innerWidth < 768 ? 20 : 30;
+        const sizeRange = window.innerWidth < 768 ? 30 : 40;
         const newHeart = {
           id,
           x,
           y,
-          size: Math.random() * 40 + 30,
+          size: Math.random() * sizeRange + sizeBase,
           rotation: Math.random() * 360 - 180,
           color: colors[Math.floor(Math.random() * colors.length)],
         };
-        setHeartTrail(prev => [...prev.slice(-20), newHeart]);
+        setHeartTrail(prev => [...prev.slice(window.innerWidth < 768 ? -10 : -20), newHeart]);
         setTimeout(() => {
           setHeartTrail(prev => prev.filter(h => h.id !== id));
         }, 1200);
@@ -367,7 +375,7 @@ export default function GreetingWebsite() {
         />
 
         {/* Floating Elements (Couple Themed) with Parallax */}
-        {[...Array(24)].map((_, i) => (
+        {[...Array(isMobile ? 12 : 24)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute text-pink-400/20"
@@ -391,12 +399,12 @@ export default function GreetingWebsite() {
               translateY: { type: "spring", damping: 10, stiffness: 50 }
             }}
           >
-            {i % 6 === 0 ? <Heart size={Math.random() * 40 + 20} fill="currentColor" /> :
-              i % 6 === 1 ? <Star size={Math.random() * 30 + 15} fill="currentColor" className="text-yellow-200/40" /> :
-                i % 6 === 2 ? <InfinityIcon size={Math.random() * 35 + 15} className="text-pink-300/40" /> :
-                  i % 6 === 3 ? <div className="flex gap-1 text-2xl filter grayscale opacity-40"><Bird size={20} /> <Bird size={20} className="scale-x-[-1]" /></div> :
-                    i % 6 === 4 ? <div className="text-4xl filter grayscale opacity-40">🎈</div> :
-                      <Sparkles size={Math.random() * 20 + 10} className="text-rose-300" />}
+            {i % 6 === 0 ? <Heart size={Math.random() * (isMobile ? 30 : 40) + 15} fill="currentColor" /> :
+              i % 6 === 1 ? <Star size={Math.random() * (isMobile ? 25 : 30) + 10} fill="currentColor" className="text-yellow-200/40" /> :
+                i % 6 === 2 ? <InfinityIcon size={Math.random() * (isMobile ? 30 : 35) + 15} className="text-pink-300/40" /> :
+                  i % 6 === 3 ? <div className="flex gap-1 text-2xl filter grayscale opacity-40"><Bird size={isMobile ? 16 : 20} /> <Bird size={isMobile ? 16 : 20} className="scale-x-[-1]" /></div> :
+                    i % 6 === 4 ? <div className="text-3xl md:text-4xl filter grayscale opacity-40">🎈</div> :
+                      <Sparkles size={Math.random() * (isMobile ? 15 : 20) + 8} className="text-rose-300" />}
           </motion.div>
         ))}
 
@@ -443,7 +451,7 @@ export default function GreetingWebsite() {
 
           <div className="space-y-2 md:space-y-4 px-2">
             <motion.h1
-              className="text-4xl sm:text-6xl md:text-9xl text-pink-500 leading-[1.1] md:leading-tight"
+              className="text-[clamp(2.5rem,10vw,4rem)] sm:text-6xl md:text-9xl text-pink-500 leading-[1.2] md:leading-tight"
               style={{ fontFamily: 'var(--font-script)' }}
             >
               <motion.span
@@ -464,7 +472,7 @@ export default function GreetingWebsite() {
                   type: "spring",
                   stiffness: 100
                 }}
-                className="text-rose-600 drop-shadow-[0_5px_5px_rgba(225,29,72,0.2)] md:drop-shadow-[0_10px_10px_rgba(225,29,72,0.2)] inline-block relative pb-2"
+                className="text-rose-600 drop-shadow-[0_5px_5px_rgba(225,29,72,0.2)] md:drop-shadow-[0_10px_10px_rgba(225,29,72,0.2)] inline-block relative pb-2 px-2"
               >
                 {greeting.recipient_name}!
                 <motion.div
@@ -477,7 +485,7 @@ export default function GreetingWebsite() {
             </motion.h1>
           </div>
 
-          <p className="text-lg md:text-3xl text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium italic px-4">
+          <p className="text-base md:text-3xl text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium italic px-6">
             "Every moment with you is a gift I cherish."
           </p>
 
@@ -543,29 +551,35 @@ export default function GreetingWebsite() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="bg-white/40 backdrop-blur-xl p-6 md:p-20 rounded-[2rem] md:rounded-[4rem] shadow-2xl border-2 md:border-4 border-white text-center space-y-6 md:space-y-10 relative overflow-hidden mx-2"
+                  className="bg-white/60 backdrop-blur-2xl p-6 md:p-20 rounded-[2.5rem] md:rounded-[4rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border-2 md:border-4 border-white text-center space-y-6 md:space-y-10 relative overflow-hidden mx-auto max-w-[95%] md:max-w-none"
                 >
-                  <div className="absolute top-0 left-0 w-full h-1.5 md:h-2 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500" />
-                  <Quote className="w-10 h-10 md:w-16 md:h-16 text-pink-200 mx-auto opacity-50" />
+                  <div className="absolute top-0 left-0 w-full h-1.5 md:h-2 bg-gradient-to-r from-pink-400 via-rose-400 to-pink-400" />
+                  <Quote className="w-8 h-8 md:w-16 md:h-16 text-pink-200 mx-auto opacity-40" />
 
                   <div className="space-y-2 md:space-y-4">
-                    <h2 className="text-3xl md:text-6xl text-pink-500" style={{ fontFamily: 'var(--font-script)' }}>
+                    <h2 className="text-3xl md:text-7xl text-pink-500" style={{ fontFamily: 'var(--font-script)' }}>
                       A Message for You
                     </h2>
                   </div>
 
-                  <p className="text-xl md:text-4xl text-slate-700 leading-snug md:leading-tight italic whitespace-pre-wrap font-medium px-2">
+                  <p className="text-lg md:text-4xl text-slate-700 leading-relaxed md:leading-tight italic whitespace-pre-wrap font-medium px-2 md:px-10">
                     {greeting.message}
                   </p>
 
-                  <div className="flex flex-col items-center gap-4 md:gap-6 pt-6 md:pt-10 border-t border-pink-100">
-                    <div className="space-y-1">
-                      <p className="text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-[10px] md:text-xs">With all my heart,</p>
-                      <p className="text-2xl md:text-4xl font-black text-rose-600 tracking-tighter uppercase">{greeting.sender_name}</p>
+                  <div className="flex flex-col items-center gap-4 md:gap-8 pt-8 md:pt-12 border-t border-pink-50/50">
+                    <div className="space-y-2">
+                      <p className="text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-[10px] md:text-xs">With all my love,</p>
+                      <p className="text-2xl md:text-5xl font-black text-rose-600 tracking-tighter uppercase leading-none">{greeting.sender_name}</p>
                     </div>
-                    <div className="flex gap-3 md:gap-4">
+                    <div className="flex gap-4 md:gap-6">
                       {[...Array(3)].map((_, i) => (
-                        <Heart key={i} className="text-pink-400 fill-pink-400 animate-pulse w-5 h-5 md:w-6 md:h-6" />
+                        <motion.div
+                          key={i}
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                        >
+                          <Heart className="text-pink-400 fill-pink-400 w-5 h-5 md:w-8 md:h-8" />
+                        </motion.div>
                       ))}
                     </div>
                   </div>
