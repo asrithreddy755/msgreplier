@@ -5,9 +5,9 @@ import { Toaster as SonnerToaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CookieConsent } from "@/components/cookie-consent";
 import { Navbar } from "@/components/navbar";
+import { MainWrapper } from "@/components/main-wrapper";
 import Script from "next/script";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
-import { headers } from "next/headers";
 
 const getSiteUrl = () => {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
@@ -78,12 +78,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headersList = await headers();
-  const pathname = headersList.get("x-url") || "";
-  const isGreetingPage = pathname.includes("/greet/");
-  const isDigitalGreetingLanding = pathname === "/digital-greeting";
-  const hideLayout = isGreetingPage || isDigitalGreetingLanding;
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -118,11 +112,11 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex flex-col min-h-screen relative">
-            {!hideLayout && <Navbar />}
-            <main id={hideLayout ? undefined : "main-content"} className="flex-grow">
+            <Navbar />
+            <MainWrapper>
               {children}
-            </main>
-            {!hideLayout && <CookieConsent />}
+            </MainWrapper>
+            <CookieConsent />
           </div>
           <Toaster />
           <SonnerToaster position="top-center" richColors />

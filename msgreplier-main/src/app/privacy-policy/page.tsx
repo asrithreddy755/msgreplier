@@ -29,11 +29,14 @@ export default async function PrivacyPolicyPage({ searchParams }: { searchParams
 
         <div className="p-4 bg-muted/50 rounded-lg border border-border/50 my-6">
           <p className="font-medium text-foreground mb-4">
-            Most of our website (including Msg Prompt, Text Repeater, and Shortcutpedia) does not require any login, and we do not save, store, or collect any of your data from these tools.
+            Most of our website (including Text Repeater and Shortcutpedia) does not require any login, and we do not save, store, or collect any of your data from these tools.
             All processing is done entirely in your browser.
           </p>
-          <p className="font-medium text-foreground">
+          <p className="font-medium text-foreground mb-4">
             <strong>Exception for the Love-Space Feature:</strong> To provide real-time chat and game synchronization in Love-Space, we use secure WebRTC connections. Message history is temporarily stored in your browser's local storage and optionally persisted to our secure database to allow for session recovery. This data is private to your specific room, encrypted, and automatically deleted after periods of inactivity.
+          </p>
+          <p className="font-medium text-foreground">
+            <strong>Exception for the Digital Greeting Feature:</strong> When you create a Digital Greeting card, we store the recipient's name, your name, your chosen occasion, and your message in our secure database. This is necessary to generate a unique shareable link for your recipient. This data is not used for any other purpose and is stored until you request its deletion or the system performs a scheduled cleanup.
           </p>
         </div>
 

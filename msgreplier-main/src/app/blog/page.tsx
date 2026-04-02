@@ -43,6 +43,51 @@ export default function BlogPage() {
             <h2 className="text-2xl font-bold tracking-tight">Recent Articles</h2>
           </div>
 
+          {/* New Article: Create Website for Wishes */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                <polyline points="20 12 20 22 4 22 4 12" />
+                <rect width="20" height="5" x="2" y="7" />
+                <line x1="12" y1="22" x2="12" y2="7" />
+                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+              </svg>
+            </div>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Feature Guide
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> May 15, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 4 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  How to Create a Website for Wishes in Seconds
+                </h3>
+              </div>
+            </div>
+
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>
+                Learn how to build a custom, interactive digital greeting website for birthdays and anniversaries with 3D animations and music.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/create-website-for-wishes" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
           {/* New Article 0: Love Space Guide */}
           <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">

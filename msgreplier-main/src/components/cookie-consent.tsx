@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 export function CookieConsent() {
   const [showConsent, setShowConsent] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const consent = localStorage.getItem("cookieConsent");
@@ -25,7 +27,12 @@ export function CookieConsent() {
     setShowConsent(false);
   };
 
-  if (!showConsent) return null;
+  // Hide CookieConsent on immersive pages
+  const isGreetingPage = pathname?.includes("/greet/");
+  const isDigitalGreetingLanding = pathname === "/digital-greeting";
+  const hideConsent = isGreetingPage || isDigitalGreetingLanding;
+
+  if (!showConsent || hideConsent) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 animate-in slide-in-from-bottom duration-500">

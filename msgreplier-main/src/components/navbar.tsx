@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, X, MessageSquare, ChevronDown, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -14,8 +15,16 @@ import {
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  // Hide Navbar on specific immersive pages
+  const isGreetingPage = pathname?.includes("/greet/");
+  const isDigitalGreetingLanding = pathname === "/digital-greeting";
+  const hideNavbar = isGreetingPage || isDigitalGreetingLanding;
+
+  if (hideNavbar) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

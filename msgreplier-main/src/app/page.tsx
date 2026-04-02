@@ -121,32 +121,6 @@ export default function HomePage() {
               </CardFooter>
             </Card>
 
-            {/* Tool 4: Msg Prompt */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Camera className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <CardTitle>Msg Prompt</CardTitle>
-                <CardDescription>Copyable Prompts</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-                  Scroll a prompt library, copy, and paste into any AI tool to generate better couple pictures.
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  asChild
-                  variant="ghost"
-                  className="w-full group-hover:bg-purple-50 dark:group-hover:bg-purple-900/20 group-hover:text-purple-600 dark:group-hover:text-purple-400"
-                >
-                  <Link href="/prompt">
-                    Open Prompts <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
             {/* Tool 5: Digital Greeting */}
             <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
               <CardHeader>
