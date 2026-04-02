@@ -21,7 +21,6 @@ import { playDiceSound } from './utils/diceSound';
 import bgAsset from './assets/bg.jpg';
 
 const initializedRooms = new Map<string, boolean>();
-
 interface LudoProps {
     roomId: string;
     currentMember: LoveRoomMember;
