@@ -15,14 +15,6 @@ export function middleware(request: NextRequest) {
 
   let normalized = original;
 
-  if (normalized.length > 1 && normalized.endsWith("/")) {
-    normalized = normalized.replace(/\/+$/, "");
-  }
-
-  if (normalized.length > 1 && normalized.endsWith(".")) {
-    normalized = normalized.replace(/\.+$/, "");
-  }
-
   normalized = normalized.toLowerCase();
 
   if (normalized === "/cham-ai") {
