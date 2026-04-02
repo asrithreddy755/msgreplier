@@ -11,7 +11,6 @@ CREATE TABLE public.love_rooms (
   is_active BOOLEAN DEFAULT true NOT NULL,
   expires_at TIMESTAMP WITH TIME ZONE DEFAULT (now() + interval '24 hours') NOT NULL
 );
-
 -- Index for room_code
 CREATE UNIQUE INDEX IF NOT EXISTS love_rooms_room_code_idx ON love_rooms(room_code);
 
