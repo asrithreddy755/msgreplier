@@ -10,5 +10,8 @@
     "pages:build": "npm --prefix msgreplier-main run pages:build",
     "start": "npm --prefix msgreplier-main run start",
     "lint": "npm --prefix msgreplier-main run lint"
+  },
+  "devDependencies": {
+    "wrangler": "^4.80.0"
   }
 }
