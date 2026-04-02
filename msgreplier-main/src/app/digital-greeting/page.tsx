@@ -2,14 +2,15 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { 
-  Heart, 
-  Sparkles, 
-  ArrowRight, 
-  Cake, 
-  Star, 
-  Send, 
+import {
+  Heart,
+  Sparkles,
+  ArrowRight,
+  Cake,
+  Star,
+  Send,
   PartyPopper,
   MousePointer2,
   Mail,
@@ -17,11 +18,125 @@ import {
   Music,
   ChevronDown,
   Layers,
-  Image as ImageIcon
+  Image as ImageIcon,
+  MessageSquare,
+  Menu,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import confetti from "canvas-confetti";
+
+function GreetingNavbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [showTools, setShowTools] = useState(false);
+  const pathname = usePathname();
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-slate-950/80 backdrop-blur-xl">
+      <div className="container flex h-16 items-center justify-between px-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <div className="bg-rose-500/20 border border-rose-500/30 text-rose-400 p-1.5 rounded-lg">
+            <MessageSquare className="h-5 w-5" />
+          </div>
+          <span className="font-bold text-lg tracking-tight text-white">MsgReplier</span>
+        </Link>
+
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          <Link href="/" className="text-slate-400 hover:text-white transition-colors">Home</Link>
+          <Link href="/love-space" className="text-pink-400 font-bold hover:scale-105 transition-all flex items-center gap-1.5 bg-pink-500/10 px-3 py-1.5 rounded-full border border-pink-500/20">
+            <Heart className="h-4 w-4 fill-pink-400" /> Love Space
+          </Link>
+          <Link href="/blog" className="text-slate-400 hover:text-white transition-colors">Blog</Link>
+
+          <div className="relative">
+            <button
+              onClick={() => setShowTools(p => !p)}
+              className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors focus:outline-none"
+            >
+              Tools <ChevronDown className="h-4 w-4" />
+            </button>
+            {showTools && (
+              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 bg-slate-900 border border-white/10 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50">
+                {[
+                  { label: "Digital Greeting", href: "/digital-greeting" },
+                  { label: "FLAMES Calculator", href: "/flames" },
+                  { label: "Shortcutpedia", href: "/shortcutpedia" },
+                  { label: "Msg Prompt", href: "/prompt" },
+                ].map(item => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setShowTools(false)}
+                    className={`block px-4 py-2.5 text-sm transition-colors ${pathname === item.href
+                        ? "text-rose-400 bg-rose-500/10"
+                        : "text-slate-300 hover:text-white hover:bg-white/5"
+                      }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Link href="/about" className="text-slate-400 hover:text-white transition-colors">About</Link>
+          <Link href="/contact" className="text-slate-400 hover:text-white transition-colors">Contact</Link>
+        </nav>
+
+        {/* Desktop CTA */}
+        <div className="hidden md:flex items-center gap-2">
+          <Button asChild size="sm" className="rounded-full bg-rose-500 hover:bg-rose-600 text-white border-0">
+            <Link href="/digital-greeting/create">Create Card</Link>
+          </Button>
+        </div>
+
+        {/* Mobile Toggle */}
+        <button
+          className="md:hidden text-slate-400 hover:text-white transition-colors"
+          onClick={() => setIsOpen(p => !p)}
+          aria-label="Toggle menu"
+        >
+          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="md:hidden border-t border-white/5 bg-slate-950">
+          <div className="container flex flex-col gap-3 p-4">
+            {[
+              { label: "Home", href: "/" },
+              { label: "Love Space", href: "/love-space" },
+              { label: "Blog", href: "/blog" },
+              { label: "Digital Greeting", href: "/digital-greeting" },
+              { label: "FLAMES Calculator", href: "/flames" },
+              { label: "Shortcutpedia", href: "/shortcutpedia" },
+              { label: "Msg Prompt", href: "/prompt" },
+              { label: "About", href: "/about" },
+              { label: "Contact", href: "/contact" },
+            ].map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className={`text-sm font-medium transition-colors ${pathname === item.href ? "text-rose-400" : "text-slate-400 hover:text-white"
+                  }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+            <Button asChild className="w-full mt-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white border-0">
+              <Link href="/digital-greeting/create" onClick={() => setIsOpen(false)}>Create Card</Link>
+            </Button>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}
 
 const THEMES = [
   { id: "hearts", icon: "💗", color: "text-rose-500", label: "Romance" },
@@ -30,20 +145,20 @@ const THEMES = [
 ];
 
 const NEW_FEATURES = [
-  { 
-    title: "Cinematic Music", 
+  {
+    title: "Cinematic Music",
     description: "Choose from curated romantic piano, chill lofi, or happy vibes to set the mood.",
     icon: <Music className="w-8 h-8 text-rose-500" />,
     preview: "🎵 Romantic Piano Playing..."
   },
-  { 
-    title: "Interactive Reveals", 
+  {
+    title: "Interactive Reveals",
     description: "Go beyond envelopes with scratch cards and balloon pops that engage your lover.",
     icon: <Layers className="w-8 h-8 text-orange-500" />,
     preview: "✨ Scratch to Reveal Message"
   },
-  { 
-    title: "Memory Gallery", 
+  {
+    title: "Memory Gallery",
     description: "Upload your favorite photos to create a digital scrapbook of your special moments.",
     icon: <ImageIcon className="w-8 h-8 text-blue-500" />,
     preview: "📸 Photo Memories Included"
@@ -86,18 +201,19 @@ export default function ImmersiveWishesLanding() {
 
   return (
     <div className="relative min-h-[300vh] bg-slate-950 text-white overflow-x-hidden selection:bg-rose-500/30">
-      
+      <GreetingNavbar />
+
       {/* Dynamic Background */}
-      <motion.div 
+      <motion.div
         style={{ y: bgY }}
         className="fixed inset-0 z-0 pointer-events-none w-full h-full"
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(244,63,94,0.1),transparent_50%)]" />
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
-        
+
         {/* Animated Orbs */}
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.5, 0.3],
             x: [0, 50, 0],
@@ -106,8 +222,8 @@ export default function ImmersiveWishesLanding() {
           transition={{ duration: 10, repeat: Infinity }}
           className="absolute top-1/4 left-1/4 w-[250px] md:w-[400px] h-[250px] md:h-[400px] bg-rose-500/20 rounded-full blur-[80px] md:blur-[100px]"
         />
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             scale: [1.2, 1, 1.2],
             opacity: [0.2, 0.4, 0.2],
             x: [0, -40, 0],
@@ -119,8 +235,8 @@ export default function ImmersiveWishesLanding() {
       </motion.div>
 
       {/* Hero Section - Full Screen Immersive */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center p-4 md:p-6 z-10 overflow-hidden">
-        <motion.div 
+      <section className="relative min-h-screen flex flex-col items-center justify-center p-4 md:p-6 z-10 overflow-hidden pt-16">
+        <motion.div
           style={{ opacity, scale }}
           className="max-w-4xl w-full text-center space-y-4 md:space-y-10"
         >
@@ -143,13 +259,13 @@ export default function ImmersiveWishesLanding() {
             Turn your emotions into <span className="text-white italic">interactive magic</span>. An immersive digital experience they'll never forget.
           </p>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 pt-4"
           >
-            <Button 
+            <Button
               asChild
               onClick={triggerMagic}
               className="w-full sm:w-auto h-16 md:h-20 px-8 md:px-12 text-xl md:text-2xl rounded-full bg-rose-500 hover:bg-rose-600 text-white shadow-[0_0_50px_rgba(244,63,94,0.3)] hover:scale-105 active:scale-95 transition-all group relative overflow-hidden"
@@ -161,7 +277,7 @@ export default function ImmersiveWishesLanding() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               </Link>
             </Button>
-            
+
             <motion.div
               whileHover={{ scale: 1.1 }}
               className="hidden sm:flex items-center gap-4 text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm"
@@ -173,7 +289,7 @@ export default function ImmersiveWishesLanding() {
           </motion.div>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
           className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 text-slate-500"
@@ -225,14 +341,14 @@ export default function ImmersiveWishesLanding() {
 
           <div className="relative mt-8 lg:mt-0">
             {/* Interactive Mockup */}
-            <motion.div 
+            <motion.div
               whileHover={{ rotateY: 15, rotateX: -5 }}
               style={{ perspective: 1000 }}
               className="relative w-full aspect-[4/5] bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2rem] md:rounded-[3rem] p-0.5 md:p-1 shadow-2xl overflow-hidden"
             >
               <div className="absolute inset-0 bg-rose-500/10 opacity-50" />
               <div className="relative h-full flex flex-col items-center justify-center p-8 md:p-12 space-y-6 md:space-y-8 text-center">
-                <motion.div 
+                <motion.div
                   animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
                   transition={{ repeat: Infinity, duration: 4 }}
                   className="w-16 md:w-24 h-16 md:h-24 bg-rose-500 rounded-full flex items-center justify-center text-3xl md:text-5xl shadow-[0_0_30px_rgba(244,63,94,0.5)]"
@@ -252,7 +368,7 @@ export default function ImmersiveWishesLanding() {
                 </Button>
               </div>
             </motion.div>
-            
+
             {/* Floating UI */}
             <motion.div
               animate={{ y: [0, -10, 0] }}
@@ -328,7 +444,7 @@ export default function ImmersiveWishesLanding() {
             transition={{ delay: 0.3 }}
             className="px-4"
           >
-            <Button 
+            <Button
               asChild
               className="w-full sm:w-auto h-20 md:h-24 px-10 md:px-16 text-2xl md:text-3xl rounded-full bg-white text-slate-950 hover:bg-rose-500 hover:text-white shadow-[0_20px_60px_rgba(255,255,255,0.1)] hover:scale-110 active:scale-95 transition-all font-black group relative overflow-hidden"
             >
@@ -354,18 +470,18 @@ export default function ImmersiveWishesLanding() {
             <motion.div
               key={i}
               className="absolute w-0.5 md:w-1 h-0.5 md:h-1 bg-white rounded-full opacity-20"
-              initial={{ 
-                x: Math.random() * 100 + "%", 
-                y: Math.random() * 100 + "%" 
+              initial={{
+                x: Math.random() * 100 + "%",
+                y: Math.random() * 100 + "%"
               }}
-              animate={{ 
+              animate={{
                 y: ["0%", "100%"],
                 opacity: [0, 1, 0]
               }}
-              transition={{ 
-                duration: Math.random() * 5 + 5, 
+              transition={{
+                duration: Math.random() * 5 + 5,
                 repeat: Infinity,
-                delay: Math.random() * 5 
+                delay: Math.random() * 5
               }}
             />
           ))}
