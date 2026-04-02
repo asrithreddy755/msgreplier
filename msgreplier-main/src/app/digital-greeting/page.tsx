@@ -158,10 +158,10 @@ const NEW_FEATURES = [
     preview: "✨ They'll Be Totally Surprised"
   },
   {
-    title: "Share Instantly",
-    description: "Get a unique link for your wish website. Share it on WhatsApp, Instagram, or anywhere — zero installs.",
+    title: "Background Music",
+    description: "Set the mood with Romantic Piano, Chill Lofi, or Happy Vibes — your wish website plays music when they open it.",
     icon: <ImageIcon className="w-8 h-8 text-blue-500" />,
-    preview: "🔗 One Link. Infinite Love."
+    preview: "🎵 Music Plays as They Read"
   },
 ];
 
