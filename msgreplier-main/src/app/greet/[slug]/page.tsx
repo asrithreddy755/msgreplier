@@ -4,10 +4,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import { 
-  Heart, 
-  ChevronDown, 
-  Quote, 
+import {
+  Heart,
+  ChevronDown,
+  Quote,
   Sparkles,
   Volume2,
   VolumeX,
@@ -69,7 +69,7 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
         </AnimatePresence>
 
         {/* 3D CSS Cake */}
-        <motion.div 
+        <motion.div
           className="relative w-64 md:w-72 h-72 md:h-80 cursor-pointer perspective-1000 mx-auto"
           whileHover={{ scale: 1.05, rotateY: 5 }}
           whileTap={{ scale: 0.95 }}
@@ -84,7 +84,7 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
             <div className="absolute top-4 w-full h-4 bg-white/30" />
             <div className="absolute bottom-4 w-full h-4 bg-white/30" />
           </div>
-          
+
           {/* Middle Layer */}
           <div className="absolute bottom-32 md:bottom-36 left-1/2 -translate-x-1/2 w-40 md:w-48 h-20 md:h-24 bg-rose-200 rounded-2xl shadow-lg border-b-4 border-rose-300">
             <div className="absolute top-4 w-full h-2 bg-white/40" />
@@ -92,7 +92,7 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
 
           {/* Top Layer */}
           <div className="absolute bottom-48 md:bottom-56 left-1/2 -translate-x-1/2 w-28 md:w-32 h-16 md:h-20 bg-rose-100 rounded-xl shadow-md border-b-2 border-rose-200" />
-          
+
           {/* Frosting Drips */}
           <div className="absolute bottom-[225px] md:bottom-[260px] left-1/2 -translate-x-1/2 w-28 md:w-32 flex justify-around px-1">
             {[...Array(4)].map((_, i) => (
@@ -102,25 +102,25 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
 
           {/* Strawberries/Toppings */}
           <div className="absolute bottom-[240px] md:bottom-[275px] left-1/2 -translate-x-1/2 flex gap-1.5 md:gap-2">
-             <div className="w-5 md:w-6 h-5 md:h-6 bg-red-500 rounded-full shadow-inner" />
-             <div className="w-5 md:w-6 h-5 md:h-6 bg-red-500 rounded-full shadow-inner -mt-1 md:-mt-2" />
-             <div className="w-5 md:w-6 h-5 md:h-6 bg-red-500 rounded-full shadow-inner" />
+            <div className="w-5 md:w-6 h-5 md:h-6 bg-red-500 rounded-full shadow-inner" />
+            <div className="w-5 md:w-6 h-5 md:h-6 bg-red-500 rounded-full shadow-inner -mt-1 md:-mt-2" />
+            <div className="w-5 md:w-6 h-5 md:h-6 bg-red-500 rounded-full shadow-inner" />
           </div>
 
           {/* Candle */}
           {!isBlown && (
-            <motion.div 
+            <motion.div
               className="absolute bottom-[290px] md:bottom-[330px] left-1/2 -translate-x-1/2 w-2.5 md:w-3 h-12 md:h-16 bg-gradient-to-b from-yellow-200 via-blue-200 to-yellow-300 rounded-full shadow-md"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
               {/* Wick */}
               <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0.5 h-2.5 md:h-3 bg-slate-800" />
-              
+
               {/* Flame */}
-              <motion.div 
+              <motion.div
                 className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2 w-6 md:w-8 h-10 md:h-12 bg-gradient-to-t from-orange-600 via-yellow-400 to-transparent rounded-full blur-[1px] shadow-[0_0_30px_#f97316]"
-                animate={{ 
+                animate={{
                   scale: [1, 1.3, 1],
                   rotate: [-8, 8, -8],
                   opacity: [0.9, 1, 0.9],
@@ -135,11 +135,11 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
 
           {/* Smoke when blown */}
           {isBlown && (
-            <motion.div 
+            <motion.div
               className="absolute bottom-[310px] md:bottom-[350px] left-1/2 -translate-x-1/2"
               initial={{ opacity: 0 }}
-              animate={{ 
-                opacity: [0, 0.8, 0], 
+              animate={{
+                opacity: [0, 0.8, 0],
                 y: -100,
                 x: [0, 20, -20, 0],
                 scale: [1, 2, 3]
@@ -163,7 +163,7 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
             <CakeIcon className="w-3 h-3 md:w-4 md:h-4" /> Tap to light your wishes <CakeIcon className="w-3 h-3 md:w-4 md:h-4" />
           </p>
           <div className="w-10 md:w-12 h-1 bg-pink-100 rounded-full overflow-hidden">
-            <motion.div 
+            <motion.div
               className="h-full bg-pink-500"
               animate={{ x: [-50, 50] }}
               transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
@@ -191,30 +191,43 @@ export default function GreetingWebsite() {
   const [heartTrail, setHeartTrail] = useState<{ id: number; x: number; y: number; size: number; rotation: number; color: string }[]>([]);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-      
-      // Heart Trail logic - increased frequency and added variety
-      if (Math.random() > 0.85) { 
-        const id = Date.now();
+    const spawnHeart = (x: number, y: number) => {
+      if (Math.random() > 0.7) {
+        const id = Date.now() + Math.random();
         const colors = ["#fb7185", "#ec4899", "#f43f5e", "#fda4af"];
-        const newHeart = { 
-          id, 
-          x: e.clientX, 
-          y: e.clientY, 
-          size: Math.random() * 40 + 30, // Base size is now huge (30-70px)
+        const newHeart = {
+          id,
+          x,
+          y,
+          size: Math.random() * 40 + 30,
           rotation: Math.random() * 360 - 180,
-          color: colors[Math.floor(Math.random() * colors.length)]
+          color: colors[Math.floor(Math.random() * colors.length)],
         };
-        
         setHeartTrail(prev => [...prev.slice(-20), newHeart]);
         setTimeout(() => {
           setHeartTrail(prev => prev.filter(h => h.id !== id));
         }, 1200);
       }
     };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+      spawnHeart(e.clientX, e.clientY);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      setMousePos({ x: touch.clientX, y: touch.clientY });
+      spawnHeart(touch.clientX, touch.clientY);
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchmove", handleTouchMove);
+    };
   }, []);
 
   useEffect(() => {
@@ -284,7 +297,7 @@ export default function GreetingWebsite() {
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-700 overflow-x-hidden selection:bg-pink-100 selection:text-pink-600">
-      
+
       {/* --- High-End Couple Friendly Animated Background --- */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         {/* Heart Trail cursor effect - Cinematic and Huge */}
@@ -292,15 +305,15 @@ export default function GreetingWebsite() {
           {heartTrail.map((heart) => (
             <motion.div
               key={heart.id}
-              initial={{ 
-                opacity: 0, 
-                scale: 0.2, 
+              initial={{
+                opacity: 0,
+                scale: 0.2,
                 rotate: heart.rotation,
                 x: heart.x - (heart.size / 2),
                 y: heart.y - (heart.size / 2)
               }}
-              animate={{ 
-                opacity: [0, 0.9, 0], 
+              animate={{
+                opacity: [0, 0.9, 0],
                 scale: [0.5, 2.5, 4], // Huge scaling effect
                 y: heart.y - 250 - Math.random() * 100, // Float high
                 x: heart.x + (Math.random() * 100 - 50), // Random drift
@@ -318,11 +331,11 @@ export default function GreetingWebsite() {
 
         {/* Animated Gradients */}
         <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-white to-rose-50" />
-        
+
         {/* Dynamic Glowing Blobs with slight mouse reaction */}
-        <motion.div 
+        <motion.div
           className="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-pink-300/20 rounded-full blur-[120px]"
-          animate={{ 
+          animate={{
             x: [0, 50, -30, 0],
             y: [0, 30, 50, 0],
             scale: [1, 1.1, 0.9, 1],
@@ -331,9 +344,9 @@ export default function GreetingWebsite() {
           }}
           transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
         />
-        <motion.div 
+        <motion.div
           className="absolute top-[20%] -right-[10%] w-[50%] h-[50%] bg-rose-200/30 rounded-full blur-[100px]"
-          animate={{ 
+          animate={{
             x: [0, -40, 20, 0],
             y: [0, 60, -20, 0],
             scale: [1, 0.9, 1.2, 1],
@@ -342,9 +355,9 @@ export default function GreetingWebsite() {
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
         />
-        <motion.div 
+        <motion.div
           className="absolute -bottom-[10%] left-[20%] w-[70%] h-[60%] bg-purple-100/20 rounded-full blur-[140px]"
-          animate={{ 
+          animate={{
             x: [0, 30, -50, 0],
             y: [0, -40, 20, 0],
             translateX: (mousePos.x - 500) / 25,
@@ -358,32 +371,32 @@ export default function GreetingWebsite() {
           <motion.div
             key={i}
             className="absolute text-pink-400/20"
-            initial={{ 
-              x: Math.random() * 100 + "%", 
-              y: "110%", 
+            initial={{
+              x: Math.random() * 100 + "%",
+              y: "110%",
               rotate: 0,
               scale: Math.random() * 0.5 + 0.3
             }}
-            animate={{ 
-              y: "-10%", 
+            animate={{
+              y: "-10%",
               rotate: 360,
               x: (Math.random() * 100 - 10) + "%",
               translateX: (mousePos.x - 500) / (10 + (i % 5) * 5), // Varying parallax intensity
               translateY: (mousePos.y - 500) / (10 + (i % 5) * 5)
             }}
-            transition={{ 
+            transition={{
               y: { duration: Math.random() * 25 + 20, repeat: Infinity, ease: "linear", delay: Math.random() * 15 },
               rotate: { duration: Math.random() * 10 + 10, repeat: Infinity, ease: "linear" },
               translateX: { type: "spring", damping: 10, stiffness: 50 },
               translateY: { type: "spring", damping: 10, stiffness: 50 }
             }}
           >
-            {i % 6 === 0 ? <Heart size={Math.random() * 40 + 20} fill="currentColor" /> : 
-             i % 6 === 1 ? <Star size={Math.random() * 30 + 15} fill="currentColor" className="text-yellow-200/40" /> :
-             i % 6 === 2 ? <InfinityIcon size={Math.random() * 35 + 15} className="text-pink-300/40" /> :
-             i % 6 === 3 ? <div className="flex gap-1 text-2xl filter grayscale opacity-40"><Bird size={20} /> <Bird size={20} className="scale-x-[-1]" /></div> :
-             i % 6 === 4 ? <div className="text-4xl filter grayscale opacity-40">🎈</div> :
-             <Sparkles size={Math.random() * 20 + 10} className="text-rose-300" />}
+            {i % 6 === 0 ? <Heart size={Math.random() * 40 + 20} fill="currentColor" /> :
+              i % 6 === 1 ? <Star size={Math.random() * 30 + 15} fill="currentColor" className="text-yellow-200/40" /> :
+                i % 6 === 2 ? <InfinityIcon size={Math.random() * 35 + 15} className="text-pink-300/40" /> :
+                  i % 6 === 3 ? <div className="flex gap-1 text-2xl filter grayscale opacity-40"><Bird size={20} /> <Bird size={20} className="scale-x-[-1]" /></div> :
+                    i % 6 === 4 ? <div className="text-4xl filter grayscale opacity-40">🎈</div> :
+                      <Sparkles size={Math.random() * 20 + 10} className="text-rose-300" />}
           </motion.div>
         ))}
 
@@ -393,18 +406,18 @@ export default function GreetingWebsite() {
 
       {/* Audio Element */}
       {greeting.music_id !== 'none' && (
-        <audio 
-          ref={audioRef} 
-          src={MUSIC_URLS[greeting.music_id as keyof typeof MUSIC_URLS]} 
-          loop 
+        <audio
+          ref={audioRef}
+          src={MUSIC_URLS[greeting.music_id as keyof typeof MUSIC_URLS]}
+          loop
         />
       )}
 
       {/* Music Toggle */}
       <div className="fixed top-6 right-6 z-50">
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className="bg-white/80 backdrop-blur-md border border-pink-100 rounded-full w-12 h-12 text-pink-500 hover:bg-pink-50 shadow-lg"
           onClick={() => setIsMuted(!isMuted)}
         >
@@ -429,7 +442,7 @@ export default function GreetingWebsite() {
           </motion.div>
 
           <div className="space-y-2 md:space-y-4 px-2">
-            <motion.h1 
+            <motion.h1
               className="text-4xl sm:text-6xl md:text-9xl text-pink-500 leading-[1.1] md:leading-tight"
               style={{ fontFamily: 'var(--font-script)' }}
             >
@@ -442,14 +455,14 @@ export default function GreetingWebsite() {
                 Happy {greeting.occasion || "Birthday"},
               </motion.span>
               <br />
-              <motion.span 
+              <motion.span
                 initial={{ scale: 0.5, opacity: 0, rotate: -5 }}
                 animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                transition={{ 
-                  delay: 0.6, 
-                  duration: 1, 
+                transition={{
+                  delay: 0.6,
+                  duration: 1,
                   type: "spring",
-                  stiffness: 100 
+                  stiffness: 100
                 }}
                 className="text-rose-600 drop-shadow-[0_5px_5px_rgba(225,29,72,0.2)] md:drop-shadow-[0_10px_10px_rgba(225,29,72,0.2)] inline-block relative pb-2"
               >
@@ -467,9 +480,9 @@ export default function GreetingWebsite() {
           <p className="text-lg md:text-3xl text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium italic px-4">
             "Every moment with you is a gift I cherish."
           </p>
-          
+
           <div className="pt-4 px-4">
-            <Button 
+            <Button
               onClick={scrollToCake}
               className="w-full sm:w-auto h-16 md:h-20 px-8 md:px-14 text-lg md:text-xl rounded-full bg-pink-500 hover:bg-pink-600 text-white shadow-2xl shadow-pink-300 transition-all active:scale-95 font-black group border-4 border-white"
             >
@@ -497,7 +510,7 @@ export default function GreetingWebsite() {
                   </h2>
                   <p className="text-slate-400 font-bold uppercase tracking-[0.3em] text-sm">Something special is waiting</p>
                 </div>
-                
+
                 <InteractiveCake onComplete={onCakeBlown} />
               </motion.div>
             ) : (
@@ -507,7 +520,7 @@ export default function GreetingWebsite() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="space-y-16"
               >
-                <motion.div 
+                <motion.div
                   className="space-y-6"
                   animate={{ y: [0, -10, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
@@ -526,7 +539,7 @@ export default function GreetingWebsite() {
                 </motion.div>
 
                 {/* Heartfelt Message Section */}
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
@@ -534,7 +547,7 @@ export default function GreetingWebsite() {
                 >
                   <div className="absolute top-0 left-0 w-full h-1.5 md:h-2 bg-gradient-to-r from-pink-500 via-rose-500 to-pink-500" />
                   <Quote className="w-10 h-10 md:w-16 md:h-16 text-pink-200 mx-auto opacity-50" />
-                  
+
                   <div className="space-y-2 md:space-y-4">
                     <h2 className="text-3xl md:text-6xl text-pink-500" style={{ fontFamily: 'var(--font-script)' }}>
                       A Message for You
@@ -569,13 +582,13 @@ export default function GreetingWebsite() {
           <h3 className="text-3xl font-black text-slate-800 uppercase tracking-tighter">Want to reply?</h3>
           <p className="text-slate-400 font-medium max-w-xs mx-auto">Create a private space just for the two of you.</p>
         </div>
-        
+
         <Button asChild size="lg" className="h-20 px-16 text-2xl rounded-full bg-rose-600 hover:bg-rose-700 text-white shadow-2xl shadow-rose-200 border-4 border-white active:scale-95 font-black transition-all">
           <Link href="/love-space">
             ENTER LOVE SPACE <ArrowRight className="ml-3 w-8 h-8" />
           </Link>
         </Button>
-        
+
         <div className="pt-20">
           <Link href="/digital-greeting" className="text-pink-400 hover:text-pink-600 text-sm font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3">
             <Sparkles className="w-4 h-4" /> Create Your Own Surprise <Sparkles className="w-4 h-4" />
