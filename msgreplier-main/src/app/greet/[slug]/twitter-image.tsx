@@ -26,10 +26,10 @@ export default function TwitterImage() {
         }}
       >
         {/* Decorative hearts background */}
-        <div style={{ position: "absolute", top: 40, left: 40, fontSize: 80, opacity: 0.1 }}>💝</div>
-        <div style={{ position: "absolute", bottom: 40, right: 40, fontSize: 80, opacity: 0.1 }}>🎁</div>
-        <div style={{ position: "absolute", top: 100, right: 100, fontSize: 60, opacity: 0.05 }}>✨</div>
-        <div style={{ position: "absolute", bottom: 100, left: 100, fontSize: 60, opacity: 0.05 }}>💖</div>
+        <div style={{ display: "flex", position: "absolute", top: 40, left: 40, fontSize: 80, opacity: 0.1 }}>💝</div>
+        <div style={{ display: "flex", position: "absolute", bottom: 40, right: 40, fontSize: 80, opacity: 0.1 }}>🎁</div>
+        <div style={{ display: "flex", position: "absolute", top: 100, right: 100, fontSize: 60, opacity: 0.05 }}>✨</div>
+        <div style={{ display: "flex", position: "absolute", bottom: 100, left: 100, fontSize: 60, opacity: 0.05 }}>💖</div>
 
         <div
           style={{
@@ -43,9 +43,10 @@ export default function TwitterImage() {
             border: "1px solid rgba(225, 29, 72, 0.1)",
           }}
         >
-          <div style={{ fontSize: 80, marginBottom: 20 }}>🎁</div>
+          <div style={{ display: "flex", fontSize: 80, marginBottom: 20 }}>🎁</div>
           <div
             style={{
+              display: "flex",
               fontSize: 64,
               fontWeight: 900,
               letterSpacing: "-0.04em",
@@ -58,6 +59,7 @@ export default function TwitterImage() {
           </div>
           <div
             style={{
+              display: "flex",
               marginTop: 30,
               fontSize: 28,
               fontWeight: 600,
@@ -72,6 +74,7 @@ export default function TwitterImage() {
         
         <div
           style={{
+            display: "flex",
             position: "absolute",
             bottom: 40,
             fontSize: 24,

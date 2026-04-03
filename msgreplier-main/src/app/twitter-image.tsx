@@ -25,11 +25,12 @@ export default function TwitterImage() {
             "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
         }}
       >
-        <div style={{ fontSize: 72, fontWeight: 800, letterSpacing: "-0.04em" }}>
+        <div style={{ display: "flex", fontSize: 72, fontWeight: 800, letterSpacing: "-0.04em" }}>
           MsgReplier
         </div>
         <div
           style={{
+            display: "flex",
             marginTop: 20,
             fontSize: 34,
             fontWeight: 600,

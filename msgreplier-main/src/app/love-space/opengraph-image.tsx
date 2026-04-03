@@ -26,13 +26,13 @@ export default function OpenGraphImage() {
         }}
       >
         {/* Decorative elements */}
-        <div style={{ position: "absolute", top: -50, right: -50, width: 300, height: 300, background: "rgba(236, 72, 153, 0.05)", borderRadius: "50%" }}></div>
-        <div style={{ position: "absolute", bottom: -100, left: -100, width: 400, height: 400, background: "rgba(236, 72, 153, 0.05)", borderRadius: "50%" }}></div>
+        <div style={{ display: "flex", position: "absolute", top: -50, right: -50, width: 300, height: 300, background: "rgba(236, 72, 153, 0.05)", borderRadius: "50%" }}></div>
+        <div style={{ display: "flex", position: "absolute", bottom: -100, left: -100, width: 400, height: 400, background: "rgba(236, 72, 153, 0.05)", borderRadius: "50%" }}></div>
         
-        <div style={{ position: "absolute", top: 60, left: 60, fontSize: 60, opacity: 0.2 }}>❤️</div>
-        <div style={{ position: "absolute", bottom: 60, right: 60, fontSize: 60, opacity: 0.2 }}>💬</div>
-        <div style={{ position: "absolute", top: 120, right: 120, fontSize: 40, opacity: 0.1 }}>🎮</div>
-        <div style={{ position: "absolute", bottom: 120, left: 120, fontSize: 40, opacity: 0.1 }}>🔒</div>
+        <div style={{ display: "flex", position: "absolute", top: 60, left: 60, fontSize: 60, opacity: 0.2 }}>❤️</div>
+        <div style={{ display: "flex", position: "absolute", bottom: 60, right: 60, fontSize: 60, opacity: 0.2 }}>💬</div>
+        <div style={{ display: "flex", position: "absolute", top: 120, right: 120, fontSize: 40, opacity: 0.1 }}>🎮</div>
+        <div style={{ display: "flex", position: "absolute", bottom: 120, left: 120, fontSize: 40, opacity: 0.1 }}>🔒</div>
 
         <div
           style={{
@@ -46,9 +46,10 @@ export default function OpenGraphImage() {
             border: "1px solid rgba(157, 23, 77, 0.1)",
           }}
         >
-          <div style={{ fontSize: 90, marginBottom: 20 }}>💖</div>
+          <div style={{ display: "flex", fontSize: 90, marginBottom: 20 }}>💖</div>
           <div
             style={{
+              display: "flex",
               fontSize: 72,
               fontWeight: 900,
               letterSpacing: "-0.04em",
@@ -61,6 +62,7 @@ export default function OpenGraphImage() {
           </div>
           <div
             style={{
+              display: "flex",
               marginTop: 30,
               fontSize: 30,
               fontWeight: 600,
@@ -75,6 +77,7 @@ export default function OpenGraphImage() {
         
         <div
           style={{
+            display: "flex",
             position: "absolute",
             bottom: 40,
             fontSize: 26,
