@@ -97,15 +97,16 @@ export default function DigitalGreetingCreate() {
 
   const copyLink = () => {
     if (!shareUrl) return;
-    navigator.clipboard.writeText(shareUrl);
+    const text = `I've created a special digital surprise just for you! 💝 This link is very important—it contains a personal celebration I built for you. Open it here: ${shareUrl}`;
+    navigator.clipboard.writeText(text);
     setCopied(true);
-    toast.success("Link copied to clipboard! 📋");
+    toast.success("Message with link copied! 📋");
     setTimeout(() => setCopied(false), 2000);
   };
 
   const shareWhatsApp = () => {
     if (!shareUrl) return;
-    const text = `I have a surprise for you! 💝 Open it here: ${shareUrl}`;
+    const text = `I've created a special digital surprise just for you! 💝 This link is very important—it contains a personal celebration I built for you. Open it here: ${shareUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 

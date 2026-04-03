@@ -23,11 +23,11 @@ const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-1XPYWEPPGJ";
 export const metadata: Metadata = {
   metadataBase: new URL('https://msgreplier.com'),
   title: {
-    default: "MsgReplier - Private Love Space, Slang Dictionary & AI Messaging Tools",
+    default: "MsgReplier - Create Websites for Wishes & Private Love Spaces",
     template: "%s | MsgReplier",
   },
   description:
-    "The ultimate messaging toolkit. Create a private Love-Space for couples, decode Gen Z slang with Shortcutpedia, and use our AI messaging tools. No login required.",
+    "Build a custom website for wishes or create a private Love-Space. The ultimate digital toolkit for couples and special moments. Interactive, animated, and 100% private.",
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png" },
@@ -42,23 +42,23 @@ export const metadata: Metadata = {
     type: "website",
     url: siteUrl,
     siteName: "MsgReplier",
-    title: "MsgReplier – Private Love Space & Slang Dictionary",
+    title: "MsgReplier – Interactive Wishes & Private Couple Spaces",
     description:
-      "Create a private Love-Space for you and your partner, decode chat shortcuts, and use AI messaging tools. Simple, fast, and 100% private.",
+      "Create a magical digital surprise with our wishes website builder or join your partner in a private Love-Space. Simple, fast, and unforgettable.",
     images: [
       {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "MsgReplier",
+        alt: "MsgReplier - Digital Wishes & Love Space",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "MsgReplier – Private Love Space & Slang Dictionary",
+    title: "MsgReplier – Interactive Wishes & Private Couple Spaces",
     description:
-      "Create a private Love-Space for you and your partner, decode chat shortcuts, and use AI messaging tools. Simple, fast, and 100% private.",
+      "Create a magical digital surprise with our wishes website builder or join your partner in a private Love-Space. Simple, fast, and unforgettable.",
     images: ["/twitter-image"],
   },
   verification: {

@@ -590,9 +590,10 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
 
     const copyLink = () => {
         const url = window.location.href;
-        navigator.clipboard.writeText(url);
+        const text = `Hey! I've created a private Love-Space just for us. ❤️ This link is very important—it's our secret room for chat and games. Join me here: ${url}`;
+        navigator.clipboard.writeText(text);
         setCopied(true);
-        toast("Link copied to clipboard!");
+        toast("Message with link copied!");
         setTimeout(() => setCopied(false), 2000);
     };
 
@@ -607,9 +608,10 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const copyInviteLink = () => {
         if (!room?.room_code) return;
         const url = `${window.location.origin}/love-space/join?code=${room.room_code}`;
-        navigator.clipboard.writeText(url);
+        const text = `You're invited to my private Love-Space! ❤️ This link is very important—it's our dedicated space for sharing moments. Join here: ${url}`;
+        navigator.clipboard.writeText(text);
         setCopiedLink(true);
-        toast.success("Invite link copied!");
+        toast.success("Message with link copied!");
         setTimeout(() => setCopiedLink(false), 2000);
     };
 

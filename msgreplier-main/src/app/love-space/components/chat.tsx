@@ -455,7 +455,7 @@ export function Chat({
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 pb-32 space-y-4">
                 {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-2 opacity-60">
                         <Heart className="w-12 h-12 text-pink-300 dark:text-pink-800" />
@@ -468,17 +468,17 @@ export function Chat({
                         return (
                             <div
                                 key={msg.id}
-                                className={`flex flex-col max-w-[80%] ${isMe ? 'items-end ml-auto' : 'items-start'}`}
+                                className={`flex flex-col max-w-[75%] md:max-w-[65%] ${isMe ? 'items-end ml-auto' : 'items-start'}`}
                             >
-                                <div className={`text-xs text-gray-400 dark:text-gray-500 mb-1 px-1 flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                                    <span>{msg.sender_nickname}</span>
-                                    <span className="opacity-50 text-[10px] self-center">
+                                <div className={`text-[10px] text-gray-400 dark:text-gray-500 mb-0.5 px-1 flex gap-2 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                                    <span className="font-medium">{msg.sender_nickname}</span>
+                                    <span className="opacity-50 self-center">
                                         {new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
                                     </span>
                                 </div>
                                 <div
-                                    className={`px-4 py-2 rounded-2xl ${isMe
-                                        ? 'bg-gradient-to-br from-pink-500 to-purple-500 text-white rounded-tr-sm shadow-md'
+                                    className={`px-3 py-2 rounded-2xl text-sm ${isMe
+                                        ? 'bg-gradient-to-br from-pink-500 to-purple-500 text-white rounded-tr-sm shadow-sm'
                                         : 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-gray-200 rounded-tl-sm shadow-sm'
                                         }`}
                                     style={{ wordBreak: 'break-word' }}
@@ -518,10 +518,10 @@ export function Chat({
             ))}
 
             {/* Floating Gemini-style Chat Input */}
-            <div className="absolute bottom-4 left-0 right-0 px-4 z-10 pointer-events-none w-full">
+            <div className="absolute bottom-4 left-0 right-0 px-4 z-10 pointer-events-none w-full flex justify-center">
                 <form
                     onSubmit={handleSendMessage}
-                    className="w-full flex flex-col gap-2 p-3 bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 dark:border-slate-700 pointer-events-auto transition-all focus-within:ring-2 focus-within:ring-pink-200 dark:focus-within:ring-pink-900 relative"
+                    className="w-full max-w-[500px] flex items-end gap-2 p-2 bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 dark:border-slate-700 pointer-events-auto transition-all focus-within:ring-2 focus-within:ring-pink-200 dark:focus-within:ring-pink-900 relative"
                 >
                     <textarea
                         value={newMessage}
@@ -535,19 +535,17 @@ export function Chat({
                                 handleSendMessage(e as any);
                             }
                         }}
-                        placeholder="Type a sweet message..."
-                        className="w-full min-h-[48px] max-h-[120px] border-0 bg-transparent focus:ring-0 focus:outline-none px-4 py-2 dark:text-white dark:placeholder:text-gray-500 shadow-none text-sm resize-none hide-scrollbar overflow-y-auto"
+                        placeholder="Type a message..."
+                        className="flex-1 min-h-[40px] max-h-[120px] border-0 bg-transparent focus:ring-0 focus:outline-none px-3 py-2.5 dark:text-white dark:placeholder:text-gray-500 shadow-none text-sm resize-none hide-scrollbar overflow-y-auto"
                         maxLength={500}
                     />
-                    <div className="flex justify-end">
-                        <Button
-                            type="submit"
-                            disabled={!newMessage.trim() || isLoading}
-                            className="rounded-full w-10 h-10 p-0 bg-pink-500 hover:bg-pink-600 shadow-md text-white transition-transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100"
-                        >
-                            <Send className="w-4 h-4 ml-0.5" />
-                        </Button>
-                    </div>
+                    <Button
+                        type="submit"
+                        disabled={!newMessage.trim() || isLoading}
+                        className="rounded-full w-9 h-9 p-0 bg-pink-500 hover:bg-pink-600 shadow-sm text-white transition-transform active:scale-95 flex-shrink-0 disabled:opacity-50 disabled:active:scale-100 mb-0.5 mr-0.5"
+                    >
+                        <Send className="w-3.5 h-3.5 ml-0.5" />
+                    </Button>
                 </form>
             </div>
         </div>
