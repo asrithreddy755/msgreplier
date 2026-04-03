@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Footer } from "@/components/footer";
 
 export const metadata = {
-  title: "MsgReplier - Private Love Space, Slang Dictionary & AI Messaging Tools",
+  title: "MsgReplier - Private Love Space, Wishes Website & AI Messaging Tools",
   description:
-    "The ultimate messaging toolkit. Create a private Love-Space for couples, decode Gen Z slang with Shortcutpedia, and use our AI messaging tools. No login required.",
+    "The ultimate messaging toolkit. Create a private Love-Space for couples, build interactive Wishes Websites, and use our AI messaging tools. No login required.",
 };
 
 export default function HomePage() {
@@ -25,7 +25,7 @@ export default function HomePage() {
               Upgrade Your Chat Game Instantly
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              From connecting with your partner in <strong className="text-foreground">Love-Space</strong> to decoding Gen Z slang with <strong className="text-foreground">Shortcutpedia</strong>, we have the tools you need.
+              From connecting with your partner in <strong className="text-foreground">Love-Space</strong> to creating a magical <strong className="text-foreground">Wishes Website</strong>, we have the tools you need.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 w-full justify-center pt-4">
               <Button asChild size="lg" className="h-12 px-8 text-lg rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 w-full sm:w-auto bg-gradient-to-r from-pink-500 to-rose-500 border-0">

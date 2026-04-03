@@ -8,6 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Heart, Sparkles, Loader2, Copy, Share2, CheckCircle2, ArrowRight, UserPlus, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Metadata is handled by a separate layout or generateMetadata in server components, 
+// but since this is a 'use client' file, we can't export metadata here directly.
+// However, the parent layout/sitemap will handle the SEO.
+
 export default function LoveSpacePage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);

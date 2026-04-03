@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Love Space - Private Chat Rooms & Games for Couples",
+  title: "Love Space - Private Couple Rooms, Chat & Games",
   description:
-    "Create a private, 100% secure space for you and your partner. Play Ludo, Tic Tac Toe, and Snake & Ladder while chatting in a real-time private room. No login required. A dedicated sanctuary for your relationship.",
+    "Join your partner in a private Love-Space. 100% secure, no-login chat rooms with interactive couple games like Ludo and XOX. Create your personal sanctuary today.",
+  keywords: ["private love space", "couple chat room", "no login chat", "secure couple games", "private room for two", "ludo for couples", "online sanctuary"],
   alternates: {
     canonical: "https://msgreplier.com/love-space",
   },
   openGraph: {
     title: "Love Space - Your Private Couple Sanctuary | MsgReplier",
     description:
-      "A dedicated private space for couples to bond. Real-time chat, interactive games like Ludo and XOX, and live status updates. This is your personal, secure room for sharing special moments.",
+      "A dedicated private space for couples to bond. Real-time chat, interactive games like Ludo and XOX, and live status updates. 100% secure and no login required.",
     url: "https://msgreplier.com/love-space",
     type: "website",
     images: [

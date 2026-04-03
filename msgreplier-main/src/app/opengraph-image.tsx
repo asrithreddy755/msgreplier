@@ -33,10 +33,10 @@ export default function OpenGraphImage() {
             marginTop: 20,
             fontSize: 34,
             fontWeight: 600,
-            color: "#2563eb",
+            color: "#f43f5e",
           }}
         >
-          Shortcut Meanings • Slang Dictionary • Text Repeater
+          Private Love Space • Wishes Website • Interactive Surprises
         </div>
       </div>
     ),

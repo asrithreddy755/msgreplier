@@ -23,11 +23,12 @@ const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-1XPYWEPPGJ";
 export const metadata: Metadata = {
   metadataBase: new URL('https://msgreplier.com'),
   title: {
-    default: "MsgReplier - Create Websites for Wishes & Private Love Spaces",
+    default: "MsgReplier - Private Love Space & Wishes Website Builder",
     template: "%s | MsgReplier",
   },
   description:
-    "Build a custom website for wishes or create a private Love-Space. The ultimate digital toolkit for couples and special moments. Interactive, animated, and 100% private.",
+    "Build a custom Wishes Website or join your partner in a private Love-Space. The ultimate digital toolkit for couples. Create interactive, animated surprises and private chat rooms. No login required.",
+  keywords: ["wishes website", "private love space", "couple chat room", "birthday wishes website", "anniversary wishes website", "digital greeting card", "couple games online"],
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png" },
@@ -50,7 +51,7 @@ export const metadata: Metadata = {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "MsgReplier - Digital Wishes & Love Space",
+        alt: "MsgReplier - Private Love Space & Wishes Website",
       },
     ],
   },
