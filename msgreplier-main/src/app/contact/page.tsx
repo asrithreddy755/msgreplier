@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Metadata } from "next";
-import { ArrowLeft, Mail, MessageSquare } from "lucide-react";
+import { ArrowLeft, Mail, MessageSquare, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 
@@ -39,24 +39,45 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
           Have a question, suggestion, or just want to say hello? We&apos;d love to hear from you.
         </p>
 
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm mt-8">
-          <div className="flex flex-col items-center gap-4">
-            <Mail className="h-8 w-8 text-primary" />
-            <h2 className="text-xl font-semibold">Email Us</h2>
-            <p className="text-slate-500 dark:text-slate-400">
-              For all inquiries, please email us directly at:
-            </p>
-            <a
-              href="mailto:care.msgreplier@gmail.com"
-              className="text-2xl font-bold text-primary hover:underline transition-all"
-            >
-              care.msgreplier@gmail.com
-            </a>
-            <p className="text-sm text-slate-400 mt-4">
-              We typically respond within 24-48 hours.
-            </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="flex flex-col items-center gap-4">
+              <Mail className="h-8 w-8 text-primary" />
+              <h2 className="text-xl font-semibold">Email Us</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">
+                For support and feedback:
+              </p>
+              <a
+                href="mailto:care.msgreplier@gmail.com"
+                className="text-xl font-bold text-primary hover:underline transition-all"
+              >
+                care.msgreplier@gmail.com
+              </a>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="flex flex-col items-center gap-4">
+              <MessageCircle className="h-8 w-8 text-green-500" />
+              <h2 className="text-xl font-semibold">WhatsApp Us</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">
+                For fully custom wishes websites:
+              </p>
+              <a
+                href="https://wa.me/918499989032"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xl font-bold text-green-600 hover:underline transition-all"
+              >
+                +91 8499989032
+              </a>
+            </div>
           </div>
         </div>
+
+        <p className="text-sm text-slate-400 mt-8">
+          We typically respond within 24-48 hours.
+        </p>
       </div>
     </div>
   );

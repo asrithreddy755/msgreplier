@@ -25,7 +25,7 @@ export function Footer() {
                 <Link href="/love-space" className="hover:text-primary transition-colors">Love Space</Link>
               </li>
               <li>
-                <Link href="/prompt" className="hover:text-primary transition-colors">Msg Prompt</Link>
+                <Link href="/digital-greeting" className="hover:text-primary transition-colors">Wishes Website</Link>
               </li>
               <li>
                 <Link href="/flames" className="hover:text-primary transition-colors">FLAMES Calculator</Link>

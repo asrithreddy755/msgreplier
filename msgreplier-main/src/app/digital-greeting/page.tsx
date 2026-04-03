@@ -61,7 +61,7 @@ function GreetingNavbar() {
             {showTools && (
               <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 bg-slate-900 border border-white/10 rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50">
                 {[
-                  { label: "Digital Greeting", href: "/digital-greeting" },
+                  { label: "Wishes Website", href: "/digital-greeting" },
                   { label: "FLAMES Calculator", href: "/flames" },
                   { label: "Shortcutpedia", href: "/shortcutpedia" },
                   { label: "Msg Prompt", href: "/prompt" },
@@ -89,7 +89,7 @@ function GreetingNavbar() {
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-2">
           <Button asChild size="sm" className="rounded-full bg-rose-500 hover:bg-rose-600 text-white border-0">
-            <Link href="/digital-greeting/create">Create Card</Link>
+            <Link href="/digital-greeting/create">Build Website</Link>
           </Button>
         </div>
 
@@ -111,7 +111,7 @@ function GreetingNavbar() {
               { label: "Home", href: "/" },
               { label: "Love Space", href: "/love-space" },
               { label: "Blog", href: "/blog" },
-              { label: "Digital Greeting", href: "/digital-greeting" },
+              { label: "Wishes Website", href: "/digital-greeting" },
               { label: "FLAMES Calculator", href: "/flames" },
               { label: "Shortcutpedia", href: "/shortcutpedia" },
               { label: "Msg Prompt", href: "/prompt" },
@@ -129,7 +129,7 @@ function GreetingNavbar() {
               </Link>
             ))}
             <Button asChild className="w-full mt-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white border-0">
-              <Link href="/digital-greeting/create" onClick={() => setIsOpen(false)}>Create Card</Link>
+              <Link href="/digital-greeting/create" onClick={() => setIsOpen(false)}>Build Website</Link>
             </Button>
           </div>
         </div>

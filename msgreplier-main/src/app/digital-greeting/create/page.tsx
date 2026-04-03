@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Heart, 
@@ -40,6 +41,22 @@ const MUSIC_TRACKS = [
 
 export default function DigitalGreetingCreate() {
   const [step, setStep] = useState(1);
+
+  // Force light theme at the root element level for this page only
+  // This avoids changing the global 'next-themes' state which persists to other pages
+  useEffect(() => {
+    // Add light class to body to override dark mode
+    const body = document.body;
+    const originalBodyClass = body.className;
+    
+    // We want to force light colors for everything inside this page
+    body.classList.add('light-mode-forced');
+    
+    return () => {
+      body.classList.remove('light-mode-forced');
+    };
+  }, []);
+
   const [formData, setFormData] = useState({
     recipient_name: "",
     relationship: "Lover",
@@ -117,13 +134,13 @@ export default function DigitalGreetingCreate() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 pt-2 pb-6 md:py-8 px-4 font-sans text-slate-900 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 pt-2 pb-6 md:py-8 px-4 font-sans text-slate-900 overflow-x-hidden light theme-light" style={{ colorScheme: 'light' }}>
       <div className="max-w-md mx-auto space-y-4 md:space-y-8">
         <div className="text-center space-y-1 md:space-y-2">
           <h1 className="text-xl md:text-3xl font-bold text-rose-600 flex items-center justify-center gap-2">
-            Digital Greeting <Heart className="fill-rose-500 text-rose-500 w-5 h-5 md:w-6 md:h-6" />
+            Wishes Website <Heart className="fill-rose-500 text-rose-500 w-5 h-5 md:w-6 md:h-6" />
           </h1>
-          <p className="text-sm md:text-base text-rose-400">Create a surprise for someone special</p>
+          <p className="text-sm md:text-base text-rose-400">Create a magical surprise for someone special</p>
         </div>
 
         <div className="space-y-2">
@@ -134,8 +151,8 @@ export default function DigitalGreetingCreate() {
           <Progress value={progress} className="h-1.5 md:h-2 bg-rose-100" />
         </div>
 
-        <Card className="border-none shadow-xl overflow-hidden bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl">
-          <CardContent className="p-4 md:p-6">
+        <Card className="border-none shadow-xl overflow-hidden bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl text-slate-900">
+          <CardContent className="p-4 md:p-6 bg-white">
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <motion.div
@@ -156,7 +173,7 @@ export default function DigitalGreetingCreate() {
                         placeholder="e.g. Sarah" 
                         value={formData.recipient_name}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, recipient_name: e.target.value})}
-                        className="border-rose-100 focus-visible:ring-rose-400"
+                        className="border-rose-100 focus-visible:ring-rose-400 bg-white text-slate-900 placeholder:text-slate-400"
                       />
                     </div>
 
@@ -167,7 +184,7 @@ export default function DigitalGreetingCreate() {
                           <Button
                             key={occ.value}
                             variant={formData.occasion === occ.value ? "default" : "outline"}
-                            className={`justify-start ${formData.occasion === occ.value ? 'bg-rose-500 hover:bg-rose-600' : 'border-rose-100 text-slate-600'}`}
+                            className={`justify-start bg-white hover:bg-rose-50 border-rose-100 shadow-sm ${formData.occasion === occ.value ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-500' : 'text-slate-600'}`}
                             onClick={() => setFormData({...formData, occasion: occ.value})}
                           >
                             {occ.label}
@@ -211,7 +228,7 @@ export default function DigitalGreetingCreate() {
                       <div className="relative group">
                         <Textarea 
                           placeholder="Write something sweet..." 
-                          className="min-h-[180px] border-rose-100 focus-visible:ring-rose-400 transition-all pr-12 pb-12"
+                          className="min-h-[180px] border-rose-100 focus-visible:ring-rose-400 transition-all pr-12 pb-12 bg-white text-slate-900 placeholder:text-slate-400"
                           maxLength={500}
                           value={formData.message}
                           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, message: e.target.value})}
@@ -237,7 +254,7 @@ export default function DigitalGreetingCreate() {
                         placeholder="e.g. Michael" 
                         value={formData.sender_name}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, sender_name: e.target.value})}
-                        className="border-rose-100 focus-visible:ring-rose-400"
+                        className="border-rose-100 focus-visible:ring-rose-400 bg-white text-slate-900 placeholder:text-slate-400"
                       />
                     </div>
                   </div>
@@ -277,7 +294,7 @@ export default function DigitalGreetingCreate() {
                           <Button
                             key={track.id}
                             variant={formData.music_id === track.id ? "default" : "outline"}
-                            className={`justify-start ${formData.music_id === track.id ? 'bg-rose-500 hover:bg-rose-600' : 'border-rose-100 text-slate-600'}`}
+                            className={`justify-start bg-white hover:bg-rose-50 border-rose-100 shadow-sm ${formData.music_id === track.id ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-500' : 'text-slate-600'}`}
                             onClick={() => setFormData({...formData, music_id: track.id})}
                           >
                             {track.label}
@@ -336,7 +353,7 @@ export default function DigitalGreetingCreate() {
                         <Input 
                           readOnly 
                           value={shareUrl || "Generating link..."}
-                          className="bg-slate-50 border-rose-100 text-sm h-10"
+                          className="bg-white border-rose-100 text-sm h-10 text-slate-900"
                         />
                         <Button 
                           variant="outline" 
@@ -389,12 +406,18 @@ export default function DigitalGreetingCreate() {
           </CardContent>
         </Card>
 
-        <div className="text-center">
+        <div className="flex flex-col items-center gap-3">
           <Link 
             href="/love-space" 
             className="text-sm text-rose-400 hover:text-rose-500 flex items-center justify-center gap-1 transition-colors"
           >
             Also check out Love Space <ArrowRight className="w-3 h-3" />
+          </Link>
+          <Link 
+            href="/contact" 
+            className="text-sm font-medium text-slate-500 hover:text-rose-500 flex items-center justify-center gap-1 transition-colors"
+          >
+            For fully custom wishes website contact us <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
       </div>

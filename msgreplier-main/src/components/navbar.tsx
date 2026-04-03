@@ -55,7 +55,7 @@ export function Navbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center">
               <DropdownMenuItem asChild>
-                <Link href="/digital-greeting">Digital Greeting</Link>
+                <Link href="/digital-greeting">Wishes Website</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/flames">FLAMES Calculator</Link>
@@ -114,6 +114,13 @@ export function Navbar() {
             </Link>
             <div className="flex flex-col gap-2 pl-4 border-l-2 border-muted">
               <span className="text-xs font-semibold text-muted-foreground uppercase">Tools</span>
+              <Link
+                href="/digital-greeting"
+                className="text-sm font-medium transition-colors hover:text-primary"
+                onClick={() => setIsOpen(false)}
+              >
+                Wishes Website
+              </Link>
               <Link
                 href="/flames"
                 className="text-sm font-medium transition-colors hover:text-primary"

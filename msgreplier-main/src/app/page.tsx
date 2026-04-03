@@ -33,9 +33,9 @@ export default function HomePage() {
                   Start Your Private Love Space <Heart className="ml-2 h-4 w-4 fill-white" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="h-12 px-8 text-lg rounded-full w-full sm:w-auto">
-                <Link href="/flames">
-                  Try FLAMES Calculator <ArrowRight className="ml-2 h-4 w-4" />
+              <Button asChild variant="outline" size="lg" className="h-12 px-8 text-lg rounded-full w-full sm:w-auto hover:bg-orange-50 dark:hover:bg-orange-950/20 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+                <Link href="/digital-greeting">
+                  Build Wishes Website <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
@@ -79,7 +79,34 @@ export default function HomePage() {
               </CardFooter>
             </Card>
 
-            {/* Tool 2: Shortcutpedia */}
+            {/* Tool 2: Wishes Website */}
+            <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Gift className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                </div>
+                <CardTitle>Wishes Website</CardTitle>
+                <CardDescription>Create Interactive Surprise</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                  Create a beautiful, interactive website for wishes for birthdays, anniversaries, or just because.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="w-full group-hover:bg-orange-50 dark:group-hover:bg-orange-900/20 group-hover:text-orange-600 dark:group-hover:text-orange-400"
+                >
+                  <Link href="/digital-greeting">
+                    Build Website <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+
+            {/* Tool 3: Shortcutpedia */}
             <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
               <CardHeader>
                 <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -100,7 +127,7 @@ export default function HomePage() {
               </CardFooter>
             </Card>
 
-            {/* Tool 3: FLAMES */}
+            {/* Tool 4: FLAMES */}
             <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
               <CardHeader>
                 <div className="w-12 h-12 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -117,33 +144,6 @@ export default function HomePage() {
               <CardFooter>
                 <Button asChild variant="ghost" className="w-full group-hover:bg-rose-50 dark:group-hover:bg-rose-900/20 group-hover:text-rose-600 dark:group-hover:text-rose-400">
                   <Link href="/flames">Check Love <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </Button>
-              </CardFooter>
-            </Card>
-
-            {/* Tool 5: Digital Greeting */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
-              <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Gift className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                </div>
-                <CardTitle>Digital Greeting</CardTitle>
-                <CardDescription>Surprise Greeting Cards</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-                  Create a beautiful, animated digital greeting card for birthdays, anniversaries, or just because.
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  asChild
-                  variant="ghost"
-                  className="w-full group-hover:bg-orange-50 dark:group-hover:bg-orange-900/20 group-hover:text-orange-600 dark:group-hover:text-orange-400"
-                >
-                  <Link href="/digital-greeting">
-                    Create Card <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
                 </Button>
               </CardFooter>
             </Card>
