@@ -10,7 +10,8 @@ export function middleware(request: NextRequest) {
     /\.(?:png|jpg|jpeg|gif|webp|svg|ico|bmp|tiff)$/i.test(original) ||
     original === "/favicon.ico" ||
     original === "/robots.txt" ||
-    original === "/sitemap.xml";
+    original === "/sitemap.xml" ||
+    original === "/ads.txt";
   if (ignored) return NextResponse.next();
 
   let normalized = original;
@@ -31,6 +32,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|_next|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|bmp|tiff)).*)",
+    "/((?!api|_next/static|_next/image|_next|favicon.ico|robots.txt|sitemap.xml|ads.txt|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|bmp|tiff)).*)",
   ],
 };
