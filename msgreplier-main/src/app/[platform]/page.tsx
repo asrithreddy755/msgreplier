@@ -157,7 +157,7 @@ function AppContent() {
   useEffect(() => {
     const currentPlatform = PLATFORMS.find(p => p.slug === platformSlug);
     if (!currentPlatform) {
-      router.replace(`/shortcutpedia`);
+      router.replace(`/love-space`);
     } 
   }, [platformSlug, router]);
 
