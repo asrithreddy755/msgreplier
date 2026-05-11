@@ -106,23 +106,23 @@ export default function HomePage() {
               </CardFooter>
             </Card>
 
-            {/* Tool 3: Shortcutpedia */}
+            {/* Tool 3: Msg Prompt */}
             <Card className="group hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-800 w-full">
               <CardHeader>
                 <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <BookOpen className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  <Camera className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
-                <CardTitle>Shortcutpedia</CardTitle>
-                <CardDescription>Slang Dictionary</CardDescription>
+                <CardTitle>Msg Prompt</CardTitle>
+                <CardDescription>AI Prompts for Couples</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-                  Decode Gen Z slang, chat abbreviations, and acronyms like &quot;GYAT&quot;, &quot;Rizz&quot;, and &quot;IYKYK&quot;.
+                  Generate beautiful couple pictures or photoshoot ideas using our curated AI image prompts.
                 </p>
               </CardContent>
               <CardFooter>
                 <Button asChild variant="ghost" className="w-full group-hover:bg-green-50 dark:group-hover:bg-green-900/20 group-hover:text-green-600 dark:group-hover:text-green-400">
-                  <Link href="/shortcutpedia">Search Slang <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  <Link href="/prompt">Get Prompts <ArrowRight className="ml-2 h-4 w-4" /></Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -218,9 +218,9 @@ export default function HomePage() {
                   <Zap className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg md:text-xl mb-2">Instant Productivity Tools</h3>
+                  <h3 className="font-bold text-lg md:text-xl mb-2">Instant Digital Surprises</h3>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Whether you need an Instagram caption helper or a quick way to spam text for fun, our tools load instantly and work on any device.
+                    Whether you need a custom digital greeting card or a private space to connect, our tools load instantly and work smoothly on any device.
                   </p>
                 </div>
               </div>

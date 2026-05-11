@@ -25,7 +25,7 @@ export default async function TermsPage({ searchParams }: { searchParams: Promis
       </Link>
       <h1 className="text-3xl font-bold mb-6">Terms and Conditions</h1>
       <div className="space-y-4 text-muted-foreground leading-relaxed">
-        <p>Welcome to MsgReplier. By using our service, including features like <strong>Love-Space</strong>, <strong>Digital Greeting</strong>, the Text Repeater, and Shortcutpedia, you agree to these terms. You must be at least 13 years old to use this service.</p>
+        <p>Welcome to MsgReplier. By using our service, including features like <strong>Love-Space</strong>, <strong>Digital Greeting</strong>, and our couple games, you agree to these terms. You must be at least 13 years old to use this service.</p>
 
         <h2 className="text-xl font-semibold text-foreground mt-6 mb-2">Usage</h2>
         <p>You agree not to use the service for any illegal or unauthorized purpose. You are responsible for your conduct and any data, text, information, and links that you submit.</p>

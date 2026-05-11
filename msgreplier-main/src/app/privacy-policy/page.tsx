@@ -29,7 +29,7 @@ export default async function PrivacyPolicyPage({ searchParams }: { searchParams
 
         <div className="p-4 bg-muted/50 rounded-lg border border-border/50 my-6">
           <p className="font-medium text-foreground mb-4">
-            Most of our website (including Text Repeater and Shortcutpedia) does not require any login, and we do not save, store, or collect any of your data from these tools.
+            Most of our website tools (including our Love Score calculator and Msg Prompts) do not require any login, and we do not save, store, or collect any of your data from these tools.
             All processing is done entirely in your browser.
           </p>
           <p className="font-medium text-foreground mb-4">
@@ -40,7 +40,14 @@ export default async function PrivacyPolicyPage({ searchParams }: { searchParams
           </p>
         </div>
 
-        <p>We don&apos;t share any personally identifying information publicly or with third-parties, simply because we don&apos;t collect it in the first place.</p>
+        <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">Google AdSense and Cookies</h2>
+        <ul className="list-disc pl-6 space-y-2 mb-4">
+          <li>Third party vendors, including Google, use cookies to serve ads based on a user&apos;s prior visits to your website or other websites.</li>
+          <li>Google&apos;s use of advertising cookies enables it and its partners to serve ads to your users based on their visit to your sites and/or other sites on the Internet.</li>
+          <li>Users may opt out of personalized advertising by visiting <a href="https://myadcenter.google.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Ads Settings</a>. Alternatively, users can opt out of a third-party vendor&apos;s use of cookies for personalized advertising by visiting <a href="https://optout.aboutads.info/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.aboutads.info</a>.</li>
+        </ul>
+
+        <p>We don&apos;t share any personally identifying information publicly or with third-parties, except for advertising partners as stated above, or when required by law.</p>
 
         <p>We only ask for personal information when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent. We also let you know why we’re collecting it and how it will be used.</p>
 

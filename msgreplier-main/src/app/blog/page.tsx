@@ -43,6 +43,210 @@ export default function BlogPage() {
             <h2 className="text-2xl font-bold tracking-tight">Recent Articles</h2>
           </div>
 
+          {/* New Article 6: Dating App Openers */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Dating & Social
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> April 10, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 5 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  How to Start a Conversation on Dating Apps (Without Being Boring)
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>
+                Tired of sending "Hey" on Tinder and Bumble? Learn exactly how to break the ice and start a conversation that actually gets a reply.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/dating-app-conversation-starters" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article 7: Confusing Chat Acronyms */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Internet Culture
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> April 08, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 6 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  Understanding IYKYK, TFW, and Other Confusing Chat Acronyms
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>
+                If reading a group chat feels like deciphering a secret code, you aren't alone. Let's break down the most confusing slang of the year.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/confusing-chat-acronyms-explained" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article 8: Texting Style Psychology */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Psychology
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> April 05, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 4 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  What Your Texting Style Says About Your Relationship
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>
+                Do you double text? Leave them on read? Use too many emojis? Learn what your digital communication habits silently communicate to your partner.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/texting-style-relationship-psychology" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article 9: Long Distance Relationships */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Relationships
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> March 29, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 7 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  The Ultimate Guide to Long-Distance Relationships in 2026
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>
+                Surviving a Long Distance Relationship is notoriously tough. But with the right mindset and the right digital tools, you can close the gap.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/long-distance-relationship-guide" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article 10: Meaningful Digital Surprises */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Celebration Ideas
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> March 20, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 5 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  How to Plan a Meaningful Digital Surprise for Your Partner
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>
+                Distance shouldn't stop you from celebrating. Learn how to craft unforgettable virtual gifts, from custom wishes websites to surprise online dates.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/meaningful-digital-surprises" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article 11: Evolution of Text Messaging */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Tech History
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> March 12, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 4 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  The Evolution of Text Messaging: From T9 to Real-Time Context
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>
+                It is hard to believe that we used to pay 10 cents per message and had to press the number '7' four times just to type the letter 'S'.
+              </p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/evolution-of-text-messaging" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
           {/* New Article: Create Website for Wishes */}
           <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">

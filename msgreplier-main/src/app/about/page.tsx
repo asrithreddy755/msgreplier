@@ -20,28 +20,23 @@ export default function AboutPage() {
       <h1 className="text-3xl font-bold mb-6">About MsgReplier</h1>
       <div className="space-y-4 text-muted-foreground leading-relaxed">
         <p>
-          MsgReplier is a free, privacy-first messaging toolkit designed to help you navigate the complexities of modern digital communication. 
-          Whether you&apos;re trying to decode Gen Z slang, create emphasis in your messages, or draft the perfect reply, our tools are here to assist.
+          MsgReplier is a free, privacy-first platform designed to help you celebrate your relationships and create magical digital surprises for your loved ones.
+          Whether you&apos;re trying to build a custom wishes website for a birthday or anniversary, or looking for a private space to connect with your partner, our tools are here to assist.
         </p>
         <p>
-          Our mission is to provide simple, fast, and effective tools that enhance your messaging experience without compromising your privacy.
+          Our mission is to provide simple, fast, and memorable experiences that bring couples closer together without compromising your privacy.
         </p>
         
-        <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">Our Tools</h2>
-        <ul className="list-disc pl-6 space-y-2">
+        <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">Our Features</h2>
+        <ul className="list-disc pl-6 space-y-4">
           <li>
-            <strong><Link href="/shortcutpedia" className="text-primary hover:underline">Shortcutpedia</Link>:</strong> An extensive dictionary of internet slang and chat abbreviations.
+            <strong><Link href="/digital-greeting" className="text-primary hover:underline">Wishes Website Builder</Link>:</strong> Create custom, interactive websites with beautiful animations to wish your loved ones a happy birthday, anniversary, or special occasion.
           </li>
           <li>
-            <strong><Link href="/text-repeater" className="text-primary hover:underline">Text Repeater</Link>:</strong> A tool to repeat text instantly for emphasis or to meet character limits.
-            <ul className="list-disc pl-6 mt-2 space-y-1 text-sm">
-              <li><Link href="/instagram-text-repeater" className="hover:underline">Instagram Text Repeater</Link></li>
-              <li><Link href="/whatsapp-text-repeater" className="hover:underline">WhatsApp Text Repeater</Link></li>
-              <li><Link href="/telegram-text-repeater" className="hover:underline">Telegram Text Repeater</Link></li>
-              <li><Link href="/facebook-text-repeater" className="hover:underline">Facebook Text Repeater</Link></li>
-              <li><Link href="/x-text-repeater" className="hover:underline">X (Twitter) Text Repeater</Link></li>
-              <li><Link href="/youtube-text-repeater" className="hover:underline">YouTube Text Repeater</Link></li>
-            </ul>
+            <strong><Link href="/love-space" className="text-primary hover:underline">Love-Space</Link>:</strong> A private, encrypted digital room for couples to chat securely and play real-time synchronized games like Snake and Ludo together.
+          </li>
+          <li>
+            <strong><Link href="/love-score" className="text-primary hover:underline">Love Score Calculator</Link>:</strong> A fun, interactive tool to calculate your love compatibility based on the classic flames game concept.
           </li>
           <li>
             <strong><Link href="/prompt" className="text-primary hover:underline">Msg Prompt</Link>:</strong> A curated library of copyable prompts for couples. Copy a prompt, paste it into any AI image tool, and generate matching couple pictures or creative photoshoot ideas in seconds.

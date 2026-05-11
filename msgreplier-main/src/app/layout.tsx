@@ -62,9 +62,9 @@ export const metadata: Metadata = {
       "Create a magical digital surprise with our wishes website builder or join your partner in a private Love-Space. Simple, fast, and unforgettable.",
     images: ["/twitter-image"],
   },
-  verification: {
-    google: "REPLACE_WITH_ACTUAL_CODE",
-  },
+  // verification: {
+  //   google: "REPLACE_WITH_ACTUAL_CODE",
+  // },
 };
 
 export const viewport: Viewport = {
