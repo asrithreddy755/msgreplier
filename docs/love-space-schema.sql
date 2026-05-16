@@ -13,6 +13,7 @@ CREATE TABLE public.love_rooms (
 -- Enable RLS
 ALTER TABLE public.love_rooms ENABLE ROW LEVEL SECURITY;
 
+
 -- Allow anyone to create rooms
 CREATE POLICY "Anyone can create rooms" ON public.love_rooms
   FOR INSERT WITH CHECK (true);
