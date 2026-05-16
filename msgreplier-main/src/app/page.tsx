@@ -22,7 +22,7 @@ export default function HomePage() {
               🚀 The Ultimate Place for Couples
             </Badge>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 max-w-[320px] sm:max-w-4xl mx-auto">
-              Upgrade Your Chat Game Instantly
+              Your private space to connect, play and create memories that last a lifetime.
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
               From connecting with your partner in <strong className="text-foreground">Love-Space</strong> to creating a magical <strong className="text-foreground">Wishes Website</strong>, we have the tools you need.
@@ -162,37 +162,37 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Link href="/blog" className="group block w-full">
-              <div className="border rounded-xl overflow-hidden hover:shadow-md transition-all h-full">
+            <Link href="/blog/love-space-guide" className="group block w-full">
+              <div className="border rounded-xl overflow-hidden hover:shadow-md transition-all h-full bg-rose-500/5 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/30">
                 <div className="p-5 sm:p-6">
-                  <div className="text-xs font-semibold text-primary mb-2">TIPS & TRICKS</div>
-                  <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">How to Send a Blank Message</h3>
+                  <div className="text-xs font-semibold text-rose-600 dark:text-rose-400 mb-2">LOVE & CONNECTION</div>
+                  <h3 className="font-bold text-xl mb-2 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">Love-Space: The Ultimate Private Room for Couples</h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-3">
-                    Learn the trick to send invisible text on WhatsApp and Instagram using our special character generator.
+                    Discover how to create a 100% private, secure space for you and your partner. Chat, play games like Ludo and XOX, and stay connected with no login required.
                   </p>
                 </div>
               </div>
             </Link>
 
-            <Link href="/blog" className="group block w-full">
-              <div className="border rounded-xl overflow-hidden hover:shadow-md transition-all h-full">
+            <Link href="/blog/create-website-for-wishes" className="group block w-full">
+              <div className="border rounded-xl overflow-hidden hover:shadow-md transition-all h-full bg-orange-50 dark:bg-orange-950/10 border-orange-100 dark:border-orange-900/30">
                 <div className="p-5 sm:p-6">
-                  <div className="text-xs font-semibold text-primary mb-2">INTERNET CULTURE</div>
-                  <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">Top 5 Gen Z Slang Terms (2026)</h3>
+                  <div className="text-xs font-semibold text-orange-600 dark:text-orange-400 mb-2">FEATURE GUIDE</div>
+                  <h3 className="font-bold text-xl mb-2 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">How to Create a Website for Wishes in Seconds</h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-3">
-                    Confused by &quot;Rizz&quot; or &quot;No Cap&quot;? We decode the most popular internet slang you need to know this year.
+                    Learn how to build a custom, interactive digital greeting website for birthdays and anniversaries with 3D animations and music.
                   </p>
                 </div>
               </div>
             </Link>
 
-            <Link href="/blog" className="group block w-full">
+            <Link href="/blog/long-distance-relationship-guide" className="group block w-full">
               <div className="border rounded-xl overflow-hidden hover:shadow-md transition-all h-full">
                 <div className="p-5 sm:p-6">
-                  <div className="text-xs font-semibold text-primary mb-2">DATING & SOCIAL</div>
-                  <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">The Art of the &apos;Dry Text&apos;</h3>
+                  <div className="text-xs font-semibold text-primary mb-2">RELATIONSHIPS</div>
+                  <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">The Ultimate Guide to Long-Distance Relationships in 2026</h3>
                   <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-3">
-                    How to reply to one-word answers like &quot;K&quot; and &quot;Lol&quot; without killing the conversation.
+                    Surviving a Long Distance Relationship is notoriously tough. But with the right mindset and the right digital tools, you can close the gap.
                   </p>
                 </div>
               </div>

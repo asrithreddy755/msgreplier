@@ -60,9 +60,7 @@ export function Navbar() {
               <DropdownMenuItem asChild>
                 <Link href="/flames">FLAMES Calculator</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/shortcutpedia">Shortcutpedia</Link>
-              </DropdownMenuItem>
+
               <DropdownMenuItem asChild>
                 <Link href="/prompt">Msg Prompt</Link>
               </DropdownMenuItem>
@@ -128,13 +126,7 @@ export function Navbar() {
               >
                 FLAMES Calculator
               </Link>
-              <Link
-                href="/shortcutpedia"
-                className="text-sm font-medium transition-colors hover:text-primary"
-                onClick={() => setIsOpen(false)}
-              >
-                Shortcutpedia
-              </Link>
+
             </div>
             <Link
               href="/about"

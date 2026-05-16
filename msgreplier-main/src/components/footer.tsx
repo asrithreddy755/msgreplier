@@ -30,9 +30,7 @@ export function Footer() {
               <li>
                 <Link href="/flames" className="hover:text-primary transition-colors">FLAMES Calculator</Link>
               </li>
-              <li>
-                <Link href="/shortcutpedia" className="hover:text-primary transition-colors">Shortcutpedia</Link>
-              </li>
+
             </ul>
           </div>
 
