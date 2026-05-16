@@ -22,7 +22,7 @@ export default function HomePage() {
               🚀 The Ultimate Place for Couples
             </Badge>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 max-w-[320px] sm:max-w-4xl mx-auto">
-              Your private space to connect, play and create memories that last a lifetime.
+              Your private space to connect and play
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
               From connecting with your partner in <strong className="text-foreground">Love-Space</strong> to creating a magical <strong className="text-foreground">Wishes Website</strong>, we have the tools you need.
