@@ -12,6 +12,16 @@ const nextConfig = {
         destination: '/icon.png',
         permanent: true,
       },
+      {
+        source: '/terms-of-service',
+        destination: '/terms-conditions',
+        permanent: true,
+      },
+      {
+        source: '/terms',
+        destination: '/terms-conditions',
+        permanent: true,
+      },
     ];
   },
   async headers() {

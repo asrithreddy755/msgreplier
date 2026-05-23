@@ -94,8 +94,17 @@ export default async function RootLayout({
         <link rel="icon" href="/icon.png" type="image/png" />
         <link rel="shortcut icon" href="/icon.png" />
         <link rel="apple-touch-icon" href="/icon.png" sizes="180x180" />
-
-
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (typeof window !== 'undefined') {
+                window.__name = window.__name || function(target, value) {
+                  return Object.defineProperty(target, 'name', { value: value, configurable: true });
+                };
+              }
+            `
+          }}
+        />
       </head>
       <body className="antialiased min-h-screen bg-background">
         <ThemeProvider

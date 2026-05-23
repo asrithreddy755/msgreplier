@@ -640,32 +640,23 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         loadMembers();
     }, [loadMembers]);
 
-    // Subscribe to member changes via Supabase Realtime instead of polling
+    // Smart polling for member joins (runs only while waiting for partner, 0 realtime database replication or active websockets needed!)
     useEffect(() => {
         if (!roomId) return;
 
-        const channel = supabase
-            .channel(`public:love_room_members:${roomId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: '*', // INSERT = new member joins, DELETE = member leaves
-                    schema: 'public',
-                    table: 'love_room_members',
-                    filter: `room_id=eq.${roomId}`,
-                },
-                async () => {
-                    // Refetch members once on any change
-                    loadMembers();                }
-            )
-            .subscribe();
+        let interval: NodeJS.Timeout | null = null;
+
+        // Only poll if we don't have both members yet (waiting for partner to join)
+        if (members.length < 2) {
+            interval = setInterval(() => {
+                loadMembers();
+            }, 4000); // Poll every 4 seconds
+        }
 
         return () => {
-            supabase.removeChannel(channel);
+            if (interval) clearInterval(interval);
         };
-        // CRITICAL: Do NOT add `supabase` here — it's a stable module singleton.
-        // Adding it would cause this channel to be torn down and rebuilt on every render.
-    }, [roomId]);
+    }, [roomId, members.length, loadMembers]);
 
     // Live Frontend Expiration Sweeper
     // If the room is older than 10 minutes AND the other member is offline, terminate.

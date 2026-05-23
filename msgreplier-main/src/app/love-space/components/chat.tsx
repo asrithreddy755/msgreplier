@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Send, Heart, Loader2 } from 'lucide-react';
 import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
 
+
 export function Chat({ 
     roomId, 
     currentMember, 
@@ -243,6 +244,45 @@ export function Chat({
         };
     }, [registerHandler, unregisterHandler, roomId, sendMessage, mergeMessages, currentMember.id]);
 
+    // Fallback polling loop when WebRTC is not connected (0 realtime websocket usage, infinite scalability)
+    useEffect(() => {
+        if (!roomId) return;
+        
+        let intervalId: NodeJS.Timeout | null = null;
+        let isPollMounted = true;
+
+        const pollMessages = async () => {
+            // Check if page is visible to avoid waste
+            if (typeof document !== 'undefined' && document.hidden) return;
+            
+            try {
+                const result = await fetch(`/api/love-space/messages?roomId=${roomId}`, { cache: 'no-store' }).then(r => r.json());
+                if (!isPollMounted) return;
+                if (Array.isArray(result?.messages)) {
+                    mergeMessages(result.messages);
+                }
+            } catch (error) {
+                console.error('[SYNC] Polling failed:', error);
+            }
+        };
+
+        // Only start polling if WebRTC is not connected (saves server load!)
+        const isRtcConnected = connectionState === 'Connected';
+        
+        if (!isRtcConnected) {
+            console.log("[SYNC] WebRTC offline. Starting HTTP polling fallback.");
+            // Poll immediately on mount/status change
+            pollMessages();
+            // Then poll every 4 seconds
+            intervalId = setInterval(pollMessages, 4000);
+        }
+
+        return () => {
+            isPollMounted = false;
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [roomId, connectionState, mergeMessages]);
+
     // --- SYNC LOGIC ---
     useEffect(() => {
         if (sendMessage && !messages.length) {
@@ -390,16 +430,40 @@ export function Chat({
             sendMessage?.('typing', { value: false });
         }
 
-        // Broadcast to peer immediately via RTC
-        if (sendMessage) {
+        // Broadcast to peer immediately via RTC if connected
+        let sentViaRTC = false;
+        if (sendMessage && connectionState === 'Connected') {
             sendMessage('chat', msgData);
             // Track for acknowledgement
             pendingMessagesRef.current.set(uniqueId, { payload: msgData, attempts: 0 });
+            sentViaRTC = true;
         }
 
-        // Add to unsaved buffer for lazy DB persistence
-        unsavedMessagesRef.current.push(msgData);
-        hasUnsavedChangesRef.current = true;
+        // Fallback: If WebRTC is not connected, save immediately to the database so the partner gets it in real-time
+        if (!sentViaRTC) {
+            console.log("[SYNC] WebRTC not connected. Persisting message immediately to database for real-time fallback.");
+            fetch('/api/love-space/messages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: msgData.id,
+                    roomId,
+                    senderNickname: msgData.sender_nickname,
+                    message: msgData.message,
+                    createdAt: msgData.created_at,
+                }),
+            }).catch(err => {
+                console.error('[SYNC] Failed immediate message save:', err);
+                // Fallback to lazy persistence if immediate save fails
+                unsavedMessagesRef.current.push(msgData);
+                hasUnsavedChangesRef.current = true;
+            });
+        } else {
+            // Add to unsaved buffer for lazy DB persistence
+            unsavedMessagesRef.current.push(msgData);
+            hasUnsavedChangesRef.current = true;
+        }
+
         setIsLoading(false);
     };
 

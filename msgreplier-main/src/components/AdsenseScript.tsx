@@ -1,6 +1,5 @@
 "use client";
 
-import Script from "next/script";
 import { useEffect, useState } from "react";
 
 export default function AdsenseScript() {
@@ -18,14 +17,24 @@ export default function AdsenseScript() {
     return () => window.removeEventListener("storage", check);
   }, []);
 
-  if (!consented) return null;
+  useEffect(() => {
+    if (!consented) return;
 
-  return (
-    <Script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8011470049569108"
-      strategy="afterInteractive"
-      crossOrigin="anonymous"
-    />
-  );
+    // Inject native script to avoid Next.js next/script data-nscript attribute warnings
+    const script = document.createElement("script");
+    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8011470049569108";
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    document.head.appendChild(script);
+
+    return () => {
+      try {
+        document.head.removeChild(script);
+      } catch {
+        // Safe check
+      }
+    };
+  }, [consented]);
+
+  return null;
 }
