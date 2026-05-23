@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Tag, ArrowRight, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://msgreplier.com'),
+  alternates: {
+    canonical: "/blog",
+  },
   title: "MsgReplier Blog - Messaging Tips, Tricks & Slang",
   description: "Welcome to the official MsgReplier blog. From mastering WhatsApp formatting tricks to decoding the latest Gen Z slang, we break it all down.",
 };

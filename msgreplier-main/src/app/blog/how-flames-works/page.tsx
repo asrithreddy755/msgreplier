@@ -110,7 +110,7 @@ export default function FlamesWorksPost() {
 
             <h2>Why Is It Still Popular?</h2>
             <p>
-              Nostalgia plays a huge role. It&apos;s a simple game that requires zero technology, just a pen and paper (or our digital <Link href="/flames">FLAMES Calculator</Link>). It bridges generations—your parents probably played it, and kids today still discover it.
+              Nostalgia plays a huge role. It&apos;s a simple game that requires zero technology, just a pen and paper (or our digital <Link href="/flames">FLAMES Calculator</Link>). It bridges generations—your parents probably played it, and kids today still discover it. If you want a more modern approach, check out our comprehensive <Link href="/blog/love-score-guide">Love Score Guide</Link> to see how names compatibility works.
             </p>
             <p>
               Plus, it&apos;s a low-stakes way to think about a crush. If you get &quot;Enemy,&quot; you can laugh it off. If you get &quot;Marriage,&quot; you can secretly smile.

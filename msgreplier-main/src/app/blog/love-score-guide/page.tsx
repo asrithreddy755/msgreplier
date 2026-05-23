@@ -13,8 +13,37 @@ export const metadata: Metadata = {
 };
 
 export default function LoveScoreGuide() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Love Score Guide: How It Works & What Your Score Means",
+    "description": "Discover how MsgReplier's Love Score calculator works, what the different score ranges mean, and how to interpret your compatibility result. A complete guide.",
+    "datePublished": "2026-02-28T08:00:00+00:00",
+    "author": {
+      "@type": "Organization",
+      "name": "MsgReplier",
+      "url": "https://msgreplier.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "MsgReplier",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://msgreplier.com/favicon.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://msgreplier.com/blog/love-score-guide"
+    }
+  };
+
   return (
     <div className="container max-w-3xl py-12 px-4 md:px-6 mx-auto">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Link href="/blog" className="inline-flex mb-8">
         <Button variant="ghost" className="gap-2 -ml-4 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />

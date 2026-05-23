@@ -98,7 +98,7 @@ export default function PsychologyOfCrushesPost() {
               Psychologists use the term **limerence** to describe an involuntary state of intense romantic desire. It&apos;s characterized by intrusive thoughts, a fear of rejection, and a longing for reciprocation.
             </p>
             <p>
-              This is often why we turn to tools like <Link href="/flames">FLAMES calculators</Link> or zodiac compatibility. When we feel out of control, we look for signs and reassurance that the feeling is mutual.
+              This is often why we turn to tools like <Link href="/flames">FLAMES calculators</Link> or zodiac compatibility. When we feel out of control, we look for signs and reassurance that the feeling is mutual. For a deeper look at name compatibility tests, check out our <Link href="/blog/love-score-guide">Love Score Guide</Link> explaining the ranges and accuracy.
             </p>
 
             <h2>Idealization</h2>
