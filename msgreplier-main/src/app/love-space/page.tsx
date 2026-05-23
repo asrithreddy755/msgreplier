@@ -236,33 +236,71 @@ export default function LoveSpacePage() {
             ) : (
                 <div className="flex flex-col gap-6 w-full max-w-md z-20">
                     {/* Create Room Card */}
-                    <Card className="shadow-2xl border-pink-100 dark:border-pink-900/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md overflow-hidden">
-                        <CardHeader className="text-center pb-2">
-                            <CardTitle className="text-2xl font-bold text-gray-800 dark:text-gray-100">Create a New Room</CardTitle>
-                            <CardDescription>Enter your nickname to get started</CardDescription>
+                    <Card className="shadow-2xl border-pink-200/60 dark:border-pink-900/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md overflow-hidden">
+                        {/* Top accent bar */}
+                        <div className="h-1 w-full bg-gradient-to-r from-pink-400 via-rose-400 to-purple-400" />
+                        <CardHeader className="text-center pb-3 pt-6">
+                            {/* Icon */}
+                            <div className="mx-auto mb-3 w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-400 flex items-center justify-center shadow-lg shadow-pink-500/30">
+                                <Heart className="w-7 h-7 text-white fill-white" />
+                            </div>
+                            <CardTitle className="text-3xl font-extrabold tracking-tight text-gray-800 dark:text-gray-100">
+                                Create a New Room
+                            </CardTitle>
+                            <CardDescription className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Your private space is ready in seconds
+                            </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
+                        <CardContent className="space-y-5 px-6 pb-6">
+                            {/* Feature pills */}
+                            <div className="grid grid-cols-1 gap-2">
+                                <div className="flex items-center gap-3 bg-pink-50 dark:bg-pink-900/20 rounded-xl px-4 py-2.5 border border-pink-100 dark:border-pink-900/30">
+                                    <span className="text-lg leading-none">💬</span>
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Private real-time chat — just the two of you</span>
+                                </div>
+                                <div className="flex items-center gap-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl px-4 py-2.5 border border-purple-100 dark:border-purple-900/30">
+                                    <span className="text-lg leading-none">🎮</span>
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Play Ludo, Tic Tac Toe &amp; Snake together</span>
+                                </div>
+                                <div className="flex items-center gap-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl px-4 py-2.5 border border-rose-100 dark:border-rose-900/30">
+                                    <span className="text-lg leading-none">🔒</span>
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">No login needed — auto-deletes after 24 hours</span>
+                                </div>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-gray-100 dark:border-gray-800" />
+                                </div>
+                                <div className="relative flex justify-center text-xs">
+                                    <span className="bg-white dark:bg-slate-900 px-3 text-gray-400 font-medium uppercase tracking-widest">Your nickname</span>
+                                </div>
+                            </div>
+
+                            {/* Input + Button */}
+                            <div className="space-y-3">
                                 <Input
-                                    placeholder="Your nickname (e.g. Romeo)"
+                                    placeholder="e.g. Romeo 🌹"
                                     value={creatorName}
                                     onChange={(e) => setCreatorName(e.target.value)}
-                                    className="h-12 rounded-xl border-pink-100 focus-visible:ring-pink-500"
+                                    onKeyDown={(e) => e.key === "Enter" && createRoom()}
+                                    className="h-12 rounded-xl border-pink-200 dark:border-pink-900/50 focus-visible:ring-pink-500 text-base placeholder:text-gray-400"
                                 />
                                 {error && <p className="text-xs text-red-500 font-medium px-1">{error}</p>}
+                                <Button
+                                    onClick={createRoom}
+                                    disabled={isLoading}
+                                    className="w-full h-12 bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white rounded-xl font-bold text-base shadow-lg shadow-pink-500/25 transition-all hover:scale-[1.02] active:scale-95"
+                                >
+                                    {isLoading ? (
+                                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                    ) : (
+                                        <Heart className="w-5 h-5 mr-2 fill-white" />
+                                    )}
+                                    {isLoading ? "Creating your space…" : "Create Love Space"}
+                                </Button>
                             </div>
-                            <Button
-                                onClick={createRoom}
-                                disabled={isLoading}
-                                className="w-full h-12 bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white rounded-xl font-bold shadow-lg shadow-pink-500/20 transition-all active:scale-95"
-                            >
-                                {isLoading ? (
-                                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                                ) : (
-                                    <Heart className="w-5 h-5 mr-2" />
-                                )}
-                                {isLoading ? "Creating..." : "Create Love Space"}
-                            </Button>
                         </CardContent>
                     </Card>
 

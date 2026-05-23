@@ -8,7 +8,7 @@ import { Navbar } from "@/components/navbar";
 import { MainWrapper } from "@/components/main-wrapper";
 import Script from "next/script";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
-import { Footer } from "@/components/footer";
+import { FooterWrapper } from "@/components/FooterWrapper";
 import AdsenseScript from "@/components/AdsenseScript";
 
 const getSiteUrl = () => {
@@ -109,7 +109,7 @@ export default async function RootLayout({
             <MainWrapper>
               {children}
             </MainWrapper>
-            <Footer />
+            <FooterWrapper />
             <CookieConsent />
           </div>
           <Toaster />

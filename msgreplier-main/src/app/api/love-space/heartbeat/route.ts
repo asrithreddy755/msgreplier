@@ -4,7 +4,13 @@ import { getSupabaseAdmin } from '../_supabase';
 
 export async function POST(request: Request) {
     try {
-        const { roomId } = await request.json();
+        let roomId: string | undefined;
+        try {
+            const body = await request.json();
+            roomId = body?.roomId;
+        } catch {
+            return NextResponse.json({ error: 'Invalid or empty request body' }, { status: 400 });
+        }
 
         if (!roomId) {
             return NextResponse.json({ error: 'Room ID is required' }, { status: 400 });
