@@ -7,11 +7,43 @@ export const metadata: Metadata = {
   title: "Why Do We Have Crushes? The Psychology of Attraction",
   description:
     "Explore the science behind why we develop crushes, the role of dopamine and limerence, and why we obsess over compatibility tests.",
+  alternates: {
+    canonical: "/blog/psychology-of-crushes",
+  },
 };
 
 export default function PsychologyOfCrushesPost() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Why Do We Have Crushes? The Psychology of Attraction",
+    "description": "Explore the science behind why we develop crushes, the role of dopamine and limerence, and why we obsess over compatibility tests.",
+    "datePublished": "2026-02-26T08:00:00+00:00",
+    "author": {
+      "@type": "Organization",
+      "name": "MsgReplier",
+      "url": "https://msgreplier.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "MsgReplier",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://msgreplier.com/favicon.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://msgreplier.com/blog/psychology-of-crushes"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
         <div className="mb-8 flex items-center justify-between gap-3">
           <Link href="/blog" className="inline-flex">

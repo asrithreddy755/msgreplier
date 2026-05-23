@@ -7,6 +7,7 @@ import { JoinRoom } from '../components/join-room';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { Chat, XOX, Ludo, SnakeLadder, LoveQuiz, NetworkStatus } from '../components/games';
+import { MuteButton } from '../components/MuteButton';
 import { LoveSpaceFlames } from '../components/LoveSpaceFlames';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Signal, SignalLow, SignalZero, Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut, Trophy, Send, Sparkles, MessageSquare, Share2 } from 'lucide-react';
@@ -881,6 +882,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                 </div>
 
                 <div className="flex items-center gap-4">
+                    <MuteButton className="relative top-auto right-auto shadow-none border-pink-100 dark:border-pink-900/50 bg-white/40 hover:bg-pink-50 dark:hover:bg-pink-900/30 text-pink-600 dark:text-pink-300 h-8 w-8" />
                     <NetworkStatus 
                         connectionStatus={
                             connectionState === 'Connected' ? 'connected' :
@@ -908,8 +910,9 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
             <div className="flex-1 overflow-hidden flex flex-col z-10 w-full pt-3 sm:pt-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full w-full">
                     <TabsList className="flex w-[calc(100%-2rem)] bg-white/80 dark:bg-slate-900/80 p-1 mx-auto my-2 rounded-2xl sm:rounded-xl backdrop-blur-md h-12 border border-pink-200 dark:border-pink-900/50 shadow-[0_8px_30px_rgb(236,72,153,0.12)] flex-shrink-0 relative gap-1">
-                        {/* Network Status Indicator */}
-                        <div className="absolute -top-12 right-0 z-50 sm:hidden">
+                        {/* Network & Mute Controls */}
+                        <div className="absolute -top-12 right-0 z-50 sm:hidden flex items-center gap-2">
+                            <MuteButton className="relative top-auto right-auto shadow-sm border-pink-100 dark:border-pink-900/50 bg-white/80 dark:bg-slate-900/80 text-pink-600 dark:text-pink-300 h-8 w-8 animate-in fade-in duration-300" />
                             <NetworkStatus 
                                 connectionStatus={
                                     connectionState === 'Connected' ? 'connected' :
@@ -1107,28 +1110,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                     />
                                 </div>
 
-                                {/* Invite Partner Section */}
-                                <div className="mt-8 flex flex-col items-center gap-4">
-                                    <div className="w-full max-w-[320px] bg-white/50 dark:bg-slate-900/40 backdrop-blur-md rounded-[2rem] p-4 border border-pink-100 dark:border-pink-900/30 shadow-sm flex flex-col gap-3 group transition-all hover:shadow-pink-200/20">
-                                        <div className="flex items-center gap-2 px-1">
-                                            <Sparkles className="w-3 h-3 text-pink-500" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-pink-600 dark:text-pink-400">Invite Partner</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 bg-pink-50/50 dark:bg-slate-950/50 rounded-2xl p-2 pl-4 border border-pink-100 dark:border-pink-900/20 transition-all group-hover:bg-pink-100/30 dark:group-hover:bg-slate-900/40">
-                                            <span className="flex-1 text-[11px] text-gray-500 dark:text-gray-400 truncate font-medium">
-                                                {typeof window !== 'undefined' ? window.location.href : 'Loading...'}
-                                            </span>
-                                            <Button 
-                                                onClick={copyLink}
-                                                className="h-9 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white text-[10px] font-black uppercase px-4 shadow-md transition-all active:scale-95 flex-shrink-0"
-                                            >
-                                                {copied ? <CheckCircle2 className="w-3.5 h-3.5 mr-2" /> : <Copy className="w-3.5 h-3.5 mr-2" />}
-                                                {copied ? "Copied!" : "Copy Link"}
-                                            </Button>
-                                        </div>
-                                        <p className="text-[9px] text-gray-400 dark:text-gray-500 px-1 text-center italic">Share this link with your partner to start your journey! ❤️</p>
-                                    </div>
-                                </div>
+
 
                                 {/* Room Code Section (Moved to bottom) */}
                                 <div className="mt-6 bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-pink-100 dark:border-pink-900/50 shadow-sm flex flex-col items-center gap-4 text-center">
@@ -1326,7 +1308,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                             </div>
                         </TabsContent>
                         {showGameChat && (
-                            <div className="absolute inset-0 z-30 flex flex-col bg-white dark:bg-slate-950">
+                            <div className="absolute inset-0 z-[150] flex flex-col bg-white dark:bg-slate-950">
                                 <div className="flex items-center justify-between px-4 py-3 border-b border-pink-100 dark:border-pink-900/40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
                                     <div className="flex items-center gap-3">
                                         <Button

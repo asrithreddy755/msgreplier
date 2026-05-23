@@ -6,6 +6,9 @@ import { ArrowLeft } from "lucide-react";
 export const metadata: Metadata = {
   title: "About MsgReplier - Our Mission & Tools",
   description: "Learn more about MsgReplier, the free messaging toolkit designed to simplify digital communication with privacy-first tools.",
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 export default function AboutPage() {

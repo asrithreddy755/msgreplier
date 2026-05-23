@@ -28,9 +28,14 @@ export function Footer() {
                 <Link href="/digital-greeting" className="hover:text-primary transition-colors">Wishes Website</Link>
               </li>
               <li>
+                <Link href="/digital-greeting/create" className="hover:text-primary transition-colors">Create Wishes Website</Link>
+              </li>
+              <li>
+                <Link href="/text-repeater" className="hover:text-primary transition-colors">Text Repeater</Link>
+              </li>
+              <li>
                 <Link href="/flames" className="hover:text-primary transition-colors">FLAMES Calculator</Link>
               </li>
-
             </ul>
           </div>
 

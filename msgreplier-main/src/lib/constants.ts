@@ -14,5 +14,5 @@ export const PLATFORMS: Platform[] = [
   { id: 'whatsapp', name: 'WhatsApp', charLimit: 4096, slug: 'whatsapp-text-repeater' },
   { id: 'telegram', name: 'Telegram', charLimit: 4096, slug: 'telegram-text-repeater' },
   { id: 'youtube', name: 'YouTube Live', charLimit: 200, slug: 'youtube-text-repeater' },
-  { id: 'custom', name: 'Custom', charLimit: 280, slug: 'custom-text-repeater' },
+  { id: 'custom', name: 'Custom', charLimit: 280, slug: 'text-repeater' },
 ];

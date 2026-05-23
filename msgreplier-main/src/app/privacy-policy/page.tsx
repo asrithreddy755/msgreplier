@@ -6,6 +6,9 @@ import { ArrowLeft } from "lucide-react";
 export const metadata: Metadata = {
   title: "Privacy Policy - MsgReplier",
   description: "MsgReplier's privacy policy. Learn how we collect, use, and protect your data, your GDPR rights, and how we use Google Analytics and AdSense.",
+  alternates: {
+    canonical: "/privacy-policy",
+  },
 };
 
 export default async function PrivacyPolicyPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {

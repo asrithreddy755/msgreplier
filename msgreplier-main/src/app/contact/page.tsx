@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Contact Us - MsgReplier",
   description: "Get in touch with the MsgReplier team for support, feedback, or inquiries.",
+  alternates: {
+    canonical: "/contact",
+  },
 };
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {

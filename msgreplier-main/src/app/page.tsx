@@ -198,6 +198,17 @@ export default function HomePage() {
               </div>
             </Link>
           </div>
+
+          {/* Trending Articles Badges / Links */}
+          <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 text-center">
+            <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Trending on the Blog</p>
+            <div className="flex flex-wrap justify-center gap-3 max-w-2xl mx-auto">
+              <Link href="/blog/100-cute-nicknames" className="text-xs px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-pink-100 dark:hover:bg-pink-950/30 text-slate-600 dark:text-slate-400 hover:text-pink-600 dark:hover:text-pink-400 transition-colors font-semibold">❤️ 100+ Cute Nicknames</Link>
+              <Link href="/blog/psychology-of-crushes" className="text-xs px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-purple-100 dark:hover:bg-purple-950/30 text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors font-semibold">🧠 Crush Psychology</Link>
+              <Link href="/blog/how-flames-works" className="text-xs px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-950/30 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors font-semibold">🔥 How FLAMES Works</Link>
+              <Link href="/blog/perfect-couple-prompts" className="text-xs px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-green-100 dark:hover:bg-green-950/30 text-slate-600 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors font-semibold">📷 AI Couple Prompts</Link>
+            </div>
+          </div>
         </div>
       </section>
 

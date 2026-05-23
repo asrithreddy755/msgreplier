@@ -7,11 +7,43 @@ export const metadata: Metadata = {
   title: "The Science Behind the FLAMES Game: Is It Accurate?",
   description:
     "Explore the history, algorithm, and popularity of the FLAMES compatibility game. Why do we still play it, and how does it compare to other love tests?",
+  alternates: {
+    canonical: "/blog/how-flames-works",
+  },
 };
 
 export default function FlamesWorksPost() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The Science Behind the FLAMES Game: Is It Accurate?",
+    "description": "Explore the history, algorithm, and popularity of the FLAMES compatibility game. Why do we still play it, and how does it compare to other love tests?",
+    "datePublished": "2026-02-22T08:00:00+00:00",
+    "author": {
+      "@type": "Organization",
+      "name": "MsgReplier",
+      "url": "https://msgreplier.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "MsgReplier",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://msgreplier.com/favicon.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://msgreplier.com/blog/how-flames-works"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
         <div className="mb-8 flex items-center justify-between gap-3">
           <Link href="/blog" className="inline-flex">

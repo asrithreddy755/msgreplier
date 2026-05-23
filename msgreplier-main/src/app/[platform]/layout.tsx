@@ -33,7 +33,7 @@ export async function generateMetadata({
   let title = homeTitle;
   let description = homeDescription;
 
-  if (slug === "custom-text-repeater") {
+  if (slug === "text-repeater") {
     title = repeaterTitle;
     description = repeaterDescription;
   } else if (slug === "prompt") {

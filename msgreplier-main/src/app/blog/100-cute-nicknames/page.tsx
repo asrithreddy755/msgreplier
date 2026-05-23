@@ -7,11 +7,43 @@ export const metadata: Metadata = {
   title: "100+ Cute Nicknames for Your Partner (2026 Edition)",
   description:
     "A curated list of sweet, funny, and romantic nicknames for your partner. Plus, learn how to spam them with love using our Text Repeater tool.",
+  alternates: {
+    canonical: "/blog/100-cute-nicknames",
+  },
 };
 
 export default function NicknamesPost() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "100+ Cute Nicknames for Your Partner (2026 Edition)",
+    "description": "A curated list of sweet, funny, and romantic nicknames for your partner. Plus, learn how to spam them with love using our Text Repeater tool.",
+    "datePublished": "2026-02-20T08:00:00+00:00",
+    "author": {
+      "@type": "Organization",
+      "name": "MsgReplier",
+      "url": "https://msgreplier.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "MsgReplier",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://msgreplier.com/favicon.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://msgreplier.com/blog/100-cute-nicknames"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
         <div className="mb-8 flex items-center justify-between gap-3">
           <Link href="/blog" className="inline-flex">

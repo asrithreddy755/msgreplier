@@ -16,7 +16,7 @@ import bg from '../../assets/bg.jpg';
 import { usePageLeaveBlocker } from '../../hooks/usePageLeaveBlocker';
 import { addToGameInactiveTime, setGameStartTime } from '../../state/slices/sessionSlice';
 import Dice from '../Dice/Dice';
-import { MuteButton } from '../../../MuteButton';
+
 import styles from './Game.module.css';
 
 export const EXIT_MESSAGE = 'Are you sure you want to exit? Any progress made will be lost.';
@@ -122,7 +122,7 @@ function Game({ initData, myColour, otherOnline = true, connectionStatus, diceSh
             />
           </div>
         ))}
-        <MuteButton className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2" />
+
       </div>
 
       {isGameEnded && <GameFinishedScreen playerFinishOrder={playerFinishOrder} myColour={myColour} onRestart={onRestart} />}

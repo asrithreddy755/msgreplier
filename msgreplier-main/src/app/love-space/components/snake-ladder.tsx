@@ -10,7 +10,7 @@ import Image from 'next/image';
 import SnakeDice from './SnakeDice';
 import { useAssetPreloader } from '../hooks/useAssetPreloader';
 import { GamePreloader } from './GamePreloader';
-import { MuteButton } from './MuteButton';
+
 import { throttle } from 'lodash-es';
 import { playDiceSound } from './ludo/utils/diceSound';
 import { WakeUpButton } from './WakeUpButton';
@@ -867,7 +867,7 @@ export function SnakeLadder({
 
     return (
         <div className="flex flex-col items-center w-full max-w-sm mx-auto pb-4 sm:pb-8 gap-2 sm:gap-3 relative">
-            <MuteButton />
+
 
             {/* Nudge Toast */}
             {nudge && (
@@ -1088,31 +1088,33 @@ export function SnakeLadder({
             }
 
             {/* The Board */}
-            <div className="w-full mt-2 sm:mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-[#3E2723] bg-white aspect-[2/1]">
-                {/* Board image — priority ensures the browser preloads this LCP asset immediately */}
-                <Image
-                    src="/snake.webp"
-                    alt="Snake and Ladder Board"
-                    fill
-                    priority
-                    className="object-fill z-0 pointer-events-none"
-                    sizes="(max-width: 640px) 100vw, 384px"
-                />
+            <div className="w-full mt-2 sm:mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-[#3E2723] bg-white pb-[50%] h-0">
+                <div className="absolute inset-0">
+                    {/* Board image — priority ensures the browser preloads this LCP asset immediately */}
+                    <Image
+                        src="/snake.webp"
+                        alt="Snake and Ladder Board"
+                        fill
+                        priority
+                        className="object-fill z-0 pointer-events-none"
+                        sizes="(max-width: 640px) 100vw, 384px"
+                    />
 
-                {/* Player 1 Pin */}
-                <div
-                    className="absolute z-20 flex items-center justify-center transition-all duration-300 ease-in-out"
-                    style={getCellCenter(visualP1)}
-                >
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-pink-500 shadow-[0_4px_10px_rgba(236,72,153,0.8)] border-2 border-white animate-bounce" title={members[0] ? members[0].nickname : "Player 1"} />
-                </div>
+                    {/* Player 1 Pin */}
+                    <div
+                        className="absolute z-20 flex items-center justify-center transition-all duration-300 ease-in-out"
+                        style={getCellCenter(visualP1)}
+                    >
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-pink-500 shadow-[0_4px_10px_rgba(236,72,153,0.8)] border-2 border-white animate-bounce" title={members[0] ? members[0].nickname : "Player 1"} />
+                    </div>
 
-                {/* Player 2 Pin */}
-                <div
-                    className="absolute z-20 flex items-center justify-center transition-all duration-300 ease-in-out"
-                    style={getCellCenter(visualP2)}
-                >
-                    <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-500 shadow-[0_4px_10px_rgba(59,130,246,0.8)] border-2 border-white animate-bounce ${visualP1 === visualP2 ? 'ml-6 sm:ml-8' : ''}`} title={members[1] ? members[1].nickname : "Player 2"} />
+                    {/* Player 2 Pin */}
+                    <div
+                        className="absolute z-20 flex items-center justify-center transition-all duration-300 ease-in-out"
+                        style={getCellCenter(visualP2)}
+                    >
+                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-500 shadow-[0_4px_10px_rgba(59,130,246,0.8)] border-2 border-white animate-bounce ${visualP1 === visualP2 ? 'ml-6 sm:ml-8' : ''}`} title={members[1] ? members[1].nickname : "Player 2"} />
+                    </div>
                 </div>
             </div>
         </div >

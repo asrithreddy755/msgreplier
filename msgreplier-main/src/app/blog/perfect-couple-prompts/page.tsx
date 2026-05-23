@@ -7,11 +7,43 @@ export const metadata: Metadata = {
   title: "New Feature: Creative AI Prompts for Couple Photos (Goodbye Chat, Hello Creativity!)",
   description:
     "We’ve pivoted from general chat to Couple Photo Prompts — a library of creative prompts for matching AI images and real-life couple photoshoots.",
+  alternates: {
+    canonical: "/blog/perfect-couple-prompts",
+  },
 };
 
 export default function PerfectCouplePromptsPost() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "New Feature: Creative AI Prompts for Couple Photos (Goodbye Chat, Hello Creativity!)",
+    "description": "We’ve pivoted from general chat to Couple Photo Prompts — a library of creative prompts for matching AI images and real-life couple photoshoots.",
+    "datePublished": "2026-02-18T08:00:00+00:00",
+    "author": {
+      "@type": "Organization",
+      "name": "MsgReplier",
+      "url": "https://msgreplier.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "MsgReplier",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://msgreplier.com/favicon.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://msgreplier.com/blog/perfect-couple-prompts"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
         <div className="mb-8 flex items-center justify-between gap-3">
           <Link href="/blog" className="inline-flex">
