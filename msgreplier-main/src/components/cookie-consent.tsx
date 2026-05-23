@@ -27,10 +27,10 @@ export function CookieConsent() {
     setShowConsent(false);
   };
 
-  // Hide CookieConsent on immersive pages
+  // Only hide on immersive /greet/ pages. All other pages including
+  // /digital-greeting must show the banner for GDPR compliance.
   const isGreetingPage = pathname?.includes("/greet/");
-  const isDigitalGreetingLanding = pathname === "/digital-greeting";
-  const hideConsent = isGreetingPage || isDigitalGreetingLanding;
+  const hideConsent = isGreetingPage;
 
   if (!showConsent || hideConsent) return null;
 
@@ -47,22 +47,22 @@ export function CookieConsent() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto min-w-[280px]">
-            <Button 
-              onClick={handleDecline} 
-              variant="outline" 
+            <Button
+              onClick={handleDecline}
+              variant="outline"
               className="flex-1 bg-transparent border-background/20 text-background hover:bg-background/10 hover:text-background"
             >
               Decline
             </Button>
-            <Button 
-              onClick={handleAccept} 
+            <Button
+              onClick={handleAccept}
               className="flex-1 bg-background text-foreground hover:bg-background/90"
             >
               Accept
             </Button>
           </div>
-          <button 
-            onClick={() => setShowConsent(false)}
+          <button
+            onClick={handleDecline}
             className="absolute top-2 right-2 p-1 text-background/50 hover:text-background md:hidden"
             aria-label="Close"
           >

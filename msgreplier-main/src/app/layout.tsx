@@ -8,6 +8,8 @@ import { Navbar } from "@/components/navbar";
 import { MainWrapper } from "@/components/main-wrapper";
 import Script from "next/script";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { Footer } from "@/components/footer";
+import AdsenseScript from "@/components/AdsenseScript";
 
 const getSiteUrl = () => {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
@@ -62,9 +64,6 @@ export const metadata: Metadata = {
       "Create a magical digital surprise with our wishes website builder or join your partner in a private Love-Space. Simple, fast, and unforgettable.",
     images: ["/twitter-image"],
   },
-  // verification: {
-  //   google: "REPLACE_WITH_ACTUAL_CODE",
-  // },
 };
 
 export const viewport: Viewport = {
@@ -96,14 +95,7 @@ export default async function RootLayout({
         <link rel="shortcut icon" href="/icon.png" />
         <link rel="apple-touch-icon" href="/icon.png" sizes="180x180" />
 
-        {/* Google AdSense verification script */}
-        {process.env.NODE_ENV === "production" && (
-          <script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8011470049569108"
-            crossOrigin="anonymous"
-          ></script>
-        )}
+
       </head>
       <body className="antialiased min-h-screen bg-background">
         <ThemeProvider
@@ -117,12 +109,15 @@ export default async function RootLayout({
             <MainWrapper>
               {children}
             </MainWrapper>
+            <Footer />
             <CookieConsent />
           </div>
           <Toaster />
           <SonnerToaster position="top-center" richColors />
           {process.env.NODE_ENV === "production" && <ServiceWorkerRegistration />}
         </ThemeProvider>
+
+        {process.env.NODE_ENV === "production" && <AdsenseScript />}
 
         {/* Google Analytics */}
         {process.env.NODE_ENV === "production" && (

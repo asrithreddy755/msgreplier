@@ -3,7 +3,7 @@ import { ArrowRight, HeartPulse, Flame, BookOpen, Camera, CheckCircle, Shield, Z
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Footer } from "@/components/footer";
+
 
 export const metadata = {
   title: "MsgReplier - Private Love Space, Wishes Website & AI Messaging Tools",
@@ -264,7 +264,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      <Footer />
+
     </div>
   );
 }
