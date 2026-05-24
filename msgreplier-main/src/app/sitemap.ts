@@ -63,7 +63,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/contact`,
       lastModified: new Date("2026-05-01"),
       changeFrequency: "monthly",
-      priority: 0.7,
+      priority: 0.5,
     },
     {
       url: `${baseUrl}/privacy-policy`,
