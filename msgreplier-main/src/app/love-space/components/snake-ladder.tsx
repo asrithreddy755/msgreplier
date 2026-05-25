@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
-import Image from 'next/image';
 import SnakeDice from './SnakeDice';
 import { useAssetPreloader } from '../hooks/useAssetPreloader';
 import { GamePreloader } from './GamePreloader';
@@ -1095,14 +1094,11 @@ export function SnakeLadder({
             {/* The Board */}
             <div className="w-full mt-2 sm:mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-[#3E2723] bg-white aspect-[2/1]">
                 <div className="absolute inset-0">
-                    {/* Board image — priority ensures the browser preloads this LCP asset immediately */}
-                    <Image
+                    {/* Board image — standard img element for compatibility with Cloudflare workers/OpenNext platforms */}
+                    <img
                         src="/snake.webp"
                         alt="Snake and Ladder Board"
-                        fill
-                        priority
-                        className="object-fill z-0 pointer-events-none"
-                        sizes="(max-width: 640px) 100vw, 384px"
+                        className="absolute inset-0 w-full h-full object-fill z-0 pointer-events-none"
                     />
 
                     {/* Player 1 Pin */}
