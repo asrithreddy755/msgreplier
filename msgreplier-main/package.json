@@ -69,9 +69,10 @@
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.18.0",
     "@svgr/webpack": "^8.1.0",
+    "@types/express": "^5.0.6",
     "@types/html2canvas": "^0.5.35",
     "@types/lodash-es": "^4.17.12",
-    "@types/node": "^20",
+    "@types/node": "^20.19.41",
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
     "@types/uuid": "^10.0.0",
