@@ -25,7 +25,17 @@ fs.copyFileSync(path.join('.open-next', 'worker.js'), path.join('.open-next', 'a
 const routesJson = {
     version: 1,
     include: ['/*'],
-    exclude: ['/_next/*', '/favicon.ico', '/icon.png', '/sw.js', '/ads.txt']
+    exclude: [
+        '/_next/*', 
+        '/favicon.ico', 
+        '/icon.png', 
+        '/sw.js', 
+        '/ads.txt', 
+        '/*.webp', 
+        '/*.svg', 
+        '/*.mp3', 
+        '/*.png'
+    ]
 };
 
 fs.writeFileSync(path.join('.open-next', 'assets', '_routes.json'), JSON.stringify(routesJson, null, 2));
