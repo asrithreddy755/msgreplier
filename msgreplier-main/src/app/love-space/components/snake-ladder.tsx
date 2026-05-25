@@ -735,6 +735,11 @@ export function SnakeLadder({
             if (path.length > 0) {
                 await playAnimationAndSync(myPlayerNum, path, stateWithMeta);
             }
+
+            // If it's an extra turn (rolled a 6), unlock the dice so the player can roll again
+            if (roll === 6) {
+                pendingRollRef.current = null;
+            }
         } finally {
             setIsProcessing(false);
             setRolling(false);
@@ -1088,7 +1093,7 @@ export function SnakeLadder({
             }
 
             {/* The Board */}
-            <div className="w-full mt-2 sm:mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-[#3E2723] bg-white pb-[50%] h-0">
+            <div className="w-full mt-2 sm:mt-6 relative overflow-hidden shadow-2xl rounded-xl border-4 border-[#3E2723] bg-white aspect-[2/1]">
                 <div className="absolute inset-0">
                     {/* Board image — priority ensures the browser preloads this LCP asset immediately */}
                     <Image
