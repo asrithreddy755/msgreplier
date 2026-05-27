@@ -96,7 +96,8 @@ export function SnakeLadder({
 
     // Preload heavy static assets
     const { isLoaded, progress } = useAssetPreloader([
-        '/dice-roll.mp3'
+        '/dice-roll.mp3',
+        '/snake.webp'
     ]);
 
     useEffect(() => {
@@ -1090,109 +1091,24 @@ export function SnakeLadder({
                 )
             }
 
-            {/* The Board — pure inline SVG, no external image required */}
+            {/* The Board with snake.webp background */}
             <div
-                className="w-full mt-2 sm:mt-6 relative shadow-2xl rounded-xl border-4 border-[#3E2723] bg-white overflow-hidden"
+                className="w-full mt-2 sm:mt-6 relative shadow-2xl rounded-xl border-4 border-[#3E2723] overflow-hidden"
                 style={{ aspectRatio: '2 / 1' }}
             >
-                {/* SVG board fills 100% of the container */}
+                {/* Background image */}
+                <img
+                    src="/snake.webp"
+                    alt="Snake and Ladder Board"
+                    className="w-full h-full object-cover"
+                />
+                {/* Overlay SVG for player tokens */}
                 <svg
                     viewBox="0 0 1000 500"
-                    width="100%"
-                    height="100%"
-                    style={{ display: 'block', width: '100%', height: '100%', maxWidth: '100%' }}
+                    className="absolute top-0 left-0 w-full h-full"
                     preserveAspectRatio="xMidYMid meet"
-                    aria-label="Snake and Ladder Board"
+                    aria-label="Player tokens"
                 >
-                    {/* ── Grid cells ── */}
-                    {flattenedRows.map((cellNum, idx) => {
-                        const col = idx % 10;
-                        const row = Math.floor(idx / 10);
-                        const x = col * 100;
-                        const y = row * 100;
-                        const isSnakeTail = Object.keys(SNAKES).map(Number).includes(cellNum);
-                        const isLadderBase = Object.keys(LADDERS).map(Number).includes(cellNum);
-                        const isSnakeDest  = Object.values(SNAKES).includes(cellNum);
-                        const isLadderTop  = Object.values(LADDERS).includes(cellNum);
-                        // Checkerboard: light/dark alternating
-                        const isLight = (col + row) % 2 === 0;
-                        let fill = isLight ? '#FFF8E7' : '#F0E6C8';
-                        if (isSnakeTail) fill = '#FFD5D5';
-                        else if (isSnakeDest)  fill = '#FFE8E8';
-                        else if (isLadderBase) fill = '#D5F5D5';
-                        else if (isLadderTop)  fill = '#E8FFE8';
-                        return (
-                            <g key={cellNum}>
-                                <rect x={x} y={y} width={100} height={100} fill={fill} stroke="#C5A96A" strokeWidth={1} />
-                                {/* Cell number */}
-                                <text
-                                    x={x + 50}
-                                    y={y + 22}
-                                    textAnchor="middle"
-                                    dominantBaseline="middle"
-                                    fontSize={16}
-                                    fontWeight="700"
-                                    fill={isSnakeTail ? '#C0392B' : isLadderBase ? '#27AE60' : '#5D4037'}
-                                    fontFamily="system-ui, sans-serif"
-                                >
-                                    {cellNum}
-                                </text>
-                            </g>
-                        );
-                    })}
-
-                    {/* ── Ladders (green) ── */}
-                    {Object.entries(LADDERS).map(([fromStr, to]) => {
-                        const from = Number(fromStr);
-                        const fc = getCellSVGCoords(from);
-                        const tc = getCellSVGCoords(to);
-                        return (
-                            <g key={`ladder-${from}`}>
-                                {/* Left rail */}
-                                <line x1={fc.x - 8} y1={fc.y} x2={tc.x - 8} y2={tc.y} stroke="#27AE60" strokeWidth={6} strokeLinecap="round" />
-                                {/* Right rail */}
-                                <line x1={fc.x + 8} y1={fc.y} x2={tc.x + 8} y2={tc.y} stroke="#27AE60" strokeWidth={6} strokeLinecap="round" />
-                                {/* Rungs */}
-                                {Array.from({ length: 4 }, (_, i) => {
-                                    const t = (i + 1) / 5;
-                                    const rx = fc.x - 8 + t * (tc.x - 8 - (fc.x - 8));
-                                    const ry = fc.y + t * (tc.y - fc.y);
-                                    const rx2 = fc.x + 8 + t * (tc.x + 8 - (fc.x + 8));
-                                    return <line key={i} x1={rx} y1={ry} x2={rx2} y2={ry} stroke="#2ECC71" strokeWidth={4} strokeLinecap="round" />;
-                                })}
-                                {/* Label */}
-                                <text x={(fc.x + tc.x) / 2 + 16} y={(fc.y + tc.y) / 2} fontSize={11} fill="#155724" fontWeight="bold" textAnchor="start" dominantBaseline="middle" fontFamily="system-ui, sans-serif">🪜</text>
-                            </g>
-                        );
-                    })}
-
-                    {/* ── Snakes (red/orange) ── */}
-                    {Object.entries(SNAKES).map(([fromStr, to]) => {
-                        const from = Number(fromStr);
-                        const fc = getCellSVGCoords(from);
-                        const tc = getCellSVGCoords(to);
-                        // Cubic bezier for snake shape
-                        const cx1 = fc.x + (tc.x - fc.x) * 0.25 + 30;
-                        const cy1 = fc.y + (tc.y - fc.y) * 0.25 - 30;
-                        const cx2 = fc.x + (tc.x - fc.x) * 0.75 - 30;
-                        const cy2 = fc.y + (tc.y - fc.y) * 0.75 + 30;
-                        return (
-                            <g key={`snake-${from}`}>
-                                <path
-                                    d={`M ${fc.x} ${fc.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${tc.x} ${tc.y}`}
-                                    stroke="#E74C3C"
-                                    strokeWidth={8}
-                                    fill="none"
-                                    strokeLinecap="round"
-                                    opacity={0.85}
-                                />
-                                {/* Snake head circle */}
-                                <circle cx={fc.x} cy={fc.y} r={10} fill="#C0392B" opacity={0.9} />
-                                <text x={fc.x} y={fc.y} textAnchor="middle" dominantBaseline="middle" fontSize={12}>🐍</text>
-                            </g>
-                        );
-                    })}
-
                     {/* ── Player 1 pin (pink) ── */}
                     {(() => {
                         const coords = getCellSVGCoords(visualP1);
