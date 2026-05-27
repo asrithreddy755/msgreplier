@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { LoveRoomMember, SnakeLadderState, SnakeLadderPlayer } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw, Bell, Loader2 } from 'lucide-react';
@@ -117,7 +118,7 @@ export function SnakeLadder({
             await new Promise(r => setTimeout(r, 100));
             for (const step of path) {
                 setVisual(step);
-                await new Promise(r => setTimeout(r, 150));
+                await new Promise(r => setTimeout(r, 300));
             }
             lastStateRef.current = JSON.stringify(finalState);
             setState(finalState);
@@ -1097,10 +1098,12 @@ export function SnakeLadder({
                 style={{ aspectRatio: '2 / 1' }}
             >
                 {/* Background image */}
-                <img
+                <Image
                     src="/snake.webp"
                     alt="Snake and Ladder Board"
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-contain"
+                    priority
                 />
                 {/* Overlay SVG for player tokens */}
                 <svg
