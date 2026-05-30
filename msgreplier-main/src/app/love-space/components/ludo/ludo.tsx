@@ -94,6 +94,9 @@ export function Ludo({
     const frozenTurnRef = useRef<string | null>(null);
     const pendingRollRef = useRef<{ colour: string, diceNumber: number, createdAt: number } | null>(null);
     const disconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+    // Activity tracking for wake-up rule
+    const lastActivityAtRef = useRef<number>(Date.now());
+    const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const isHost = members.length > 0 && members[0].id === currentMember.id;
 
@@ -153,11 +156,13 @@ export function Ludo({
         const isConnected = connectionState === 'Connected';
 
         if (isDisconnected) {
-            console.log("[Ludo] Disconnect detected - freezing dice");
-            // Dice freezing is handled via otherOnline prop in Game/Dice components,
-            // but we can also clear any ongoing local roll placeholders if needed.
+            console.log("[Ludo] Disconnect detected - unlocking dice and clearing pending state");
+            // Clear all dice placeholders
             store.dispatch(setIsPlaceholderShowing({ colour: 'blue', isPlaceholderShowing: false }));
             store.dispatch(setIsPlaceholderShowing({ colour: 'green', isPlaceholderShowing: false }));
+
+            // Clear pending roll to unlock dice
+            pendingRollRef.current = null;
 
             const state = store.getState();
             if (state.players?.currentPlayerColour && !frozenTurnRef.current) {
@@ -184,7 +189,7 @@ export function Ludo({
                 // Note: Ludo turn is in Redux, normally it doesn't change unless synced.
             }
 
-            // Flush pending roll
+            // Flush pending roll (if any still exists)
             if (pendingRollRef.current && sendMessage) {
                 const { colour, diceNumber } = pendingRollRef.current;
                 console.log("[Ludo] Flushing pending roll:", diceNumber);
@@ -201,6 +206,20 @@ export function Ludo({
             }
         };
     }, [connectionState, currentMemberId, sendMessage, requestSync]);
+
+    // --- AUTO-CLEAR STALE PENDING ROLL ---
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (pendingRollRef.current && (Date.now() - pendingRollRef.current.createdAt > 5000)) {
+                console.log("[Ludo] Auto-clearing stale pending roll (5s timeout) to unlock dice");
+                pendingRollRef.current = null;
+                // Also clear any dice placeholders just in case
+                store.dispatch(setIsPlaceholderShowing({ colour: 'blue', isPlaceholderShowing: false }));
+                store.dispatch(setIsPlaceholderShowing({ colour: 'green', isPlaceholderShowing: false }));
+            }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     const applyIncomingState = useCallback((incomingState: any, incomingUpdatedAt: number, shouldBackup = false) => {
         if (!incomingState || Object.keys(incomingState).length === 0) return;
@@ -254,19 +273,6 @@ export function Ludo({
         setSyncStatus('syncing');
 
         try {
-            // Conflict Protection
-            const res = await fetch(`/api/love-space/ludo-state?roomId=${roomId}`, { cache: 'no-store' });
-            const data = await res.json();
-            const dbState = data?.game?.game_state;
-
-            if (dbState && dbState.version > version) {
-                console.warn(`[SYNC] Skipped outdated Ludo write. DB has v${dbState.version}, local is v${version}`);
-                hasUnsavedChangesRef.current = false;
-                setSyncStatus('idle');
-                if (sendMessage) sendMessage('sync_request', { game: 'ludo' });
-                return;
-            }
-
             await fetch('/api/love-space/ludo-state', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -319,6 +325,39 @@ export function Ludo({
         return () => clearInterval(interval);
     }, [roomId]);
 
+    // --- WAKE UP TRIGGER ---
+    const triggerWakeUp = useCallback(() => {
+        console.log("[Ludo] 10 seconds of inactivity - triggering wake up!");
+        // Send wake up message to partner
+        sendMessage?.('wake_up', { 
+            game: 'ludo', 
+            from: currentMember.nickname,
+            senderId: currentMemberId
+        });
+        // Also trigger sync
+        requestSync('wake_up');
+    }, [sendMessage, currentMember, currentMemberId, requestSync]);
+
+    const resetActivityTimer = useCallback(() => {
+        lastActivityAtRef.current = Date.now();
+        if (inactivityTimerRef.current) {
+            clearTimeout(inactivityTimerRef.current);
+        }
+        // Only start timer if it's our turn to play
+        const state = store.getState();
+        const isMyTurn = state.players?.currentPlayerColour === myColourRef.current;
+        if (isMyTurn && otherOnline) {
+            inactivityTimerRef.current = setTimeout(() => {
+                triggerWakeUp();
+            }, 10000); // 10 seconds
+        }
+    }, [triggerWakeUp, otherOnline]);
+
+    // Debounce activity-ping to avoid too many calls
+    const debouncedActivityPing = useCallback(debounce(() => {
+        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => { });
+    }, 3000), [roomId]);
+
     const persistState = useCallback(debounce((stateToSave: any) => {
         const serialized = serializeState(stateToSave);
         if (serialized === lastBroadcastStateRef.current) return;
@@ -356,12 +395,15 @@ export function Ludo({
             return;
         }
 
-        // Part B: Activity ping
-        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => { });
+        // Part B: Activity ping (debounced)
+        debouncedActivityPing();
 
         sendMessage?.('game_move', { game: 'ludo', state: payloadState, updatedAt }, { reliable: true });
         saveToDb(payloadState, updatedAt);
-    }, 400), [sendMessage, saveToDb, roomId]);
+        
+        // Reset activity timer on game move
+        resetActivityTimer();
+    }, 400), [sendMessage, saveToDb, roomId, resetActivityTimer, debouncedActivityPing]);
 
     useEffect(() => {
         setSyncCallback((state) => {
@@ -505,6 +547,10 @@ export function Ludo({
             // The sync logic will handle state update, but we ensure we are synced
             console.log("[Ludo] Game over received from partner");
             requestSync('game_over_received');
+            // Clear inactivity timer when game ends
+            if (inactivityTimerRef.current) {
+                clearTimeout(inactivityTimerRef.current);
+            }
         };
 
         const handlePlayAgain = (payload: any) => {
@@ -688,11 +734,35 @@ export function Ludo({
             sendMessage?.('play_again', { game: 'ludo', senderId: currentMemberId }, { reliable: true });
         }
 
-        // Part B: Activity ping
-        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => { });
+        // Part B: Activity ping (debounced)
+        debouncedActivityPing();
 
         if (shouldBroadcast) toast.success('New game started!');
-    }, [currentMemberId, roomCreator, roomId, sendMessage, ludoBackupKey]);
+    }, [currentMemberId, roomCreator, roomId, sendMessage, ludoBackupKey, debouncedActivityPing]);
+
+    // --- TRACK TURN CHANGES TO START/STOP INACTIVITY TIMER ---
+    useEffect(() => {
+        const unsubscribe = store.subscribe(() => {
+            const state = store.getState();
+            const currentPlayerColour = state.players?.currentPlayerColour;
+            if (currentPlayerColour) {
+                // Reset activity timer when it's someone's turn
+                resetActivityTimer();
+            }
+        });
+        // Initial check
+        resetActivityTimer();
+        return unsubscribe;
+    }, [resetActivityTimer]);
+
+    // --- CLEAN UP TIMERS ON UNMOUNT ---
+    useEffect(() => {
+        return () => {
+            if (inactivityTimerRef.current) {
+                clearTimeout(inactivityTimerRef.current);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         if (loading) return;

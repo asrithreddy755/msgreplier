@@ -11,7 +11,7 @@ import SnakeDice from './SnakeDice';
 import { useAssetPreloader } from '../hooks/useAssetPreloader';
 import { GamePreloader } from './GamePreloader';
 
-import { throttle } from 'lodash-es';
+import { throttle, debounce } from 'lodash-es';
 import { playDiceSound } from './ludo/utils/diceSound';
 import { WakeUpButton } from './WakeUpButton';
 
@@ -141,21 +141,6 @@ export function SnakeLadder({
         setSyncStatus('syncing');
         
         try {
-            // Conflict Protection: Fetch current DB version
-            const res = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=snake`, { cache: 'no-store' });
-            const data = await res.json();
-            const dbState = data?.game?.game_state as SnakeLadderState | undefined;
-
-            // If local version is older, DO NOT overwrite
-            if (dbState && dbState.version > stateToSave.version) {
-                console.warn(`[SYNC] Skipped outdated write. DB has v${dbState.version}, local is v${stateToSave.version}`);
-                hasUnsavedChangesRef.current = false;
-                setSyncStatus('idle');
-                // Optional: request peer sync instead if we are significantly behind
-                if (sendMessage) sendMessage('sync_request', { game: 'snake', reason: 'outdated_write' });
-                return;
-            }
-
             await fetch('/api/love-space/games', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -247,6 +232,11 @@ export function SnakeLadder({
         }
     }, [sendMessage, roomId, currentMember.id, connectionState]);
 
+    // Debounce activity-ping to avoid too many calls
+    const debouncedActivityPing = useCallback(debounce(() => {
+        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
+    }, 3000), [roomId]);
+
     const commitState = useCallback((nextState: SnakeLadderState, options?: { broadcast?: boolean }) => {
         const updatedAt = Date.now();
         // Version-Controlled State: Increment version on every committed change
@@ -268,11 +258,11 @@ export function SnakeLadder({
             saveToDb(stateWithMeta, true);
         }
 
-        // Part B: Activity ping
-        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
+        // Part B: Activity ping (debounced)
+        debouncedActivityPing();
 
         return stateWithMeta;
-    }, [sendMessage, roomId, saveToDb]);
+    }, [sendMessage, roomId, saveToDb, debouncedActivityPing]);
 
     const buildPath = useCallback((from: number, to: number) => {
         const path: number[] = [];

@@ -244,46 +244,7 @@ export function Chat({
         };
     }, [registerHandler, unregisterHandler, roomId, sendMessage, mergeMessages, currentMember.id]);
 
-    // Fallback polling loop when WebRTC is not connected (0 realtime websocket usage, infinite scalability)
-    useEffect(() => {
-        if (!roomId) return;
-        
-        let intervalId: NodeJS.Timeout | null = null;
-        let isPollMounted = true;
-
-        const pollMessages = async () => {
-            // Check if page is visible to avoid waste
-            if (typeof document !== 'undefined' && document.hidden) return;
-            
-            try {
-                const result = await fetch(`/api/love-space/messages?roomId=${roomId}`, { cache: 'no-store' }).then(r => r.json());
-                if (!isPollMounted) return;
-                if (Array.isArray(result?.messages)) {
-                    mergeMessages(result.messages);
-                }
-            } catch (error) {
-                console.error('[SYNC] Polling failed:', error);
-            }
-        };
-
-        // Only start polling if WebRTC is not connected (saves server load!)
-        const isRtcConnected = connectionState === 'Connected';
-        
-        if (!isRtcConnected) {
-            console.log("[SYNC] WebRTC offline. Starting HTTP polling fallback.");
-            // Poll immediately on mount/status change
-            pollMessages();
-            // Then poll every 4 seconds
-            intervalId = setInterval(pollMessages, 4000);
-        }
-
-        return () => {
-            isPollMounted = false;
-            if (intervalId) clearInterval(intervalId);
-        };
-    }, [roomId, connectionState, mergeMessages]);
-
-    // --- SYNC LOGIC ---
+    // WebRTC Real-time chat integration
     useEffect(() => {
         if (sendMessage && !messages.length) {
             requestSync('empty_messages');

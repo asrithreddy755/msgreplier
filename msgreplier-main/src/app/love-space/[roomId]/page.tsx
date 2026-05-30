@@ -641,24 +641,6 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
         loadMembers();
     }, [loadMembers]);
 
-    // Smart polling for member joins (runs only while waiting for partner, 0 realtime database replication or active websockets needed!)
-    useEffect(() => {
-        if (!roomId) return;
-
-        let interval: NodeJS.Timeout | null = null;
-
-        // Only poll if we don't have both members yet (waiting for partner to join)
-        if (members.length < 2) {
-            interval = setInterval(() => {
-                loadMembers();
-            }, 4000); // Poll every 4 seconds
-        }
-
-        return () => {
-            if (interval) clearInterval(interval);
-        };
-    }, [roomId, members.length, loadMembers]);
-
     // Live Frontend Expiration Sweeper
     // If the room is older than 10 minutes AND the other member is offline, terminate.
     const otherMember = currentMember && members.length > 0

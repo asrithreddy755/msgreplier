@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { debounce } from 'lodash-es';
 import { LoveRoomMember, XOXGameState, XOXPlayer } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Heart, X as XIcon, Circle, RotateCcw, Trophy, Bell, Loader2 } from 'lucide-react';
@@ -72,20 +73,6 @@ export function XOX({
         setSyncStatus('syncing');
         
         try {
-            // Conflict Protection: Fetch latest version from DB before writing
-            const res = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`, { cache: 'no-store' });
-            const data = await res.json();
-            const dbState = data?.game?.game_state as XOXGameState | undefined;
-
-            if (dbState && dbState.version > stateToSave.version) {
-                console.warn(`[SYNC] Skipped outdated write. DB has v${dbState.version}, local is v${stateToSave.version}`);
-                hasUnsavedChangesRef.current = false;
-                setSyncStatus('idle');
-                // Request sync from peer to get the latest
-                if (sendMessage) sendMessage('sync_request', { game: 'xox' });
-                return;
-            }
-
             await fetch('/api/love-space/games', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -297,6 +284,11 @@ export function XOX({
         };
     }, [registerHandler, unregisterHandler, currentMember.id, sendMessage]);
 
+    // Debounce activity-ping to avoid too many calls
+    const debouncedActivityPing = useCallback(debounce(() => {
+        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
+    }, 3000), [roomId]);
+
     const checkWinner = (board: XOXPlayer[]): XOXGameState['winner'] => {
         for (let combo of WINNING_COMBOS) {
             const [a, b, c] = combo;
@@ -383,8 +375,8 @@ export function XOX({
             saveToDb(newState, true);
         }
 
-        // Part B: Activity ping
-        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
+        // Part B: Activity ping (debounced)
+        debouncedActivityPing();
     };
 
     const roomCreator = members.length > 0 ? members[0] : null;
@@ -425,8 +417,8 @@ export function XOX({
         // Immediate sync on reset
         saveToDb(newState, true);
 
-        // Part B: Activity ping
-        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
+        // Part B: Activity ping (debounced)
+        debouncedActivityPing();
     };
 
     if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse w-full text-center">Loading Game...</div>;
