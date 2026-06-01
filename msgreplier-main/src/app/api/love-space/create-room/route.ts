@@ -18,6 +18,13 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Server misconfiguration: missing Supabase config.', env: envStatus }, { status: 500 });
         }
 
+        // Soft-close expired rooms: mark as inactive instead of deleting, so all historical data (messages, games) is preserved.
+        try {
+            await supabaseAdmin.from('love_rooms').update({ is_active: false }).lt('expires_at', new Date().toISOString()).eq('is_active', true);
+        } catch (gcErr) {
+            console.error('GC Error soft-closing expired rooms:', gcErr);
+        }
+
         // Generate unique 5-digit room code
         let roomCode = '';
         let attempts = 0;

@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bell } from 'lucide-react';
-import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
+import { RealtimeMessageType } from '@/lib/realtime/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface WakeUpButtonProps {
-    sendMessage?: (type: WebRTCMessageType, payload?: any) => void;
+    sendMessage?: (type: RealtimeMessageType, payload?: any) => void;
     currentMember: { id: string; nickname: string };
     targetNickname: string;
     gameName: string;

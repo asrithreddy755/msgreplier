@@ -6,6 +6,9 @@ import { ArrowLeft } from "lucide-react";
 export const metadata: Metadata = {
   title: "Terms and Conditions - MsgReplier",
   description: "Terms and conditions for using MsgReplier services, including liability, governing law, dispute resolution, and user conduct.",
+  alternates: {
+    canonical: "/terms-conditions",
+  },
 };
 
 export default async function TermsPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {

@@ -5,7 +5,7 @@ import { LoveMessage, LoveRoomMember } from '@/types/love-space';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send, Heart, Loader2 } from 'lucide-react';
-import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
+import { RealtimeMessageType } from '@/lib/realtime/types';
 
 
 export function Chat({ 
@@ -23,9 +23,9 @@ export function Chat({
     currentMember: LoveRoomMember;
     members?: LoveRoomMember[];
     onNewMessage?: () => void;
-    sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
-    registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
-    unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
+    sendMessage?: (type: RealtimeMessageType, payload?: any, options?: { reliable?: boolean }) => void;
+    registerHandler?: (type: RealtimeMessageType, handler: (payload: any) => void) => void;
+    unregisterHandler?: (type: RealtimeMessageType, handler?: (payload: any) => void) => void;
     otherOnline?: boolean;
     connectionState?: string;
 }) {
@@ -122,7 +122,7 @@ export function Chat({
 
     useEffect(() => {
         let isMounted = true;
-        const init = async () => {
+        const init = () => {
             try {
                 const backupRaw = localStorage.getItem(chatBackupKey);
                 if (backupRaw) {
@@ -132,20 +132,10 @@ export function Chat({
                     }
                 }
             } catch {
-                return;
+                // ignore
             }
 
-            try {
-                const result = await fetch(`/api/love-space/messages?roomId=${roomId}`, { cache: 'no-store' }).then(r => r.json());
-                if (!isMounted) return;
-                if (Array.isArray(result?.messages)) {
-                    mergeMessages(result.messages);
-                }
-            } catch (error) {
-                console.error('[Chat] Failed to load persisted messages', error);
-            } finally {
-                if (isMounted) requestSync('init');
-            }
+            if (isMounted) requestSync('init');
         };
         if (roomId) init();
         return () => {
@@ -154,7 +144,7 @@ export function Chat({
     }, [roomId, chatBackupKey, mergeMessages, requestSync]);
 
 
-    // WebRTC Real-time chat integration
+    // Realtime Broadcast chat integration
     useEffect(() => {
         if (!registerHandler || !unregisterHandler) return;
 
@@ -213,7 +203,7 @@ export function Chat({
             
             // Responder: Always send current state regardless of host status
             if (sendMessage) {
-                console.log("[RTC] Responding to chat sync request");
+                console.log("[Realtime] Responding to chat sync request");
                 sendMessage('chat_sync_state', {
                     messages: messagesRef.current.slice(-500),
                     updatedAt: Date.now(),
@@ -244,7 +234,7 @@ export function Chat({
         };
     }, [registerHandler, unregisterHandler, roomId, sendMessage, mergeMessages, currentMember.id]);
 
-    // WebRTC Real-time chat integration
+    // Realtime Broadcast chat integration
     useEffect(() => {
         if (sendMessage && !messages.length) {
             requestSync('empty_messages');
@@ -391,7 +381,7 @@ export function Chat({
             sendMessage?.('typing', { value: false });
         }
 
-        // Broadcast to peer immediately via RTC if connected
+        // Broadcast to peer immediately via Realtime if connected
         let sentViaRTC = false;
         if (sendMessage && connectionState === 'Connected') {
             sendMessage('chat', msgData);
@@ -400,9 +390,9 @@ export function Chat({
             sentViaRTC = true;
         }
 
-        // Fallback: If WebRTC is not connected, save immediately to the database so the partner gets it in real-time
+        // Fallback: If Realtime is not connected, save immediately to the database so the partner gets it in real-time
         if (!sentViaRTC) {
-            console.log("[SYNC] WebRTC not connected. Persisting message immediately to database for real-time fallback.");
+            console.log("[SYNC] Realtime not connected. Persisting message immediately to database for real-time fallback.");
             fetch('/api/love-space/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

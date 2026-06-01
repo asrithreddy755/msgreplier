@@ -78,7 +78,7 @@ export default function LoveSpaceGuidePost() {
                             <li className="flex items-start gap-3">
                                 <Zap className="w-6 h-6 text-pink-500 shrink-0 mt-1" />
                                 <div>
-                                    <strong>Real-Time Sync:</strong> Our WebRTC-powered technology ensures that every message and game move is synchronized instantly between you and your partner.
+                                    <strong>Real-Time Sync:</strong> Our Supabase Realtime-powered technology ensures that every message and game move is synchronized instantly between you and your partner.
                                 </div>
                             </li>
                         </ul>

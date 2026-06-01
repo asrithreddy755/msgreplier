@@ -9,16 +9,16 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
+import { RealtimeMessageType } from '@/lib/realtime/types';
 import presetQuestions from "@/data/love-questions.json";
 
 interface LoveQuizProps {
     roomId: string;
     currentMember: { id: string; nickname: string };
     members: { id: string; nickname: string }[];
-    sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
-    registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
-    unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
+    sendMessage?: (type: RealtimeMessageType, payload?: any, options?: { reliable?: boolean }) => void;
+    registerHandler?: (type: RealtimeMessageType, handler: (payload: any) => void) => void;
+    unregisterHandler?: (type: RealtimeMessageType, handler?: (payload: any) => void) => void;
 }
 
 export function LoveQuiz({ roomId, currentMember, members, sendMessage, registerHandler, unregisterHandler }: LoveQuizProps) {

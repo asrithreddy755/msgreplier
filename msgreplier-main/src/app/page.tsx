@@ -1,18 +1,55 @@
 import Link from "next/link";
-import { ArrowRight, HeartPulse, Flame, BookOpen, Camera, CheckCircle, Shield, Zap, Heart, MessageSquareHeart, Gift } from "lucide-react";
+import { ArrowRight, Flame, CheckCircle, Shield, Zap, Heart, MessageSquareHeart, Gift, Camera, Users, Star, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export const metadata = {
-  title: "MsgReplier - Private Love Space, Wishes Website & AI Messaging Tools",
+  title: "MsgReplier - Private Love Space, Wishes Website & AI Couple Tools",
   description:
-    "The ultimate messaging toolkit. Create a private Love-Space for couples, build interactive Wishes Websites, and use our AI messaging tools. No login required.",
+    "The ultimate digital toolkit for couples. Create a private Love-Space chat room, build an interactive Wishes Website for birthdays and anniversaries, and use our free AI couple tools. No login required.",
+  alternates: {
+    canonical: "https://msgreplier.com",
+  },
 };
 
 export default function HomePage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "MsgReplier",
+    url: "https://msgreplier.com",
+    description: "The ultimate digital toolkit for couples. Private Love-Space rooms, interactive Wishes Websites, FLAMES Calculator, and AI couple prompts. No login required.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://msgreplier.com/blog?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "MsgReplier",
+      url: "https://msgreplier.com",
+      logo: "https://msgreplier.com/icon.png",
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        email: "care.msgreplier@gmail.com",
+      },
+    },
+  };
+
   return (
+    <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="relative py-16 px-4 md:py-32 overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-background">
@@ -212,6 +249,132 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-12 md:py-20 bg-background">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-4">How It Works</h2>
+            <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+              Get started in seconds. No accounts, no downloads, no complexity.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="w-14 h-14 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-black text-pink-600">1</span>
+              </div>
+              <h3 className="font-bold text-lg mb-2">Choose Your Tool</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                Pick from Love-Space, Wishes Website, FLAMES Calculator, or AI Prompts — all free, all instant.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-14 h-14 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-black text-purple-600">2</span>
+              </div>
+              <h3 className="font-bold text-lg mb-2">Enter Your Details</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                Just your nickname for Love-Space, or a recipient name and message for a Wishes Website. No account needed.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-black text-rose-600">3</span>
+              </div>
+              <h3 className="font-bold text-lg mb-2">Share & Connect</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                Send the unique link to your partner or loved one and experience the magic together, in real time.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust & Credibility Section */}
+      <section className="py-12 md:py-16 bg-slate-50 dark:bg-slate-900/50">
+        <div className="container px-4 md:px-6 mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">Why Couples Trust MsgReplier</h2>
+            <p className="text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+              We are built on transparency, simplicity, and a genuine care for your privacy.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
+              <div className="text-3xl mb-3">🔒</div>
+              <h3 className="font-bold mb-2">Zero Login Required</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Use any feature without creating an account or sharing an email address.</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
+              <div className="text-3xl mb-3">🛡️</div>
+              <h3 className="font-bold mb-2">Private By Design</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Love-Space rooms auto-delete after 24 hours. We never read your messages.</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
+              <div className="text-3xl mb-3">⚡</div>
+              <h3 className="font-bold mb-2">Instant & Fast</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">No downloads or setup. Every tool is browser-based and loads in seconds.</p>
+            </div>
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center shadow-sm">
+              <div className="text-3xl mb-3">💸</div>
+              <h3 className="font-bold mb-2">Always Free</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Every tool is 100% free. Supported by non-intrusive ads, never by selling your data.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 md:py-20 bg-background">
+        <div className="container px-4 md:px-6 max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">Frequently Asked Questions</h2>
+            <p className="text-slate-600 dark:text-slate-400">
+              Quick answers to the questions we hear most often.
+            </p>
+          </div>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="faq-1">
+              <AccordionTrigger className="text-left">Is MsgReplier completely free?</AccordionTrigger>
+              <AccordionContent className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                Yes! Every tool on MsgReplier — including Love-Space, Wishes Website, FLAMES Calculator, and AI Prompts — is completely free. We are supported by non-intrusive advertisements that keep the platform free for everyone, with no subscriptions or paywalls.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-2">
+              <AccordionTrigger className="text-left">Do I need to create an account?</AccordionTrigger>
+              <AccordionContent className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                No account needed at all. You can use every feature on MsgReplier without registering, providing an email, or entering any personal information. Just open the tool and start using it immediately.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-3">
+              <AccordionTrigger className="text-left">How private is Love-Space?</AccordionTrigger>
+              <AccordionContent className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                Love-Space is designed with privacy as the top priority. Each room is accessed via a unique link that only you and your partner have. Rooms and all their data are automatically deleted after 24 hours. We do not read, monitor, or store your private conversations permanently.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-4">
+              <AccordionTrigger className="text-left">What is a Wishes Website?</AccordionTrigger>
+              <AccordionContent className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                A Wishes Website is a personalised, interactive digital greeting page you create for someone special. Add a recipient name, occasion (birthday, anniversary, etc.), a heartfelt message, music, and a theme — then share the unique link with your loved one. It is much more immersive than a regular greeting card or text message.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-5">
+              <AccordionTrigger className="text-left">Does MsgReplier sell my data?</AccordionTrigger>
+              <AccordionContent className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                Absolutely not. We do not sell, rent, or trade any personal data to third parties. We use Google Analytics for anonymous traffic insights and Google AdSense for advertising. Both are governed by Google&apos;s privacy policy. For full details, see our{" "}
+                <Link href="/privacy-policy" className="text-primary hover:underline">Privacy Policy</Link>.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+          <div className="mt-8 text-center">
+            <Link href="/faq" className="text-primary font-medium hover:underline inline-flex items-center gap-1">
+              View all FAQs <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* SEO Content / Why Use MsgReplier */}
       <section className="py-12 md:py-20 bg-slate-50 dark:bg-slate-900/50">
         <div className="container px-4 md:px-6 max-w-4xl mx-auto">
@@ -243,7 +406,7 @@ export default function HomePage() {
                 <div>
                   <h3 className="font-bold text-lg md:text-xl mb-2">Safe and Private</h3>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    We do not store your personal messages or data. All calculations for our Relationship tester and text generation happen locally or securely.
+                    We do not store your personal messages or data. All calculations for our compatibility tester and text generation happen locally or securely.
                   </p>
                 </div>
               </div>
@@ -277,5 +440,6 @@ export default function HomePage() {
       </section>
 
     </div>
+    </>
   );
 }

@@ -46,6 +46,165 @@ export default function BlogPage() {
           <div className="flex items-center gap-4 pb-2 border-b border-border/40">
             <h2 className="text-2xl font-bold tracking-tight">Recent Articles</h2>
           </div>
+          {/* New Article: Relationship Communication Tips */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Relationships
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> June 1, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 8 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  10 Relationship Communication Tips That Actually Work (2026)
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>Improve your relationship with these 10 evidence-based communication strategies — from active listening to digital check-ins.</p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/relationship-communication-tips" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article: Good Morning Messages */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Couple Messaging
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> June 1, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 5 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-yellow-500 transition-colors">
+                  100+ Cute Good Morning Messages for Your Partner (2026)
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>Sweet, funny, romantic, and long-distance good morning texts for every type of couple. Make their day start with a smile.</p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/cute-good-morning-messages" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article: Anniversary Messages */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Relationships
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> June 1, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 6 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-rose-500 transition-colors">
+                  50 Cute Anniversary Messages for Your Partner (2026)
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>From romantic paragraphs to funny one-liners and long-distance tributes — find the perfect words for your anniversary.</p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/anniversary-message-ideas" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article: Birthday Wishes Website Guide */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-orange-500/10 text-orange-600 dark:text-orange-400 px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Feature Guide
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> June 1, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 5 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-orange-500 transition-colors">
+                  Birthday Wishes Website Guide: Create a Magical Surprise
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>Step-by-step guide to creating a personalised, animated birthday wishes website in minutes. No coding, no login, completely free.</p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/birthday-wishes-website-guide" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
+
+          {/* New Article: AI Replies for Couples */}
+          <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+                    <Tag className="h-3 w-3" /> Messaging Tips
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> June 1, 2026
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> 7 min read
+                  </span>
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold group-hover:text-primary transition-colors">
+                  How to Create Sweet AI Replies for Your Partner
+                </h3>
+              </div>
+            </div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-4 relative z-10">
+              <p>Use AI prompts and messaging tools to craft heartfelt, funny, and romantic messages your partner will love — from good morning texts to anniversary messages.</p>
+              <div className="not-prose">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/blog/ai-replies-for-couples" className="inline-flex items-center gap-2">
+                    Read Article <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </article>
 
           {/* New Article 6: Dating App Openers */}
           <article className="group bg-card/50 hover:bg-card/80 border border-border/50 rounded-xl p-6 md:p-8 transition-all duration-300 hover:shadow-md relative overflow-hidden">

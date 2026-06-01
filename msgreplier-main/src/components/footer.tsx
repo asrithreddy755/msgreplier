@@ -13,28 +13,42 @@ export function Footer() {
               <span className="font-bold text-xl">MsgReplier</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-              Crafting the ultimate messaging tools, including the private <strong>Love-Space</strong>, to enhance your digital communication with privacy, speed, and ease.
+              Crafting the ultimate digital tools for couples — including the private{" "}
+              <strong>Love-Space</strong> and interactive <strong>Wishes Website</strong> builder.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              🇮🇳 Made with ❤️ in India
             </p>
           </div>
 
-          {/* Collection/Features Column */}
+          {/* Features Column */}
           <div className="space-y-4">
-            <h3 className="font-bold text-lg text-foreground">Features</h3>
+            <h3 className="font-bold text-lg text-foreground">Our Tools</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
-                <Link href="/love-space" className="hover:text-primary transition-colors">Love Space</Link>
+                <Link href="/love-space" className="hover:text-primary transition-colors">
+                  Love Space
+                </Link>
               </li>
               <li>
-                <Link href="/digital-greeting" className="hover:text-primary transition-colors">Wishes Website</Link>
+                <Link href="/digital-greeting" className="hover:text-primary transition-colors">
+                  Wishes Website
+                </Link>
               </li>
               <li>
-                <Link href="/digital-greeting/create" className="hover:text-primary transition-colors">Create Wishes Website</Link>
+                <Link href="/flames" className="hover:text-primary transition-colors">
+                  FLAMES Calculator
+                </Link>
               </li>
               <li>
-                <Link href="/text-repeater" className="hover:text-primary transition-colors">Text Repeater</Link>
+                <Link href="/prompt" className="hover:text-primary transition-colors">
+                  AI Couple Prompts
+                </Link>
               </li>
               <li>
-                <Link href="/flames" className="hover:text-primary transition-colors">FLAMES Calculator</Link>
+                <Link href="/blog" className="hover:text-primary transition-colors">
+                  Blog & Guides
+                </Link>
               </li>
             </ul>
           </div>
@@ -44,16 +58,29 @@ export function Footer() {
             <h3 className="font-bold text-lg text-foreground">Company</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
-                <Link href="/about" className="hover:text-primary transition-colors">About Us</Link>
+                <Link href="/about" className="hover:text-primary transition-colors">
+                  About Us
+                </Link>
               </li>
               <li>
-                <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
+                <Link href="/contact" className="hover:text-primary transition-colors">
+                  Contact Us
+                </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link>
+                <Link href="/faq" className="hover:text-primary transition-colors">
+                  FAQ
+                </Link>
               </li>
               <li>
-                <Link href="/sitemap.xml" className="hover:text-primary transition-colors">Sitemap</Link>
+                <Link href="/community-guidelines" className="hover:text-primary transition-colors">
+                  Community Guidelines
+                </Link>
+              </li>
+              <li>
+                <Link href="/sitemap.xml" className="hover:text-primary transition-colors">
+                  Sitemap
+                </Link>
               </li>
             </ul>
           </div>
@@ -63,7 +90,9 @@ export function Footer() {
             <h3 className="font-bold text-lg text-foreground">Connect</h3>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li>
-                <a href="mailto:care.msgreplier@gmail.com" className="hover:text-primary transition-colors">Email Support</a>
+                <a href="mailto:care.msgreplier@gmail.com" className="hover:text-primary transition-colors">
+                  📧 Email Support
+                </a>
               </li>
               <li>
                 <a
@@ -72,7 +101,7 @@ export function Footer() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Instagram
+                  📷 Instagram
                 </a>
               </li>
               <li>
@@ -82,7 +111,7 @@ export function Footer() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  YouTube
+                  ▶️ YouTube
                 </a>
               </li>
             </ul>
@@ -91,10 +120,20 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} MsgReplier. Handcrafted with love.</p>
-          <div className="flex gap-6">
-            <Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-            <Link href="/terms-conditions" className="hover:text-primary transition-colors">Terms of Service</Link>
+          <p>© {new Date().getFullYear()} MsgReplier. Handcrafted with love. All rights reserved.</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/privacy-policy" className="hover:text-primary transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms-conditions" className="hover:text-primary transition-colors">
+              Terms of Service
+            </Link>
+            <Link href="/cookie-policy" className="hover:text-primary transition-colors">
+              Cookie Policy
+            </Link>
+            <Link href="/community-guidelines" className="hover:text-primary transition-colors">
+              Community Guidelines
+            </Link>
           </div>
         </div>
       </div>

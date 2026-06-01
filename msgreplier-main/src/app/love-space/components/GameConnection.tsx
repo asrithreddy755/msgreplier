@@ -1,11 +1,12 @@
 // src/app/love-space/components/GameConnection.tsx
 "use client";
 
-import { WebRTCConnectionState } from "@/hooks/useWebRTC";
+import { ConnectionState } from "@/hooks/useLoveSpaceRealtime";
+
 import { Wifi, WifiOff, Loader2 } from "lucide-react";
 
 interface GameConnectionProps {
-    connectionState: WebRTCConnectionState;
+    connectionState: ConnectionState;
     latencyMs?: number;
     rtcStats?: {
         messagesSent: number;
@@ -40,7 +41,7 @@ export function GameConnection({ connectionState, latencyMs = 0, rtcStats = null
         bgColor = "bg-red-100 dark:bg-red-900/40";
         textColor = "text-red-600 dark:text-red-400";
         icon = <WifiOff className="w-3 h-3 mr-1.5 animate-pulse" />;
-    } else if (connectionState === "Waiting for opponent") {
+    } else if (connectionState === "Connecting...") {
         bgColor = "bg-amber-100 dark:bg-amber-900/40";
         textColor = "text-amber-600 dark:text-amber-400";
         icon = <Loader2 className="w-3 h-3 animate-spin mr-1.5" />;

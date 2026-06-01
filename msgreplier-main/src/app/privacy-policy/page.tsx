@@ -42,10 +42,10 @@ export default async function PrivacyPolicyPage({ searchParams }: { searchParams
           </p>
           <p className="font-medium text-foreground mb-4">
             <strong>Exception — Love-Space Feature:</strong> To provide real-time chat and game
-            synchronization in Love-Space, we use secure WebRTC connections. Message history is
-            temporarily stored in your browser&apos;s local storage and optionally persisted to our
-            secure database to allow for session recovery. This data is private to your specific
-            room, encrypted, and automatically deleted after periods of inactivity.
+            synchronization in Love-Space, we use Supabase Realtime (secure WebSocket connections). Message
+            history is temporarily stored to allow for session continuity within an active room. This data is
+            private to your specific room and is automatically deleted when the room expires (within 24 hours),
+            and no later than 30 days after the last activity.
           </p>
           <p className="font-medium text-foreground">
             <strong>Exception — Digital Greeting Feature:</strong> When you create a Digital

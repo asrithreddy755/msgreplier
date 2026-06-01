@@ -6,7 +6,7 @@ import { LoveRoomMember, XOXGameState, XOXPlayer } from '@/types/love-space';
 import { Button } from '@/components/ui/button';
 import { Heart, X as XIcon, Circle, RotateCcw, Trophy, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
+import { RealtimeMessageType } from '@/lib/realtime/types';
 import { WakeUpButton } from './WakeUpButton';
 
 const INITIAL_STATE: XOXGameState = {
@@ -40,9 +40,9 @@ export function XOX({
     members?: LoveRoomMember[];
     otherOnline?: boolean;
     connectionState?: string;
-    sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
-    registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
-    unregisterHandler?: (type: WebRTCMessageType) => void;
+    sendMessage?: (type: RealtimeMessageType, payload?: any, options?: { reliable?: boolean }) => void;
+    registerHandler?: (type: RealtimeMessageType, handler: (payload: any) => void) => void;
+    unregisterHandler?: (type: RealtimeMessageType) => void;
 }) {
     const [gameState, setGameState] = useState<XOXGameState>(INITIAL_STATE);
     const [myPlayer, setMyPlayer] = useState<XOXPlayer>(null);
@@ -146,7 +146,7 @@ export function XOX({
                 const stateRes = await fetch(`/api/love-space/games?roomId=${roomId}&gameType=xox`).then(res => res.json());
                 const dbState = stateRes?.game?.game_state as XOXGameState | undefined;
 
-                // 3. WebRTC Sync Request with Retry
+                // 3. Realtime Sync Request with Retry
                 const requestSync = (reason: string, attempt = 1) => {
                     if (!sendMessage) return;
                     console.log(`[XOX] Requesting sync (reason: ${reason}, attempt: ${attempt})`);
@@ -203,7 +203,7 @@ export function XOX({
         return () => { isMounted = false; };
     }, [roomId, members.length, currentMember.id, sendMessage]);
 
-    // WebRTC Real-time state sync
+    // Realtime state sync
     useEffect(() => {
         if (!registerHandler || !unregisterHandler) return;
 
@@ -217,7 +217,7 @@ export function XOX({
             const isSameAndInitial = isSync && incoming.version === current.version;
 
             if (isNewer || isSameAndInitial) {
-                console.log(`[RTC] XOX sync received (version ${incoming.version}, isSync: ${isSync})`);
+                console.log(`[Realtime] XOX sync received (version ${incoming.version}, isSync: ${isSync})`);
                 const serialized = JSON.stringify(incoming);
                 lastStateRef.current = serialized;
                 setGameState(incoming);
@@ -229,9 +229,9 @@ export function XOX({
                     hasUnsavedChangesRef.current = false;
                 }
             } else if (incoming.version === current.version && hasUnsavedChangesRef.current) {
-                console.log(`[RTC] Ignored XOX sync with matching version (v${incoming.version}) due to pending local state.`);
+                console.log(`[Realtime] Ignored XOX sync with matching version (v${incoming.version}) due to pending local state.`);
             } else {
-                console.log(`[RTC] Ignored stale XOX sync (v${incoming.version} < v${current.version})`);
+                console.log(`[Realtime] Ignored stale XOX sync (v${incoming.version} < v${current.version})`);
             }
         };
 
@@ -241,7 +241,7 @@ export function XOX({
             
             // Responder: Always send current state regardless of version or host status
             if (sendMessage) {
-                console.log("[RTC] Responding to XOX sync request");
+                console.log("[Realtime] Responding to XOX sync request");
                 const state = JSON.parse(lastStateRef.current || JSON.stringify(INITIAL_STATE));
                 sendMessage('sync_state', { game: 'xox', state });
             }
@@ -283,11 +283,6 @@ export function XOX({
             unregisterHandler('wake_up');
         };
     }, [registerHandler, unregisterHandler, currentMember.id, sendMessage]);
-
-    // Debounce activity-ping to avoid too many calls
-    const debouncedActivityPing = useCallback(debounce(() => {
-        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
-    }, 3000), [roomId]);
 
     const checkWinner = (board: XOXPlayer[]): XOXGameState['winner'] => {
         for (let combo of WINNING_COMBOS) {
@@ -374,9 +369,6 @@ export function XOX({
         if (winner) {
             saveToDb(newState, true);
         }
-
-        // Part B: Activity ping (debounced)
-        debouncedActivityPing();
     };
 
     const roomCreator = members.length > 0 ? members[0] : null;
@@ -416,9 +408,6 @@ export function XOX({
         
         // Immediate sync on reset
         saveToDb(newState, true);
-
-        // Part B: Activity ping (debounced)
-        debouncedActivityPing();
     };
 
     if (loading) return <div className="text-gray-400 dark:text-gray-500 animate-pulse w-full text-center">Loading Game...</div>;

@@ -6,7 +6,7 @@ import { LoveRoomMember, SnakeLadderState, SnakeLadderPlayer } from '@/types/lov
 import { Button } from '@/components/ui/button';
 import { Dices, Trophy, RotateCcw, Bell, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { WebRTCMessageType } from '@/lib/webrtc/dataChannel';
+import { RealtimeMessageType } from '@/lib/realtime/types';
 import SnakeDice from './SnakeDice';
 import { useAssetPreloader } from '../hooks/useAssetPreloader';
 import { GamePreloader } from './GamePreloader';
@@ -55,9 +55,9 @@ export function SnakeLadder({
     otherOnline?: boolean; 
     members?: LoveRoomMember[];
     connectionState?: string;
-    sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
-    registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
-    unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
+    sendMessage?: (type: RealtimeMessageType, payload?: any, options?: { reliable?: boolean }) => void;
+    registerHandler?: (type: RealtimeMessageType, handler: (payload: any) => void) => void;
+    unregisterHandler?: (type: RealtimeMessageType, handler?: (payload: any) => void) => void;
 }) {
     const [state, setState] = useState<SnakeLadderState>(INITIAL_STATE);
     const [loading, setLoading] = useState(true);
@@ -232,11 +232,6 @@ export function SnakeLadder({
         }
     }, [sendMessage, roomId, currentMember.id, connectionState]);
 
-    // Debounce activity-ping to avoid too many calls
-    const debouncedActivityPing = useCallback(debounce(() => {
-        fetch(`/api/love-space/activity-ping?roomId=${roomId}`, { method: 'POST' }).catch(() => {});
-    }, 3000), [roomId]);
-
     const commitState = useCallback((nextState: SnakeLadderState, options?: { broadcast?: boolean }) => {
         const updatedAt = Date.now();
         // Version-Controlled State: Increment version on every committed change
@@ -258,11 +253,8 @@ export function SnakeLadder({
             saveToDb(stateWithMeta, true);
         }
 
-        // Part B: Activity ping (debounced)
-        debouncedActivityPing();
-
         return stateWithMeta;
-    }, [sendMessage, roomId, saveToDb, debouncedActivityPing]);
+    }, [sendMessage, roomId, saveToDb]);
 
     const buildPath = useCallback((from: number, to: number) => {
         const path: number[] = [];
@@ -285,20 +277,20 @@ export function SnakeLadder({
         const currentVersion = current.version || 0;
         if (isSync) {
             if (remoteState.version < currentVersion) {
-                console.log(`[RTC] Ignored stale SYNC_STATE (v${remoteState.version} < v${currentVersion})`);
+                console.log(`[Realtime] Ignored stale SYNC_STATE (v${remoteState.version} < v${currentVersion})`);
                 return;
             }
         } else {
             if (remoteState.version <= currentVersion && hasUnsavedChangesRef.current) {
-                console.log(`[RTC] Ignored Snake move with matching/older version (v${remoteState.version}) due to pending local state.`);
+                console.log(`[Realtime] Ignored Snake move with matching/older version (v${remoteState.version}) due to pending local state.`);
                 return;
             }
             if (remoteState.version < currentVersion) {
-                console.log(`[RTC] Ignored stale Snake move (v${remoteState.version} < v${currentVersion})`);
+                console.log(`[Realtime] Ignored stale Snake move (v${remoteState.version} < v${currentVersion})`);
                 return;
             }
         }
-        console.log(`[RTC] Snake state accepted (v${remoteState.version}, isSync=${isSync})`);
+        console.log(`[Realtime] Snake state accepted (v${remoteState.version}, isSync=${isSync})`);
 
         const serialized = JSON.stringify(remoteState);
         
@@ -451,7 +443,7 @@ export function SnakeLadder({
         });
     }, [isHost, members]);
 
-    // WebRTC Real-time state sync
+    // Realtime state sync
     useEffect(() => {
         if (!registerHandler || !unregisterHandler) return;
 
@@ -519,18 +511,18 @@ export function SnakeLadder({
 
                 // If we have no state yet (v0), wait 500ms and try once more
                 if (currentState.version === 0) {
-                    console.log('[RTC] Snake sync_request received but local state is v0. Retrying response in 500ms...');
+                    console.log('[Realtime] Snake sync_request received but local state is v0. Retrying response in 500ms...');
                     setTimeout(() => {
                         const stateNow = lastStateRef.current ? JSON.parse(lastStateRef.current) : stateRef.current;
                         if (stateNow.version > 0) {
-                            console.log('[RTC] Snake delayed sync response sending (state loaded)');
+                            console.log('[Realtime] Snake delayed sync response sending (state loaded)');
                             sendMessage('sync_state', { game: 'snake', state: stateNow, updatedAt: stateNow.updatedAt });
                         }
                     }, 500);
                     return;
                 }
 
-                console.log('[RTC] Responding to Snake sync request');
+                console.log('[Realtime] Responding to Snake sync request');
                 sendMessage('sync_state', {
                     game: 'snake',
                     state: currentState,
@@ -1085,31 +1077,40 @@ export function SnakeLadder({
             {/* The Board with snake.webp background */}
             <div
                 className="w-full mt-2 sm:mt-6 relative shadow-2xl rounded-xl border-4 border-[#3E2723] overflow-hidden"
-                style={{ aspectRatio: '2 / 1' }}
+                style={{ aspectRatio: '1.82 / 1' }}
             >
                 {/* Background image */}
                 <Image
                     src="/snake.webp"
                     alt="Snake and Ladder Board"
                     fill
-                    className="object-contain"
+                    className="object-fill"
                     priority
                 />
-                {/* Overlay SVG for player tokens */}
+                {/* Overlay SVG for player tokens.
+                     viewBox 0 0 1000 500 matches getCellSVGCoords exactly (10 cols × 100px, 5 rows × 100px).
+                     preserveAspectRatio="none" stretches the SVG to fill the container, keeping tokens
+                     perfectly aligned with the board cells (image is also object-fill). */}
                 <svg
                     viewBox="0 0 1000 500"
                     className="absolute top-0 left-0 w-full h-full"
-                    preserveAspectRatio="xMidYMid meet"
+                    preserveAspectRatio="none"
                     aria-label="Player tokens"
                 >
-                    {/* ── Player 1 pin (pink) ── */}
+                    {/* ── Player 1 pin (pink) ──
+                         Key: use transform="translate" on the g so CSS transition: transform
+                         produces smooth movement. Putting transition on g and animating cx/cy
+                         on the child circle does NOT work — the transition stays on g. */}
                     {(() => {
                         const coords = getCellSVGCoords(visualP1);
-                        const offset = visualP1 === visualP2 ? -14 : 0;
+                        const offset = visualP1 === visualP2 ? -22 : 0;
                         return (
-                            <g style={{ transition: 'all 0.3s ease' }}>
-                                <circle cx={coords.x + offset} cy={coords.y + 20} r={14} fill="#EC4899" stroke="white" strokeWidth={3} opacity={0.95} />
-                                <text x={coords.x + offset} y={coords.y + 20} textAnchor="middle" dominantBaseline="middle" fontSize={14}>👩</text>
+                            <g
+                                transform={`translate(${coords.x + offset}, ${coords.y + 10})`}
+                                style={{ transition: 'transform 0.3s ease' }}
+                            >
+                                <circle cx={0} cy={0} r={22} fill="#EC4899" stroke="white" strokeWidth={3} opacity={0.95} />
+                                <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" fontSize={20}>👩</text>
                             </g>
                         );
                     })()}
@@ -1117,11 +1118,14 @@ export function SnakeLadder({
                     {/* ── Player 2 pin (blue) ── */}
                     {(() => {
                         const coords = getCellSVGCoords(visualP2);
-                        const offset = visualP1 === visualP2 ? 14 : 0;
+                        const offset = visualP1 === visualP2 ? 22 : 0;
                         return (
-                            <g style={{ transition: 'all 0.3s ease' }}>
-                                <circle cx={coords.x + offset} cy={coords.y + 20} r={14} fill="#3B82F6" stroke="white" strokeWidth={3} opacity={0.95} />
-                                <text x={coords.x + offset} y={coords.y + 20} textAnchor="middle" dominantBaseline="middle" fontSize={14}>👨</text>
+                            <g
+                                transform={`translate(${coords.x + offset}, ${coords.y + 10})`}
+                                style={{ transition: 'transform 0.3s ease' }}
+                            >
+                                <circle cx={0} cy={0} r={22} fill="#3B82F6" stroke="white" strokeWidth={3} opacity={0.95} />
+                                <text x={0} y={0} textAnchor="middle" dominantBaseline="middle" fontSize={20}>👨</text>
                             </g>
                         );
                     })()}

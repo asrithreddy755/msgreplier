@@ -15,6 +15,13 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Server misconfiguration: missing Supabase config.', env: envStatus }, { status: 500 });
         }
 
+        // Soft-close expired rooms: mark as inactive instead of deleting, so all historical data is preserved.
+        try {
+            await supabaseAdmin.from('love_rooms').update({ is_active: false }).lt('expires_at', new Date().toISOString()).eq('is_active', true);
+        } catch (gcErr) {
+            console.error('GC Error soft-closing expired rooms:', gcErr);
+        }
+
         const [roomRes, membersRes] = await Promise.all([
             supabaseAdmin.from('love_rooms').select('*').eq('id', roomId).single(),
             supabaseAdmin.from('love_room_members').select('*').eq('room_id', roomId)
@@ -31,9 +38,9 @@ export async function POST(request: Request) {
         const expiresAtMs = new Date(room.expires_at).getTime();
 
         if (Date.now() > expiresAtMs) {
-            // Room is expired. Terminate it.
-            await supabaseAdmin.from('love_rooms').delete().eq('id', roomId);
-            return NextResponse.json({ error: 'This room has expired due to 10 minutes of inactivity.' }, { status: 404 });
+            // Room is expired. Soft-close it — data is kept, only realtime is freed.
+            await supabaseAdmin.from('love_rooms').update({ is_active: false }).eq('id', roomId);
+            return NextResponse.json({ error: 'This room has expired. Private rooms are only active for 24 hours after creation.' }, { status: 404 });
         }
         // ----------------------------------
 

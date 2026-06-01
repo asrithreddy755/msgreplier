@@ -5,13 +5,13 @@ import { Heart, Sparkles, RefreshCcw, Share2, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
-import { WebRTCMessageType } from "@/lib/webrtc/dataChannel";
+import { RealtimeMessageType } from "@/lib/realtime/types";
 import { toast } from "sonner";
 
 interface LoveSpaceFlamesProps {
-    sendMessage?: (type: WebRTCMessageType, payload?: any, options?: { reliable?: boolean }) => void;
-    registerHandler?: (type: WebRTCMessageType, handler: (payload: any) => void) => void;
-    unregisterHandler?: (type: WebRTCMessageType, handler?: (payload: any) => void) => void;
+    sendMessage?: (type: RealtimeMessageType, payload?: any, options?: { reliable?: boolean }) => void;
+    registerHandler?: (type: RealtimeMessageType, handler: (payload: any) => void) => void;
+    unregisterHandler?: (type: RealtimeMessageType, handler?: (payload: any) => void) => void;
     currentMember: { id: string; nickname: string };
     otherMember?: { id: string; nickname: string } | null;
 }

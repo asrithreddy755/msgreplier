@@ -57,6 +57,7 @@ export function JoinRoom({ room, onJoined }: JoinRoomProps) {
                 throw new Error(data.error || "Error joining room.");
             }
 
+            sessionStorage.setItem(`loveRoom_${room.id}`, JSON.stringify(data.member));
             localStorage.setItem(`loveRoom_${room.id}`, JSON.stringify(data.member));
             onJoined(data.member as LoveRoomMember);
         } catch (apiErr: any) {

@@ -77,6 +77,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    {
+      url: `${baseUrl}/cookie-policy`,
+      lastModified: new Date("2026-06-01"),
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/faq`,
+      lastModified: new Date("2026-06-01"),
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/community-guidelines`,
+      lastModified: new Date("2026-06-01"),
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
     // Blog Posts
     {
       url: `${baseUrl}/blog/create-website-for-wishes`,
@@ -161,6 +179,36 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date("2026-03-12"),
       changeFrequency: "monthly",
       priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/blog/ai-replies-for-couples`,
+      lastModified: new Date("2026-06-01"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/blog/birthday-wishes-website-guide`,
+      lastModified: new Date("2026-06-01"),
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/blog/anniversary-message-ideas`,
+      lastModified: new Date("2026-06-01"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/blog/cute-good-morning-messages`,
+      lastModified: new Date("2026-06-01"),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/blog/relationship-communication-tips`,
+      lastModified: new Date("2026-06-01"),
+      changeFrequency: "monthly",
+      priority: 0.5,
     },
   ];
 }

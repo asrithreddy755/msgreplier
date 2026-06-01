@@ -62,6 +62,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
+        // Update last_active_at on the room so the inactivity cron can track activity
+        await supabaseAdmin
+            .from('love_rooms')
+            .update({ last_active_at: new Date().toISOString() })
+            .eq('id', roomId);
+
         return NextResponse.json({ message: data });
     } catch {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

@@ -50,7 +50,10 @@ export function useAssetPreloader(assets: string[]) {
     }, 3000);
 
     return () => clearTimeout(timeout);
-  }, [assets]);
+    // Use a serialized key so the effect only re-fires when URLs actually change,
+    // not when the caller passes a new array reference with the same contents.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(assets)]);
 
   return { progress, isLoaded };
 }

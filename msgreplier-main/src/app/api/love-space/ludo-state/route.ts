@@ -106,6 +106,13 @@ export async function POST(request: Request) {
         } : null;
 
         console.log(`[Ludo State POST] Successfully saved state for roomId ${roomId}`);
+
+        // Update last_active_at on the room so the inactivity cron can track activity
+        await supabaseAdmin
+            .from('love_rooms')
+            .update({ last_active_at: new Date().toISOString() })
+            .eq('id', roomId);
+
         return NextResponse.json({ game: mappedData });
 
     } catch (e: any) {
