@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+// Running on default Node.js runtime for OpenNext compatibility
 
 
 export const size = {
