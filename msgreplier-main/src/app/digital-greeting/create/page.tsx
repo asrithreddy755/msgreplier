@@ -197,8 +197,12 @@ export default function DigitalGreetingCreate() {
                         {OCCASIONS.map((occ) => (
                           <Button
                             key={occ.value}
-                            variant={formData.occasion === occ.value ? "default" : "outline"}
-                            className={`justify-start bg-white hover:bg-rose-50 border-rose-100 shadow-sm ${formData.occasion === occ.value ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-500' : 'text-slate-600'}`}
+                            variant={formData.occasion === occ.value ? "default" : "ghost"}
+                            className={`justify-start border shadow-sm ${
+                              formData.occasion === occ.value 
+                                ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-500' 
+                                : 'bg-white hover:bg-rose-50 text-slate-600 border-rose-100 dark:bg-white dark:text-slate-600 dark:border-rose-100 dark:hover:bg-rose-50'
+                            }`}
                             onClick={() => setFormData({...formData, occasion: occ.value})}
                           >
                             {occ.label}
@@ -274,7 +278,11 @@ export default function DigitalGreetingCreate() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1 border-rose-100" onClick={prevStep}>
+                    <Button 
+                      variant="ghost" 
+                      className="flex-1 border border-rose-100 bg-white text-slate-600 hover:bg-rose-50 dark:bg-white dark:text-slate-600 dark:border-rose-100 dark:hover:bg-rose-50" 
+                      onClick={prevStep}
+                    >
                       <ChevronLeft className="mr-2 w-4 h-4" /> Back
                     </Button>
                     <Button 
@@ -340,11 +348,11 @@ export default function DigitalGreetingCreate() {
                           </div>
                           
                           <Button
-                            variant={formData.theme === tmpl.id ? "default" : "outline"}
-                            className={`w-full h-10 ${
+                            variant={formData.theme === tmpl.id ? "default" : "ghost"}
+                            className={`w-full h-10 border ${
                               formData.theme === tmpl.id
                                 ? "bg-rose-500 hover:bg-rose-600 text-white border-rose-500"
-                                : "text-slate-600 border-rose-100 hover:bg-rose-50"
+                                : "bg-white hover:bg-rose-50 text-slate-600 border-rose-100 dark:bg-white dark:text-slate-600 dark:border-rose-100 dark:hover:bg-rose-50"
                             }`}
                             onClick={() => setFormData({ ...formData, theme: tmpl.id })}
                           >
@@ -356,7 +364,11 @@ export default function DigitalGreetingCreate() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1 border-rose-100" onClick={prevStep}>
+                    <Button 
+                      variant="ghost" 
+                      className="flex-1 border border-rose-100 bg-white text-slate-600 hover:bg-rose-50 dark:bg-white dark:text-slate-600 dark:border-rose-100 dark:hover:bg-rose-50" 
+                      onClick={prevStep}
+                    >
                       <ChevronLeft className="mr-2 w-4 h-4" /> Back
                     </Button>
                     <Button 
@@ -407,9 +419,9 @@ export default function DigitalGreetingCreate() {
                           className="bg-white border-rose-100 text-sm h-10 text-slate-900"
                         />
                         <Button 
-                          variant="outline" 
+                          variant="ghost" 
                           size="icon" 
-                          className="shrink-0 border-none bg-rose-50 text-rose-500 h-10 w-10"
+                          className="shrink-0 border-none bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-50 dark:text-rose-500 dark:hover:bg-rose-100 h-10 w-10"
                           onClick={copyLink}
                           disabled={!shareUrl}
                         >
@@ -417,7 +429,7 @@ export default function DigitalGreetingCreate() {
                         </Button>
                       </div>
                     </div>
-
+ 
                     <div className="grid grid-cols-2 gap-3">
                       <Button 
                         onClick={shareWhatsApp}
@@ -427,9 +439,9 @@ export default function DigitalGreetingCreate() {
                         <MessageCircle className="w-4 h-4" /> WhatsApp
                       </Button>
                       <Button 
-                        variant="outline"
+                        variant="ghost"
                         asChild
-                        className="border-none bg-rose-50 text-rose-600 hover:bg-rose-100 h-12 text-sm"
+                        className="bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-50 dark:text-rose-600 dark:hover:bg-rose-100 h-12 text-sm"
                         disabled={!shareUrl}
                       >
                         <Link href={shareUrl} target="_blank">
@@ -438,11 +450,11 @@ export default function DigitalGreetingCreate() {
                       </Button>
                     </div>
                   </div>
-
+ 
                   <div className="pt-4 border-t border-rose-100">
                     <Button 
                       variant="ghost" 
-                      className="w-full text-rose-400 hover:text-rose-500 hover:bg-rose-50"
+                      className="w-full text-rose-400 hover:text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-50"
                       onClick={() => {
                         setStep(1);
                         setSlug("");
