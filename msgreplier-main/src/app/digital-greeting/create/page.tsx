@@ -14,7 +14,9 @@ import {
   Check,
   MessageCircle,
   Music,
-  Dice5
+  Dice5,
+  Eye,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,17 +28,28 @@ import { toast } from "sonner";
 import Link from "next/link";
 import birthdayMessages from "./birthday_messages.json";
 import anniversaryMessages from "./anniversary_messages.json";
+import TemplateCake from "../components/TemplateCake";
+import TemplateAurora from "../components/TemplateAurora";
 
 const OCCASIONS = [
   { label: "Birthday 🎂", value: "Birthday" },
   { label: "Anniversary 💍", value: "Anniversary" },
 ];
 
-const MUSIC_TRACKS = [
-  { id: "none", label: "No Music 🔇" },
-  { id: "romantic", label: "Romantic Piano 🎹" },
-  { id: "lofi", label: "Chill Lofi 🎧" },
-  { id: "happy", label: "Happy Vibes ✨" },
+const TEMPLATES = [
+  { 
+    id: "aurora", 
+    label: "Cham 3D Cake ✨", 
+    description: "WebGL floating 3D hearts, celebration music, and interactive candles that the receiver can blow out using their microphone!", 
+    icon: "✨",
+    recommended: true
+  },
+  { 
+    id: "hearts", 
+    label: "Cake Surprise 🎂", 
+    description: "Interactive cake blowing with standard text greeting page.", 
+    icon: "🎂" 
+  },
 ];
 
 export default function DigitalGreetingCreate() {
@@ -62,7 +75,7 @@ export default function DigitalGreetingCreate() {
     relationship: "Lover",
     occasion: "Birthday",
     message: "",
-    theme: "hearts",
+    theme: "aurora",
     sender_name: "",
     sender_avatar: "💌",
     photo_url: "",
@@ -72,6 +85,7 @@ export default function DigitalGreetingCreate() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [slug, setSlug] = useState("");
   const [copied, setCopied] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
@@ -285,22 +299,59 @@ export default function DigitalGreetingCreate() {
                 >
                   <div className="space-y-4">
                     <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                      <Music className="w-5 h-5 text-rose-500" /> Background Music
+                      <Sparkles className="w-5 h-5 text-rose-500" /> Choose Style Template
                     </h2>
 
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-2 gap-2">
-                        {MUSIC_TRACKS.map((track) => (
+                    <div className="space-y-3">
+                      {TEMPLATES.map((tmpl) => (
+                        <div
+                          key={tmpl.id}
+                          className={`p-4 rounded-xl border-2 transition-all flex flex-col justify-between gap-3 bg-white shadow-sm ${
+                            formData.theme === tmpl.id
+                              ? "border-rose-500 bg-rose-50/20"
+                              : "border-rose-100 hover:border-rose-300"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <h3 className="font-bold text-slate-800 flex flex-wrap items-center gap-2">
+                                <span className="text-lg">{tmpl.icon}</span> {tmpl.label}
+                                {tmpl.recommended && (
+                                  <Badge className="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                                    Recommended
+                                  </Badge>
+                                )}
+                              </h3>
+                              <p className="text-xs text-slate-500 leading-relaxed max-w-[280px]">
+                                {tmpl.description}
+                              </p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 text-xs font-bold shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewTemplate(tmpl.id);
+                              }}
+                            >
+                              <Eye className="w-3.5 h-3.5 mr-1" /> Preview
+                            </Button>
+                          </div>
+                          
                           <Button
-                            key={track.id}
-                            variant={formData.music_id === track.id ? "default" : "outline"}
-                            className={`justify-start bg-white hover:bg-rose-50 border-rose-100 shadow-sm ${formData.music_id === track.id ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-500' : 'text-slate-600'}`}
-                            onClick={() => setFormData({...formData, music_id: track.id})}
+                            variant={formData.theme === tmpl.id ? "default" : "outline"}
+                            className={`w-full h-10 ${
+                              formData.theme === tmpl.id
+                                ? "bg-rose-500 hover:bg-rose-600 text-white border-rose-500"
+                                : "text-slate-600 border-rose-100 hover:bg-rose-50"
+                            }`}
+                            onClick={() => setFormData({ ...formData, theme: tmpl.id })}
                           >
-                            {track.label}
+                            {formData.theme === tmpl.id ? "Selected" : "Select Style"}
                           </Button>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -421,6 +472,44 @@ export default function DigitalGreetingCreate() {
           </Link>
         </div>
       </div>
+
+      {/* Interactive Preview Overlay */}
+      {previewTemplate && (
+        <div className="fixed inset-0 z-[9999] overflow-y-auto bg-black bg-opacity-95">
+          <div className="fixed top-6 left-6 z-[10000]">
+            <Button
+              onClick={() => setPreviewTemplate(null)}
+              className="bg-black/80 hover:bg-black text-white rounded-full font-bold px-6 h-12 shadow-2xl flex items-center gap-2 border border-white/20"
+            >
+              <X className="w-5 h-5" /> Close Preview
+            </Button>
+          </div>
+          <div className="min-h-screen w-full relative z-10">
+            {previewTemplate === "hearts" ? (
+              <TemplateCake
+                greeting={{
+                  recipient_name: formData.recipient_name || "Sarah",
+                  sender_name: formData.sender_name || "Michael",
+                  message: formData.message || "This is a preview of your beautiful wish! It contains all the love and happiness in the world. Customize it to make it yours.",
+                  occasion: formData.occasion || "Birthday",
+                  music_id: "none",
+                }}
+                isPreview={true}
+              />
+            ) : (
+              <TemplateAurora
+                greeting={{
+                  recipient_name: formData.recipient_name || "Sarah",
+                  sender_name: formData.sender_name || "Michael",
+                  message: formData.message || "This is a preview of your beautiful wish! It contains all the love and happiness in the world. Customize it to make it yours.",
+                  occasion: formData.occasion || "Birthday",
+                }}
+                isPreview={true}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
