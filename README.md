@@ -6,7 +6,6 @@ MsgReplier is a modern web application designed to enhance digital communication
 
 - **Shortcutpedia**: A comprehensive library of text abbreviations, slang, and emojis with meanings and tone indicators.
 - **Text Repeater**: A utility to repeat text multiple times for emphasis or meeting character limits.
-- **cham AI (Coming Soon)**: An intelligent assistant for crafting perfect responses in various tones (Professional, Casual, Flirty, etc.).
 - **Privacy First**: All processing is done locally in the browser; no data is stored or sent to external servers.
 - **Responsive Design**: Fully optimized for both desktop and mobile devices.
 
