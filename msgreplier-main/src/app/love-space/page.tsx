@@ -286,6 +286,7 @@ export default function LoveSpacePage() {
                                     value={creatorName}
                                     onChange={(e) => setCreatorName(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && createRoom()}
+                                    maxLength={20}
                                     className="h-12 rounded-xl border-pink-200 dark:border-pink-900/50 focus-visible:ring-pink-500 text-base placeholder:text-gray-400"
                                 />
                                 {error && <p className="text-xs text-red-500 font-medium px-1">{error}</p>}

@@ -27,7 +27,11 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ members: data ?? [] });
+        return NextResponse.json({ members: data ?? [] }, {
+            headers: {
+                'Cache-Control': 's-maxage=5, stale-while-revalidate=10'
+            }
+        });
     } catch {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }

@@ -552,7 +552,7 @@ export function Chat({
                         }}
                         placeholder="Type a message..."
                         className="flex-1 min-h-[40px] max-h-[120px] border-0 bg-transparent focus:ring-0 focus:outline-none px-3 py-2.5 dark:text-white dark:placeholder:text-gray-500 shadow-none text-sm resize-none hide-scrollbar overflow-y-auto"
-                        maxLength={500}
+                        maxLength={1500}
                     />
                     <Button
                         type="submit"

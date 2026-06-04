@@ -47,7 +47,11 @@ export async function GET(request: Request) {
         }
         // ----------------------------------
 
-        return NextResponse.json({ room });
+        return NextResponse.json({ room }, {
+            headers: {
+                'Cache-Control': 's-maxage=5, stale-while-revalidate=10'
+            }
+        });
     } catch (error) {
         console.error('API Error /api/love-space/get-room:', error);
         return NextResponse.json(

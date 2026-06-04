@@ -10,7 +10,7 @@ import { Chat, XOX, Ludo, SnakeLadder, LoveQuiz, NetworkStatus } from '../compon
 import { MuteButton } from '../components/MuteButton';
 import { LoveSpaceFlames } from '../components/LoveSpaceFlames';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Signal, SignalLow, SignalZero, Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut, Trophy, Send, Sparkles, MessageSquare, Share2 } from 'lucide-react';
+import { Signal, SignalLow, SignalZero, Heart, Loader2, MessageSquareHeart, Copy, CheckCircle2, Home, Gamepad2, Dices, Grid3X3, Flag, ArrowLeft, MessageCircle, LogOut, Trophy, Send, Sparkles, MessageSquare, Share2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useLoveSpaceRealtime } from '@/hooks/useLoveSpaceRealtime';
@@ -98,6 +98,13 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
     const [wakingUpTab, setWakingUpTab] = useState<string | null>(null);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isRoomClosed, setIsRoomClosed] = useState(false);
+    const [partnerLeftNotification, setPartnerLeftNotification] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!partnerLeftNotification) return;
+        const t = setTimeout(() => setPartnerLeftNotification(null), 5000);
+        return () => clearTimeout(t);
+    }, [partnerLeftNotification]);
 
     const [feedbackText, setFeedbackText] = useState('');
     const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
@@ -536,6 +543,7 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                         online.add(normalizedKey);
                         if (normalizedKey !== String(currentMember.id).toLowerCase()) {
                             otherTab = stateGroup[0].activeTab;
+                            setPartnerLeftNotification(null);
                         }
 
                         // If we see a user ID that is not in our members list, trigger a reload
@@ -564,16 +572,16 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     return next;
                 });
 
+                if (normalizedKey !== String(currentMember.id).toLowerCase()) {
+                    setPartnerLeftNotification(null);
+                }
+
                 if (normalizedKey !== String(currentMember.id).toLowerCase() && !membersRef.current.find(m => String(m.id).toLowerCase() === normalizedKey) && !fetchingMembersRef.current) {
                     debouncedLoadMembers();
                 }
 
                 if (normalizedKey !== String(currentMember.id).toLowerCase() && newPresences && newPresences.length > 0) {
                     setOtherMemberTab(newPresences[0].activeTab);
-                }
-
-                if (normalizedKey !== String(currentMember.id).toLowerCase() && membersRef.current.find(m => String(m.id).toLowerCase() === normalizedKey) && connectionStateRef.current === 'Opponent disconnected') {
-                    reconnect();
                 }
             })
             .on('presence', { event: 'leave' }, ({ key }) => {
@@ -603,6 +611,9 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                             const nickname = membersRef.current.find(
                                 m => String(m.id).toLowerCase() === normalizedKey
                             )?.nickname ?? 'Your partner';
+                            
+                            setPartnerLeftNotification(nickname);
+
                             toast(`${nickname} has gone offline 💔`, {
                                 duration: 5000,
                                 position: 'top-center',
@@ -1058,6 +1069,23 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                             <p className="text-xs text-gray-500 dark:text-gray-400">Custom board adventure</p>
                                         </div>
                                     </button>
+
+                                    {/* Love Rapid Game Link */}
+                                    <button 
+                                        onClick={() => window.location.href = `/love-space/love-rapid?roomId=${roomId}`} 
+                                        className="col-span-2 flex items-center p-4 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-pink-100 dark:border-pink-900/50 hover:scale-[1.02] active:scale-95 transition-all text-left group"
+                                    >
+                                        <div className="w-14 h-14 bg-pink-50 dark:bg-pink-900/30 rounded-2xl flex items-center justify-center mr-4 group-hover:bg-pink-500 group-hover:text-white transition-colors text-pink-500 shadow-inner">
+                                            <Zap className="w-7 h-7 fill-current" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-bold text-gray-800 dark:text-gray-200 text-lg">Love Rapid</h3>
+                                                <span className="text-[9px] font-black uppercase tracking-widest bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-400 px-2 py-0.5 rounded-full border border-pink-200 dark:border-pink-800/50">NEW</span>
+                                            </div>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Rapid-fire questions — answer & reveal together!</p>
+                                        </div>
+                                    </button>
                                 </div>
 
                                 {/* Love Score (Quiz) Section */}
@@ -1091,8 +1119,6 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                         otherMember={otherMember}
                                     />
                                 </div>
-
-
 
                                 {/* Room Code Section (Moved to bottom) */}
                                 <div className="mt-6 bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-pink-100 dark:border-pink-900/50 shadow-sm flex flex-col items-center gap-4 text-center">
@@ -1145,49 +1171,52 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                                 )}
 
                                 {/* Suggestions & Feedbacks Section */}
-                                <div className="mt-4 px-4 pb-4 w-full max-w-md mx-auto">
-                                    <div className="bg-pink-50/50 dark:bg-slate-900/40 border border-pink-100/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm transition-all duration-300 hover:shadow-md backdrop-blur-sm">
-                                        <div className="flex items-center gap-2 mb-2 justify-center">
-                                            <div className="p-1.5 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500 dark:text-pink-400">
-                                                <MessageSquare className="w-4 h-4" />
-                                            </div>
-                                            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                                                Suggestions & Feedbacks
-                                            </h3>
+                                <div className="mt-4 mb-4 bg-pink-50/50 dark:bg-slate-900/40 border border-pink-100/80 dark:border-slate-800/80 rounded-[2rem] p-6 shadow-sm transition-all duration-300 hover:shadow-md backdrop-blur-sm w-full">
+                                    <div className="flex items-center gap-2 mb-2 justify-center">
+                                        <div className="p-1.5 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500 dark:text-pink-400">
+                                            <MessageSquare className="w-4 h-4" />
                                         </div>
-                                        
-                                        <p className="text-[10px] text-slate-500 dark:text-slate-450 dark:text-slate-400 text-center leading-relaxed mb-4 max-w-[280px] mx-auto">
-                                            This report is shown to our team and it helps to build a better version.
-                                        </p>
-                                        
-                                        <div className="relative flex flex-col gap-3">
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                                            Suggestions & Feedbacks
+                                        </h3>
+                                    </div>
+                                    
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-450 dark:text-slate-400 text-center leading-relaxed mb-4 max-w-[280px] mx-auto">
+                                        This report is shown to our team and it helps to build a better version.
+                                    </p>
+                                    
+                                    <div className="relative flex flex-col gap-3">
+                                        <div className="relative">
                                             <textarea
                                                 value={feedbackText}
                                                 onChange={(e) => setFeedbackText(e.target.value)}
                                                 placeholder="Write your suggestion or feedback here..."
                                                 rows={3}
                                                 maxLength={500}
-                                                className="w-full text-xs p-3.5 rounded-2xl border border-pink-100/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/60 text-slate-800 dark:text-slate-100 placeholder-slate-450 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-400/30 focus:border-pink-300 dark:focus:ring-pink-500/20 dark:focus:border-pink-500 resize-none transition-all"
+                                                className="w-full text-xs p-3.5 pb-7 rounded-2xl border border-pink-100/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/60 text-slate-800 dark:text-slate-100 placeholder-slate-450 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-400/30 focus:border-pink-300 dark:focus:ring-pink-500/20 dark:focus:border-pink-500 resize-none transition-all"
                                             />
-                                            
-                                            <Button
-                                                onClick={handleSubmitFeedback}
-                                                disabled={isSubmittingFeedback || !feedbackText.trim()}
-                                                className="w-full py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm shadow-pink-200/50 dark:shadow-none transition-all active:scale-98 disabled:opacity-50 disabled:pointer-events-none"
-                                            >
-                                                {isSubmittingFeedback ? (
-                                                    <>
-                                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                                        Submitting...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Send className="w-3.5 h-3.5" />
-                                                        Submit Feedback
-                                                    </>
-                                                )}
-                                            </Button>
+                                            <span className="absolute bottom-2.5 right-3.5 text-[9px] font-medium text-slate-400 dark:text-slate-500">
+                                                {feedbackText.length}/500
+                                            </span>
                                         </div>
+                                        
+                                        <Button
+                                            onClick={handleSubmitFeedback}
+                                            disabled={isSubmittingFeedback || !feedbackText.trim()}
+                                            className="w-full py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm shadow-pink-200/50 dark:shadow-none transition-all active:scale-98 disabled:opacity-50 disabled:pointer-events-none"
+                                        >
+                                            {isSubmittingFeedback ? (
+                                                <>
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                    Submitting...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Send className="w-3.5 h-3.5" />
+                                                    Submit Feedback
+                                                </>
+                                            )}
+                                        </Button>
                                     </div>
                                 </div>
 
@@ -1367,6 +1396,20 @@ export default function DynamicRoomPage({ params }: { params: Promise<{ roomId: 
                     </div>
                 </Tabs>
             </div>
+
+            {/* Partner Left Notification */}
+            <AnimatePresence>
+                {partnerLeftNotification && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                        className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2 px-4 py-2 bg-slate-900/90 dark:bg-slate-950/90 backdrop-blur-md text-white rounded-full shadow-lg border border-slate-800/50 text-xs font-semibold max-w-[90vw] whitespace-nowrap"
+                    >
+                        <span>💔 {partnerLeftNotification} left the room</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
         </div>
     );
