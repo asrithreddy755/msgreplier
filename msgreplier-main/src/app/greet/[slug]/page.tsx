@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import TemplateCake from "../../digital-greeting/components/TemplateCake";
 import TemplateAurora from "../../digital-greeting/components/TemplateAurora";
+import TemplateClassic2D from "../../digital-greeting/components/TemplateClassic2D";
+
 
 export default function GreetingWebsite() {
   const params = useParams();
@@ -60,6 +62,10 @@ export default function GreetingWebsite() {
 
   if (greeting.theme === "aurora") {
     return <TemplateAurora greeting={greeting} />;
+  }
+
+  if (greeting.theme === "classic-2d") {
+    return <TemplateClassic2D greeting={greeting} />;
   }
 
   return <TemplateCake greeting={greeting} />;

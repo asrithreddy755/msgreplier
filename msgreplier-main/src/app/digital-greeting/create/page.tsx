@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Heart, 
-  ChevronRight, 
-  ChevronLeft, 
-  Sparkles, 
+import {
+  Heart,
+  ChevronRight,
+  ChevronLeft,
+  Sparkles,
   Users,
   Share2,
   Copy,
@@ -30,6 +30,8 @@ import birthdayMessages from "./birthday_messages.json";
 import anniversaryMessages from "./anniversary_messages.json";
 import TemplateCake from "../components/TemplateCake";
 import TemplateAurora from "../components/TemplateAurora";
+import TemplateClassic2D from "../components/TemplateClassic2D";
+
 
 const OCCASIONS = [
   { label: "Birthday 🎂", value: "Birthday" },
@@ -37,18 +39,24 @@ const OCCASIONS = [
 ];
 
 const TEMPLATES = [
-  { 
-    id: "aurora", 
-    label: "Cham 3D Cake ✨", 
-    description: "WebGL floating 3D hearts, celebration music, and interactive candles that the receiver can blow out using their microphone!", 
-    icon: "✨",
+  {
+    id: "classic-2d",
+    label: "Classic 2D 🎈",
+    description: "A gorgeous 2d experince with lights, balloons,cake",
+    icon: "🎈",
     recommended: true
   },
-  { 
-    id: "hearts", 
-    label: "Cake Surprise 🎂", 
-    description: "Interactive cake blowing with standard text greeting page.", 
-    icon: "🎂" 
+  {
+    id: "aurora",
+    label: "Cham 3D ✨",
+    description: "candles need to blow with the microphone",
+    icon: "✨"
+  },
+  {
+    id: "hearts",
+    label: "Cake Surprise 🎂",
+    description: "Interactive cake blowing with standard text greeting page.",
+    icon: "🎂"
   },
 ];
 
@@ -61,10 +69,10 @@ export default function DigitalGreetingCreate() {
     // Add light class to body to override dark mode
     const body = document.body;
     const originalBodyClass = body.className;
-    
+
     // We want to force light colors for everything inside this page
     body.classList.add('light-mode-forced');
-    
+
     return () => {
       body.classList.remove('light-mode-forced');
     };
@@ -75,7 +83,7 @@ export default function DigitalGreetingCreate() {
     relationship: "Lover",
     occasion: "Birthday",
     message: "",
-    theme: "aurora",
+    theme: "classic-2d",
     sender_name: "",
     sender_avatar: "💌",
     photo_url: "",
@@ -183,10 +191,10 @@ export default function DigitalGreetingCreate() {
                     </h2>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-600">Recipient's Name</label>
-                      <Input 
-                        placeholder="e.g. Sarah" 
+                      <Input
+                        placeholder="e.g. Sarah"
                         value={formData.recipient_name}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, recipient_name: e.target.value})}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, recipient_name: e.target.value })}
                         className="border-rose-100 focus-visible:ring-rose-400 bg-white text-slate-900 placeholder:text-slate-400"
                       />
                     </div>
@@ -198,12 +206,11 @@ export default function DigitalGreetingCreate() {
                           <Button
                             key={occ.value}
                             variant={formData.occasion === occ.value ? "default" : "ghost"}
-                            className={`justify-start border shadow-sm ${
-                              formData.occasion === occ.value 
-                                ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-500' 
+                            className={`justify-start border shadow-sm ${formData.occasion === occ.value
+                                ? 'bg-rose-500 hover:bg-rose-600 text-white border-rose-500'
                                 : 'bg-white hover:bg-rose-50 text-slate-600 border-rose-100 dark:bg-white dark:text-slate-600 dark:border-rose-100 dark:hover:bg-rose-50'
-                            }`}
-                            onClick={() => setFormData({...formData, occasion: occ.value})}
+                              }`}
+                            onClick={() => setFormData({ ...formData, occasion: occ.value })}
                           >
                             {occ.label}
                           </Button>
@@ -212,7 +219,7 @@ export default function DigitalGreetingCreate() {
                     </div>
                   </div>
 
-                  <Button 
+                  <Button
                     className="w-full bg-rose-500 hover:bg-rose-600 text-white shadow-lg"
                     onClick={nextStep}
                     disabled={!formData.recipient_name}
@@ -235,7 +242,7 @@ export default function DigitalGreetingCreate() {
                     <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
                       <Heart className="w-5 h-5 text-rose-500" /> Share the Love
                     </h2>
-                    
+
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
                         <label className="text-sm font-medium text-slate-600">Your Message</label>
@@ -244,12 +251,12 @@ export default function DigitalGreetingCreate() {
                         </span>
                       </div>
                       <div className="relative group">
-                        <Textarea 
-                          placeholder="Write something sweet..." 
+                        <Textarea
+                          placeholder="Write something sweet..."
                           className="min-h-[180px] border-rose-100 focus-visible:ring-rose-400 transition-all pr-12 pb-12 bg-white text-slate-900 placeholder:text-slate-400"
                           maxLength={500}
                           value={formData.message}
-                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, message: e.target.value})}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, message: e.target.value })}
                         />
                         <div className="absolute bottom-3 right-3 flex items-center gap-2">
                           <p className="text-[10px] text-rose-300 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Roll for magic ✨</p>
@@ -268,24 +275,24 @@ export default function DigitalGreetingCreate() {
 
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-600">Your Name (Sender)</label>
-                      <Input 
-                        placeholder="e.g. Michael" 
+                      <Input
+                        placeholder="e.g. Michael"
                         value={formData.sender_name}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, sender_name: e.target.value})}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, sender_name: e.target.value })}
                         className="border-rose-100 focus-visible:ring-rose-400 bg-white text-slate-900 placeholder:text-slate-400"
                       />
                     </div>
                   </div>
 
                   <div className="flex gap-2">
-                    <Button 
-                      variant="ghost" 
-                      className="flex-1 border border-rose-100 bg-white text-slate-600 hover:bg-rose-50 dark:bg-white dark:text-slate-600 dark:border-rose-100 dark:hover:bg-rose-50" 
+                    <Button
+                      variant="ghost"
+                      className="flex-1 border border-rose-100 bg-white text-slate-600 hover:bg-rose-50 dark:bg-white dark:text-slate-600 dark:border-rose-100 dark:hover:bg-rose-50"
                       onClick={prevStep}
                     >
                       <ChevronLeft className="mr-2 w-4 h-4" /> Back
                     </Button>
-                    <Button 
+                    <Button
                       className="flex-[2] bg-rose-500 hover:bg-rose-600 text-white shadow-lg"
                       onClick={nextStep}
                       disabled={!formData.message || !formData.sender_name}
@@ -314,11 +321,10 @@ export default function DigitalGreetingCreate() {
                       {TEMPLATES.map((tmpl) => (
                         <div
                           key={tmpl.id}
-                          className={`p-4 rounded-xl border-2 transition-all flex flex-col justify-between gap-3 bg-white shadow-sm ${
-                            formData.theme === tmpl.id
+                          className={`p-4 rounded-xl border-2 transition-all flex flex-col justify-between gap-3 bg-white shadow-sm ${formData.theme === tmpl.id
                               ? "border-rose-500 bg-rose-50/20"
                               : "border-rose-100 hover:border-rose-300"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="space-y-1">
@@ -346,14 +352,13 @@ export default function DigitalGreetingCreate() {
                               <Eye className="w-3.5 h-3.5 mr-1" /> Preview
                             </Button>
                           </div>
-                          
+
                           <Button
                             variant={formData.theme === tmpl.id ? "default" : "ghost"}
-                            className={`w-full h-10 border ${
-                              formData.theme === tmpl.id
+                            className={`w-full h-10 border ${formData.theme === tmpl.id
                                 ? "bg-rose-500 hover:bg-rose-600 text-white border-rose-500"
                                 : "bg-white hover:bg-rose-50 text-slate-600 border-rose-100 dark:bg-white dark:text-slate-600 dark:border-rose-100 dark:hover:bg-rose-50"
-                            }`}
+                              }`}
                             onClick={() => setFormData({ ...formData, theme: tmpl.id })}
                           >
                             {formData.theme === tmpl.id ? "Selected" : "Select Style"}
@@ -364,14 +369,14 @@ export default function DigitalGreetingCreate() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button 
-                      variant="ghost" 
-                      className="flex-1 border border-rose-100 bg-white text-slate-600 hover:bg-rose-50 dark:bg-white dark:text-slate-600 dark:border-rose-100 dark:hover:bg-rose-50" 
+                    <Button
+                      variant="ghost"
+                      className="flex-1 border border-rose-100 bg-white text-slate-600 hover:bg-rose-50 dark:bg-white dark:text-slate-600 dark:border-rose-100 dark:hover:bg-rose-50"
                       onClick={prevStep}
                     >
                       <ChevronLeft className="mr-2 w-4 h-4" /> Back
                     </Button>
-                    <Button 
+                    <Button
                       className="flex-[2] bg-rose-500 hover:bg-rose-600 text-white shadow-lg"
                       onClick={handleGenerate}
                       disabled={isGenerating}
@@ -413,14 +418,14 @@ export default function DigitalGreetingCreate() {
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-600">Shareable Link</label>
                       <div className="flex gap-2">
-                        <Input 
-                          readOnly 
+                        <Input
+                          readOnly
                           value={shareUrl || "Generating link..."}
                           className="bg-white border-rose-100 text-sm h-10 text-slate-900"
                         />
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="shrink-0 border-none bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-50 dark:text-rose-500 dark:hover:bg-rose-100 h-10 w-10"
                           onClick={copyLink}
                           disabled={!shareUrl}
@@ -429,16 +434,16 @@ export default function DigitalGreetingCreate() {
                         </Button>
                       </div>
                     </div>
- 
+
                     <div className="grid grid-cols-2 gap-3">
-                      <Button 
+                      <Button
                         onClick={shareWhatsApp}
                         className="bg-green-500 hover:bg-green-600 text-white flex items-center justify-center gap-2 h-12 text-sm"
                         disabled={!shareUrl}
                       >
                         <MessageCircle className="w-4 h-4" /> WhatsApp
                       </Button>
-                      <Button 
+                      <Button
                         variant="ghost"
                         asChild
                         className="bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-50 dark:text-rose-600 dark:hover:bg-rose-100 h-12 text-sm"
@@ -450,10 +455,10 @@ export default function DigitalGreetingCreate() {
                       </Button>
                     </div>
                   </div>
- 
+
                   <div className="pt-4 border-t border-rose-100">
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className="w-full text-rose-400 hover:text-rose-500 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-50"
                       onClick={() => {
                         setStep(1);
@@ -470,14 +475,14 @@ export default function DigitalGreetingCreate() {
         </Card>
 
         <div className="flex flex-col items-center gap-3">
-          <Link 
-            href="/love-space" 
+          <Link
+            href="/love-space"
             className="text-sm text-rose-400 hover:text-rose-500 flex items-center justify-center gap-1 transition-colors"
           >
             Also check out Love Space <ArrowRight className="w-3 h-3" />
           </Link>
-          <Link 
-            href="/contact" 
+          <Link
+            href="/contact"
             className="text-sm font-medium text-slate-500 hover:text-rose-500 flex items-center justify-center gap-1 transition-colors"
           >
             For fully custom wishes website contact us <ArrowRight className="w-3 h-3" />
@@ -508,6 +513,16 @@ export default function DigitalGreetingCreate() {
                 }}
                 isPreview={true}
               />
+            ) : previewTemplate === "classic-2d" ? (
+              <TemplateClassic2D
+                greeting={{
+                  recipient_name: formData.recipient_name || "Sarah",
+                  sender_name: formData.sender_name || "Michael",
+                  message: formData.message || "This is a preview of your beautiful wish! It contains all the love and happiness in the world. Customize it to make it yours.",
+                  occasion: formData.occasion || "Birthday",
+                }}
+                isPreview={true}
+              />
             ) : (
               <TemplateAurora
                 greeting={{
@@ -527,16 +542,16 @@ export default function DigitalGreetingCreate() {
 }
 
 const ArrowRight = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width="24" 
-    height="24" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
     className={className}
   >
     <path d="M5 12h14" />

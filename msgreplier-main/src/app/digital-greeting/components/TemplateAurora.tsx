@@ -956,21 +956,31 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
               Crafted with endless love by {greeting.sender_name}
             </footer>
 
-            {/* CTA back to Home (Only if not preview mode) */}
-            {!isPreview && isCelebrationStarted && (
+            {/* CTA back to Home */}
+            {isCelebrationStarted && (
               <div className="anim-child pt-6 flex flex-col items-center gap-3">
-                <Link
-                  href="/love-space"
-                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase px-8 py-3.5 tracking-widest transition-colors flex items-center gap-2 shadow-lg border border-white/20"
+                <button
+                  onClick={() => {
+                    setCurrentStep(1);
+                    setIsBlown(false);
+                    setIsCakeCut(false);
+                    setIsCelebrationStarted(false);
+                    setAvgAudioVolume(0);
+                    setShowExplanation(true);
+                  }}
+                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase px-8 py-3.5 tracking-widest transition-colors flex items-center gap-2 shadow-lg border border-white/20 animate-fade-in"
+                  style={{ fontFamily: "Satoshi" }}
                 >
-                  Enter Love Space
-                </Link>
-                <Link
-                  href="/digital-greeting"
-                  className="text-pink-400 hover:text-pink-300 text-xs font-semibold uppercase tracking-[0.2em] transition-colors"
-                >
-                  Create your own surprise
-                </Link>
+                  Replay The Magic
+                </button>
+                {!isPreview && (
+                  <Link
+                    href="/digital-greeting"
+                    className="text-pink-400 hover:text-pink-300 text-xs font-semibold uppercase tracking-[0.2em] transition-colors"
+                  >
+                    Create your own surprise
+                  </Link>
+                )}
               </div>
             )}
           </div>

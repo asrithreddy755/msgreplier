@@ -557,24 +557,27 @@ export default function TemplateCake({ greeting, isPreview = false }: { greeting
       </section>
 
       {/* CTA Footer */}
-      {!isPreview && (
+      {isCelebrationStarted && (
         <section className="relative py-32 px-4 text-center space-y-12 z-10">
-          <div className="space-y-4">
-            <h3 className="text-3xl font-black text-slate-800 uppercase tracking-tighter">Want to reply?</h3>
-            <p className="text-slate-400 font-medium max-w-xs mx-auto">Create a private space just for the two of you.</p>
-          </div>
-
-          <Button asChild size="lg" className="h-20 px-16 text-2xl rounded-full bg-rose-600 hover:bg-rose-700 text-white shadow-2xl shadow-rose-200 border-4 border-white active:scale-95 font-black transition-all">
-            <Link href="/love-space">
-              ENTER LOVE SPACE <ArrowRight className="ml-3 w-8 h-8" />
-            </Link>
+          <Button 
+            onClick={() => {
+              setIsCelebrationStarted(false);
+              setIsMuted(true);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            size="lg" 
+            className="h-20 px-16 text-2xl rounded-full bg-rose-600 hover:bg-rose-700 text-white shadow-2xl shadow-rose-200 border-4 border-white active:scale-95 font-black transition-all"
+          >
+            REPLAY THE MAGIC
           </Button>
 
-          <div className="pt-20">
-            <Link href="/digital-greeting" className="text-pink-400 hover:text-pink-600 text-sm font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3">
-              <Sparkles className="w-4 h-4" /> Create Your Own Surprise <Sparkles className="w-4 h-4" />
-            </Link>
-          </div>
+          {!isPreview && (
+            <div className="pt-20">
+              <Link href="/digital-greeting" className="text-pink-400 hover:text-pink-600 text-sm font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3">
+                <Sparkles className="w-4 h-4" /> Create Your Own Surprise <Sparkles className="w-4 h-4" />
+              </Link>
+            </div>
+          )}
         </section>
       )}
 
