@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { AwsClient } from 'aws4fetch';
 import { v4 as uuidv4 } from 'uuid';
 
 export const dynamic = 'force-dynamic';
 
 const ALLOWED_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_CONTENT_LENGTH = 2 * 1024 * 1024; // 2MB
 
 export async function POST(request: Request) {
   try {
@@ -97,7 +95,7 @@ export async function POST(request: Request) {
     const fileExt = contentType === 'image/webp' ? 'webp' : contentType === 'image/png' ? 'png' : 'jpg';
     const objectKey = `wishes/${user.id}/${Date.now()}-${uuidv4()}.${fileExt}`;
 
-    // 4. Initialize R2 Client (using S3 API compatibility)
+    // 4. Validate R2 configuration
     const accountId = process.env.R2_ACCOUNT_ID;
     const accessKeyId = process.env.R2_ACCESS_KEY_ID;
     const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
@@ -112,24 +110,29 @@ export async function POST(request: Request) {
       );
     }
 
-    const s3Client = new S3Client({
+    // 5. Generate Presigned URL using aws4fetch (edge-native, no fs/path dependencies)
+    //    X-Amz-Expires MUST be set as a query param BEFORE signing so it's included in the signature.
+    const aws = new AwsClient({
+      accessKeyId,
+      secretAccessKey,
       region: 'auto',
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
+      service: 's3',
     });
 
-    // 5. Generate Presigned URL
-    const command = new PutObjectCommand({
-      Bucket: bucketName,
-      Key: objectKey,
-      ContentType: contentType,
-      ContentLength: size,
-    });
+    const r2Url = new URL(`https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${objectKey}`);
+    r2Url.searchParams.set('X-Amz-Expires', '3600');
 
-    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    const presignedRequest = await aws.sign(
+      new Request(r2Url.toString(), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': contentType,
+        },
+      }),
+      { aws: { signQuery: true } }
+    );
+
+    const uploadUrl = presignedRequest.url;
     const publicUrl = `${publicBaseUrl.replace(/\/$/, '')}/${objectKey}`;
 
     return NextResponse.json({
