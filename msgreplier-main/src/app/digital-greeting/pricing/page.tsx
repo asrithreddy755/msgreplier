@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Check, X, Star, Shield, RefreshCw, Mail, Zap, Crown, Gift } from "lucide-react";
 import Script from "next/script";
 
@@ -102,6 +103,7 @@ type Toast = {
 };
 
 export default function DigitalGreetingPricingPage() {
+  const router = useRouter();
   const [billing, setBilling]               = useState<BillingCycle>("monthly");
   const [loadingPlan, setLoadingPlan]       = useState<string | null>(null);
   const [activatedPlan, setActivatedPlan]   = useState<string | null>(null);
@@ -165,8 +167,10 @@ export default function DigitalGreetingPricingPage() {
             const result = await verifyRes.json();
             if (result.success) {
               setActivatedPlan(planName);
-              addToast("success", "🎉 Payment Verified!",
-                `Your payment is verified. Your ${planName.charAt(0).toUpperCase() + planName.slice(1)} plan will activate shortly.`);
+              addToast("success", "🎉 Plan Activated!",
+                `Your ${planName.charAt(0).toUpperCase() + planName.slice(1)} plan is now active! Redirecting to dashboard...`);
+              // Redirect to dashboard after 2s so the server page re-fetches the updated plan
+              setTimeout(() => router.push("/wishes/dashboard"), 2000);
             } else {
               throw new Error(result.error || "Verification failed");
             }

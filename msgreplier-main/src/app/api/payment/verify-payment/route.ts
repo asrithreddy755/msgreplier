@@ -128,6 +128,46 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Failed to persist verification status." }, { status: 500 });
     }
 
+    // 5b. Immediately activate the user's plan & credits so the dashboard updates
+    //     without waiting for the Razorpay webhook. The webhook runs later as an
+    //     idempotent backup (credit_transactions guard prevents double-crediting).
+    try {
+      // Fetch the plan from the payments record we just verified
+      const { data: paymentRow } = await supabaseAdmin
+        .from("payments")
+        .select("plan")
+        .eq("order_id", razorpay_order_id)
+        .eq("user_id", user.id)
+        .single();
+
+      if (paymentRow?.plan) {
+        const planName = paymentRow.plan as string;
+        const PLAN_CREDITS: Record<string, number> = { starter: 20, creator: 50 };
+        const creditsToAdd = PLAN_CREDITS[planName] ?? 0;
+
+        // Try the atomic RPC first; if it doesn't exist, fall back to a simple update
+        const { error: rpcErr } = await supabaseAdmin.rpc("increment_credits_and_set_plan", {
+          p_user_id: user.id,
+          p_plan: planName,
+          p_credits_to_add: creditsToAdd,
+        });
+
+        if (rpcErr) {
+          // Fallback: plain update (no credit increment — webhook will handle credits)
+          console.warn("increment_credits_and_set_plan RPC unavailable, falling back to simple plan update:", rpcErr.message);
+          await supabaseAdmin
+            .from("profiles")
+            .update({ plan: planName })
+            .eq("id", user.id);
+        }
+
+        console.log(`✅ Plan activated immediately on verify: user=${user.id} plan=${planName}`);
+      }
+    } catch (activationErr: any) {
+      // Non-fatal: the webhook will still update the plan later
+      console.error("⚠️ Immediate plan activation failed (webhook will retry):", activationErr.message);
+    }
+
     // 6. Log verification success to audit log
     await supabaseAdmin.from("audit_logs").insert({
       event: "payment_verified",
