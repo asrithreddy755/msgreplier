@@ -19,13 +19,7 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      try {
-        const fs = require('fs');
-        const path = require('path');
-        const logPath = path.join(process.cwd(), 'scripts', 'api-errors.log');
-        const logMessage = `[${new Date().toISOString()}] Auth Failure: ${authError?.message || 'No user session found in cookies'}\n`;
-        fs.appendFileSync(logPath, logMessage);
-      } catch (logErr) {}
+      console.error(`[${new Date().toISOString()}] Auth Failure: ${authError?.message || 'No user session found in cookies'}`);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -144,14 +138,8 @@ export async function POST(request: Request) {
       objectKey,
     });
   } catch (error: any) {
-    console.error('Presign URL generation error:', error);
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const logPath = path.join(process.cwd(), 'scripts', 'api-errors.log');
-      const logMessage = `[${new Date().toISOString()}] Server Error: ${error?.message || error}\nStack: ${error?.stack || ''}\n`;
-      fs.appendFileSync(logPath, logMessage);
-    } catch (logErr) {}
+    console.error(`[${new Date().toISOString()}] Presign URL generation error:`, error?.message || error);
+    console.error('Stack:', error?.stack || '');
     return NextResponse.json(
       { error: 'Failed to generate upload signature' },
       { status: 500 }
