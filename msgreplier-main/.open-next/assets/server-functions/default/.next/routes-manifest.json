@@ -1,0 +1,519 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/icon.png",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/favicon\\.ico(?:/)?$"
+    },
+    {
+      "source": "/terms-of-service",
+      "destination": "/terms-conditions",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/terms-of-service(?:/)?$"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms-conditions",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/terms(?:/)?$"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*).(webp|mp3|svg|png|jpg|jpeg)$",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ],
+      "regex": "^(?:/(.*))(?:\\.(webp|mp3|svg|png|jpg|jpeg))\\$(?:/)?$"
+    },
+    {
+      "source": "/ads.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ],
+      "regex": "^/ads\\.txt(?:/)?$"
+    }
+  ],
+  "dynamicRoutes": [
+    {
+      "page": "/api/digital-greeting/claim/[slug]",
+      "regex": "^/api/digital\\-greeting/claim/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/api/digital\\-greeting/claim/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/digital-greeting/update/[slug]",
+      "regex": "^/api/digital\\-greeting/update/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/api/digital\\-greeting/update/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/digital-greeting/[slug]",
+      "regex": "^/api/digital\\-greeting/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/api/digital\\-greeting/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/greet/with-image/[slug]",
+      "regex": "^/greet/with\\-image/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/greet/with\\-image/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/greet/without-image/[slug]",
+      "regex": "^/greet/without\\-image/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/greet/without\\-image/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/greet/[slug]",
+      "regex": "^/greet/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/greet/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/greet/[slug]/opengraph-image",
+      "regex": "^/greet/([^/]+?)/opengraph\\-image(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/greet/(?<nxtPslug>[^/]+?)/opengraph\\-image(?:/)?$"
+    },
+    {
+      "page": "/greet/[slug]/twitter-image",
+      "regex": "^/greet/([^/]+?)/twitter\\-image(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/greet/(?<nxtPslug>[^/]+?)/twitter\\-image(?:/)?$"
+    },
+    {
+      "page": "/love-score/[id]",
+      "regex": "^/love\\-score/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/love\\-score/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/love-space/[roomId]",
+      "regex": "^/love\\-space/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtProomId": "nxtProomId"
+      },
+      "namedRegex": "^/love\\-space/(?<nxtProomId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/wishes/edit/[slug]",
+      "regex": "^/wishes/edit/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPslug": "nxtPslug"
+      },
+      "namedRegex": "^/wishes/edit/(?<nxtPslug>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/[platform]",
+      "regex": "^/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPplatform": "nxtPplatform"
+      },
+      "namedRegex": "^/(?<nxtPplatform>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/about",
+      "regex": "^/about(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/about(?:/)?$"
+    },
+    {
+      "page": "/admin",
+      "regex": "^/admin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin(?:/)?$"
+    },
+    {
+      "page": "/auth/callback",
+      "regex": "^/auth/callback(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/callback(?:/)?$"
+    },
+    {
+      "page": "/auth/post-login",
+      "regex": "^/auth/post\\-login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/post\\-login(?:/)?$"
+    },
+    {
+      "page": "/blog",
+      "regex": "^/blog(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog(?:/)?$"
+    },
+    {
+      "page": "/blog/100-cute-nicknames",
+      "regex": "^/blog/100\\-cute\\-nicknames(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/100\\-cute\\-nicknames(?:/)?$"
+    },
+    {
+      "page": "/blog/ai-replies-for-couples",
+      "regex": "^/blog/ai\\-replies\\-for\\-couples(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/ai\\-replies\\-for\\-couples(?:/)?$"
+    },
+    {
+      "page": "/blog/anniversary-message-ideas",
+      "regex": "^/blog/anniversary\\-message\\-ideas(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/anniversary\\-message\\-ideas(?:/)?$"
+    },
+    {
+      "page": "/blog/birthday-wishes-website-guide",
+      "regex": "^/blog/birthday\\-wishes\\-website\\-guide(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/birthday\\-wishes\\-website\\-guide(?:/)?$"
+    },
+    {
+      "page": "/blog/confusing-chat-acronyms-explained",
+      "regex": "^/blog/confusing\\-chat\\-acronyms\\-explained(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/confusing\\-chat\\-acronyms\\-explained(?:/)?$"
+    },
+    {
+      "page": "/blog/create-website-for-wishes",
+      "regex": "^/blog/create\\-website\\-for\\-wishes(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/create\\-website\\-for\\-wishes(?:/)?$"
+    },
+    {
+      "page": "/blog/cute-good-morning-messages",
+      "regex": "^/blog/cute\\-good\\-morning\\-messages(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/cute\\-good\\-morning\\-messages(?:/)?$"
+    },
+    {
+      "page": "/blog/dating-app-conversation-starters",
+      "regex": "^/blog/dating\\-app\\-conversation\\-starters(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/dating\\-app\\-conversation\\-starters(?:/)?$"
+    },
+    {
+      "page": "/blog/evolution-of-text-messaging",
+      "regex": "^/blog/evolution\\-of\\-text\\-messaging(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/evolution\\-of\\-text\\-messaging(?:/)?$"
+    },
+    {
+      "page": "/blog/how-flames-works",
+      "regex": "^/blog/how\\-flames\\-works(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/how\\-flames\\-works(?:/)?$"
+    },
+    {
+      "page": "/blog/long-distance-relationship-guide",
+      "regex": "^/blog/long\\-distance\\-relationship\\-guide(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/long\\-distance\\-relationship\\-guide(?:/)?$"
+    },
+    {
+      "page": "/blog/love-score-guide",
+      "regex": "^/blog/love\\-score\\-guide(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/love\\-score\\-guide(?:/)?$"
+    },
+    {
+      "page": "/blog/love-space-guide",
+      "regex": "^/blog/love\\-space\\-guide(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/love\\-space\\-guide(?:/)?$"
+    },
+    {
+      "page": "/blog/meaningful-digital-surprises",
+      "regex": "^/blog/meaningful\\-digital\\-surprises(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/meaningful\\-digital\\-surprises(?:/)?$"
+    },
+    {
+      "page": "/blog/perfect-couple-prompts",
+      "regex": "^/blog/perfect\\-couple\\-prompts(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/perfect\\-couple\\-prompts(?:/)?$"
+    },
+    {
+      "page": "/blog/psychology-of-crushes",
+      "regex": "^/blog/psychology\\-of\\-crushes(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/psychology\\-of\\-crushes(?:/)?$"
+    },
+    {
+      "page": "/blog/relationship-communication-tips",
+      "regex": "^/blog/relationship\\-communication\\-tips(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/relationship\\-communication\\-tips(?:/)?$"
+    },
+    {
+      "page": "/blog/text-repeater-tricks",
+      "regex": "^/blog/text\\-repeater\\-tricks(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/text\\-repeater\\-tricks(?:/)?$"
+    },
+    {
+      "page": "/blog/texting-style-relationship-psychology",
+      "regex": "^/blog/texting\\-style\\-relationship\\-psychology(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/texting\\-style\\-relationship\\-psychology(?:/)?$"
+    },
+    {
+      "page": "/community-guidelines",
+      "regex": "^/community\\-guidelines(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/community\\-guidelines(?:/)?$"
+    },
+    {
+      "page": "/contact",
+      "regex": "^/contact(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/contact(?:/)?$"
+    },
+    {
+      "page": "/cookie-policy",
+      "regex": "^/cookie\\-policy(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/cookie\\-policy(?:/)?$"
+    },
+    {
+      "page": "/digital-greeting",
+      "regex": "^/digital\\-greeting(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/digital\\-greeting(?:/)?$"
+    },
+    {
+      "page": "/digital-greeting/create",
+      "regex": "^/digital\\-greeting/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/digital\\-greeting/create(?:/)?$"
+    },
+    {
+      "page": "/digital-greeting/create/with-image",
+      "regex": "^/digital\\-greeting/create/with\\-image(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/digital\\-greeting/create/with\\-image(?:/)?$"
+    },
+    {
+      "page": "/digital-greeting/create/without-image",
+      "regex": "^/digital\\-greeting/create/without\\-image(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/digital\\-greeting/create/without\\-image(?:/)?$"
+    },
+    {
+      "page": "/digital-greeting/pricing",
+      "regex": "^/digital\\-greeting/pricing(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/digital\\-greeting/pricing(?:/)?$"
+    },
+    {
+      "page": "/digital-greeting/templates",
+      "regex": "^/digital\\-greeting/templates(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/digital\\-greeting/templates(?:/)?$"
+    },
+    {
+      "page": "/e2a8ce7819584caba8890d32ee2c4e9a.txt",
+      "regex": "^/e2a8ce7819584caba8890d32ee2c4e9a\\.txt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/e2a8ce7819584caba8890d32ee2c4e9a\\.txt(?:/)?$"
+    },
+    {
+      "page": "/faq",
+      "regex": "^/faq(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/faq(?:/)?$"
+    },
+    {
+      "page": "/flames",
+      "regex": "^/flames(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/flames(?:/)?$"
+    },
+    {
+      "page": "/library",
+      "regex": "^/library(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/library(?:/)?$"
+    },
+    {
+      "page": "/love-letter/create",
+      "regex": "^/love\\-letter/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/love\\-letter/create(?:/)?$"
+    },
+    {
+      "page": "/love-score",
+      "regex": "^/love\\-score(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/love\\-score(?:/)?$"
+    },
+    {
+      "page": "/love-space",
+      "regex": "^/love\\-space(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/love\\-space(?:/)?$"
+    },
+    {
+      "page": "/love-space/join",
+      "regex": "^/love\\-space/join(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/love\\-space/join(?:/)?$"
+    },
+    {
+      "page": "/love-space/love-rapid",
+      "regex": "^/love\\-space/love\\-rapid(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/love\\-space/love\\-rapid(?:/)?$"
+    },
+    {
+      "page": "/love-space/opengraph-image",
+      "regex": "^/love\\-space/opengraph\\-image(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/love\\-space/opengraph\\-image(?:/)?$"
+    },
+    {
+      "page": "/love-space/twitter-image",
+      "regex": "^/love\\-space/twitter\\-image(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/love\\-space/twitter\\-image(?:/)?$"
+    },
+    {
+      "page": "/opengraph-image",
+      "regex": "^/opengraph\\-image(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/opengraph\\-image(?:/)?$"
+    },
+    {
+      "page": "/privacy-policy",
+      "regex": "^/privacy\\-policy(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/privacy\\-policy(?:/)?$"
+    },
+    {
+      "page": "/prompt",
+      "regex": "^/prompt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/prompt(?:/)?$"
+    },
+    {
+      "page": "/robots.txt",
+      "regex": "^/robots\\.txt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/robots\\.txt(?:/)?$"
+    },
+    {
+      "page": "/sitemap.xml",
+      "regex": "^/sitemap\\.xml(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sitemap\\.xml(?:/)?$"
+    },
+    {
+      "page": "/terms-conditions",
+      "regex": "^/terms\\-conditions(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/terms\\-conditions(?:/)?$"
+    },
+    {
+      "page": "/test-snake",
+      "regex": "^/test\\-snake(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/test\\-snake(?:/)?$"
+    },
+    {
+      "page": "/twitter-image",
+      "regex": "^/twitter\\-image(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/twitter\\-image(?:/)?$"
+    },
+    {
+      "page": "/wishes/dashboard",
+      "regex": "^/wishes/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/wishes/dashboard(?:/)?$"
+    },
+    {
+      "page": "/wishes/login",
+      "regex": "^/wishes/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/wishes/login(?:/)?$"
+    },
+    {
+      "page": "/wishes/signup",
+      "regex": "^/wishes/signup(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/wishes/signup(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "RSC",
+    "varyHeader": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch",
+    "prefetchHeader": "Next-Router-Prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "Next-Router-Segment-Prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  },
+  "rewrites": []
+}

@@ -1,0 +1,22 @@
+diff --git a/node_modules/@opennextjs/cloudflare/dist/cli/build/patches/ast/patch-vercel-og-library.js b/node_modules/@opennextjs/cloudflare/dist/cli/build/patches/ast/patch-vercel-og-library.js
+index da90ef5..1fff93b 100644
+--- a/node_modules/@opennextjs/cloudflare/dist/cli/build/patches/ast/patch-vercel-og-library.js
++++ b/node_modules/@opennextjs/cloudflare/dist/cli/build/patches/ast/patch-vercel-og-library.js
+@@ -45,7 +45,16 @@ export function patchVercelOgLibrary(buildOpts) {
+             writeFileSync(outputEdgePath, ast.commitEdits(edits));
+             if (matches.length > 0) {
+                 const fontFileName = matches[0].getMatch("PATH").text();
+-                renameSync(path.join(outputDir, fontFileName), path.join(outputDir, `${fontFileName}.bin`));
++                const srcFontPath = path.join(outputDir, fontFileName);
++                if (!existsSync(srcFontPath)) {
++                    const originalFontPath = path.join(path.dirname(traceInfoPath), tracedNodePath.replace("index.node.js", fontFileName));
++                    if (existsSync(originalFontPath)) {
++                        copyFileSync(originalFontPath, srcFontPath);
++                    }
++                }
++                if (existsSync(srcFontPath)) {
++                    renameSync(srcFontPath, path.join(outputDir, `${fontFileName}.bin`));
++                }
+             }
+         }
+         // Change node imports for the library to edge imports.
