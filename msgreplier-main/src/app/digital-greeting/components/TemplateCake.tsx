@@ -31,6 +31,11 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isBlown, setIsBlown] = useState(false);
 
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
   const startCountdown = () => {
     if (countdown !== null || isBlown) return;
     setCountdown(3);
@@ -43,17 +48,17 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
       return () => clearTimeout(timer);
     } else {
       setIsBlown(true);
-      onComplete();
+      onCompleteRef.current();
     }
-  }, [countdown, onComplete]);
+  }, [countdown]);
 
   return (
     <div className="flex flex-col items-center justify-center space-y-8 md:space-y-12 scale-[0.8] sm:scale-100 md:scale-125 transition-transform origin-center">
       <div className="relative">
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {countdown !== null && countdown > 0 && (
             <motion.div
-              key="countdown"
+              key={countdown}
               initial={{ scale: 0, opacity: 0, rotate: -20 }}
               animate={{ scale: 1.5, opacity: 1, rotate: 0 }}
               exit={{ scale: 3, opacity: 0, filter: "blur(10px)" }}
@@ -172,15 +177,139 @@ const InteractiveCake = ({ onComplete }: { onComplete: () => void }) => {
   );
 };
 
+const LiveAgeCounter = ({ birthdayStr, occasion }: { birthdayStr: string; occasion?: string }) => {
+  const [timeDiff, setTimeDiff] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const birthDate = new Date(birthdayStr);
+    if (isNaN(birthDate.getTime())) return;
+
+    const updateCounter = () => {
+      const now = new Date();
+      const diffMs = now.getTime() - birthDate.getTime();
+      
+      if (diffMs < 0) {
+        const absDiff = Math.abs(diffMs);
+        const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((absDiff % (1000 * 60)) / 1000);
+        setTimeDiff({ days, hours, minutes, seconds });
+      } else {
+        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+        setTimeDiff({ days, hours, minutes, seconds });
+      }
+    };
+
+    updateCounter();
+    const interval = setInterval(updateCounter, 1000);
+    return () => clearInterval(interval);
+  }, [birthdayStr]);
+
+  if (occasion === "Anniversary" || !timeDiff) return null;
+
+  const birthDate = new Date(birthdayStr);
+  const now = new Date();
+  const isFuture = birthDate > now;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: 0.3, duration: 0.8 }}
+      className="bg-white/60 backdrop-blur-2xl p-4 sm:p-6 md:p-10 rounded-[1.5rem] sm:rounded-[2.5rem] md:rounded-[3.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border-2 md:border-4 border-white text-center space-y-6 relative overflow-hidden mx-auto w-full sm:max-w-[95%] md:max-w-2xl mt-10"
+    >
+      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-pink-400 via-rose-400 to-pink-400" />
+      
+      <div className="space-y-1">
+        <h3 className="text-2xl md:text-4xl text-pink-500 font-bold" style={{ fontFamily: 'var(--font-script)' }}>
+          {isFuture ? "Countdown to the Celebration" : (occasion === "Anniversary" ? "" : "Time Spreading Love & Light")}
+        </h3>
+        {occasion !== "Anniversary" && (
+          <p className="text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
+            {isFuture ? "Days until the magic day" : "Every second since you arrived"}
+          </p>
+        )}
+      </div>
+
+      <div className="flex justify-center items-center gap-2 md:gap-4 pt-2">
+        <div className="flex flex-col items-center bg-white/80 backdrop-blur-md px-3 py-2 md:px-5 md:py-3 rounded-2xl shadow-sm border border-pink-50 min-w-[70px] md:min-w-[90px]">
+          <span className="text-2xl md:text-4xl font-black text-rose-500 tracking-tight">{timeDiff.days}</span>
+          <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Days</span>
+        </div>
+        <span className="text-xl md:text-2xl font-black text-pink-300">:</span>
+        <div className="flex flex-col items-center bg-white/80 backdrop-blur-md px-3 py-2 md:px-5 md:py-3 rounded-2xl shadow-sm border border-pink-50 min-w-[70px] md:min-w-[90px]">
+          <span className="text-2xl md:text-4xl font-black text-rose-500 tracking-tight">{timeDiff.hours}</span>
+          <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Hours</span>
+        </div>
+        <span className="text-xl md:text-2xl font-black text-pink-300">:</span>
+        <div className="flex flex-col items-center bg-white/80 backdrop-blur-md px-3 py-2 md:px-5 md:py-3 rounded-2xl shadow-sm border border-pink-50 min-w-[70px] md:min-w-[90px]">
+          <span className="text-2xl md:text-4xl font-black text-rose-500 tracking-tight">{timeDiff.minutes}</span>
+          <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Mins</span>
+        </div>
+        <span className="text-xl md:text-2xl font-black text-pink-300">:</span>
+        <div className="flex flex-col items-center bg-white/80 backdrop-blur-md px-3 py-2 md:px-5 md:py-3 rounded-2xl shadow-sm border border-pink-50 min-w-[70px] md:min-w-[90px]">
+          <span className="text-2xl md:text-4xl font-black text-pink-500 tracking-tight">{timeDiff.seconds}</span>
+          <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 animate-pulse">Secs</span>
+        </div>
+      </div>
+      
+      <div className="absolute -bottom-2 -left-2 opacity-10 text-pink-500">
+        <Heart size={40} className="fill-current" />
+      </div>
+      <div className="absolute -top-2 -right-2 opacity-10 text-pink-500">
+        <Heart size={40} className="fill-current" />
+      </div>
+    </motion.div>
+  );
+};
+
 export interface GreetingData {
   occasion?: string;
   recipient_name: string;
   sender_name: string;
   message: string;
   music_id?: string;
+  photo_url?: string;
+  birthday_date?: string;
 }
 
-export default function TemplateCake({ greeting, isPreview = false }: { greeting: GreetingData; isPreview?: boolean }) {
+export default function TemplateCake({ greeting, isPreview = false, photoFitMode = true }: { greeting: GreetingData; isPreview?: boolean; photoFitMode?: boolean }) {
+  // Resolve fit mode: check URL search params first, fall back to photoFitMode prop (default: true)
+  const getResolvedFitMode = () => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fitParam = urlParams.get("fit_mode");
+      if (fitParam === "contain") return false;
+      if (fitParam === "cover") return true;
+    }
+    return photoFitMode;
+  };
+  const isFitCover = getResolvedFitMode();
+  let photos: { url: string; caption: string }[] = [];
+  let isMultiple = false;
+  try {
+    if (greeting.photo_url && greeting.photo_url.startsWith('[')) {
+      photos = JSON.parse(greeting.photo_url).filter((p: any) => p && (p.url || isPreview));
+      if (photos.length > 0) {
+        isMultiple = true;
+      }
+    }
+  } catch (e) {
+    console.error("Error parsing photo_url JSON:", e);
+  }
+
+  const birthdayStr = greeting.birthday_date || (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("dob") : null);
+
   const [isMuted, setIsMuted] = useState(true);
   const [isCelebrationStarted, setIsCelebrationStarted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -517,7 +646,7 @@ export default function TemplateCake({ greeting, isPreview = false }: { greeting
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="bg-white/60 backdrop-blur-2xl p-6 md:p-20 rounded-[2.5rem] md:rounded-[4rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border-2 md:border-4 border-white text-center space-y-6 md:space-y-10 relative overflow-hidden mx-auto max-w-[95%] md:max-w-none"
+                  className="bg-white/60 backdrop-blur-2xl p-4 sm:p-6 md:p-20 rounded-[1.5rem] sm:rounded-[2.5rem] md:rounded-[4rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border-2 md:border-4 border-white text-center space-y-6 md:space-y-10 relative overflow-hidden mx-auto w-full sm:max-w-[95%] md:max-w-none"
                 >
                   <div className="absolute top-0 left-0 w-full h-1.5 md:h-2 bg-gradient-to-r from-pink-400 via-rose-400 to-pink-400" />
                   <Quote className="w-8 h-8 md:w-16 md:h-16 text-pink-200 mx-auto opacity-40" />
@@ -531,6 +660,17 @@ export default function TemplateCake({ greeting, isPreview = false }: { greeting
                   <p className="text-lg md:text-4xl text-slate-700 leading-relaxed md:leading-tight italic whitespace-pre-wrap font-medium px-2 md:px-10">
                     {greeting.message}
                   </p>
+
+                  {greeting.photo_url && !isMultiple && (
+                    <div className="my-6 max-w-sm mx-auto rounded-2xl overflow-hidden shadow-md border border-pink-100/50 bg-white p-1">
+                      <img 
+                        src={greeting.photo_url} 
+                        alt="Memory" 
+                        className="w-full rounded-xl"
+                        style={{ maxHeight: '320px', objectFit: isFitCover ? 'cover' : 'contain', display: 'block' }}
+                      />
+                    </div>
+                  )}
 
                   <div className="flex flex-col items-center gap-4 md:gap-8 pt-8 md:pt-12 border-t border-pink-50/50">
                     <div className="space-y-2">
@@ -550,6 +690,77 @@ export default function TemplateCake({ greeting, isPreview = false }: { greeting
                     </div>
                   </div>
                 </motion.div>
+
+                {/* Our Memories Section */}
+                {isMultiple && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2, duration: 0.8 }}
+                    className="bg-white/60 backdrop-blur-2xl p-3 sm:p-6 md:p-12 rounded-[1.5rem] sm:rounded-[2.5rem] md:rounded-[4rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border-2 md:border-4 border-white text-center space-y-6 relative overflow-hidden mx-auto w-full sm:max-w-[95%] md:max-w-none mt-10"
+                  >
+                    <div className="absolute top-0 left-0 w-full h-1.5 md:h-2 bg-gradient-to-r from-pink-400 via-rose-400 to-pink-400" />
+                    
+                    <div className="space-y-2">
+                      <h2 className="text-3xl md:text-6xl text-pink-500 animate-pulse" style={{ fontFamily: 'var(--font-script)' }}>
+                        {greeting.occasion === "Anniversary" ? "Memories" : "Our Memories"}
+                      </h2>
+                      <div className="flex justify-center items-center gap-2">
+                        <div className="w-10 h-[1px] bg-pink-200" />
+                        <Heart className="w-5 h-5 text-pink-500 fill-pink-500 animate-bounce shrink-0" />
+                        <div className="w-10 h-[1px] bg-pink-200" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto pt-4 relative">
+                      {/* Floating Center Heart in the grid */}
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden md:block">
+                        <motion.div
+                          animate={{ scale: [1, 1.15, 1], rotate: [0, 5, -5, 0] }}
+                          transition={{ duration: 3, repeat: Infinity }}
+                          className="w-14 h-14 bg-white rounded-full border border-pink-100 shadow-lg flex items-center justify-center text-pink-500"
+                        >
+                          <Heart className="w-7 h-7 fill-current animate-pulse" />
+                        </motion.div>
+                      </div>
+
+                      {photos.map((photo, index) => (
+                        <motion.div
+                          key={index}
+                          whileHover={{ scale: 1.04, rotate: (index % 2 === 0 ? -1 : 1) * 2 }}
+                          className={`bg-white p-2 sm:p-4 pb-6 rounded-lg shadow-md border border-pink-100/50 flex flex-col items-center gap-3 transform transition-all duration-300 ${
+                            index % 2 === 0 ? 'rotate-[-1.5deg]' : 'rotate-[1.5deg]'
+                          }`}
+                        >
+                          <div className="relative w-full flex items-center justify-center overflow-hidden rounded-md border border-slate-100 bg-slate-50/30">
+                            {photo.url ? (
+                              <img 
+                                src={photo.url} 
+                                alt={`Memory ${index + 1}`} 
+                                className="max-w-full mx-auto block rounded-md" 
+                                style={{ maxHeight: '380px', objectFit: isFitCover ? 'cover' : 'contain', height: isFitCover ? '280px' : 'auto', width: '100%' }}
+                              />
+                            ) : (
+                              <div className="w-full aspect-[4/3] flex flex-col items-center justify-center bg-pink-50/45 border-2 border-dashed border-pink-200 rounded-md p-6 text-pink-300">
+                                <Heart className="w-8 h-8 fill-pink-100 mb-2 shrink-0 animate-pulse text-pink-400" />
+                                <span className="text-xs font-bold text-pink-500 font-sans tracking-wide uppercase">Example Picture</span>
+                              </div>
+                            )}
+                          </div>
+                          {photo.caption && (
+                            <p className="text-sm font-semibold text-slate-600 italic text-center px-1 font-serif mt-1">
+                              {photo.caption}
+                            </p>
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Live Age Counter Section */}
+                {birthdayStr && <LiveAgeCounter birthdayStr={birthdayStr} occasion={greeting.occasion} />}
               </motion.div>
             )}
           </AnimatePresence>

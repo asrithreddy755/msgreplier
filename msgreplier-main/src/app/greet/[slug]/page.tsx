@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,48 @@ import TemplateCake from "../../digital-greeting/components/TemplateCake";
 import TemplateAurora from "../../digital-greeting/components/TemplateAurora";
 import TemplateClassic2D from "../../digital-greeting/components/TemplateClassic2D";
 
+function IframeTemplate({ greeting, templateFolder }: { greeting: any; templateFolder: string }) {
+  const [src, setSrc] = useState("");
+
+  useEffect(() => {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const dummyDOB = `${today.getFullYear() - 22}-${month}-${day}`;
+
+    const params = new URLSearchParams({
+      recipient_name: greeting.recipient_name || "",
+      sender_name: greeting.sender_name || "",
+      message: greeting.message || "",
+      occasion: greeting.occasion || "Birthday",
+      music_id: greeting.music_id || "none",
+      slug: greeting.slug || "",
+      name: greeting.recipient_name || "",
+      dob: greeting.dob || dummyDOB,
+      photo_url: greeting.photo_url || "",
+    });
+
+    setSrc(`/templates/${templateFolder}/index.html?${params.toString()}`);
+  }, [greeting, templateFolder]);
+
+  if (!src) {
+    return (
+      <div className="w-full h-screen flex flex-col items-center justify-center bg-black">
+        <Heart className="w-10 h-10 animate-pulse text-pink-500" />
+      </div>
+    );
+  }
+
+  return (
+    <iframe
+      src={src}
+      className="w-full h-screen border-none overflow-hidden"
+      style={{ display: "block", width: "100%", height: "100vh" }}
+      allow="microphone; autoplay; clipboard-write"
+    />
+  );
+}
+
 
 export default function GreetingWebsite() {
   const params = useParams();
@@ -17,6 +59,16 @@ export default function GreetingWebsite() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [greeting, setGreeting] = useState<any>(null);
+  const [dobParam, setDobParam] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      setDobParam(params.get("dob"));
+    }
+  }, []);
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchGreeting = async () => {
@@ -26,16 +78,20 @@ export default function GreetingWebsite() {
           throw new Error("Greeting not found");
         }
         const data = await response.json();
-        setGreeting(data);
+        const search = typeof window !== "undefined" ? window.location.search : "";
+        if (data.photo_url) {
+          router.replace(`/greet/with-image/${slug}${search}`);
+        } else {
+          router.replace(`/greet/without-image/${slug}${search}`);
+        }
       } catch (err: any) {
         setError(err.message);
-      } finally {
         setLoading(false);
       }
     };
 
     if (slug) fetchGreeting();
-  }, [slug]);
+  }, [slug, router]);
 
   if (loading) {
     return (
@@ -57,6 +113,18 @@ export default function GreetingWebsite() {
           <Link href="/digital-greeting">CREATE A NEW ONE</Link>
         </Button>
       </div>
+    );
+  }
+
+  if (greeting.theme === "wishes3" || greeting.theme === "wishes4" || greeting.theme === "wishes5" || greeting.theme === "wishes6" || greeting.theme === "wishes7" || greeting.theme === "propose_crush1") {
+    return (
+      <IframeTemplate
+        greeting={{
+          ...greeting,
+          dob: dobParam,
+        }}
+        templateFolder={`template_${greeting.theme}`}
+      />
     );
   }
 

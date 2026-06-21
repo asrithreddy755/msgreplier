@@ -75,12 +75,13 @@ export default function CuteGoodMorningMessagesPost() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f5eedf] text-[#110f0f] antialiased" style={{ fontFamily: '"Work Sans", sans-serif' }}>
+      <style dangerouslySetInnerHTML={{ __html: `\n        h1, h2, h3, h4, h5, h6, .font-heading {\n          font-family: \'Unbounded\', sans-serif !important;\n        }\n      `}} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
         <div className="mb-8 flex items-center justify-between gap-3">
           <Link href="/blog" className="inline-flex">
-            <Button variant="ghost" className="gap-2 -ml-4 text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" className="gap-2 -ml-4 text-[#110f0f] hover:text-[#948678] hover:bg-transparent font-heading font-medium text-xs uppercase tracking-wider">
               <ArrowLeft className="h-4 w-4" /> Back to Blog
             </Button>
           </Link>
@@ -93,7 +94,7 @@ export default function CuteGoodMorningMessagesPost() {
 
         <header className="mb-10 md:mb-12">
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
-            <span className="flex items-center gap-1 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 px-2.5 py-0.5 rounded-full font-medium text-xs">
+            <span className="flex items-center gap-1 bg-[#eedfc6] border border-[#d4c3ab] text-[#110f0f] px-2.5 py-0.5 rounded-full font-semibold text-xs">
               <Tag className="h-3 w-3" /> Couple Messaging
             </span>
             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 1, 2026</span>
@@ -108,7 +109,7 @@ export default function CuteGoodMorningMessagesPost() {
           </p>
         </header>
 
-        <article className="bg-card/50 border border-border/50 rounded-2xl p-6 md:p-10 shadow-sm">
+        <article className="bg-white border border-[#d4c3ab] rounded-[32px] p-6 md:p-10 shadow-sm">
           <div className="prose prose-neutral dark:prose-invert max-w-none space-y-8">
 
             <h2 className="text-2xl font-bold">Why Good Morning Messages Matter in a Relationship</h2>

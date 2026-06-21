@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 
 export default function DigitalGreetingBlog() {
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-rose-100 selection:text-rose-600">
+    <div className="min-h-screen bg-[#f5eedf] text-[#110f0f] antialiased" style={{ fontFamily: '"Work Sans", sans-serif' }}>
+      <style dangerouslySetInnerHTML={{ __html: `\n        h1, h2, h3, h4, h5, h6, .font-heading {\n          font-family: \'Unbounded\', sans-serif !important;\n        }\n      `}} />
       <div className="max-w-4xl mx-auto px-6 py-20 space-y-12">
         {/* Header */}
         <div className="space-y-6 text-center">

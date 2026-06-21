@@ -11,17 +11,18 @@ export const metadata: Metadata = {
 
 export default function LongDistanceRelationshipGuide() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f5eedf] text-[#110f0f] antialiased" style={{ fontFamily: '"Work Sans", sans-serif' }}>
+      <style dangerouslySetInnerHTML={{ __html: `\n        h1, h2, h3, h4, h5, h6, .font-heading {\n          font-family: \'Unbounded\', sans-serif !important;\n        }\n      `}} />
       <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
         <div className="mb-8 flex items-center justify-between gap-3">
           <Link href="/blog" className="inline-flex">
-            <Button variant="ghost" className="gap-2 -ml-4 text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" className="gap-2 -ml-4 text-[#110f0f] hover:text-[#948678] hover:bg-transparent font-heading font-medium text-xs uppercase tracking-wider">
               <ArrowLeft className="h-4 w-4" />
               Back to Blog
             </Button>
           </Link>
           <Link href="/love-space" className="hidden sm:inline-flex">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 border-[#110f0f] text-[#110f0f] hover:bg-[#110f0f] hover:text-white rounded-full font-heading text-xs uppercase tracking-wider px-5 py-2.5">
               Start a Love Space
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -30,7 +31,7 @@ export default function LongDistanceRelationshipGuide() {
 
         <header className="mb-10 md:mb-12">
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
-            <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+            <span className="flex items-center gap-1 bg-[#eedfc6] border border-[#d4c3ab] text-[#110f0f] px-2.5 py-0.5 rounded-full font-semibold text-xs">
               <Tag className="h-3 w-3" /> Relationships
             </span>
             <span className="flex items-center gap-1">
@@ -47,7 +48,7 @@ export default function LongDistanceRelationshipGuide() {
           </p>
         </header>
 
-        <article className="bg-card/50 border border-border/50 rounded-2xl p-6 md:p-10 shadow-sm backdrop-blur">
+        <article className="bg-white border border-[#d4c3ab] rounded-[32px] p-6 md:p-10 shadow-sm">
           <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground space-y-6">
             <p>
               Whether separated by a few hours' drive or an entire ocean, long-distance relationships (LDRs) require significantly more communication effort than a traditional relationship. You lack the benefit of physical touch and spontaneous meetups, meaning your entire emotional connection relies on the digital world.

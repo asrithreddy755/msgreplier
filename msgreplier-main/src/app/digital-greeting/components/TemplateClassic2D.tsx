@@ -13,10 +13,113 @@ export interface GreetingData {
   message: string;
   music_id?: string;
   photo_url?: string;
+  birthday_date?: string;
 }
+const LiveAgeCounter = ({ birthdayStr, occasion }: { birthdayStr: string; occasion?: string }) => {
+  const [timeDiff, setTimeDiff] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
 
-export default function TemplateClassic2D({ greeting, isPreview = false }: { greeting: GreetingData; isPreview?: boolean }) {
-  const [currentPage, setCurrentPage] = useState<"hero" | "slider" | "celebration" | "curtain">("hero");
+  useEffect(() => {
+    const birthDate = new Date(birthdayStr);
+    if (isNaN(birthDate.getTime())) return;
+
+    const updateCounter = () => {
+      const now = new Date();
+      const diffMs = now.getTime() - birthDate.getTime();
+      
+      if (diffMs < 0) {
+        const absDiff = Math.abs(diffMs);
+        const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((absDiff % (1000 * 60)) / 1000);
+        setTimeDiff({ days, hours, minutes, seconds });
+      } else {
+        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+        setTimeDiff({ days, hours, minutes, seconds });
+      }
+    };
+
+    updateCounter();
+    const interval = setInterval(updateCounter, 1000);
+    return () => clearInterval(interval);
+  }, [birthdayStr]);
+
+  if (occasion === "Anniversary" || !timeDiff) return null;
+
+  const birthDate = new Date(birthdayStr);
+  const now = new Date();
+  const isFuture = birthDate > now;
+
+  return (
+    <div className="live-counter-card">
+      <h3 style={{ fontFamily: "'Dancing Script', cursive", fontSize: "1.8rem", color: "var(--accent)", marginBottom: "5px" }}>
+        {isFuture ? "Countdown to the Celebration" : (occasion === "Anniversary" ? "" : "Time Spreading Love & Light")}
+      </h3>
+      {occasion !== "Anniversary" && (
+        <p style={{ fontSize: "0.75rem", letterSpacing: "2px", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "15px" }}>
+          {isFuture ? "Days until the magic day" : "Every second since you arrived"}
+        </p>
+      )}
+      <div className="counter-container">
+        <div className="counter-segment">
+          <span className="counter-number">{timeDiff.days}</span>
+          <span className="counter-text">Days</span>
+        </div>
+        <span className="counter-colon">:</span>
+        <div className="counter-segment">
+          <span className="counter-number">{timeDiff.hours}</span>
+          <span className="counter-text">Hours</span>
+        </div>
+        <span className="counter-colon">:</span>
+        <div className="counter-segment">
+          <span className="counter-number">{timeDiff.minutes}</span>
+          <span className="counter-text">Mins</span>
+        </div>
+        <span className="counter-colon">:</span>
+        <div className="counter-segment">
+          <span className="counter-number seconds">{timeDiff.seconds}</span>
+          <span className="counter-text">Secs</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function TemplateClassic2D({ greeting, isPreview = false, photoFitMode = true }: { greeting: GreetingData; isPreview?: boolean; photoFitMode?: boolean }) {
+  // Resolve fit mode: check URL search params first, fall back to photoFitMode prop (default: true)
+  const getResolvedFitMode = () => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fitParam = urlParams.get("fit_mode");
+      if (fitParam === "contain") return false;
+      if (fitParam === "cover") return true;
+    }
+    return photoFitMode;
+  };
+  const isFitCover = getResolvedFitMode();
+  const [currentPage, setCurrentPage] = useState<"hero" | "slider" | "celebration" | "curtain" | "gallery">("hero");
+  let photos: { url: string; caption: string }[] = [];
+  let isMultiple = false;
+  try {
+    if (greeting.photo_url && greeting.photo_url.startsWith("[")) {
+      photos = JSON.parse(greeting.photo_url).filter((p: any) => p && (p.url || isPreview));
+      if (photos.length > 0) {
+        isMultiple = true;
+      }
+    }
+  } catch (e) {
+    console.error("Error parsing photo_url JSON:", e);
+  }
+
+  const birthdayStr = greeting.birthday_date || (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("dob") : null);
   const [sliderStep, setSliderStep] = useState(1);
   const [celebStep, setCelebStep] = useState(1);
   const [isCurtainOpen, setIsCurtainOpen] = useState(false);
@@ -177,7 +280,7 @@ export default function TemplateClassic2D({ greeting, isPreview = false }: { gre
     };
   }, [currentPage]);
 
-  const transitionTo = (page: "hero" | "slider" | "celebration" | "curtain") => {
+  const transitionTo = (page: "hero" | "slider" | "celebration" | "curtain" | "gallery") => {
     setCurrentPage(page);
   };
 
@@ -252,6 +355,11 @@ export default function TemplateClassic2D({ greeting, isPreview = false }: { gre
             transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1;
             overflow: hidden;
+        }
+
+        #gallery-page.page.active {
+            overflow-y: auto;
+            height: 100vh;
         }
 
         .page.active {
@@ -606,7 +714,206 @@ export default function TemplateClassic2D({ greeting, isPreview = false }: { gre
             animation: sparkle 1s infinite;
         }
 
-        /* Removed memories styles */
+        /* --- LIVE COUNTER CARD STYLE --- */
+        .live-counter-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            margin: 20px auto 10px auto;
+        }
+
+        .counter-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .counter-segment {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 10px 15px;
+            border-radius: 12px;
+            min-width: 75px;
+            flex-shrink: 1;
+        }
+
+        .counter-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .counter-number.seconds {
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .counter-text {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+
+        .counter-colon {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        @media (max-width: 480px) {
+            .counter-container {
+                gap: 4px;
+            }
+            .counter-segment {
+                padding: 6px 8px;
+                min-width: 50px;
+                border-radius: 8px;
+            }
+            .counter-number {
+                font-size: 1.15rem;
+            }
+            .counter-text {
+                font-size: 0.5rem;
+                letter-spacing: 0.2px;
+            }
+            .counter-colon {
+                font-size: 1rem;
+            }
+        }
+
+        /* --- MEMORY GALLERY STYLE --- */
+        .gallery-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 60px;
+            text-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .memory-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            border-radius: 20px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.6s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            height: auto;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 20px 50px var(--accent-glow);
+            border-color: var(--accent);
+        }
+
+        .memory-image-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .memory-image {
+            max-width: 100%;
+            height: auto;
+            max-height: 350px;
+            object-fit: contain;
+            border-radius: 12px;
+            transition: transform 0.8s ease;
+            display: block;
+        }
+
+        .memory-card:hover .memory-image {
+            transform: scale(1.05);
+        }
+
+        .memory-placeholder {
+            width: 100%;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .memory-hover-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            backdrop-filter: blur(3px);
+            border-radius: 12px;
+        }
+
+        .memory-card:hover .memory-hover-overlay {
+            opacity: 1;
+        }
+
+        .hover-message {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #fff;
+            text-align: center;
+            line-height: 1.4;
+            text-shadow: 0 0 15px var(--accent);
+            transform: translateY(20px);
+            transition: transform 0.5s ease;
+        }
+
+        .memory-card:hover .hover-message {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 600px) {
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+            .memory-card {
+                height: auto;
+            }
+        }
 
         /* --- Interactive Cake Styling --- */
         .cake-container {
@@ -875,25 +1182,58 @@ export default function TemplateClassic2D({ greeting, isPreview = false }: { gre
               <p style={{ fontSize: "clamp(1rem, 2vw, 1.2rem)", lineHeight: "1.8", color: "rgba(255,255,255,0.8)", whiteSpace: "pre-wrap" }}>
                 {displayMessage}
               </p>
+              {greeting.photo_url && !isMultiple && (
+                <div style={{
+                  margin: '20px auto',
+                  maxWidth: '300px',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.4)'
+                }}>
+                  <img 
+                    src={greeting.photo_url} 
+                    alt="Memory" 
+                    style={{ 
+                      width: '100%', 
+                      height: isFitCover ? '240px' : 'auto', 
+                      maxHeight: '260px',
+                      objectFit: isFitCover ? 'cover' : 'contain', 
+                      display: 'block' 
+                    }} 
+                  />
+                </div>
+              )}
+              {birthdayStr && <LiveAgeCounter birthdayStr={birthdayStr} occasion={greeting.occasion} />}
               {senderName && (
                 <p style={{ fontFamily: "'Dancing Script', cursive", fontSize: "1.8rem", color: "var(--gold)", marginTop: "20px" }}>
                   — With love, {senderName}
                 </p>
               )}
               <div className="flex flex-col gap-4 justify-center items-center mt-8">
-                <button 
-                  className="btn-neon" 
-                  style={{ animation: "none", padding: "12px 30px", fontSize: "0.95rem" }} 
-                  onClick={() => {
-                    setSliderStep(1);
-                    setCelebStep(1);
-                    setIsCurtainOpen(false);
-                    setIsCandleBlown(false);
-                    transitionTo("hero");
-                  }}
-                >
-                  Replay The Magic
-                </button>
+                {isMultiple ? (
+                  <button 
+                    className="btn-neon" 
+                    style={{ animation: "none", padding: "12px 35px", fontSize: "0.95rem" }} 
+                    onClick={() => transitionTo("gallery")}
+                  >
+                    Our Memories
+                  </button>
+                ) : (
+                  <button 
+                    className="btn-neon" 
+                    style={{ animation: "none", padding: "12px 30px", fontSize: "0.95rem" }} 
+                    onClick={() => {
+                      setSliderStep(1);
+                      setCelebStep(1);
+                      setIsCurtainOpen(false);
+                      setIsCandleBlown(false);
+                      transitionTo("hero");
+                    }}
+                  >
+                    Replay The Magic
+                  </button>
+                )}
               </div>
 
               {!isPreview && (
@@ -907,6 +1247,53 @@ export default function TemplateClassic2D({ greeting, isPreview = false }: { gre
           </div>
         </div>
       </section>
+      {currentPage === "gallery" && (
+        <section id="gallery-page" className="page active animate-fade-in" style={{ overflowY: "auto", display: "block", padding: "100px 20px" }}>
+          <div id="gallery-bg-elements" style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: -1 }} />
+          <h2 className="gallery-title">Moments in Time</h2>
+          <div className="gallery-grid">
+            {photos.map((photo, index) => (
+              <div key={index} className="memory-card">
+                <div className="memory-image-container">
+                  {photo.url ? (
+                    <img
+                      src={photo.url}
+                      alt={`Memory ${index + 1}`}
+                      className="memory-image"
+                      style={{ objectFit: isFitCover ? 'cover' : 'contain', height: isFitCover ? '280px' : 'auto' }}
+                    />
+                  ) : (
+                    <div className="memory-placeholder">
+                      <Heart className="w-10 h-10 mb-2 fill-white/5 animate-pulse text-[#ff2d55]" />
+                      <span className="text-xs uppercase tracking-wider font-bold">Example Picture</span>
+                    </div>
+                  )}
+                  <div className="memory-hover-overlay">
+                    <p className="hover-message">{photo.caption || "A beautiful moment ❤️"}</p>
+                  </div>
+                </div>
+                <p style={{ fontFamily: "'Dancing Script', cursive", fontSize: "1.45rem", color: "var(--accent)", textShadow: "0 0 10px var(--accent-glow)", textAlign: "center", margin: "12px 0 0 0", lineHeight: 1.2 }}>
+                  {photo.caption || "A beautiful moment ❤️"}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", padding: "100px 0" }}>
+            <button 
+              className="btn-neon" 
+              onClick={() => {
+                setSliderStep(1);
+                setCelebStep(1);
+                setIsCurtainOpen(false);
+                setIsCandleBlown(false);
+                transitionTo("hero");
+              }}
+            >
+              Replay The Magic
+            </button>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

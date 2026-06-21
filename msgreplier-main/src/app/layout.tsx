@@ -88,7 +88,7 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Unbounded:wght@300;400;500;600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
         <link rel="icon" href="/icon.png" type="image/png" />
@@ -102,15 +102,196 @@ export default async function RootLayout({
                   return Object.defineProperty(target, 'name', { value: value, configurable: true });
                 };
               }
-            `
+            `.replace(/\r\n/g, "\n")
+          }}
+        />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              #global-loader {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background-color: #000000;
+                z-index: 999999;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                pointer-events: auto;
+              }
+              #global-loader-bar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 3px;
+                background: linear-gradient(90deg, #f43f5e, #e11d48);
+                width: 0%;
+                box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+                z-index: 1000000;
+                animation: progress-loading 4.5s cubic-bezier(0.1, 0.8, 0.1, 1) forwards;
+              }
+              @keyframes progress-loading {
+                0% { width: 0%; }
+                100% { width: 85%; }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                #global-loader-bar {
+                  animation: none !important;
+                  width: 85% !important;
+                }
+              }
+            `.replace(/\r\n/g, "\n")
           }}
         />
       </head>
       <body className="antialiased min-h-screen bg-background">
+        {/* 
+          This wrapper uses dangerouslySetInnerHTML to prevent React hydration from reconciling 
+          or throwing warnings for elements modified/removed by the inline loader script.
+        */}
+        <div id="global-loader-wrapper" suppressHydrationWarning>
+          <div id="global-loader" suppressHydrationWarning>
+            <div id="global-loader-bar" suppressHydrationWarning />
+            
+            {/* Stylesheet failure fallback overlay, centered and styled entirely inline */}
+            <div
+              id="stylesheet-fallback"
+              suppressHydrationWarning
+              style={{
+                display: "none",
+                textAlign: "center",
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                color: "#f8fafc",
+                padding: "20px",
+                maxWidth: "400px",
+                boxSizing: "border-box",
+                zIndex: 1000001,
+              }}
+            >
+              <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
+              <h2 style={{ fontSize: "20px", fontWeight: 600, margin: "0 0 10px 0", color: "#f43f5e", lineHeight: 1.4 }}>
+                Styles Failed to Load
+              </h2>
+              <p style={{ fontSize: "14px", color: "#94a3b8", margin: "0 0 24px 0", lineHeight: 1.5 }}>
+                We're having trouble loading the page styles. Please try refreshing the page.
+              </p>
+              <button
+                id="fallback-reload-btn"
+                style={{
+                  backgroundColor: "#f43f5e",
+                  color: "#ffffff",
+                  border: "none",
+                  padding: "10px 20px",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  transition: "background-color 0.2s",
+                  boxShadow: "0 4px 12px rgba(244, 63, 94, 0.3)",
+                  outline: "none",
+                }}
+              >
+                Refresh Page
+              </button>
+            </div>
+          </div>
+          
+          {/* CSS marker to verify stylesheet loading */}
+          <div id="css-marker" className="css-loaded-marker" style={{ display: "none" }} suppressHydrationWarning />
+
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  var loader = document.getElementById('global-loader');
+                  var bar = document.getElementById('global-loader-bar');
+                  var fallback = document.getElementById('stylesheet-fallback');
+                  var reloadBtn = document.getElementById('fallback-reload-btn');
+                  var isFinished = false;
+
+                  if (reloadBtn) {
+                    reloadBtn.addEventListener('click', function() {
+                      window.location.reload();
+                    });
+                  }
+
+                  function finishLoading(failed) {
+                    if (isFinished) return;
+                    isFinished = true;
+
+                    if (failed) {
+                      var hasReloaded = sessionStorage.getItem('css-reload-attempted');
+                      if (!hasReloaded) {
+                        sessionStorage.setItem('css-reload-attempted', 'true');
+                        window.location.reload();
+                        return;
+                      }
+                      // Show manual reload view inside overlay
+                      if (bar) bar.style.display = 'none';
+                      if (fallback) fallback.style.display = 'block';
+                      return;
+                    }
+
+                    // Clear sessionStorage attempt if css loaded successfully
+                    sessionStorage.removeItem('css-reload-attempted');
+
+                    // Snap progress bar to 100%
+                    if (bar) {
+                      bar.style.animation = 'none';
+                      bar.offsetHeight; // force reflow/repaint
+                      bar.style.transition = 'width 150ms ease-out';
+                      bar.style.width = '100%';
+                    }
+
+                    // Fade out overlay
+                    setTimeout(function() {
+                      if (loader) {
+                        loader.style.transition = 'opacity 250ms ease';
+                        loader.style.opacity = '0';
+                        setTimeout(function() {
+                          loader.style.display = 'none';
+                        }, 250);
+                      }
+                    }, 200);
+                  }
+
+                  function checkCSS() {
+                    var marker = document.getElementById('css-marker');
+                    if (!marker) return false;
+                    var style = window.getComputedStyle(marker);
+                    var val = style.getPropertyValue('--main-stylesheet-loaded') || style.content;
+                    return val && val.trim().replace(/['"]/g, '') === 'true';
+                  }
+
+                  // Hard 5-second timeout fallback
+                  var timeoutId = setTimeout(function() {
+                    var cssLoaded = checkCSS();
+                    finishLoading(!cssLoaded);
+                  }, 5000);
+
+                  function handleLoad() {
+                    clearTimeout(timeoutId);
+                    var cssLoaded = checkCSS();
+                    finishLoading(!cssLoaded);
+                  }
+
+                  if (document.readyState === 'complete') {
+                    handleLoad();
+                  } else {
+                    window.addEventListener('load', handleLoad);
+                  }
+                })();
+              `.replace(/\r\n/g, "\n")
+            }}
+          />
+        </div>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
-          enableSystem
+          forcedTheme="light"
           disableTransitionOnChange
         >
           <div className="flex flex-col min-h-screen relative">

@@ -39,7 +39,8 @@ export default function PsychologyOfCrushesPost() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f5eedf] text-[#110f0f] antialiased" style={{ fontFamily: '"Work Sans", sans-serif' }}>
+      <style dangerouslySetInnerHTML={{ __html: `\n        h1, h2, h3, h4, h5, h6, .font-heading {\n          font-family: \'Unbounded\', sans-serif !important;\n        }\n      `}} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -47,13 +48,13 @@ export default function PsychologyOfCrushesPost() {
       <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
         <div className="mb-8 flex items-center justify-between gap-3">
           <Link href="/blog" className="inline-flex">
-            <Button variant="ghost" className="gap-2 -ml-4 text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" className="gap-2 -ml-4 text-[#110f0f] hover:text-[#948678] hover:bg-transparent font-heading font-medium text-xs uppercase tracking-wider">
               <ArrowLeft className="h-4 w-4" />
               Back to Blog
             </Button>
           </Link>
           <Link href="/flames" className="hidden sm:inline-flex">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 border-[#110f0f] text-[#110f0f] hover:bg-[#110f0f] hover:text-white rounded-full font-heading text-xs uppercase tracking-wider px-5 py-2.5">
               Test Compatibility
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -62,7 +63,7 @@ export default function PsychologyOfCrushesPost() {
 
         <header className="mb-10 md:mb-12">
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
-            <span className="flex items-center gap-1 bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-medium text-xs">
+            <span className="flex items-center gap-1 bg-[#eedfc6] border border-[#d4c3ab] text-[#110f0f] px-2.5 py-0.5 rounded-full font-semibold text-xs">
               <Tag className="h-3 w-3" /> Psychology
             </span>
             <span className="flex items-center gap-1">
@@ -79,8 +80,8 @@ export default function PsychologyOfCrushesPost() {
           </p>
         </header>
 
-        <article className="bg-card/50 border border-border/50 rounded-2xl p-6 md:p-10 shadow-sm backdrop-blur">
-          <div className="prose prose-neutral dark:prose-invert max-w-none">
+        <article className="bg-white border border-[#d4c3ab] rounded-[32px] p-6 md:p-10 shadow-sm">
+          <div className="bg-white border border-[#d4c3ab] rounded-[32px] p-8 md:p-10 shadow-sm prose prose-neutral max-w-none">
             <p>
               Having a crush feels like a rollercoaster. One minute you&apos;re euphoric because they liked your story, the next you&apos;re anxious because they left you on read. But why does this happen? The answer lies in your brain chemistry.
             </p>
@@ -117,10 +118,10 @@ export default function PsychologyOfCrushesPost() {
             </p>
 
             <div className="not-prose mt-8 flex flex-col sm:flex-row gap-3">
-              <Button asChild className="w-full sm:w-auto">
+              <Button asChild className="w-full sm:w-auto bg-[#110f0f] text-white hover:bg-[#eedfc6] hover:text-[#110f0f] border border-transparent hover:border-[#d4c3ab] rounded-full px-6 py-3 font-heading text-xs transition-all uppercase tracking-wider">
                 <Link href="/flames">Try FLAMES</Link>
               </Button>
-              <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Button asChild variant="outline" className="w-full sm:w-auto bg-[#110f0f] text-white hover:bg-[#eedfc6] hover:text-[#110f0f] border border-transparent hover:border-[#d4c3ab] rounded-full px-6 py-3 font-heading text-xs transition-all uppercase tracking-wider">
                 <Link href="/blog">Back to Blog</Link>
               </Button>
             </div>

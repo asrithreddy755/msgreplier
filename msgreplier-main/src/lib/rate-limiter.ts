@@ -180,3 +180,108 @@ export function createRateLimiter(options: RateLimiterOptions) {
     }
   };
 }
+
+// ─────────────────────────────────────────────
+// Next.js App Router Rate Limiting (Serverless & Upstash Compatible)
+// ─────────────────────────────────────────────
+const globalInMemoryStore = new InMemoryStore();
+
+export async function rateLimit(ip: string, limit: number, windowMs: number) {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  let count = 0;
+  let ttlMs = windowMs;
+  let usedRedis = false;
+
+  if (redisUrl && redisToken) {
+    try {
+      const cleanUrl = redisUrl.endsWith('/') ? redisUrl.slice(0, -1) : redisUrl;
+      const key = `rate_limit:${ip}`;
+
+      // 1. Atomic INCR using Upstash Redis HTTP API
+      const response = await fetch(`${cleanUrl}/incr/${key}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${redisToken}`,
+        },
+        cache: 'no-store'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        count = data.result;
+        usedRedis = true;
+
+        if (count === 1) {
+          // 2. Set expiration window if key was just initialized
+          await fetch(`${cleanUrl}/pexpire/${key}/${windowMs}`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${redisToken}`,
+            },
+            cache: 'no-store'
+          });
+          ttlMs = windowMs;
+        } else {
+          // 3. Retrieve TTL
+          const ttlResponse = await fetch(`${cleanUrl}/pttl/${key}`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${redisToken}`,
+            },
+            cache: 'no-store'
+          });
+          if (ttlResponse.ok) {
+            const ttlData = await ttlResponse.json();
+            ttlMs = ttlData.result > 0 ? ttlData.result : windowMs;
+          }
+        }
+      } else {
+        throw new Error(`Upstash returned status code ${response.status}`);
+      }
+    } catch (err) {
+      console.error("⚠️ Upstash Redis rate limiter error, falling back to MemoryStore:", err);
+    }
+  }
+
+  // Fallback to in-memory store if Redis was not used or failed
+  if (!usedRedis) {
+    const res = await globalInMemoryStore.increment(`rate_limit:${ip}`, windowMs);
+    count = res.count;
+    ttlMs = res.ttlMs;
+  }
+
+  const remaining = Math.max(0, limit - count);
+  const success = count <= limit;
+  const reset = new Date(Date.now() + ttlMs).toISOString();
+  const retryAfterSeconds = Math.ceil(ttlMs / 1000);
+
+  return {
+    success,
+    limit,
+    remaining,
+    reset,
+    retryAfterSeconds,
+  };
+}
+
+// ─────────────────────────────────────────────
+// Fail-Fast Environment Validation Check
+// ─────────────────────────────────────────────
+export function validateRazorpayConfig() {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+  if (!keyId || keyId === "your_key_id_here") {
+    throw new Error("🚨 Critical Configuration Error: RAZORPAY_KEY_ID environment variable is missing or has placeholder value.");
+  }
+  if (!keySecret || keySecret === "your_key_secret_here") {
+    throw new Error("🚨 Critical Configuration Error: RAZORPAY_KEY_SECRET environment variable is missing or has placeholder value.");
+  }
+  if (!webhookSecret) {
+    throw new Error("🚨 Critical Configuration Error: RAZORPAY_WEBHOOK_SECRET environment variable is missing.");
+  }
+}
+

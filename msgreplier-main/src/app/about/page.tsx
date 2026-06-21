@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft, Heart, Shield, Zap, Users, Star, Mail, Instagram, Youtube } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -91,87 +90,101 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div 
+      className="min-h-screen bg-[#f5eedf] text-[#110f0f] antialiased py-12 px-4"
+      style={{ fontFamily: '"Work Sans", sans-serif' }}
+    >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      
+      <style dangerouslySetInnerHTML={{ __html: `
+        h1, h2, h3, h4, h5, h6, .font-heading {
+          font-family: 'Unbounded', sans-serif !important;
+        }
+      `}} />
 
-      <div className="container max-w-4xl py-12 px-4 md:px-6 mx-auto">
-        <Link href="/" className="inline-flex mb-8">
-          <Button variant="ghost" className="gap-2 -ml-4">
+      <div className="container max-w-4xl mx-auto md:px-6">
+        <div className="flex justify-start mb-8">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 text-[#110f0f] hover:text-[#948678] font-heading font-medium text-xs uppercase tracking-wider"
+          >
             <ArrowLeft className="h-4 w-4" />
             Back to Home
-          </Button>
-        </Link>
+          </Link>
+        </div>
 
         {/* Hero */}
-        <div className="mb-16 text-center">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-semibold mb-6">
-            <Heart className="h-4 w-4 fill-current" /> Our Story
+        <div className="mb-16 text-center flex flex-col items-center">
+          <div className="inline-flex items-center gap-2 bg-[#eedfc6] border border-[#d4c3ab] px-4 py-1.5 rounded-full text-sm font-semibold mb-6 text-[#110f0f]">
+            <Heart className="h-4 w-4 fill-[#110f0f] text-[#110f0f]" /> Our Story
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6 text-[#110f0f]">
             About MsgReplier
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-[#5d6c7b] leading-relaxed max-w-2xl mx-auto">
             We are a small, passionate team building simple, privacy-respecting digital tools that help
             couples connect, celebrate, and stay close — no matter the distance.
           </p>
         </div>
 
         {/* Mission Section */}
-        <section className="mb-16 bg-muted/30 rounded-2xl border border-border/50 p-8 md:p-10">
-          <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
-          <p className="text-muted-foreground leading-relaxed mb-4">
-            In a world of social media noise, constant notifications, and data-hungry apps, we wanted to
-            create something different — a collection of tools that put <strong className="text-foreground">people first</strong>.
-          </p>
-          <p className="text-muted-foreground leading-relaxed mb-4">
-            MsgReplier was founded on a simple idea: technology should bring couples{" "}
-            <em>closer</em>, not exploit their attention or compromise their privacy. Every tool we build
-            starts with that principle. We ask ourselves: &quot;Is this genuinely useful? Does it respect the
-            user&apos;s privacy? Can we make it beautiful and delightful to use?&quot;
-          </p>
-          <p className="text-muted-foreground leading-relaxed">
-            We are based in <strong className="text-foreground">India 🇮🇳</strong> and serve users globally.
-            Our platform handles thousands of Wishes Websites and Love-Space sessions every month, and we
-            are proud that our users trust us with their most personal moments.
-          </p>
+        <section className="mb-16 bg-white border border-[#d4c3ab] rounded-[32px] p-8 md:p-10 text-left">
+          <h2 className="text-2xl font-bold mb-6 text-[#110f0f]">Our Mission</h2>
+          <div className="space-y-4 text-[#5d6c7b] leading-relaxed">
+            <p>
+              In a world of social media noise, constant notifications, and data-hungry apps, we wanted to
+              create something different — a collection of tools that put <strong className="text-[#110f0f]">people first</strong>.
+            </p>
+            <p>
+              MsgReplier was founded on a simple idea: technology should bring couples{" "}
+              <em>closer</em>, not exploit their attention or compromise their privacy. Every tool we build
+              starts with that principle. We ask ourselves: &quot;Is this genuinely useful? Does it respect the
+              user&apos;s privacy? Can we make it beautiful and delightful to use?&quot;
+            </p>
+            <p>
+              We are based in <strong className="text-[#110f0f]">India 🇮🇳</strong> and serve users globally.
+              Our platform handles thousands of Wishes Websites and Love-Space sessions every month, and we
+              are proud that our users trust us with their most personal moments.
+            </p>
+          </div>
         </section>
 
         {/* Our Tools */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-8">What We Build</h2>
+        <section className="mb-16 text-left">
+          <h2 className="text-2xl font-bold mb-8 text-[#110f0f]">What We Build</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {tools.map((tool) => (
               <div
                 key={tool.name}
-                className="bg-muted/20 rounded-xl border border-border/50 p-6 hover:bg-muted/40 transition-colors"
+                className="bg-white rounded-[24px] border border-[#d4c3ab] p-6 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
               >
-                <div className="text-3xl mb-3">{tool.icon}</div>
-                <h3 className="font-bold text-lg mb-2">
-                  <Link href={tool.href} className="text-foreground hover:text-primary transition-colors">
+                <div className="text-3xl mb-4">{tool.icon}</div>
+                <h3 className="font-heading font-bold text-lg mb-2 text-[#110f0f]">
+                  <Link href={tool.href} className="hover:underline hover:text-[#948678] transition-colors">
                     {tool.name}
                   </Link>
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{tool.description}</p>
+                <p className="text-sm text-[#5d6c7b] leading-relaxed">{tool.description}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Values */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-8">Our Values</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="mb-16 text-left">
+          <h2 className="text-2xl font-bold mb-8 text-[#110f0f]">Our Values</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {values.map((value) => (
               <div key={value.title} className="flex gap-4">
-                <div className="bg-primary/10 p-3 rounded-lg h-fit flex-shrink-0">
-                  <value.icon className="h-5 w-5 text-primary" />
+                <div className="bg-[#eedfc6] border border-[#d4c3ab] p-3 rounded-2xl h-fit flex-shrink-0 text-[#110f0f]">
+                  <value.icon className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base mb-1">{value.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{value.description}</p>
+                  <h3 className="font-bold text-base mb-2 text-[#110f0f]">{value.title}</h3>
+                  <p className="text-sm text-[#5d6c7b] leading-relaxed">{value.description}</p>
                 </div>
               </div>
             ))}
@@ -179,47 +192,45 @@ export default function AboutPage() {
         </section>
 
         {/* Privacy Commitment */}
-        <section className="mb-16 bg-emerald-50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-200 dark:border-emerald-700/30 p-8">
-          <div className="flex items-start gap-4">
-            <Shield className="h-8 w-8 text-emerald-600 dark:text-emerald-400 shrink-0 mt-1" />
+        <section className="mb-16 bg-[#eedfc6]/30 rounded-[32px] border border-[#d4c3ab] p-8 md:p-10 text-left">
+          <div className="flex flex-col md:flex-row items-start gap-6">
+            <Shield className="h-10 w-10 text-[#110f0f] shrink-0 mt-1" />
             <div>
-              <h2 className="text-xl font-bold text-emerald-900 dark:text-emerald-200 mb-3">
+              <h2 className="text-2xl font-bold text-[#110f0f] mb-4">
                 Our Privacy Commitment
               </h2>
-              <p className="text-emerald-800 dark:text-emerald-300 leading-relaxed mb-3">
+              <p className="text-[#5d6c7b] leading-relaxed mb-4 text-base">
                 Privacy is not just a feature for us — it is a core design principle. Here is what we promise:
               </p>
-              <ul className="space-y-2 text-sm text-emerald-800 dark:text-emerald-300">
-                <li className="flex items-start gap-2">
-                  <Star className="h-4 w-4 shrink-0 mt-0.5 fill-current" />
+              <ul className="space-y-3 text-sm text-[#5d6c7b]">
+                <li className="flex items-start gap-2.5">
+                  <Star className="h-4.5 w-4.5 shrink-0 mt-0.5 fill-[#110f0f] text-[#110f0f]" />
                   <span>
                     <strong>No account required</strong> — use all our tools anonymously without signing up.
                   </span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Star className="h-4 w-4 shrink-0 mt-0.5 fill-current" />
+                <li className="flex items-start gap-2.5">
+                  <Star className="h-4.5 w-4.5 shrink-0 mt-0.5 fill-[#110f0f] text-[#110f0f]" />
                   <span>
-                    <strong>No message logging</strong> — Love-Space chats are not read or stored permanently by
-                    us.
+                    <strong>No message logging</strong> — Love-Space chats are not read or stored permanently by us.
                   </span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Star className="h-4 w-4 shrink-0 mt-0.5 fill-current" />
+                <li className="flex items-start gap-2.5">
+                  <Star className="h-4.5 w-4.5 shrink-0 mt-0.5 fill-[#110f0f] text-[#110f0f]" />
                   <span>
-                    <strong>Auto-deletion</strong> — Love-Space rooms and their data are automatically purged
-                    after 24 hours.
+                    <strong>Auto-deletion</strong> — Love-Space rooms and their data are automatically purged after 24 hours.
                   </span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Star className="h-4 w-4 shrink-0 mt-0.5 fill-current" />
+                <li className="flex items-start gap-2.5">
+                  <Star className="h-4.5 w-4.5 shrink-0 mt-0.5 fill-[#110f0f] text-[#110f0f]" />
                   <span>
                     <strong>No data selling</strong> — we never sell your data to third parties.
                   </span>
                 </li>
               </ul>
-              <p className="mt-4 text-sm text-emerald-800 dark:text-emerald-300">
+              <p className="mt-6 text-sm text-[#5d6c7b]">
                 Read our full{" "}
-                <Link href="/privacy-policy" className="underline hover:no-underline">
+                <Link href="/privacy-policy" className="underline hover:no-underline font-medium text-[#110f0f]">
                   Privacy Policy
                 </Link>{" "}
                 for complete details.
@@ -229,45 +240,45 @@ export default function AboutPage() {
         </section>
 
         {/* Contact */}
-        <section className="mb-8">
-          <h2 className="text-2xl font-bold mb-6">Get in Touch</h2>
-          <p className="text-muted-foreground mb-6 leading-relaxed">
+        <section className="mb-8 text-left">
+          <h2 className="text-2xl font-bold mb-6 text-[#110f0f]">Get in Touch</h2>
+          <p className="text-[#5d6c7b] mb-8 leading-relaxed">
             We love hearing from our users! Whether you have a question, suggestion, bug report, or just want
             to say hi, please reach out.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <a
               href="mailto:care.msgreplier@gmail.com"
-              className="flex items-center gap-3 p-4 rounded-xl border border-border/50 hover:bg-muted/40 transition-colors"
+              className="flex items-center gap-3.5 p-5 bg-white rounded-[20px] border border-[#d4c3ab] hover:bg-[#eedfc6]/30 transition-colors"
             >
-              <Mail className="h-5 w-5 text-primary" />
+              <Mail className="h-5 w-5 text-[#110f0f] shrink-0" />
               <div>
-                <div className="font-semibold text-sm">Email</div>
-                <div className="text-xs text-muted-foreground">care.msgreplier@gmail.com</div>
+                <div className="font-semibold text-sm text-[#110f0f]">Email</div>
+                <div className="text-xs text-[#5d6c7b] break-all">care.msgreplier@gmail.com</div>
               </div>
             </a>
             <a
               href="https://www.instagram.com/msgreplier"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 p-4 rounded-xl border border-border/50 hover:bg-muted/40 transition-colors"
+              className="flex items-center gap-3.5 p-5 bg-white rounded-[20px] border border-[#d4c3ab] hover:bg-[#eedfc6]/30 transition-colors"
             >
-              <Instagram className="h-5 w-5 text-pink-500" />
+              <Instagram className="h-5 w-5 text-[#110f0f] shrink-0" />
               <div>
-                <div className="font-semibold text-sm">Instagram</div>
-                <div className="text-xs text-muted-foreground">@msgreplier</div>
+                <div className="font-semibold text-sm text-[#110f0f]">Instagram</div>
+                <div className="text-xs text-[#5d6c7b]">@msgreplier</div>
               </div>
             </a>
             <a
               href="https://youtube.com/@msgreplier"
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 p-4 rounded-xl border border-border/50 hover:bg-muted/40 transition-colors"
+              className="flex items-center gap-3.5 p-5 bg-white rounded-[20px] border border-[#d4c3ab] hover:bg-[#eedfc6]/30 transition-colors"
             >
-              <Youtube className="h-5 w-5 text-red-500" />
+              <Youtube className="h-5 w-5 text-[#110f0f] shrink-0" />
               <div>
-                <div className="font-semibold text-sm">YouTube</div>
-                <div className="text-xs text-muted-foreground">@msgreplier</div>
+                <div className="font-semibold text-sm text-[#110f0f]">YouTube</div>
+                <div className="text-xs text-[#5d6c7b]">@msgreplier</div>
               </div>
             </a>
           </div>

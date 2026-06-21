@@ -1,44 +1,110 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import * as THREE from "three";
 import { gsap } from "gsap";
-import { Heart, Star, Infinity as InfinityIcon, Bird } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 interface GreetingData {
   occasion?: string;
   recipient_name: string;
   sender_name: string;
   message: string;
+  photo_url?: string;
+  birthday_date?: string;
 }
 
-export default function TemplateAurora({ greeting, isPreview = false }: { greeting: GreetingData; isPreview?: boolean }) {
+const LiveAgeCounter = ({ birthdayStr }: { birthdayStr: string }) => {
+  const [timeDiff, setTimeDiff] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const birthDate = new Date(birthdayStr);
+    if (isNaN(birthDate.getTime())) return;
+
+    const updateCounter = () => {
+      const now = new Date();
+      const diffMs = now.getTime() - birthDate.getTime();
+      
+      const absDiff = Math.abs(diffMs);
+      const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((absDiff % (1000 * 60)) / 1000);
+      setTimeDiff({ days, hours, minutes, seconds });
+    };
+
+    updateCounter();
+    const interval = setInterval(updateCounter, 1000);
+    return () => clearInterval(interval);
+  }, [birthdayStr]);
+
+  if (!timeDiff) return null;
+
+  const birthDate = new Date(birthdayStr);
+  const now = new Date();
+  const isFuture = birthDate > now;
+
+  return (
+    <div className="w-full max-w-md mx-auto my-4 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+      <h3 className="text-xl md:text-2xl font-bold text-pink-300 mb-2" style={{ fontFamily: "Playfair Display" }}>
+        {isFuture ? "Countdown to the Celebration" : "Time Spreading Love & Light"}
+      </h3>
+      <p className="text-xs uppercase tracking-widest text-pink-200/40 mb-6" style={{ fontFamily: "Satoshi" }}>
+        {isFuture ? "Days until the magic day" : "Every second since you arrived"}
+      </p>
+      <div className="flex justify-center items-center gap-3">
+        <div className="flex flex-col items-center bg-white/5 border border-white/5 px-4 py-3 rounded-2xl min-w-[70px]">
+          <span className="text-2xl md:text-3xl font-extrabold text-white">{timeDiff.days}</span>
+          <span className="text-[10px] uppercase tracking-wider text-pink-200/40 mt-1">Days</span>
+        </div>
+        <span className="text-xl font-bold text-pink-400">:</span>
+        <div className="flex flex-col items-center bg-white/5 border border-white/5 px-4 py-3 rounded-2xl min-w-[70px]">
+          <span className="text-2xl md:text-3xl font-extrabold text-white">{timeDiff.hours}</span>
+          <span className="text-[10px] uppercase tracking-wider text-pink-200/40 mt-1">Hours</span>
+        </div>
+        <span className="text-xl font-bold text-pink-400">:</span>
+        <div className="flex flex-col items-center bg-white/5 border border-white/5 px-4 py-3 rounded-2xl min-w-[70px]">
+          <span className="text-2xl md:text-3xl font-extrabold text-white">{timeDiff.minutes}</span>
+          <span className="text-[10px] uppercase tracking-wider text-pink-200/40 mt-1">Mins</span>
+        </div>
+        <span className="text-xl font-bold text-pink-400">:</span>
+        <div className="flex flex-col items-center bg-white/5 border border-white/5 px-4 py-3 rounded-2xl min-w-[70px]">
+          <span className="text-2xl md:text-3xl font-extrabold text-pink-300 drop-shadow-[0_0_8px_rgba(255,100,150,0.6)]">{timeDiff.seconds}</span>
+          <span className="text-[10px] uppercase tracking-wider text-pink-200/40 mt-1">Secs</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function TemplateAurora({ greeting, isPreview = false, photoFitMode = true }: { greeting: GreetingData; isPreview?: boolean; photoFitMode?: boolean }) {
+  // Resolve fit mode: check URL search params first, fall back to photoFitMode prop (default: true)
+  const getResolvedFitMode = () => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fitParam = urlParams.get("fit_mode");
+      if (fitParam === "contain") return false;
+      if (fitParam === "cover") return true;
+    }
+    return photoFitMode;
+  };
+  const isFitCover = getResolvedFitMode();
   const [currentStep, setCurrentStep] = useState(1);
   const [isCelebrationStarted, setIsCelebrationStarted] = useState(false);
-  const totalSteps = 3;
-
-  const [isBlown, setIsBlown] = useState(false);
-  const [micAllowed, setMicAllowed] = useState<boolean | null>(null);
-  const [listening, setListening] = useState(false);
-  const [avgAudioVolume, setAvgAudioVolume] = useState(0);
-  const [showExplanation, setShowExplanation] = useState(true);
-  const [isCutting, setIsCutting] = useState(false);
-  const [isCakeCut, setIsCakeCut] = useState(false);
-
-  const micStreamRef = useRef<MediaStream | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
 
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const finalWishTextRef = useRef<HTMLParagraphElement>(null);
   const celebrateBtnRef = useRef<HTMLButtonElement>(null);
-  
-  // Save references for Three.js cleanup
+
+  // Save references for Three.js cleanup & reset
   const threeResources = useRef<{
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
@@ -46,6 +112,62 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
     hearts: THREE.Mesh[];
     animationFrameId: number;
   } | null>(null);
+
+  // Parse custom photo and caption
+  const getPhotoAndCaption = () => {
+    let imageUrl = "https://static.vecteezy.com/system/resources/previews/036/619/697/non_2x/ai-generated-couple-of-lovers-in-cartoon-style-on-transparent-background-png.png";
+    let caption = '"Us" – my favorite chapter.';
+
+    if (greeting.photo_url) {
+      try {
+        if (greeting.photo_url.startsWith("[")) {
+          const parsed = JSON.parse(greeting.photo_url);
+          if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].url) {
+            imageUrl = parsed[0].url;
+            if (parsed[0].caption) {
+              caption = parsed[0].caption;
+            }
+          }
+        } else {
+          imageUrl = greeting.photo_url;
+        }
+      } catch (e) {
+        console.error("Error parsing photo_url in TemplateAurora", e);
+        imageUrl = greeting.photo_url;
+      }
+    }
+    return { imageUrl, caption };
+  };
+
+  const { imageUrl, caption } = getPhotoAndCaption();
+
+  // Determine if user uploaded a photo
+  const hasUploadedPhoto = !!(
+    greeting.photo_url &&
+    (!greeting.photo_url.startsWith("[") ||
+      (() => {
+        try {
+          const parsed = JSON.parse(greeting.photo_url);
+          return Array.isArray(parsed) && parsed.length > 0 && !!parsed[0].url;
+        } catch (e) {
+          return false;
+        }
+      })())
+  );
+
+  const birthdayStr = greeting.birthday_date || (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("dob") : null) || (() => {
+    const defaultDate = new Date();
+    defaultDate.setFullYear(defaultDate.getFullYear() - 25);
+    return defaultDate.toISOString().split("T")[0];
+  })();
+
+  const totalStepCount = hasUploadedPhoto ? 6 : 5;
+
+  const getProgressIndex = () => {
+    if (currentStep === 6) return hasUploadedPhoto ? 5 : 4;
+    if (currentStep === 5) return hasUploadedPhoto ? 4 : 3;
+    return currentStep - 1;
+  };
 
   // Set up font load
   useEffect(() => {
@@ -99,7 +221,6 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
     };
 
     const geometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
-    // Center geometry
     geometry.center();
 
     const colors = [0xff6e8e, 0xff3879, 0xfc94af, 0xffc0cb, 0xe82979, 0xd06eff, 0xffa0c7];
@@ -118,13 +239,13 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
       const heart = new THREE.Mesh(geometry, material);
       const scale = Math.random() * 0.06 + 0.03;
       heart.scale.set(scale, scale, scale);
-      
+
       heart.position.set(
         (Math.random() - 0.5) * 80,
         (Math.random() - 0.5) * 80,
         (Math.random() - 0.5) * 30
       );
-      
+
       heart.rotation.set(
         Math.random() * Math.PI,
         Math.random() * Math.PI,
@@ -132,7 +253,13 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
       );
 
       heart.userData = {
+        originalX: heart.position.x,
         originalY: heart.position.y,
+        originalZ: heart.position.z,
+        originalRotX: heart.rotation.x,
+        originalRotY: heart.rotation.y,
+        originalRotZ: heart.rotation.z,
+        scaleVal: scale,
         rotationSpeedX: (Math.random() - 0.5) * 0.02,
         rotationSpeedY: (Math.random() - 0.5) * 0.02,
         floatDistance: Math.random() * 3 + 1.5,
@@ -148,7 +275,7 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
         ease: "power3.out",
         delay: Math.random() * 1,
       });
-      
+
       gsap.from(heart.scale, {
         x: 0,
         y: 0,
@@ -194,8 +321,7 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
     return () => {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationFrameId);
-      
-      // Clean up ThreeJS meshes, geometries, materials
+
       hearts.forEach((heart) => {
         scene.remove(heart);
         if (Array.isArray(heart.material)) {
@@ -215,14 +341,15 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
   // Update progress bar width
   useEffect(() => {
     if (progressBarRef.current) {
-      const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
-      gsap.to(progressBarRef.current, { width: `${progress}%`, duration: 0.7, ease: "power3.out" });
+      const progressWidth = (getProgressIndex() / (totalStepCount - 1)) * 100;
+      gsap.to(progressBarRef.current, { width: `${progressWidth}%`, duration: 0.7, ease: "power3.out" });
     }
-  }, [currentStep]);
+  }, [currentStep, totalStepCount]);
 
   // Animate elements inside active step
   useEffect(() => {
-    const activeStepEl = stepRefs.current[currentStep - 1];
+    const stepIdx = getProgressIndex();
+    const activeStepEl = stepRefs.current[stepIdx];
     if (activeStepEl) {
       const children = activeStepEl.querySelectorAll(".anim-child");
       gsap.fromTo(
@@ -241,126 +368,12 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
     }
   }, [currentStep]);
 
-  // Clean up microphone stream and audio contexts
-  const cleanupMic = () => {
-    if (micStreamRef.current) {
-      micStreamRef.current.getTracks().forEach((track) => track.stop());
-      micStreamRef.current = null;
+  const handleNext = () => {
+    if (currentStep === 3 && !hasUploadedPhoto) {
+      setCurrentStep(5);
+    } else {
+      setCurrentStep((prev) => Math.min(prev + 1, 6));
     }
-    if (audioContextRef.current) {
-      try {
-        audioContextRef.current.close().catch(() => {});
-      } catch (e) {}
-      audioContextRef.current = null;
-    }
-    setListening(false);
-  };
-
-  // Clean up microphone stream and audio contexts on unmount
-  useEffect(() => {
-    return () => {
-      cleanupMic();
-    };
-  }, []);
-
-  const triggerBlowOut = () => {
-    if (isBlown) return;
-    setIsBlown(true);
-    cleanupMic();
-    setAvgAudioVolume(0);
-    confetti({
-      particleCount: 100,
-      spread: 80,
-      origin: { y: 0.6 },
-      colors: ["#ff3879", "#ff74a4", "#ffffff"],
-    });
-  };
-
-  const handleTapCake = () => {
-    if (isBlown) return;
-    
-    // Simulate blow air effect on flame before putting it out
-    let currentVol = 0;
-    const interval = setInterval(() => {
-      currentVol += 8;
-      setAvgAudioVolume(currentVol);
-      if (currentVol >= 48) {
-        clearInterval(interval);
-        triggerBlowOut();
-      }
-    }, 25);
-  };
-
-  const enableMic = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      micStreamRef.current = stream;
-      setMicAllowed(true);
-      setListening(true);
-      setShowExplanation(false);
-      startMicListening(stream);
-    } catch (err) {
-      console.error(err);
-      setMicAllowed(false);
-      setShowExplanation(false);
-    }
-  };
-
-  const startMicListening = (stream: MediaStream) => {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) {
-      setMicAllowed(false);
-      return;
-    }
-    const audioContext = new AudioCtx();
-    audioContextRef.current = audioContext;
-    const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaStreamSource(stream);
-    source.connect(analyser);
-    analyser.fftSize = 256;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    const checkSound = () => {
-      if (!audioContextRef.current) return;
-      analyser.getByteFrequencyData(dataArray);
-      let sum = 0;
-      for (let i = 0; i < bufferLength; i++) {
-        sum += dataArray[i];
-      }
-      const avg = sum / bufferLength;
-      setAvgAudioVolume(avg);
-
-      if (avg > 45) {
-        triggerBlowOut();
-      } else {
-        requestAnimationFrame(checkSound);
-      }
-    };
-    requestAnimationFrame(checkSound);
-  };
-
-
-  const handleCutCake = () => {
-    if (!isBlown || isCakeCut || isCutting) return;
-    setIsCutting(true);
-    
-    setTimeout(() => {
-      setIsCakeCut(true);
-      setIsCutting(false);
-      
-      confetti({
-        particleCount: 150,
-        spread: 90,
-        origin: { y: 0.65 },
-        colors: ["#ff3879", "#ff74a4", "#ffffff", "#ffd700"],
-      });
-    }, 600);
-  };
-
-
-  const nextStep = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
   };
 
   const handleCelebrate = () => {
@@ -415,7 +428,6 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
       } as any);
     }, 600);
 
-    // Animating background hearts to float away
     if (threeResources.current) {
       const { hearts } = threeResources.current;
       hearts.forEach((heart) => {
@@ -440,19 +452,77 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
     }
   };
 
+  const resetHearts = () => {
+    if (threeResources.current) {
+      const { hearts } = threeResources.current;
+      hearts.forEach((heart) => {
+        gsap.killTweensOf(heart.position);
+        gsap.killTweensOf(heart.rotation);
+        gsap.killTweensOf(heart.scale);
+        if (heart.material && !Array.isArray(heart.material)) {
+          gsap.killTweensOf(heart.material);
+        }
+
+        heart.position.set(
+          heart.userData.originalX,
+          heart.userData.originalY,
+          heart.userData.originalZ
+        );
+        heart.rotation.set(
+          heart.userData.originalRotX,
+          heart.userData.originalRotY,
+          heart.userData.originalRotZ
+        );
+        heart.scale.set(heart.userData.scaleVal, heart.userData.scaleVal, heart.userData.scaleVal);
+        if (heart.material && !Array.isArray(heart.material)) {
+          heart.material.opacity = 0.85;
+        }
+      });
+    }
+  };
+
+  const handleRepeat = () => {
+    setCurrentStep(1);
+    setIsCelebrationStarted(false);
+    resetHearts();
+  };
+
   const occasionName = greeting.occasion || "Birthday";
+
+  const getOccasionWish = () => {
+    const occ = occasionName;
+    if (occ === "Birthday") return "Happy Birthday!";
+    if (occ === "Anniversary") return "Happy Anniversary!";
+    if (occ === "Apoloy" || occ === "Apology") return "My Sincere Apology 🥺";
+    if (occ === "Love Greeting") return "My Deepest Love 💖";
+    if (occ === "Special Moments") return "Celebrating Our Moments ✨";
+    if (occ === "Flowers") return "A Special Bouquet for You 💐";
+    return `Happy ${occ}!`;
+  };
+
+  const getOccasionWishWithName = () => {
+    const name = greeting.recipient_name;
+    const occ = occasionName;
+    if (occ === "Birthday") return `Happy Birthday, ${name}! ❤️`;
+    if (occ === "Anniversary") return `Happy Anniversary, ${name}! ❤️`;
+    if (occ === "Apoloy" || occ === "Apology") return `I'm So Sorry, ${name}! 🥺`;
+    if (occ === "Love Greeting") return `I Love You, ${name}! 💖`;
+    if (occ === "Special Moments") return `Cheers to Us, ${name}! ✨`;
+    if (occ === "Flowers") return `Flowers for You, ${name}! 💐`;
+    return `Happy ${occ}, ${name}! ❤️`;
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden text-pink-100 flex items-center justify-center p-4 select-none bg-[#2a0a2a]">
-      {/* Dynamic Aurora Styling & Animations */}
+      {/* Global CSS Styles */}
       <style jsx global>{`
         :root {
           --bg-color: #2a0a2a;
           --primary-color: #ff3879;
           --secondary-color: #ff74a4;
           --accent-glow: rgba(255, 100, 150, 0.6);
-          --card-bg: rgba(255, 150, 200, 0.08);
-          --card-border: rgba(255, 200, 220, 0.2);
+          --card-bg: rgba(255, 150, 200, 0.1);
+          --card-border: rgba(255, 200, 220, 0.25);
           --text-light: #fce7f3;
           --text-medium: #fbcfe8;
           --text-gradient-start: #ffc2e2;
@@ -474,19 +544,43 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
           100% { background-position: 100% 100%; }
         }
 
-        .btn-aurora {
+        .btn {
+          font-weight: 700;
           background-image: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
-          box-shadow: 0 0 25px var(--accent-glow);
-          transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+          position: relative;
+          overflow: hidden;
+          border-radius: 9999px;
+          padding: 0.9rem 2.8rem;
+          box-shadow: 0 0 30px var(--accent-glow);
+          transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+          will-change: transform, box-shadow;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
 
-        .btn-aurora:hover {
-          transform: translateY(-4px) scale(1.05);
-          box-shadow: 0 0 45px var(--accent-glow), 0 0 80px rgba(255, 100, 150, 0.25);
+        .btn:hover {
+          transform: translateY(-8px) scale(1.07);
+          box-shadow: 0 0 60px var(--accent-glow), 0 0 100px rgba(255, 100, 150, 0.3);
         }
 
-        .btn-aurora:active {
-          transform: translateY(-1px) scale(1.01);
+        .btn::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+          transition: left 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .btn:hover::before {
+          left: 100%;
+        }
+
+        .btn:active {
+          transform: translateY(-4px) scale(1.03);
+          box-shadow: 0 0 40px var(--accent-glow);
         }
 
         .text-gradient-aurora {
@@ -494,419 +588,167 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
           background: linear-gradient(90deg, var(--text-gradient-start), var(--text-gradient-mid), var(--text-gradient-end));
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
+          line-height: 1.2;
         }
 
         @keyframes heartbeat {
-          0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px var(--accent-glow)); }
-          50% { transform: scale(1.18); filter: drop-shadow(0 0 40px var(--accent-glow)); }
+          0%, 100% {
+            transform: scale(1);
+            filter: drop-shadow(0 0 20px var(--accent-glow));
+          }
+          50% {
+            transform: scale(1.22);
+            filter: drop-shadow(0 0 50px var(--accent-glow));
+          }
         }
 
         .heart-beat-aurora {
           animation: heartbeat 2s ease-in-out infinite;
+          filter: drop-shadow(0 0 20px var(--accent-glow));
+        }
+
+        .bento-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          grid-template-rows: repeat(2, 1fr);
+          gap: 1.8rem;
+        }
+
+        .bento-item {
+          background: rgba(255, 255, 255, 0.07);
+          border: 1px solid rgba(255, 200, 220, 0.15);
+          border-radius: 1.25rem;
+          transition: all 0.5s ease-out;
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .bento-item:hover {
+          transform: translateY(-12px);
+          background: rgba(255, 255, 255, 0.15);
+          border-color: rgba(255, 200, 220, 0.35);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 40px var(--accent-glow);
+        }
+
+        .bento-item-1 {
+          grid-column: span 2;
+        }
+
+        .bento-item-3 {
+          grid-column: span 2;
+        }
+
+        @media (max-width: 768px) {
+          .bento-grid {
+            grid-template-columns: 1fr;
+          }
+          .bento-item-1,
+          .bento-item-3 {
+            grid-column: span 1;
+          }
         }
 
         .aurora-glass-card {
           background: var(--card-bg);
-          backdrop-filter: blur(25px);
-          -webkit-backdrop-filter: blur(25px);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border: 1px solid var(--card-border);
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 50px rgba(255, 100, 150, 0.15);
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 60px rgba(255, 100, 150, 0.2);
+          border-radius: 2rem;
+          text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
         }
 
-        .polaroid-inner-aurora {
+        #polaroid {
+          perspective: 1200px;
+        }
+
+        #polaroid-inner {
           background: linear-gradient(to bottom right, #fef2f9, #ffe4f0);
+          padding: 1.5rem;
+          padding-bottom: 1.2rem;
+          border-radius: 1rem;
+          box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 100, 150, 0.15);
           transform: rotateY(-10deg) rotateX(7deg) scale(0.97);
-          transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.6s ease-out;
+          transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.7s ease-out;
         }
 
-        .polaroid-container-aurora:hover .polaroid-inner-aurora {
+        #polaroid:hover #polaroid-inner {
           transform: rotateY(0) rotateX(0) scale(1.03);
-          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px var(--accent-glow);
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 50px var(--accent-glow);
+        }
+
+        #polaroid-inner img {
+          border-radius: 0.75rem;
+        }
+
+        #polaroid-inner p {
+          color: #5a0c3b;
+        }
+
+        .final-wish-text {
+          color: var(--secondary-color);
+          font-size: 2.5rem;
+          letter-spacing: 0.08em;
+          text-shadow: 0 0 20px rgba(255, 100, 150, 0.7), 0 0 30px rgba(255, 50, 100, 0.5);
+        }
+        @media (max-width: 640px) {
+          .final-wish-text {
+            font-size: 1.8rem;
+          }
         }
       `}</style>
 
-      {/* Aurora Lights */}
+      {/* Aurora Background */}
       <div id="aurora-background" className="fixed inset-0 pointer-events-none z-0 opacity-70" />
-      
-      {/* Three.js Canvas Container */}
-      <div ref={canvasContainerRef} className="fixed inset-0 pointer-events-none z-1" />
 
-      {/* Fixed Progress Bar at top */}
+      {/* Three.js Canvas Container */}
+      <div ref={canvasContainerRef} className="fixed inset-0 pointer-events-none z-[1]" />
+
+      {/* Progress Bar at the top */}
       <div className="fixed top-5 left-1/2 -translate-x-1/2 w-4/5 max-w-sm h-1.5 bg-white/10 rounded-full z-20 backdrop-blur-sm overflow-hidden">
         <div ref={progressBarRef} className="h-full w-0 rounded-full bg-gradient-to-r from-[#ff74a4] to-[#ff3879]" />
       </div>
 
+      {/* Step Container */}
       <div className="relative z-10 w-full max-w-3xl flex justify-center items-center min-h-[500px]">
-        {/* Step 1: Welcome & Cake Blow */}
+        {/* Step 1: Welcome */}
         {currentStep === 1 && (
           <div
             ref={(el) => { stepRefs.current[0] = el; }}
-            className="aurora-glass-card p-6 md:p-8 rounded-3xl w-full max-w-lg text-center flex flex-col items-center space-y-6 md:space-y-8"
+            className="aurora-glass-card p-6 md:p-10 w-full max-w-lg text-center flex flex-col items-center space-y-6"
           >
-            <h1 className="anim-child text-3xl md:text-4xl font-bold text-gradient-aurora leading-tight" style={{ fontFamily: "Playfair Display" }}>
-              Make a Wish, My Love! 🎂
+            <div className="anim-child text-7xl mb-2 heart-beat-aurora">❤️</div>
+            <h1 className="anim-child text-4xl md:text-5xl font-bold text-gradient-aurora mb-2">
+              Hello, My Love.
             </h1>
-            
-            {/* The 3D CSS Cake */}
-            <motion.div
-              className="anim-child relative w-64 md:w-72 h-72 md:h-80 cursor-pointer perspective-1000 mx-auto scale-90 md:scale-100 transition-all origin-bottom"
-              whileHover={{ scale: 1.03, rotateY: 3 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleTapCake}
+            <p className="anim-child text-pink-200/80 mb-6 text-base md:text-lg leading-relaxed font-light" style={{ fontFamily: "Satoshi" }}>
+              Every beat of my heart whispers your name. On this special day, I wanted to create a small piece of magic just for you.
+            </p>
+            <button
+              onClick={handleNext}
+              className="anim-child btn text-white font-bold"
+              style={{ fontFamily: "Satoshi" }}
             >
-
-              {/* Cake Stand */}
-              <motion.div
-                className="absolute bottom-0 left-1/2 w-64 md:w-80 h-3 md:h-4 bg-white/10 rounded-full shadow-lg border border-white/5 z-10 origin-center"
-                style={{
-                  x: "-50%",
-                  scaleX: 1 + (avgAudioVolume / 45) * 0.25,
-                }}
-                transition={{ type: "spring", stiffness: 300, damping: 15 }}
-              />
-              <div className="absolute bottom-3 md:bottom-4 left-1/2 -translate-x-1/2 w-14 md:w-20 h-6 md:h-8 bg-white/5 rounded-t-lg border border-white/5" />
-
-              {/* Glowing Sound Reacting Bar directly below the cake stand */}
-              {!isBlown && listening && (
-                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-48 h-2 bg-white/10 rounded-full overflow-hidden border border-white/5 shadow-[0_0_10px_rgba(255,255,255,0.05)] z-10">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-pink-500 via-[#ff3879] to-pink-500 shadow-[0_0_10px_rgba(255,56,121,0.5)]"
-                    style={{ width: `${Math.min(100, (avgAudioVolume / 45) * 100)}%` }}
-                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                  />
-                </div>
-              )}
-
-
-              {/* Bottom Layer */}
-              <div className="absolute bottom-10 md:bottom-12 left-1/2 -translate-x-1/2 w-52 md:w-64 h-28 md:h-32 bg-rose-400/80 rounded-3xl shadow-xl border-b-8 border-rose-500/80">
-                <div className="absolute top-4 w-full h-4 bg-white/20" />
-                <div className="absolute bottom-4 w-full h-4 bg-white/20" />
-              </div>
-
-              {/* Middle Layer */}
-              <div className="absolute bottom-32 md:bottom-36 left-1/2 -translate-x-1/2 w-36 md:w-48 h-20 md:h-24 bg-rose-300/80 rounded-2xl shadow-lg border-b-4 border-rose-400/80">
-                <div className="absolute top-4 w-full h-2 bg-white/20" />
-              </div>
-
-              {/* Top Layer */}
-              <div className="absolute bottom-48 md:bottom-56 left-1/2 -translate-x-1/2 w-24 md:w-32 h-16 md:h-20 bg-rose-200/80 rounded-xl shadow-md border-b-2 border-rose-300/80" />
-
-              {/* Frosting Drips */}
-              <div className="absolute bottom-[225px] md:bottom-[260px] left-1/2 -translate-x-1/2 w-24 md:w-32 flex justify-around px-1">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="w-5 md:w-8 h-8 md:h-10 bg-white rounded-full -mt-4 border-b-2 border-pink-50 shadow-sm" />
-                ))}
-              </div>
-
-              {/* Strawberries/Toppings */}
-              <div className="absolute bottom-[240px] md:bottom-[275px] left-1/2 -translate-x-1/2 flex gap-1 md:gap-2">
-                <div className="w-4 md:w-6 h-4 md:h-6 bg-red-500 rounded-full shadow-inner" />
-                <div className="w-4 md:w-6 h-4 md:h-6 bg-red-500 rounded-full shadow-inner -mt-1 md:-mt-2" />
-                <div className="w-4 md:w-6 h-4 md:h-6 bg-red-500 rounded-full shadow-inner" />
-              </div>
-              {/* Left Candle */}
-              <motion.div
-                className="absolute bottom-[242px] md:bottom-[288px] left-[42%] w-2 md:w-3 h-10 md:h-16 bg-gradient-to-b from-yellow-200 via-blue-200 to-yellow-300 rounded-full shadow-md z-40 origin-bottom"
-                initial={{ opacity: 0, y: 20, x: "-50%" }}
-                animate={{ opacity: 1, y: 0, x: "-50%" }}
-                transition={{ type: "spring", stiffness: 100 }}
-              >
-                {/* Wick */}
-                <div className={`absolute -top-1 left-1/2 -translate-x-1/2 w-0.5 h-2 md:h-3 rounded-full transition-colors duration-500 ${isBlown ? "bg-neutral-950" : "bg-slate-800"}`} />
-
-                {/* Burnt tip wax overlay */}
-                {isBlown && (
-                  <div className="absolute top-0 left-0 w-full h-1 bg-black/45 rounded-t-full" />
-                )}
-
-                {/* Flame */}
-                {!isBlown && (
-                  <motion.div
-                    key="flame-left"
-                    className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2 w-5 md:w-8 h-8 md:h-12 bg-gradient-to-t from-orange-600 via-yellow-400 to-transparent rounded-full blur-[1px] shadow-[0_0_30px_#f97316]"
-                    style={{
-                      transform: `translateX(-50%) scaleY(${1 - Math.min(0.85, avgAudioVolume / 50)}) scaleX(${1 - Math.min(0.5, avgAudioVolume / 100)}) rotate(${avgAudioVolume * 0.8}deg) translateX(${-avgAudioVolume * 0.25}px)`,
-                      transformOrigin: "bottom center",
-                      transition: "transform 0.05s ease-out",
-                    }}
-                    animate={{
-                      scaleY: [1, 1.25, 1],
-                      rotate: [-6, 6, -6],
-                      opacity: [0.9, 1, 0.9],
-                    }}
-                    transition={{ repeat: Infinity, duration: 0.45, ease: "easeInOut" }}
-                  >
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-2.5 md:w-4 h-4 md:h-6 bg-white/40 rounded-full blur-sm" />
-                  </motion.div>
-                )}
-              </motion.div>
-
-              {/* Right Candle */}
-              <motion.div
-                className="absolute bottom-[242px] md:bottom-[288px] left-[58%] w-2 md:w-3 h-10 md:h-16 bg-gradient-to-b from-yellow-200 via-blue-200 to-yellow-300 rounded-full shadow-md z-40 origin-bottom"
-                initial={{ opacity: 0, y: 20, x: "-50%" }}
-                animate={{ opacity: 1, y: 0, x: "-50%" }}
-                transition={{ type: "spring", stiffness: 100, delay: 0.1 }}
-              >
-                {/* Wick */}
-                <div className={`absolute -top-1 left-1/2 -translate-x-1/2 w-0.5 h-2 md:h-3 rounded-full transition-colors duration-500 ${isBlown ? "bg-neutral-950" : "bg-slate-800"}`} />
-
-                {/* Burnt tip wax overlay */}
-                {isBlown && (
-                  <div className="absolute top-0 left-0 w-full h-1 bg-black/45 rounded-t-full" />
-                )}
-
-                {/* Flame */}
-                {!isBlown && (
-                  <motion.div
-                    key="flame-right"
-                    className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2 w-5 md:w-8 h-8 md:h-12 bg-gradient-to-t from-orange-600 via-yellow-400 to-transparent rounded-full blur-[1px] shadow-[0_0_30px_#f97316]"
-                    style={{
-                      transform: `translateX(-50%) scaleY(${1 - Math.min(0.85, avgAudioVolume / 50)}) scaleX(${1 - Math.min(0.5, avgAudioVolume / 100)}) rotate(${avgAudioVolume * 0.8}deg) translateX(${-avgAudioVolume * 0.25}px)`,
-                      transformOrigin: "bottom center",
-                      transition: "transform 0.05s ease-out",
-                    }}
-                    animate={{
-                      scaleY: [1, 1.25, 1],
-                      rotate: [6, -6, 6],
-                      opacity: [0.9, 1, 0.9],
-                    }}
-                    transition={{ repeat: Infinity, duration: 0.45, ease: "easeInOut" }}
-                  >
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-2.5 md:w-4 h-4 md:h-6 bg-white/40 rounded-full blur-sm" />
-                  </motion.div>
-                )}
-              </motion.div>
-
-              {/* Smoke for Left Candle when blown */}
-              {isBlown && (
-                <motion.div
-                  className="absolute bottom-[282px] md:bottom-[352px] left-[42%] -translate-x-1/2"
-                  initial={{ opacity: 0 }}
-                  animate={{
-                    opacity: [0, 0.8, 0],
-                    y: -80,
-                    x: [-10, 10, -5, 0],
-                    scale: [1, 1.8, 2.5]
-                  }}
-                  transition={{ duration: 2.5 }}
-                >
-                  <div className="w-4 md:w-6 h-4 md:h-6 bg-slate-400/30 rounded-full blur-xl" />
-                  <div className="w-2.5 md:w-5 h-2.5 md:h-5 bg-slate-300/20 rounded-full blur-lg -mt-3" />
-                </motion.div>
-              )}
-
-              {/* Smoke for Right Candle when blown */}
-              {isBlown && (
-                <motion.div
-                  className="absolute bottom-[282px] md:bottom-[352px] left-[58%] -translate-x-1/2"
-                  initial={{ opacity: 0 }}
-                  animate={{
-                    opacity: [0, 0.8, 0],
-                    y: -80,
-                    x: [10, -10, 5, 0],
-                    scale: [1, 1.8, 2.5]
-                  }}
-                  transition={{ duration: 2.5, delay: 0.15 }}
-                >
-                  <div className="w-4 md:w-6 h-4 md:h-6 bg-slate-400/30 rounded-full blur-xl" />
-                  <div className="w-2.5 md:w-5 h-2.5 md:h-5 bg-slate-300/20 rounded-full blur-lg -mt-3" />
-                </motion.div>
-              )}
-
-
-              {/* Vertical Cut Line visual indicator */}
-              {(isCutting || isCakeCut) && (
-                <motion.div
-                  initial={{ scaleY: 0 }}
-                  animate={{ scaleY: 1 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="absolute right-[82px] md:right-[98px] bottom-10 md:bottom-12 w-[3px] h-[190px] md:h-[220px] bg-gradient-to-b from-rose-900/70 via-pink-800/70 to-rose-950/70 border-l border-pink-200/40 z-20 origin-top shadow-[0_0_8px_rgba(244,63,94,0.4)]"
-                />
-              )}
-
-              {/* Cake Slice sliding out */}
-              <motion.div
-                initial={{ x: 0, y: 0, opacity: 0, scale: 0.9 }}
-                animate={
-                  isCakeCut
-                    ? { x: 45, y: 15, opacity: 1, scale: 1, rotate: 12 }
-                    : { x: 0, y: 0, opacity: 0, scale: 0.9 }
-                }
-                transition={{ type: "spring", stiffness: 100, damping: 12, delay: 0.15 }}
-                className="absolute right-6 bottom-12 w-20 h-28 flex flex-col justify-end pointer-events-none z-30 filter drop-shadow-2xl"
-              >
-                {/* Cherry on top of slice */}
-                <div className="w-4 h-4 bg-red-500 rounded-full ml-auto mr-5 -mb-1 shadow-inner" />
-                {/* Top layer slice */}
-                <div className="w-12 h-8 bg-rose-200/90 rounded-l-2xl ml-auto border-r-4 border-white/30" />
-                {/* Middle layer slice */}
-                <div className="w-16 h-10 bg-rose-300/90 rounded-l-2xl ml-auto border-r-4 border-white/30" />
-                {/* Bottom layer slice */}
-                <div className="w-20 h-12 bg-rose-400/90 rounded-l-2xl ml-auto border-r-4 border-white/30" />
-              </motion.div>
-            </motion.div>
-
-            {/* Floating Knife Overlay for Cutting */}
-            <AnimatePresence>
-              {isBlown && !isCakeCut && (
-                <motion.div
-                  initial={{ opacity: 0, y: -60, rotate: -45, scale: 0.8 }}
-                  animate={
-                    isCutting
-                      ? {
-                          y: [0, 160, 190],
-                          rotate: [-45, -5, -5],
-                          opacity: [1, 1, 0],
-                          scale: [1.1, 1.1, 0.9],
-                        }
-                      : {
-                          opacity: 1,
-                          y: [-10, 5, -10],
-                          scale: 1,
-                          rotate: -45,
-                        }
-                  }
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={
-                    isCutting
-                      ? { duration: 0.6, ease: "easeInOut" }
-                      : { repeat: Infinity, duration: 1.5, ease: "easeInOut" }
-                  }
-                  className="absolute top-24 left-[73%] -translate-x-1/2 z-50 cursor-pointer pointer-events-auto filter drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"
-                  onClick={handleCutCake}
-                >
-                  <svg viewBox="0 0 40 140" className="w-12 h-36">
-                    <defs>
-                      <linearGradient id="bladeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#f8fafc" />
-                        <stop offset="40%" stopColor="#cbd5e1" />
-                        <stop offset="100%" stopColor="#475569" />
-                      </linearGradient>
-                      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#fbbf24" />
-                        <stop offset="100%" stopColor="#b45309" />
-                      </linearGradient>
-                      <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#78350f" />
-                        <stop offset="100%" stopColor="#292524" />
-                      </linearGradient>
-                    </defs>
-                    {/* Handle (Top) */}
-                    <path d="M16,5 L24,5 L23,45 L17,45 Z" fill="url(#woodGrad)" stroke="#1c1917" strokeWidth="0.5" />
-                    {/* Rivets / Pins */}
-                    <circle cx="20" cy="15" r="1.2" fill="#cbd5e1" />
-                    <circle cx="20" cy="30" r="1.2" fill="#cbd5e1" />
-                    
-                    {/* Bolster (Gold) */}
-                    <rect x="15" y="45" width="10" height="4" rx="0.5" fill="url(#goldGrad)" />
-                    
-                    {/* Blade (Bottom) */}
-                    <path d="M17,49 L23,49 L23,115 C23,124 21,128 20,132 C19,128 17,124 17,115 Z" fill="url(#bladeGrad)" stroke="#64748b" strokeWidth="0.5" />
-                    
-                    {/* Blade Shine Line */}
-                    <path d="M17.5,50 L19,50 L19,112 C19,118 18.2,122 17.5,125 Z" fill="#ffffff" opacity="0.6" />
-                  </svg>
-                  <p className="text-[10px] text-pink-300 font-bold uppercase tracking-wider bg-black/60 px-2.5 py-0.5 rounded-full absolute top-1/2 left-full ml-2 -translate-y-1/2 whitespace-nowrap shadow-md border border-white/10">
-                    Tap to Cut! 🔪
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Explanation box / prompts */}
-            <div className="anim-child w-full">
-              {showExplanation && (
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-5 space-y-4 shadow-inner max-w-sm mx-auto">
-                  <h4 className="text-sm font-bold text-pink-300 uppercase tracking-wider flex items-center justify-center gap-1.5">
-                    🎤 Blow the Candle
-                  </h4>
-                  <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
-                    We use microphone volume analysis to detect when you blow on the candles. Tap allow on the browser request to activate it!
-                  </p>
-                  <Button
-                    onClick={enableMic}
-                    className="w-full btn-aurora rounded-full font-bold uppercase tracking-wider text-xs h-11"
-                  >
-                    Enable Microphone & Blow 🎂
-                  </Button>
-                </div>
-              )}
-
-              {!showExplanation && listening && !isBlown && (
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-5 text-center space-y-3 max-w-sm mx-auto">
-                  <p className="text-xs md:text-sm text-pink-300 font-bold uppercase animate-pulse">
-                    🎤 Microphone Active - Blow into it!
-                  </p>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-pink-500 transition-all duration-75"
-                      style={{ width: `${Math.min(100, (avgAudioVolume / 45) * 100)}%` }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-slate-400">
-                    If blowing doesn't work, you can also tap/click the cake directly to blow out the candle.
-                  </p>
-                </div>
-              )}
-
-              {micAllowed === false && !isBlown && (
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-5 text-center space-y-3 max-w-sm mx-auto">
-                  <p className="text-xs md:text-sm text-amber-300 font-bold uppercase">
-                    ⚠️ Microphone Access Denied
-                  </p>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    No problem! You can still make your wish. Simply tap the cake directly with your finger or mouse to blow out the candle!
-                  </p>
-                </div>
-              )}
-
-              {isBlown && !isCakeCut && (
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 md:p-5 text-center space-y-3 max-w-sm mx-auto animate-pulse">
-                  <p className="text-xs md:text-sm text-pink-300 font-bold uppercase">
-                    🎂 Candles Blown! Now Cut the Cake! 🔪
-                  </p>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Tap the knife above or click the cake directly to slice it and enjoy your celebration!
-                  </p>
-                </div>
-              )}
-
-              {isCakeCut && (
-                <div className="space-y-4 md:space-y-5 animate-fade-in">
-                  <p className="text-lg md:text-xl font-bold text-pink-300 tracking-wide uppercase leading-tight animate-bounce">
-                    🎉 Wish Made & Cake Cut! 🎉
-                  </p>
-                  <button
-                    onClick={nextStep}
-                    className="btn-aurora rounded-full px-8 py-3.5 text-white font-bold uppercase tracking-wider text-sm w-full md:w-auto"
-                    style={{ fontFamily: "Satoshi" }}
-                  >
-                    Read My Message 💌
-                  </button>
-                </div>
-              )}
-            </div>
+              Unwrap My Feelings
+            </button>
           </div>
         )}
 
-        {/* Step 2: The Core Message */}
+        {/* Step 2: Wonderful Partner */}
         {currentStep === 2 && (
           <div
             ref={(el) => { stepRefs.current[1] = el; }}
-            className="aurora-glass-card p-8 md:p-12 rounded-3xl w-full max-w-xl text-center flex flex-col items-center space-y-6"
+            className="aurora-glass-card p-6 md:p-10 w-full max-w-xl text-center flex flex-col items-center space-y-6"
           >
-            <div className="anim-child text-7xl">✨</div>
-            <h2 className="anim-child text-3xl md:text-4xl font-bold text-gradient-aurora leading-tight" style={{ fontFamily: "Playfair Display" }}>
-              To My Wonderful Partner, Happy {occasionName}!
+            <div className="anim-child text-7xl mb-2">✨</div>
+            <h2 className="anim-child text-3xl md:text-4xl font-bold text-gradient-aurora mb-2">
+              To My Wonderful Partner, {getOccasionWish()}
             </h2>
-            <p className="anim-child text-slate-300 text-base md:text-lg leading-relaxed font-light" style={{ fontFamily: "Satoshi" }}>
-              Your presence illuminates my world. Another year of you making the world brighter, another year more beautiful, inside and out. I cherish you deeply.
+            <p className="anim-child text-pink-200/80 mb-6 text-base md:text-lg leading-relaxed font-light" style={{ fontFamily: "Satoshi" }}>
+              Your presence illuminates my world. Another year more beautiful, inside and out. I cherish you deeply.
             </p>
             <button
-              onClick={nextStep}
-              className="anim-child btn-aurora rounded-full px-8 py-3.5 text-white font-bold uppercase tracking-wider text-sm"
+              onClick={handleNext}
+              className="anim-child btn text-white font-bold"
               style={{ fontFamily: "Satoshi" }}
             >
               Discover More...
@@ -914,75 +756,155 @@ export default function TemplateAurora({ greeting, isPreview = false }: { greeti
           </div>
         )}
 
-        {/* Step 3: Final Wish & Celebration */}
+        {/* Step 3: Countless Reasons */}
         {currentStep === 3 && (
           <div
             ref={(el) => { stepRefs.current[2] = el; }}
-            className="aurora-glass-card p-8 md:p-12 rounded-3xl w-full max-w-lg text-center flex flex-col items-center space-y-6"
+            className="aurora-glass-card p-6 md:p-10 w-full max-w-3xl text-center flex flex-col items-center"
           >
-            <div className="anim-child text-6xl">💝</div>
-            <h2 className="anim-child text-3xl md:text-4xl font-bold text-gradient-aurora" style={{ fontFamily: "Playfair Display" }}>
+            <h2 className="anim-child text-3xl md:text-4xl font-bold text-gradient-aurora mb-8">
+              Countless Reasons Why I Adore You
+            </h2>
+            <div className="bento-grid mb-8 w-full">
+              <div className="anim-child bento-item bento-item-1 p-6 rounded-xl text-left">
+                <h3 className="text-xl md:text-2xl font-bold text-pink-300 mb-2">💖 Your Infectious Laughter</h3>
+                <p className="text-pink-100/70 text-sm md:text-base leading-relaxed">It's the most beautiful sound, a melody that brightens even the darkest days.</p>
+              </div>
+              <div className="anim-child bento-item p-6 rounded-xl text-left">
+                <h3 className="text-xl md:text-2xl font-bold text-pink-300 mb-2">🧠 Your Brilliant Mind</h3>
+                <p className="text-pink-100/70 text-sm md:text-base leading-relaxed">Intelligent, curious, and always surprising me with your insights.</p>
+              </div>
+              <div className="anim-child bento-item bento-item-3 p-6 rounded-xl text-left">
+                <h3 className="text-xl md:text-2xl font-bold text-pink-300 mb-2">🌸 Your Gentle Soul</h3>
+                <p className="text-pink-100/70 text-sm md:text-base leading-relaxed">The kindness and empathy you extend to everyone around you is truly inspiring.</p>
+              </div>
+            </div>
+            <button
+              onClick={handleNext}
+              className="anim-child btn text-white font-bold"
+              style={{ fontFamily: "Satoshi" }}
+            >
+              {hasUploadedPhoto ? "Remember Our Journey?" : "One Final Thought..."}
+            </button>
+          </div>
+        )}
+
+        {/* Step 4: Polaroid Memory */}
+        {hasUploadedPhoto && currentStep === 4 && (
+          <div
+            ref={(el) => { stepRefs.current[3] = el; }}
+            className="aurora-glass-card p-6 md:p-10 w-full max-w-lg text-center flex flex-col items-center"
+          >
+            <h2 className="anim-child text-3xl md:text-4xl font-bold text-gradient-aurora mb-6">
+              A Snapshot of Our Story...
+            </h2>
+            <div id="polaroid" className="anim-child mb-6 w-full max-w-xs">
+              <div id="polaroid-inner" className="rounded-lg shadow-2xl">
+                <img
+                  src={imageUrl}
+                  alt="A special memory"
+                  className="w-full max-h-64 md:max-h-72 rounded-md mx-auto block"
+                  style={{ objectFit: isFitCover ? 'cover' : 'contain', height: isFitCover ? '220px' : 'auto', maxHeight: '288px' }}
+                />
+
+                <p className="text-center font-semibold mt-4 text-lg md:text-xl italic" style={{ fontFamily: "Playfair Display" }}>
+                  {caption}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleNext}
+              className="anim-child btn text-white font-bold"
+              style={{ fontFamily: "Satoshi" }}
+            >
+              One Final Thought...
+            </button>
+          </div>
+        )}
+
+        {/* Step 5: Final Wish */}
+        {currentStep === 5 && (
+          <div
+            ref={(el) => { stepRefs.current[hasUploadedPhoto ? 4 : 3] = el; }}
+            className="aurora-glass-card p-6 md:p-10 w-full max-w-lg text-center flex flex-col items-center"
+          >
+            <div className="anim-child text-7xl mb-4">💖</div>
+            <h2 className="anim-child text-3xl md:text-4xl font-bold text-gradient-aurora mb-4">
               My Deepest Wish For You
             </h2>
-            
-            {/* Custom Message content */}
-            <p className="anim-child text-slate-300 text-base md:text-lg leading-relaxed font-medium italic whitespace-pre-wrap max-w-md mx-auto" style={{ fontFamily: "Satoshi" }}>
+            <p className="anim-child text-pink-200/80 mb-8 text-base md:text-lg leading-relaxed font-medium italic whitespace-pre-wrap max-w-md mx-auto" style={{ fontFamily: "Satoshi" }}>
               "{greeting.message}"
             </p>
-            
-            {/* Dynamic Final Wish text reveals here on click */}
-            <div className="min-h-16 flex items-center justify-center">
+            <div className="h-28 flex items-center justify-center w-full">
               <p
                 ref={finalWishTextRef}
-                className="opacity-0 translate-y-8 font-black text-2xl md:text-3xl text-gradient-aurora tracking-wide drop-shadow-[0_0_15px_rgba(255,100,150,0.6)]"
-                style={{ fontFamily: "Playfair Display" }}
+                id="final-wish"
+                className="final-wish-text font-bold mt-6"
+                style={{
+                  opacity: isCelebrationStarted ? 1 : 0,
+                  transform: isCelebrationStarted ? "translateY(0)" : "translateY(30px)",
+                  transition: "opacity 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                  fontFamily: "Playfair Display"
+                }}
               >
-                Happy {occasionName}, My Sweetest Love! ❤️
+                {getOccasionWishWithName()}
               </p>
             </div>
 
-            {!isCelebrationStarted && (
+            {!isCelebrationStarted ? (
               <button
                 ref={celebrateBtnRef}
                 onClick={handleCelebrate}
-                className="anim-child btn-aurora rounded-full px-10 py-4 text-white font-bold uppercase tracking-wider text-sm text-shadow-sm"
+                className="anim-child btn text-white mt-4 font-bold"
                 style={{ fontFamily: "Satoshi" }}
               >
                 Let's Celebrate!
               </button>
-            )}
-
-            <footer className="anim-child text-slate-400 text-xs font-medium tracking-wide mt-4" style={{ fontFamily: "Satoshi" }}>
-              Crafted with endless love by {greeting.sender_name}
-            </footer>
-
-            {/* CTA back to Home */}
-            {isCelebrationStarted && (
-              <div className="anim-child pt-6 flex flex-col items-center gap-3">
+            ) : (
+              <div className="anim-child pt-4 flex flex-col items-center gap-3 w-full">
                 <button
-                  onClick={() => {
-                    setCurrentStep(1);
-                    setIsBlown(false);
-                    setIsCakeCut(false);
-                    setIsCelebrationStarted(false);
-                    setAvgAudioVolume(0);
-                    setShowExplanation(true);
-                  }}
-                  className="rounded-full bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase px-8 py-3.5 tracking-widest transition-colors flex items-center gap-2 shadow-lg border border-white/20 animate-fade-in"
+                  onClick={handleNext}
+                  className="btn text-white font-bold"
                   style={{ fontFamily: "Satoshi" }}
                 >
-                  Replay The Magic
+                  See Live Counter
                 </button>
-                {!isPreview && (
-                  <Link
-                    href="/digital-greeting"
-                    className="text-pink-400 hover:text-pink-300 text-xs font-semibold uppercase tracking-[0.2em] transition-colors"
-                  >
-                    Create your own surprise
-                  </Link>
-                )}
               </div>
             )}
+
+            <footer className="anim-child mt-6 text-pink-300/40 text-xs font-medium tracking-wider" style={{ fontFamily: "Satoshi" }}>
+              Crafted with endless love by {greeting.sender_name}
+            </footer>
+          </div>
+        )}
+
+        {/* Step 6: Live Age Counter Step */}
+        {currentStep === 6 && (
+          <div
+            ref={(el) => { stepRefs.current[hasUploadedPhoto ? 5 : 4] = el; }}
+            className="aurora-glass-card p-6 md:p-10 w-full max-w-lg text-center flex flex-col items-center space-y-6"
+          >
+            <div className="anim-child text-7xl mb-2">⏳</div>
+            
+            <div className="anim-child w-full">
+              <LiveAgeCounter birthdayStr={birthdayStr} />
+            </div>
+
+            <div className="anim-child pt-4 flex flex-col items-center gap-3 w-full">
+              <button
+                onClick={handleRepeat}
+                className="btn text-white font-bold"
+                style={{ fontFamily: "Satoshi" }}
+              >
+                Repeat
+              </button>
+
+            </div>
+
+            <footer className="anim-child mt-6 text-pink-300/40 text-xs font-medium tracking-wider" style={{ fontFamily: "Satoshi" }}>
+              Crafted with endless love by {greeting.sender_name}
+            </footer>
           </div>
         )}
       </div>

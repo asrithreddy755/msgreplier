@@ -39,19 +39,21 @@ export default function LoveScoreGuide() {
   };
 
   return (
-    <div className="container max-w-3xl py-12 px-4 md:px-6 mx-auto">
+    <div className="min-h-screen bg-[#f5eedf] text-[#110f0f] antialiased py-12 px-4" style={{ fontFamily: '"Work Sans", sans-serif' }}>
+      <style dangerouslySetInnerHTML={{ __html: `\n        h1, h2, h3, h4, h5, h6, .font-heading {\n          font-family: \'Unbounded\', sans-serif !important;\n        }\n      `}} />
+      <div className="max-w-3xl mx-auto">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Link href="/blog" className="inline-flex mb-8">
-        <Button variant="ghost" className="gap-2 -ml-4 text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" className="gap-2 -ml-4 text-[#110f0f] hover:text-[#948678] hover:bg-transparent font-heading font-medium text-xs uppercase tracking-wider">
           <ArrowLeft className="h-4 w-4" />
           Back to Blog
         </Button>
       </Link>
 
-      <article className="prose prose-neutral dark:prose-invert max-w-none">
+      <article className="bg-white border border-[#d4c3ab] rounded-[32px] p-8 md:p-10 shadow-sm prose prose-neutral max-w-none">
         <header className="mb-10 not-prose">
           <p className="text-sm text-muted-foreground mb-3">Relationships · 6 min read</p>
           <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
@@ -107,7 +109,7 @@ export default function LoveScoreGuide() {
             <p>Here&apos;s a fun breakdown of what different score ranges suggest:</p>
 
             <div className="space-y-4 mt-4">
-              <div className="p-4 bg-muted/40 rounded-lg border border-border/50">
+              <div className="p-4 bg-[#eedfc6]/20 rounded-2xl border border-[#d4c3ab] p-5">
                 <p className="font-semibold text-foreground">🔥 90–100% — Soulmate Level</p>
                 <p className="mt-1 text-sm">
                   An incredibly rare score. The stars — and the letters in your names — seem to
@@ -115,14 +117,14 @@ export default function LoveScoreGuide() {
                   celebrate your connection.
                 </p>
               </div>
-              <div className="p-4 bg-muted/40 rounded-lg border border-border/50">
+              <div className="p-4 bg-[#eedfc6]/20 rounded-2xl border border-[#d4c3ab] p-5">
                 <p className="font-semibold text-foreground">💕 70–89% — Deeply Compatible</p>
                 <p className="mt-1 text-sm">
                   You two have a strong natural affinity. This range suggests a comfortable, warm
                   compatibility — the kind that makes spending time together feel effortless.
                 </p>
               </div>
-              <div className="p-4 bg-muted/40 rounded-lg border border-border/50">
+              <div className="p-4 bg-[#eedfc6]/20 rounded-2xl border border-[#d4c3ab] p-5">
                 <p className="font-semibold text-foreground">😊 50–69% — Good Match</p>
                 <p className="mt-1 text-sm">
                   A solid score. You have enough in common to build something meaningful, with
@@ -130,7 +132,7 @@ export default function LoveScoreGuide() {
                   in this range.
                 </p>
               </div>
-              <div className="p-4 bg-muted/40 rounded-lg border border-border/50">
+              <div className="p-4 bg-[#eedfc6]/20 rounded-2xl border border-[#d4c3ab] p-5">
                 <p className="font-semibold text-foreground">🌱 30–49% — Room to Grow</p>
                 <p className="mt-1 text-sm">
                   Don&apos;t panic! Some of the most powerful relationships are between people who
@@ -138,7 +140,7 @@ export default function LoveScoreGuide() {
                   in the effort to understand each other — and that effort is always worth it.
                 </p>
               </div>
-              <div className="p-4 bg-muted/40 rounded-lg border border-border/50">
+              <div className="p-4 bg-[#eedfc6]/20 rounded-2xl border border-[#d4c3ab] p-5">
                 <p className="font-semibold text-foreground">😅 0–29% — Opposites Attract?</p>
                 <p className="mt-1 text-sm">
                   A low score just means the algorithm wasn&apos;t impressed — your real-life
@@ -215,6 +217,7 @@ export default function LoveScoreGuide() {
 
         </div>
       </article>
+      </div>
     </div>
   );
 }

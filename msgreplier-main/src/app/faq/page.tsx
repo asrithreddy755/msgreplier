@@ -1,13 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { ArrowLeft, Plus } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Frequently Asked Questions (FAQ) - MsgReplier",
@@ -158,58 +151,87 @@ export default function FAQPage() {
   };
 
   return (
-    <div className="container max-w-3xl py-12 px-4 md:px-6 mx-auto">
+    <div 
+      className="min-h-screen bg-[#f5eedf] text-[#110f0f] antialiased py-12 px-4"
+      style={{ fontFamily: '"Work Sans", sans-serif' }}
+    >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <Link href="/" className="inline-flex mb-8">
-        <Button variant="ghost" className="gap-2 -ml-4 text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Home
-        </Button>
-      </Link>
+      <style dangerouslySetInnerHTML={{ __html: `
+        h1, h2, h3, h4, h5, h6, .font-heading {
+          font-family: 'Unbounded', sans-serif !important;
+        }
+        summary::-webkit-details-marker {
+          display: none;
+        }
+        summary {
+          list-style: none;
+        }
+      `}} />
 
-      <h1 className="text-3xl font-bold mb-2">Frequently Asked Questions</h1>
-      <p className="text-muted-foreground mb-10 text-base leading-relaxed">
-        Everything you need to know about MsgReplier, Love-Space, Wishes Website, privacy, and more. Can&apos;t find what you&apos;re looking for?{" "}
-        <Link href="/contact" className="text-primary hover:underline">
-          Contact us
-        </Link>
-        .
-      </p>
+      <div className="container max-w-3xl mx-auto md:px-6">
+        <div className="flex justify-start mb-8">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 text-[#110f0f] hover:text-[#948678] font-heading font-medium text-xs uppercase tracking-wider"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+        </div>
 
-      <div className="space-y-10">
-        {faqCategories.map((cat) => (
-          <section key={cat.category}>
-            <h2 className="text-xl font-semibold text-foreground mb-4 pb-2 border-b border-border/60">
-              {cat.category}
-            </h2>
-            <Accordion type="single" collapsible className="w-full">
-              {cat.questions.map((item) => (
-                <AccordionItem key={item.id} value={item.id}>
-                  <AccordionTrigger className="text-left text-base font-medium">
-                    {item.q}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground leading-relaxed text-base">
-                    {item.a}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </section>
-        ))}
-      </div>
-
-      <div className="mt-16 p-6 bg-muted/40 rounded-2xl border border-border/50 text-center">
-        <h2 className="text-lg font-semibold text-foreground mb-2">Still have questions?</h2>
-        <p className="text-muted-foreground mb-4 text-sm">
-          Our team is happy to help. Reach out and we&apos;ll get back to you within 24–48 hours.
+        <h1 className="text-3xl font-bold mb-2 text-[#110f0f] text-left">Frequently Asked Questions</h1>
+        <p className="text-left text-[#5d6c7b] mb-12 text-sm md:text-base leading-relaxed">
+          Everything you need to know about MsgReplier, Love-Space, Wishes Website, privacy, and more. Can&apos;t find what you&apos;re looking for?{" "}
+          <Link href="/contact" className="text-[#110f0f] underline hover:no-underline font-semibold">
+            Contact us
+          </Link>
+          .
         </p>
-        <Button asChild>
-          <Link href="/contact">Contact Us</Link>
-        </Button>
+
+        <div className="space-y-12 text-left">
+          {faqCategories.map((cat) => (
+            <section key={cat.category} className="space-y-4">
+              <h2 className="text-xl font-bold text-[#110f0f] pb-2 border-b border-[#d4c3ab] font-heading">
+                {cat.category}
+              </h2>
+              <div className="space-y-1">
+                {cat.questions.map((item) => (
+                  <details key={item.id} className="group border-b border-[#d4c3ab]/30 py-4 cursor-pointer">
+                    <summary className="flex items-center justify-between list-none font-bold text-sm md:text-base text-[#110f0f] focus:outline-none select-none py-1">
+                      <span>{item.q}</span>
+                      <span className="p-1 rounded-full border border-[#d4c3ab] transition-transform group-open:rotate-45 shrink-0 ml-4">
+                        <Plus className="h-3.5 w-3.5" />
+                      </span>
+                    </summary>
+                    <div className="mt-3 text-[#5d6c7b] text-sm md:text-base leading-relaxed pl-1">
+                      {item.a}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+
+        {/* Contact CTA */}
+        <div className="mt-16 p-8 bg-white border border-[#d4c3ab] rounded-[32px] text-center space-y-4 shadow-sm max-w-xl mx-auto">
+          <h2 className="text-lg md:text-xl font-bold text-[#110f0f] font-heading">Still have questions?</h2>
+          <p className="text-[#5d6c7b] text-sm leading-relaxed max-w-md mx-auto">
+            Our team is happy to help. Reach out and we&apos;ll get back to you within 24–48 hours.
+          </p>
+          <div className="pt-2">
+            <Link 
+              href="/contact" 
+              className="font-heading font-medium text-xs bg-[#110f0f] text-white hover:bg-[#eedfc6] hover:text-[#110f0f] border border-transparent hover:border-[#d4c3ab] px-6 py-3.5 rounded-full transition-all duration-300 uppercase tracking-wider inline-block"
+            >
+              Contact Us
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
