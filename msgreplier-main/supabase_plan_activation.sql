@@ -13,6 +13,7 @@ CREATE OR REPLACE FUNCTION public.increment_credits_and_set_plan(
   p_plan TEXT,
   p_credits_to_add INTEGER
 )
+
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
