@@ -31,6 +31,7 @@ const routesJson = {
         '/icon.png', 
         '/sw.js', 
         '/ads.txt', 
+        '/templates/*',
         '/*.webp', 
         '/*.svg', 
         '/*.mp3', 
