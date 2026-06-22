@@ -7,6 +7,20 @@ export const dynamic = 'force-dynamic';
 
 const ALLOWED_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
+let awsClient: AwsClient | null = null;
+
+function getAwsClient(accessKeyId: string, secretAccessKey: string) {
+  if (!awsClient) {
+    awsClient = new AwsClient({
+      accessKeyId,
+      secretAccessKey,
+      region: 'auto',
+      service: 's3',
+    });
+  }
+  return awsClient;
+}
+
 export async function POST(request: Request) {
   try {
     // 1. Verify Authentication
@@ -53,12 +67,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // Fetch user's plan to determine allowed size and count limits
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', user.id)
-      .single();
+    // Fetch user's plan and check count of current images in gallery in parallel
+    const [profileResult, countResult] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user.id)
+        .single(),
+      supabase
+        .from('user_gallery')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+    ]);
+
+    const { data: profile, error: profileError } = profileResult;
+    const { count: imageCount, error: countError } = countResult;
 
     if (profileError) {
       console.error('Error fetching user profile plan for upload:', profileError);
@@ -68,12 +91,6 @@ export async function POST(request: Request) {
     const maxSizeBytes = plan === 'creator' ? 5 * 1024 * 1024 : plan === 'starter' ? 3 * 1024 * 1024 : 2 * 1024 * 1024;
     const maxSizeLabel = plan === 'creator' ? '5MB' : plan === 'starter' ? '3MB' : '2MB';
     const maxImages = plan === 'creator' ? 40 : plan === 'starter' ? 15 : 6;
-
-    // Check count of current images in gallery
-    const { count: imageCount, error: countError } = await supabase
-      .from('user_gallery')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id);
 
     if (countError) {
       console.error('Error checking gallery image count limit:', countError);
@@ -112,12 +129,7 @@ export async function POST(request: Request) {
 
     // 5. Generate Presigned URL using aws4fetch (edge-native, no fs/path dependencies)
     //    X-Amz-Expires MUST be set as a query param BEFORE signing so it's included in the signature.
-    const aws = new AwsClient({
-      accessKeyId,
-      secretAccessKey,
-      region: 'auto',
-      service: 's3',
-    });
+    const aws = getAwsClient(accessKeyId, secretAccessKey);
 
     const r2Url = new URL(`https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${objectKey}`);
     r2Url.searchParams.set('X-Amz-Expires', '3600');

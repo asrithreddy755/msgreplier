@@ -30,41 +30,40 @@ export default async function WishesDashboardPage() {
     redirect('/wishes/login?next=/wishes/dashboard');
   }
 
-  // Fetch user profile plan and credits (from public.profiles)
+  // Fetch profile plan/credits and user's love greetings in parallel
   let profile = { plan: 'free', credits: 6 };
-  try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('plan, credits')
-      .eq('id', user.id)
-      .single();
-
-    if (!error && data) {
-      profile = {
-        plan: data.plan || 'free',
-        credits: typeof data.credits === 'number' ? data.credits : 6
-      };
-    }
-  } catch (e) {
-    console.error('[dashboard] Error fetching profile details:', e);
-  }
-
-  // Fetch this user's greetings (graceful fallback if user_id column doesn't exist yet)
   let greetings: any[] = [];
-  try {
-    const { data, error } = await supabase
-      .from('love_greetings')
-      .select('id, slug, recipient_name, sender_name, occasion, theme, created_at, expires_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('[dashboard] Error fetching greetings:', error.message);
-    } else {
-      greetings = data ?? [];
+  try {
+    const [profileResult, greetingsResult] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('plan, credits')
+        .eq('id', user.id)
+        .single(),
+      supabase
+        .from('love_greetings')
+        .select('id, slug, recipient_name, sender_name, occasion, theme, created_at, expires_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+    ]);
+
+    if (!profileResult.error && profileResult.data) {
+      profile = {
+        plan: profileResult.data.plan || 'free',
+        credits: typeof profileResult.data.credits === 'number' ? profileResult.data.credits : 6
+      };
+    } else if (profileResult.error) {
+      console.error('[dashboard] Error fetching profile details:', profileResult.error.message);
+    }
+
+    if (!greetingsResult.error && greetingsResult.data) {
+      greetings = greetingsResult.data;
+    } else if (greetingsResult.error) {
+      console.error('[dashboard] Error fetching greetings:', greetingsResult.error.message);
     }
   } catch (e) {
-    console.error('[dashboard] Unexpected fetch error:', e);
+    console.error('[dashboard] Unexpected parallel fetch error:', e);
   }
 
   return (
