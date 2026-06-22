@@ -3,6 +3,8 @@ import Image from "next/image";
 import { Star, ArrowRight, Heart, MessageSquare, Shield, Zap, Sparkles, Flame, Plus, ChevronRight } from "lucide-react";
 import ReviewForm from "@/components/ReviewForm";
 
+export const dynamic = "force-static";
+
 export const metadata = {
   title: "MsgReplier - Private Love Space, Wishes Website & AI Couple Tools",
   description:

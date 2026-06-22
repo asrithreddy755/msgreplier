@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Cookie Policy - MsgReplier",
   description: "Learn how MsgReplier uses cookies, what types of cookies we set, and how you can control or disable them on our website.",

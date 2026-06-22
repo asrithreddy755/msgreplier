@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import { ArrowLeft, Mail, MessageSquare, MessageCircle } from "lucide-react";
+import BackButton from "@/components/BackButton";
+
+export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Contact Us - MsgReplier",
@@ -10,12 +13,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ContactPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
-  const resolvedSearchParams = await searchParams;
-  const fromLoveScore = resolvedSearchParams?.from === "love-score";
-  const backHref = fromLoveScore ? "/love-score" : "/";
-  const backText = fromLoveScore ? "Back to Love Score" : "Back to Home";
-
+export default function ContactPage() {
   return (
     <div 
       className="min-h-screen bg-[#f5eedf] text-[#110f0f] antialiased py-16 px-4"
@@ -29,13 +27,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
 
       <div className="max-w-2xl mx-auto text-center space-y-8">
         <div className="flex justify-start mb-4">
-          <Link 
-            href={backHref} 
-            className="inline-flex items-center gap-2 text-[#110f0f] hover:text-[#948678] font-heading font-medium text-xs uppercase tracking-wider"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {backText}
-          </Link>
+          <BackButton defaultBackHref="/" />
         </div>
 
         <div className="bg-[#eedfc6] border border-[#d4c3ab] p-4 rounded-3xl w-fit mx-auto text-[#110f0f]">

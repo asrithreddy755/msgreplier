@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Tag, ArrowRight, Clock } from "lucide-react";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://msgreplier.com'),
   alternates: {

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Frequently Asked Questions (FAQ) - MsgReplier",
   description:

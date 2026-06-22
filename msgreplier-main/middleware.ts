@@ -34,40 +34,40 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 308);
   }
 
-  // --- 3. Supabase session refresh (required for all routes) ---
-  // This keeps auth tokens alive by rotating cookies on every request.
-  // It does NOT affect Love Space or any other unprotected routes.
-  const { supabase, supabaseResponse } = createSupabaseMiddlewareClient(request);
+  // --- 3. Supabase session refresh (required for /wishes/* routes) ---
+  // Restrict session check to /wishes routes to avoid running database/auth CPU on every public page request.
+  if (original.startsWith("/wishes")) {
+    const { supabase, supabaseResponse } = createSupabaseMiddlewareClient(request);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  // getUser() refreshes the session token if needed (important: must call this
-  // rather than getSession() to avoid security issues with stale JWTs)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    // --- 4. Protect /wishes/dashboard and /wishes/edit/* ---
+    const isProtectedWishesRoute =
+      original.startsWith("/wishes/dashboard") ||
+      original.startsWith("/wishes/edit");
 
-  // --- 4. Protect /wishes/dashboard and /wishes/edit/* ---
-  const isProtectedWishesRoute =
-    original.startsWith("/wishes/dashboard") ||
-    original.startsWith("/wishes/edit");
+    const isPublicWishesAuth = WISHES_PUBLIC_PATHS.some(
+      (p) => original === p || original.startsWith(p + "/")
+    );
 
-  const isPublicWishesAuth = WISHES_PUBLIC_PATHS.some(
-    (p) => original === p || original.startsWith(p + "/")
-  );
+    if (isProtectedWishesRoute && !user) {
+      // Unauthenticated — redirect to login, preserve intended destination
+      const loginUrl = new URL("/wishes/login", request.url);
+      loginUrl.searchParams.set("next", original);
+      return NextResponse.redirect(loginUrl);
+    }
 
-  if (isProtectedWishesRoute && !user) {
-    // Unauthenticated — redirect to login, preserve intended destination
-    const loginUrl = new URL("/wishes/login", request.url);
-    loginUrl.searchParams.set("next", original);
-    return NextResponse.redirect(loginUrl);
+    // If logged in and hitting login/signup, redirect to dashboard
+    if (isPublicWishesAuth && user) {
+      return NextResponse.redirect(new URL("/wishes/dashboard", request.url));
+    }
+
+    // Return the supabaseResponse (which carries updated auth cookies)
+    return supabaseResponse;
   }
 
-  // If logged in and hitting login/signup, redirect to dashboard
-  if (isPublicWishesAuth && user) {
-    return NextResponse.redirect(new URL("/wishes/dashboard", request.url));
-  }
-
-  // Return the supabaseResponse (which carries updated auth cookies)
-  return supabaseResponse;
+  return NextResponse.next();
 }
 
 export const config = {

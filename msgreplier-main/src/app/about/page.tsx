@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Heart, Shield, Zap, Users, Star, Mail, Instagram, Youtube } from "lucide-react";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "About Us - MsgReplier | Our Mission, Story & Tools",
   description:

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import BackButton from "@/components/BackButton";
+
+export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "Terms and Conditions - MsgReplier",
@@ -11,20 +14,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function TermsPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
-  const resolvedSearchParams = await searchParams;
-  const fromLoveSpace = resolvedSearchParams?.from === "love-space";
-  const backHref = fromLoveSpace ? "/love-space" : "/";
-  const backText = fromLoveSpace ? "Back to Love Space" : "Back to Home";
-
+export default function TermsPage() {
   return (
     <div className="container max-w-3xl py-12 px-4 md:px-6 mx-auto">
-      <Link href={backHref} className="inline-flex mb-8">
-        <Button variant="ghost" className="gap-2 -ml-4 text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" />
-          {backText}
-        </Button>
-      </Link>
+      <div className="mb-8">
+        <BackButton defaultBackHref="/" />
+      </div>
       <h1 className="text-3xl font-bold mb-2">Terms and Conditions</h1>
       <p className="text-sm text-muted-foreground mb-8">Last updated: June 2025</p>
 

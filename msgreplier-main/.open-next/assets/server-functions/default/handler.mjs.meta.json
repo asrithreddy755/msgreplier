@@ -3161,212 +3161,212 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/e2a8ce7819584caba8890d32ee2c4e9a.txt/route_client-reference-manifest.js": {
-      "bytes": 25140,
+      "bytes": 25420,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/digital-greeting/update/[slug]/route_client-reference-manifest.js": {
-      "bytes": 25139,
+      "bytes": 25419,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-space/update-room-status/route_client-reference-manifest.js": {
-      "bytes": 25136,
+      "bytes": 25416,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/digital-greeting/claim/[slug]/route_client-reference-manifest.js": {
-      "bytes": 25137,
+      "bytes": 25417,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/greet/[slug]/opengraph-image/route_client-reference-manifest.js": {
-      "bytes": 25883,
+      "bytes": 26163,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-space/join-by-code/route_client-reference-manifest.js": {
-      "bytes": 25124,
+      "bytes": 25404,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/digital-greeting/[slug]/route_client-reference-manifest.js": {
-      "bytes": 25124,
+      "bytes": 25404,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/digital-greeting/create/route_client-reference-manifest.js": {
-      "bytes": 25124,
+      "bytes": 25404,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/love-space/opengraph-image/route_client-reference-manifest.js": {
-      "bytes": 25573,
+      "bytes": 25853,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/greet/[slug]/twitter-image/route_client-reference-manifest.js": {
-      "bytes": 25879,
+      "bytes": 26159,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/payment/verify-payment/route_client-reference-manifest.js": {
-      "bytes": 25122,
-      "imports": [],
-      "format": "cjs"
-    },
-    ".open-next/server-functions/default/.next/server/app/api/love-space/create-room/route_client-reference-manifest.js": {
-      "bytes": 25122,
+      "bytes": 25402,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-space/delete-room/route_client-reference-manifest.js": {
-      "bytes": 25122,
+      "bytes": 25402,
+      "imports": [],
+      "format": "cjs"
+    },
+    ".open-next/server-functions/default/.next/server/app/api/love-space/create-room/route_client-reference-manifest.js": {
+      "bytes": 25402,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-space/ludo-state/route_client-reference-manifest.js": {
-      "bytes": 25120,
+      "bytes": 25400,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-rapid/play-again/route_client-reference-manifest.js": {
-      "bytes": 25120,
+      "bytes": 25400,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/love-space/twitter-image/route_client-reference-manifest.js": {
-      "bytes": 25569,
+      "bytes": 25849,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/payment/create-order/route_client-reference-manifest.js": {
-      "bytes": 25118,
+      "bytes": 25398,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-space/join-room/route_client-reference-manifest.js": {
-      "bytes": 25118,
+      "bytes": 25398,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-rapid/init-room/route_client-reference-manifest.js": {
-      "bytes": 25118,
+      "bytes": 25398,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-space/messages/route_client-reference-manifest.js": {
-      "bytes": 25116,
-      "imports": [],
-      "format": "cjs"
-    },
-    ".open-next/server-functions/default/.next/server/app/api/love-space/get-room/route_client-reference-manifest.js": {
-      "bytes": 25116,
+      "bytes": 25396,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-space/feedback/route_client-reference-manifest.js": {
-      "bytes": 25116,
+      "bytes": 25396,
+      "imports": [],
+      "format": "cjs"
+    },
+    ".open-next/server-functions/default/.next/server/app/api/love-space/get-room/route_client-reference-manifest.js": {
+      "bytes": 25396,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-space/members/route_client-reference-manifest.js": {
-      "bytes": 25114,
+      "bytes": 25394,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-score-result/route_client-reference-manifest.js": {
-      "bytes": 25111,
+      "bytes": 25391,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-rapid/submit/route_client-reference-manifest.js": {
-      "bytes": 25112,
+      "bytes": 25392,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-rapid/create/route_client-reference-manifest.js": {
-      "bytes": 25112,
+      "bytes": 25392,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/razorpay/webhook/route_client-reference-manifest.js": {
-      "bytes": 25110,
+      "bytes": 25390,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-space/games/route_client-reference-manifest.js": {
-      "bytes": 25110,
+      "bytes": 25390,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-space/quiz/route_client-reference-manifest.js": {
-      "bytes": 25108,
+      "bytes": 25388,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-rapid/join/route_client-reference-manifest.js": {
-      "bytes": 25108,
+      "bytes": 25388,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/debug-supabase/route_client-reference-manifest.js": {
-      "bytes": 25105,
-      "imports": [],
-      "format": "cjs"
-    },
-    ".open-next/server-functions/default/.next/server/app/api/payment/config/route_client-reference-manifest.js": {
-      "bytes": 25106,
+      "bytes": 25385,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/upload/presign/route_client-reference-manifest.js": {
-      "bytes": 25106,
+      "bytes": 25386,
+      "imports": [],
+      "format": "cjs"
+    },
+    ".open-next/server-functions/default/.next/server/app/api/payment/config/route_client-reference-manifest.js": {
+      "bytes": 25386,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/opengraph-image/route_client-reference-manifest.js": {
-      "bytes": 25098,
+      "bytes": 25378,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/save-score/route_client-reference-manifest.js": {
-      "bytes": 25097,
+      "bytes": 25377,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/admin/data/route_client-reference-manifest.js": {
-      "bytes": 25098,
+      "bytes": 25378,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/twitter-image/route_client-reference-manifest.js": {
-      "bytes": 25094,
+      "bytes": 25374,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/auth/callback/route_client-reference-manifest.js": {
-      "bytes": 25095,
+      "bytes": 25375,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/api/love-quiz/route_client-reference-manifest.js": {
-      "bytes": 25095,
+      "bytes": 25375,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/sitemap.xml/route_client-reference-manifest.js": {
-      "bytes": 25090,
+      "bytes": 25370,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/robots.txt/route_client-reference-manifest.js": {
-      "bytes": 25088,
+      "bytes": 25368,
       "imports": [],
       "format": "cjs"
     },
     ".open-next/server-functions/default/node_modules/next/dist/server/load-manifest.js": {
-      "bytes": 811648,
+      "bytes": 827127,
       "imports": [
         {
           "path": "fs",
@@ -3439,14 +3439,14 @@
           "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\payment\\verify-payment\\route_client-reference-manifest.js"
         },
         {
-          "path": ".open-next/server-functions/default/.next/server/app/api/love-space/create-room/route_client-reference-manifest.js",
-          "kind": "require-call",
-          "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\love-space\\create-room\\route_client-reference-manifest.js"
-        },
-        {
           "path": ".open-next/server-functions/default/.next/server/app/api/love-space/delete-room/route_client-reference-manifest.js",
           "kind": "require-call",
           "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\love-space\\delete-room\\route_client-reference-manifest.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/.next/server/app/api/love-space/create-room/route_client-reference-manifest.js",
+          "kind": "require-call",
+          "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\love-space\\create-room\\route_client-reference-manifest.js"
         },
         {
           "path": ".open-next/server-functions/default/.next/server/app/api/love-space/ludo-state/route_client-reference-manifest.js",
@@ -3484,14 +3484,14 @@
           "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\love-space\\messages\\route_client-reference-manifest.js"
         },
         {
-          "path": ".open-next/server-functions/default/.next/server/app/api/love-space/get-room/route_client-reference-manifest.js",
-          "kind": "require-call",
-          "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\love-space\\get-room\\route_client-reference-manifest.js"
-        },
-        {
           "path": ".open-next/server-functions/default/.next/server/app/api/love-space/feedback/route_client-reference-manifest.js",
           "kind": "require-call",
           "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\love-space\\feedback\\route_client-reference-manifest.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/.next/server/app/api/love-space/get-room/route_client-reference-manifest.js",
+          "kind": "require-call",
+          "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\love-space\\get-room\\route_client-reference-manifest.js"
         },
         {
           "path": ".open-next/server-functions/default/.next/server/app/api/love-space/members/route_client-reference-manifest.js",
@@ -3539,14 +3539,14 @@
           "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\debug-supabase\\route_client-reference-manifest.js"
         },
         {
-          "path": ".open-next/server-functions/default/.next/server/app/api/payment/config/route_client-reference-manifest.js",
-          "kind": "require-call",
-          "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\payment\\config\\route_client-reference-manifest.js"
-        },
-        {
           "path": ".open-next/server-functions/default/.next/server/app/api/upload/presign/route_client-reference-manifest.js",
           "kind": "require-call",
           "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\upload\\presign\\route_client-reference-manifest.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/.next/server/app/api/payment/config/route_client-reference-manifest.js",
+          "kind": "require-call",
+          "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\payment\\config\\route_client-reference-manifest.js"
         },
         {
           "path": ".open-next/server-functions/default/.next/server/app/opengraph-image/route_client-reference-manifest.js",
@@ -3702,7 +3702,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/chunks/1707.js": {
-      "bytes": 46323,
+      "bytes": 46321,
       "imports": [],
       "format": "cjs"
     },
@@ -3773,7 +3773,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/chunks/4946.js": {
-      "bytes": 5317,
+      "bytes": 5315,
       "imports": [],
       "format": "cjs"
     },
@@ -4799,7 +4799,7 @@
       "format": "esm"
     },
     ".open-next/server-functions/default/.next/server/app/greet/[slug]/opengraph-image/route.js": {
-      "bytes": 4980,
+      "bytes": 4979,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -5066,7 +5066,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/greet/[slug]/twitter-image/route.js": {
-      "bytes": 4970,
+      "bytes": 4969,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -5107,7 +5107,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/love-space/opengraph-image/route.js": {
-      "bytes": 5263,
+      "bytes": 5262,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -5740,7 +5740,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/love-space/twitter-image/route.js": {
-      "bytes": 5249,
+      "bytes": 5248,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -6154,8 +6154,8 @@
       ],
       "format": "cjs"
     },
-    ".open-next/server-functions/default/.next/server/app/api/love-rapid/create/route.js": {
-      "bytes": 6971,
+    ".open-next/server-functions/default/.next/server/app/api/love-rapid/submit/route.js": {
+      "bytes": 3794,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -6190,8 +6190,8 @@
       ],
       "format": "cjs"
     },
-    ".open-next/server-functions/default/.next/server/app/api/love-rapid/submit/route.js": {
-      "bytes": 3794,
+    ".open-next/server-functions/default/.next/server/app/api/love-rapid/create/route.js": {
+      "bytes": 6971,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -6596,7 +6596,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/community-guidelines/page.js": {
-      "bytes": 14283,
+      "bytes": 14314,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -6893,7 +6893,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/opengraph-image/route.js": {
-      "bytes": 3677,
+      "bytes": 3676,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -6980,7 +6980,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/terms-conditions/page.js": {
-      "bytes": 12731,
+      "bytes": 12678,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -7318,7 +7318,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/twitter-image/route.js": {
-      "bytes": 3665,
+      "bytes": 3664,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -7395,7 +7395,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/privacy-policy/page.js": {
-      "bytes": 14921,
+      "bytes": 14868,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -7441,7 +7441,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/cookie-policy/page.js": {
-      "bytes": 12717,
+      "bytes": 12748,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -7523,7 +7523,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/greet/[slug]/page.js": {
-      "bytes": 7928,
+      "bytes": 7926,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -7742,6 +7742,52 @@
       ],
       "format": "cjs"
     },
+    ".open-next/server-functions/default/.next/server/app/love-space/page.js": {
+      "bytes": 27228,
+      "imports": [
+        {
+          "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
+          "kind": "require-call",
+          "original": "next/dist/server/app-render/after-task-async-storage.external.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js",
+          "kind": "require-call",
+          "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
+          "kind": "require-call",
+          "original": "next/dist/server/app-render/action-async-storage.external.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-async-storage.external.js",
+          "kind": "require-call",
+          "original": "next/dist/server/app-render/work-async-storage.external.js"
+        },
+        {
+          "path": "path",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
+          "kind": "require-call",
+          "original": "next/dist/server/app-render/work-unit-async-storage.external.js"
+        },
+        {
+          "path": "url",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": ".open-next/server-functions/default/.next/server/webpack-runtime.js",
+          "kind": "require-call",
+          "original": "../../webpack-runtime.js"
+        }
+      ],
+      "format": "cjs"
+    },
     ".open-next/server-functions/default/.next/server/app/love-score/page.js": {
       "bytes": 35586,
       "imports": [
@@ -7793,54 +7839,8 @@
       ],
       "format": "cjs"
     },
-    ".open-next/server-functions/default/.next/server/app/love-space/page.js": {
-      "bytes": 27228,
-      "imports": [
-        {
-          "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
-          "kind": "require-call",
-          "original": "next/dist/server/app-render/after-task-async-storage.external.js"
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js",
-          "kind": "require-call",
-          "original": "next/dist/compiled/next-server/app-page.runtime.prod.js"
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage.external.js",
-          "kind": "require-call",
-          "original": "next/dist/server/app-render/action-async-storage.external.js"
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-async-storage.external.js",
-          "kind": "require-call",
-          "original": "next/dist/server/app-render/work-async-storage.external.js"
-        },
-        {
-          "path": "path",
-          "kind": "require-call",
-          "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/work-unit-async-storage.external.js",
-          "kind": "require-call",
-          "original": "next/dist/server/app-render/work-unit-async-storage.external.js"
-        },
-        {
-          "path": "url",
-          "kind": "require-call",
-          "external": true
-        },
-        {
-          "path": ".open-next/server-functions/default/.next/server/webpack-runtime.js",
-          "kind": "require-call",
-          "original": "../../webpack-runtime.js"
-        }
-      ],
-      "format": "cjs"
-    },
     ".open-next/server-functions/default/.next/server/app/contact/page.js": {
-      "bytes": 8090,
+      "bytes": 9052,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -8196,7 +8196,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/flames/page.js": {
-      "bytes": 39540,
+      "bytes": 39571,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -8288,7 +8288,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/about/page.js": {
-      "bytes": 17657,
+      "bytes": 17688,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -8334,7 +8334,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/blog/page.js": {
-      "bytes": 14604,
+      "bytes": 14635,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -8411,7 +8411,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/faq/page.js": {
-      "bytes": 14388,
+      "bytes": 14419,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -8478,7 +8478,7 @@
       "format": "cjs"
     },
     ".open-next/server-functions/default/.next/server/app/page.js": {
-      "bytes": 50263,
+      "bytes": 50294,
       "imports": [
         {
           "path": ".open-next/server-functions/default/node_modules/next/dist/server/app-render/after-task-async-storage.external.js",
@@ -8812,14 +8812,14 @@
           "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\digital-greeting\\create\\page.js"
         },
         {
-          "path": ".open-next/server-functions/default/.next/server/app/api/love-rapid/create/route.js",
-          "kind": "require-call",
-          "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\love-rapid\\create\\route.js"
-        },
-        {
           "path": ".open-next/server-functions/default/.next/server/app/api/love-rapid/submit/route.js",
           "kind": "require-call",
           "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\love-rapid\\submit\\route.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/.next/server/app/api/love-rapid/create/route.js",
+          "kind": "require-call",
+          "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\api\\love-rapid\\create\\route.js"
         },
         {
           "path": ".open-next/server-functions/default/.next/server/app/api/love-score-result/route.js",
@@ -9002,14 +9002,14 @@
           "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\[platform]\\page.js"
         },
         {
-          "path": ".open-next/server-functions/default/.next/server/app/love-score/page.js",
-          "kind": "require-call",
-          "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\love-score\\page.js"
-        },
-        {
           "path": ".open-next/server-functions/default/.next/server/app/love-space/page.js",
           "kind": "require-call",
           "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\love-space\\page.js"
+        },
+        {
+          "path": ".open-next/server-functions/default/.next/server/app/love-score/page.js",
+          "kind": "require-call",
+          "original": "C:\\Users\\S.B.Reddy\\Desktop\\msgreplier-main\\msgreplier-main\\.open-next\\server-functions\\default\\.next\\server\\app\\love-score\\page.js"
         },
         {
           "path": ".open-next/server-functions/default/.next/server/app/contact/page.js",
@@ -9931,7 +9931,7 @@
       "format": "esm"
     },
     ".open-next/server-functions/default/index.mjs": {
-      "bytes": 119875,
+      "bytes": 124924,
       "imports": [
         {
           "path": "node:module",
@@ -10726,17 +10726,17 @@
           "external": true
         },
         {
-          "path": "node:crypto",
-          "kind": "require-call",
-          "external": true
-        },
-        {
           "path": "url",
           "kind": "require-call",
           "external": true
         },
         {
           "path": "path",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "node:crypto",
           "kind": "require-call",
           "external": true
         },
@@ -11624,130 +11624,130 @@
           "bytesInOutput": 589
         },
         ".open-next/server-functions/default/.next/server/app/e2a8ce7819584caba8890d32ee2c4e9a.txt/route_client-reference-manifest.js": {
-          "bytesInOutput": 23320
+          "bytesInOutput": 23563
         },
         ".open-next/server-functions/default/.next/server/app/api/digital-greeting/update/[slug]/route_client-reference-manifest.js": {
-          "bytesInOutput": 23318
+          "bytesInOutput": 23561
         },
         ".open-next/server-functions/default/.next/server/app/api/love-space/update-room-status/route_client-reference-manifest.js": {
-          "bytesInOutput": 23314
+          "bytesInOutput": 23557
         },
         ".open-next/server-functions/default/.next/server/app/api/digital-greeting/claim/[slug]/route_client-reference-manifest.js": {
-          "bytesInOutput": 23315
+          "bytesInOutput": 23558
         },
         ".open-next/server-functions/default/.next/server/app/greet/[slug]/opengraph-image/route_client-reference-manifest.js": {
-          "bytesInOutput": 24056
+          "bytesInOutput": 24299
         },
         ".open-next/server-functions/default/.next/server/app/api/love-space/join-by-code/route_client-reference-manifest.js": {
-          "bytesInOutput": 23296
+          "bytesInOutput": 23539
         },
         ".open-next/server-functions/default/.next/server/app/api/digital-greeting/[slug]/route_client-reference-manifest.js": {
-          "bytesInOutput": 23296
+          "bytesInOutput": 23539
         },
         ".open-next/server-functions/default/.next/server/app/api/digital-greeting/create/route_client-reference-manifest.js": {
-          "bytesInOutput": 23296
+          "bytesInOutput": 23539
         },
         ".open-next/server-functions/default/.next/server/app/love-space/opengraph-image/route_client-reference-manifest.js": {
-          "bytesInOutput": 23744
+          "bytesInOutput": 23987
         },
         ".open-next/server-functions/default/.next/server/app/greet/[slug]/twitter-image/route_client-reference-manifest.js": {
-          "bytesInOutput": 24051
+          "bytesInOutput": 24294
         },
         ".open-next/server-functions/default/.next/server/app/api/payment/verify-payment/route_client-reference-manifest.js": {
-          "bytesInOutput": 23294
-        },
-        ".open-next/server-functions/default/.next/server/app/api/love-space/create-room/route_client-reference-manifest.js": {
-          "bytesInOutput": 23294
+          "bytesInOutput": 23537
         },
         ".open-next/server-functions/default/.next/server/app/api/love-space/delete-room/route_client-reference-manifest.js": {
-          "bytesInOutput": 23294
+          "bytesInOutput": 23537
+        },
+        ".open-next/server-functions/default/.next/server/app/api/love-space/create-room/route_client-reference-manifest.js": {
+          "bytesInOutput": 23537
         },
         ".open-next/server-functions/default/.next/server/app/api/love-space/ludo-state/route_client-reference-manifest.js": {
-          "bytesInOutput": 23291
+          "bytesInOutput": 23534
         },
         ".open-next/server-functions/default/.next/server/app/api/love-rapid/play-again/route_client-reference-manifest.js": {
-          "bytesInOutput": 23291
+          "bytesInOutput": 23534
         },
         ".open-next/server-functions/default/.next/server/app/love-space/twitter-image/route_client-reference-manifest.js": {
-          "bytesInOutput": 23739
+          "bytesInOutput": 23982
         },
         ".open-next/server-functions/default/.next/server/app/api/payment/create-order/route_client-reference-manifest.js": {
-          "bytesInOutput": 23288
+          "bytesInOutput": 23531
         },
         ".open-next/server-functions/default/.next/server/app/api/love-space/join-room/route_client-reference-manifest.js": {
-          "bytesInOutput": 23288
+          "bytesInOutput": 23531
         },
         ".open-next/server-functions/default/.next/server/app/api/love-rapid/init-room/route_client-reference-manifest.js": {
-          "bytesInOutput": 23288
+          "bytesInOutput": 23531
         },
         ".open-next/server-functions/default/.next/server/app/api/love-space/messages/route_client-reference-manifest.js": {
-          "bytesInOutput": 23285
-        },
-        ".open-next/server-functions/default/.next/server/app/api/love-space/get-room/route_client-reference-manifest.js": {
-          "bytesInOutput": 23285
+          "bytesInOutput": 23528
         },
         ".open-next/server-functions/default/.next/server/app/api/love-space/feedback/route_client-reference-manifest.js": {
-          "bytesInOutput": 23285
+          "bytesInOutput": 23528
+        },
+        ".open-next/server-functions/default/.next/server/app/api/love-space/get-room/route_client-reference-manifest.js": {
+          "bytesInOutput": 23528
         },
         ".open-next/server-functions/default/.next/server/app/api/love-space/members/route_client-reference-manifest.js": {
-          "bytesInOutput": 23282
+          "bytesInOutput": 23525
         },
         ".open-next/server-functions/default/.next/server/app/api/love-score-result/route_client-reference-manifest.js": {
-          "bytesInOutput": 23278
+          "bytesInOutput": 23521
         },
         ".open-next/server-functions/default/.next/server/app/api/love-rapid/submit/route_client-reference-manifest.js": {
-          "bytesInOutput": 23279
+          "bytesInOutput": 23522
         },
         ".open-next/server-functions/default/.next/server/app/api/love-rapid/create/route_client-reference-manifest.js": {
-          "bytesInOutput": 23279
+          "bytesInOutput": 23522
         },
         ".open-next/server-functions/default/.next/server/app/api/razorpay/webhook/route_client-reference-manifest.js": {
-          "bytesInOutput": 23276
+          "bytesInOutput": 23519
         },
         ".open-next/server-functions/default/.next/server/app/api/love-space/games/route_client-reference-manifest.js": {
-          "bytesInOutput": 23276
+          "bytesInOutput": 23519
         },
         ".open-next/server-functions/default/.next/server/app/api/love-space/quiz/route_client-reference-manifest.js": {
-          "bytesInOutput": 23273
+          "bytesInOutput": 23516
         },
         ".open-next/server-functions/default/.next/server/app/api/love-rapid/join/route_client-reference-manifest.js": {
-          "bytesInOutput": 23273
+          "bytesInOutput": 23516
         },
         ".open-next/server-functions/default/.next/server/app/api/debug-supabase/route_client-reference-manifest.js": {
-          "bytesInOutput": 23269
-        },
-        ".open-next/server-functions/default/.next/server/app/api/payment/config/route_client-reference-manifest.js": {
-          "bytesInOutput": 23270
+          "bytesInOutput": 23512
         },
         ".open-next/server-functions/default/.next/server/app/api/upload/presign/route_client-reference-manifest.js": {
-          "bytesInOutput": 23270
+          "bytesInOutput": 23513
+        },
+        ".open-next/server-functions/default/.next/server/app/api/payment/config/route_client-reference-manifest.js": {
+          "bytesInOutput": 23513
         },
         ".open-next/server-functions/default/.next/server/app/opengraph-image/route_client-reference-manifest.js": {
-          "bytesInOutput": 23259
+          "bytesInOutput": 23502
         },
         ".open-next/server-functions/default/.next/server/app/api/save-score/route_client-reference-manifest.js": {
-          "bytesInOutput": 23257
+          "bytesInOutput": 23500
         },
         ".open-next/server-functions/default/.next/server/app/api/admin/data/route_client-reference-manifest.js": {
-          "bytesInOutput": 23258
+          "bytesInOutput": 23501
         },
         ".open-next/server-functions/default/.next/server/app/twitter-image/route_client-reference-manifest.js": {
-          "bytesInOutput": 23253
+          "bytesInOutput": 23496
         },
         ".open-next/server-functions/default/.next/server/app/auth/callback/route_client-reference-manifest.js": {
-          "bytesInOutput": 23254
+          "bytesInOutput": 23497
         },
         ".open-next/server-functions/default/.next/server/app/api/love-quiz/route_client-reference-manifest.js": {
-          "bytesInOutput": 23254
+          "bytesInOutput": 23497
         },
         ".open-next/server-functions/default/.next/server/app/sitemap.xml/route_client-reference-manifest.js": {
-          "bytesInOutput": 23247
+          "bytesInOutput": 23490
         },
         ".open-next/server-functions/default/.next/server/app/robots.txt/route_client-reference-manifest.js": {
-          "bytesInOutput": 23244
+          "bytesInOutput": 23487
         },
         ".open-next/server-functions/default/node_modules/next/dist/server/load-manifest.js": {
-          "bytesInOutput": 730945
+          "bytesInOutput": 743422
         },
         ".open-next/server-functions/default/node_modules/next/dist/server/app-render/action-async-storage-instance.js": {
           "bytesInOutput": 504
@@ -11765,7 +11765,7 @@
           "bytesInOutput": 512147
         },
         ".open-next/server-functions/default/.next/server/chunks/1707.js": {
-          "bytesInOutput": 46957
+          "bytesInOutput": 46955
         },
         ".open-next/server-functions/default/.next/server/chunks/2199.js": {
           "bytesInOutput": 92306
@@ -11804,7 +11804,7 @@
           "bytesInOutput": 20781
         },
         ".open-next/server-functions/default/.next/server/chunks/4946.js": {
-          "bytesInOutput": 5531
+          "bytesInOutput": 5523
         },
         ".open-next/server-functions/default/.next/server/chunks/4999.js": {
           "bytesInOutput": 19372
@@ -11912,7 +11912,7 @@
           "bytesInOutput": 545600
         },
         ".open-next/server-functions/default/.next/server/app/greet/[slug]/opengraph-image/route.js": {
-          "bytesInOutput": 5063
+          "bytesInOutput": 5062
         },
         ".open-next/server-functions/default/.next/server/app/api/digital-greeting/[slug]/route.js": {
           "bytesInOutput": 3180
@@ -11933,10 +11933,10 @@
           "bytesInOutput": 8550
         },
         ".open-next/server-functions/default/.next/server/app/greet/[slug]/twitter-image/route.js": {
-          "bytesInOutput": 5062
+          "bytesInOutput": 5061
         },
         ".open-next/server-functions/default/.next/server/app/love-space/opengraph-image/route.js": {
-          "bytesInOutput": 5364
+          "bytesInOutput": 5363
         },
         ".open-next/server-functions/default/.next/server/app/blog/ai-replies-for-couples/page.js": {
           "bytesInOutput": 15916
@@ -11975,7 +11975,7 @@
           "bytesInOutput": 316241
         },
         ".open-next/server-functions/default/.next/server/app/love-space/twitter-image/route.js": {
-          "bytesInOutput": 5347
+          "bytesInOutput": 5346
         },
         ".open-next/server-functions/default/.next/server/app/blog/text-repeater-tricks/page.js": {
           "bytesInOutput": 10860
@@ -12004,11 +12004,11 @@
         ".open-next/server-functions/default/.next/server/app/digital-greeting/create/page.js": {
           "bytesInOutput": 10549
         },
-        ".open-next/server-functions/default/.next/server/app/api/love-rapid/create/route.js": {
-          "bytesInOutput": 7071
-        },
         ".open-next/server-functions/default/.next/server/app/api/love-rapid/submit/route.js": {
           "bytesInOutput": 3885
+        },
+        ".open-next/server-functions/default/.next/server/app/api/love-rapid/create/route.js": {
+          "bytesInOutput": 7071
         },
         ".open-next/server-functions/default/.next/server/app/api/love-score-result/route.js": {
           "bytesInOutput": 5459
@@ -12038,7 +12038,7 @@
           "bytesInOutput": 5337
         },
         ".open-next/server-functions/default/.next/server/app/community-guidelines/page.js": {
-          "bytesInOutput": 14528
+          "bytesInOutput": 14559
         },
         ".open-next/server-functions/default/.next/server/app/api/debug-supabase/route.js": {
           "bytesInOutput": 2590
@@ -12059,13 +12059,13 @@
           "bytesInOutput": 25123
         },
         ".open-next/server-functions/default/.next/server/app/opengraph-image/route.js": {
-          "bytesInOutput": 3769
+          "bytesInOutput": 3768
         },
         ".open-next/server-functions/default/.next/server/app/wishes/dashboard/page.js": {
           "bytesInOutput": 52203
         },
         ".open-next/server-functions/default/.next/server/app/terms-conditions/page.js": {
-          "bytesInOutput": 12912
+          "bytesInOutput": 12858
         },
         ".open-next/server-functions/default/.next/server/app/digital-greeting/page.js": {
           "bytesInOutput": 79676
@@ -12089,22 +12089,22 @@
           "bytesInOutput": 3341
         },
         ".open-next/server-functions/default/.next/server/app/twitter-image/route.js": {
-          "bytesInOutput": 3758
+          "bytesInOutput": 3757
         },
         ".open-next/server-functions/default/.next/server/app/auth/callback/route.js": {
           "bytesInOutput": 3547
         },
         ".open-next/server-functions/default/.next/server/app/privacy-policy/page.js": {
-          "bytesInOutput": 15142
+          "bytesInOutput": 15090
         },
         ".open-next/server-functions/default/.next/server/app/cookie-policy/page.js": {
-          "bytesInOutput": 12888
+          "bytesInOutput": 12921
         },
         ".open-next/server-functions/default/.next/server/app/sitemap.xml/route.js": {
           "bytesInOutput": 10082
         },
         ".open-next/server-functions/default/.next/server/app/greet/[slug]/page.js": {
-          "bytesInOutput": 8151
+          "bytesInOutput": 8148
         },
         ".open-next/server-functions/default/.next/server/app/robots.txt/route.js": {
           "bytesInOutput": 6100
@@ -12118,14 +12118,14 @@
         ".open-next/server-functions/default/.next/server/app/[platform]/page.js": {
           "bytesInOutput": 102832
         },
-        ".open-next/server-functions/default/.next/server/app/love-score/page.js": {
-          "bytesInOutput": 36688
-        },
         ".open-next/server-functions/default/.next/server/app/love-space/page.js": {
           "bytesInOutput": 27717
         },
+        ".open-next/server-functions/default/.next/server/app/love-score/page.js": {
+          "bytesInOutput": 36688
+        },
         ".open-next/server-functions/default/.next/server/app/contact/page.js": {
-          "bytesInOutput": 8290
+          "bytesInOutput": 9284
         },
         ".open-next/server-functions/default/.next/server/app/library/page.js": {
           "bytesInOutput": 9283
@@ -12176,28 +12176,28 @@
           "bytesInOutput": 26642
         },
         ".open-next/server-functions/default/.next/server/app/flames/page.js": {
-          "bytesInOutput": 40712
+          "bytesInOutput": 40745
         },
         ".open-next/server-functions/default/.next/server/app/admin/page.js": {
           "bytesInOutput": 34561
         },
         ".open-next/server-functions/default/.next/server/app/about/page.js": {
-          "bytesInOutput": 17960
+          "bytesInOutput": 17993
         },
         ".open-next/server-functions/default/.next/server/app/blog/page.js": {
-          "bytesInOutput": 14825
+          "bytesInOutput": 14858
         },
         ".open-next/server-functions/default/.next/server/pages/_error.js": {
           "bytesInOutput": 10135
         },
         ".open-next/server-functions/default/.next/server/app/faq/page.js": {
-          "bytesInOutput": 14587
+          "bytesInOutput": 14618
         },
         ".open-next/server-functions/default/.next/server/pages/_app.js": {
           "bytesInOutput": 3611
         },
         ".open-next/server-functions/default/.next/server/app/page.js": {
-          "bytesInOutput": 51553
+          "bytesInOutput": 51586
         },
         ".open-next/server-functions/default/node_modules/next/dist/server/require.js": {
           "bytesInOutput": 66144
@@ -12305,10 +12305,10 @@
           "bytesInOutput": 5074
         },
         ".open-next/server-functions/default/index.mjs": {
-          "bytesInOutput": 90073
+          "bytesInOutput": 94589
         }
       },
-      "bytes": 8523790
+      "bytes": 8551842
     }
   }
 }

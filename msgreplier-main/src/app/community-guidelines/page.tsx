@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, XCircle, AlertTriangle, Mail } from "lucide-react";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Community Guidelines & Acceptable Use Policy - MsgReplier",
   description:
