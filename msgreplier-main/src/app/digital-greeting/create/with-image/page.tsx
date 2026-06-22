@@ -569,12 +569,12 @@ function DigitalGreetingCreateForm() {
             </div>
 
              {/* Photo Upload */}
-            {formData.theme !== "propose_crush1" && (
+            {formData.theme !== "propose_crush1" && formData.theme !== "wishes6" && formData.theme !== "wishes7" && (
               <div className="create-field">
                 <label className="create-label">
                   Photo
                   <span style={{ fontWeight: 400, color: "#9e8a8e" }}>
-                    {["wishes3", "wishes5", "wishes6", "wishes7"].includes(formData.theme) ? " (recommended)" : " (optional)"}
+                    {["wishes3", "wishes5"].includes(formData.theme) ? " (recommended)" : " (optional)"}
                   </span>
                   {!user && (
                     <span
@@ -752,7 +752,7 @@ function DigitalGreetingCreateForm() {
 
             {/* Photo Fit Toggle — only for templates that display photos */}
             {(formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" ||
-              formData.theme === "wishes3" || formData.theme === "wishes4" || formData.theme === "wishes5" || formData.theme === "wishes6" || formData.theme === "wishes7") && (
+              formData.theme === "wishes3" || formData.theme === "wishes4" || formData.theme === "wishes5") && (
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
