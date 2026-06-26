@@ -69,7 +69,7 @@ export default function PromptClient() {
             >
               <Image
                 src={item.image}
-                alt={item.tag}
+                alt={`AI Couple Prompt - ${item.tag} style photoshoot idea`}
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 400px"

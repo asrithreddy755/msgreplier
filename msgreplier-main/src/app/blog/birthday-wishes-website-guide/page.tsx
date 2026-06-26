@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Calendar, Tag, Clock, Heart, Check, Gift, Music, Star } from "lucide-react";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "Birthday Wishes Website Guide: Create an Interactive Birthday Surprise | MsgReplier",
   description:
     "Learn how to create a personalised, animated birthday wishes website in minutes. The perfect digital birthday surprise — no coding required.",
-  alternates: { canonical: "/blog/birthday-wishes-website-guide" },
+  alternates: { canonical: "https://msgreplier.com/blog/birthday-wishes-website-guide" },
 };
 
 export default function BirthdayWishesWebsiteGuidePost() {
@@ -52,7 +53,7 @@ export default function BirthdayWishesWebsiteGuidePost() {
               <Tag className="h-3 w-3" /> Feature Guide
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> June 1, 2026
+              <Calendar className="h-3 w-3" /> May 18, 2026
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" /> 5 min read
@@ -80,6 +81,18 @@ export default function BirthdayWishesWebsiteGuidePost() {
               specifically for your recipient. It plays music, displays 3D animations, and showcases your heartfelt
               message in a way that genuinely feels magical.
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=900&q=80"
+                alt="Birthday cake with glowing candles in a warm celebration setting"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">An animated birthday wishes website leaves a far deeper impression than a simple text.</p>
+            </div>
+
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-8">
               <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-xl border border-orange-100 dark:border-orange-900/30 text-center">
@@ -102,7 +115,7 @@ export default function BirthdayWishesWebsiteGuidePost() {
             <h2 className="text-2xl font-bold mt-8">How to Create Your Birthday Wishes Website (Step-by-Step)</h2>
 
             {[
-              { step: 1, title: "Visit the Wishes Website Builder", desc: "Head to our Wishes Website builder page. You will see a simple form — no account or login needed." },
+              { step: 1, title: "Visit the Wishes Website Builder", desc: "Head to our Wishes Website builder page. Create a free account to get started." },
               { step: 2, title: "Enter the Recipient's Name", desc: "Type the name of the birthday person. This is what will appear on the animated greeting." },
               { step: 3, title: "Add Your Name and a Message", desc: "Add your own name so they know who it's from, and write a heartfelt birthday message in the text field. Be as personal as you like!" },
               { step: 4, title: "Choose a Theme", desc: "Select from beautiful themes — each with unique colours, animations, and visual style. Pick the one that best matches their personality." },
@@ -151,7 +164,7 @@ export default function BirthdayWishesWebsiteGuidePost() {
               <Gift className="h-10 w-10 text-orange-500 mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-3">Create Your Birthday Wishes Website Now</h3>
               <p className="text-muted-foreground mb-6">
-                Takes less than 2 minutes. No login required. Completely free.
+                Takes less than 2 minutes. Free tier and premium options available.
               </p>
               <Button asChild size="lg" className="bg-orange-500 hover:bg-orange-600 text-white border-0">
                 <Link href="/digital-greeting">
@@ -159,6 +172,7 @@ export default function BirthdayWishesWebsiteGuidePost() {
                 </Link>
               </Button>
             </div>
+            <AuthorCard authorId="priya" />
           </div>
         </article>
       </div>

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Calendar, Tag, Clock, MessageSquare, Heart, Check, AlertCircle } from "lucide-react";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "10 Relationship Communication Tips That Actually Work (2026) | MsgReplier",
   description:
     "Improve your relationship communication with these 10 evidence-based tips. From active listening to digital check-ins, learn what really keeps couples connected.",
-  alternates: { canonical: "/blog/relationship-communication-tips" },
+  alternates: { canonical: "https://msgreplier.com/blog/relationship-communication-tips" },
 };
 
 const tips = [
@@ -89,8 +91,8 @@ export default function RelationshipCommunicationTipsPost() {
     "@type": "Article",
     headline: "10 Relationship Communication Tips That Actually Work (2026)",
     description: "Evidence-based tips for improving communication in your relationship.",
-    datePublished: "2026-06-01",
-    dateModified: "2026-06-01",
+    datePublished: "2026-06-12",
+    dateModified: "2026-06-12",
     author: { "@type": "Organization", name: "MsgReplier" },
     publisher: { "@type": "Organization", name: "MsgReplier", logo: { "@type": "ImageObject", url: "https://msgreplier.com/icon.png" } },
     url: "https://msgreplier.com/blog/relationship-communication-tips",
@@ -119,7 +121,7 @@ export default function RelationshipCommunicationTipsPost() {
             <span className="flex items-center gap-1 bg-[#eedfc6] border border-[#d4c3ab] text-[#110f0f] px-2.5 py-0.5 rounded-full font-semibold text-xs">
               <Tag className="h-3 w-3" /> Relationships
             </span>
-            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 1, 2026</span>
+            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 12, 2026</span>
             <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> 8 min read</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
@@ -146,6 +148,18 @@ export default function RelationshipCommunicationTipsPost() {
               well-established relationship psychology research. They are practical, immediately actionable, and
               relevant to both in-person and digital relationships.
             </p>
+
+            {/* Featured Image */}
+            <div className="my-8 not-prose">
+              <Image
+                src="https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=900&q=80"
+                alt="Couple sitting together having a heartfelt conversation outdoors"
+                width={900}
+                height={500}
+                className="w-full h-auto rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2">Open, honest conversations are the foundation of every strong relationship.</p>
+            </div>
 
             <div className="space-y-8 mt-8">
               {tips.map((tip) => (
@@ -193,6 +207,8 @@ export default function RelationshipCommunicationTipsPost() {
                 </Link>
               </Button>
             </div>
+
+            <AuthorCard authorId="priya" />
           </div>
         </article>
       </div>

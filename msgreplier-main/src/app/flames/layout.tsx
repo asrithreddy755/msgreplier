@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "FLAMES Love Calculator - Check Your Relationship Compatibility | MsgReplier",
   description:
-    "Discover your destiny with the classic FLAMES Love Calculator! Enter your names to see if you are Friends, Lovers, Affectionate, Marriage, Enemies, or Siblings. The viral Valentine's Day relationship test.",
+    "Play the classic FLAMES love compatibility test online. Enter two names and instantly discover if your relationship is Friendship, Love, Affection, Marriage, Enemy, or Sibling. Free, no login.",
   keywords: [
     "FLAMES game",
     "Love Calculator",

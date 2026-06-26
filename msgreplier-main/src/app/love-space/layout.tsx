@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Love Space - Private Couple Rooms, Chat & Games",
   description:
-    "Join your partner in a private Love-Space. 100% secure, no-login chat rooms with interactive couple games like Ludo and XOX. Create your personal sanctuary today.",
+    "Join a 100% private, no-login couple chat room with games like Ludo and XOX. Your Love Space auto-deletes after 24 hours. Free forever — no account needed.",
   keywords: ["private love space", "couple chat room", "no login chat", "secure couple games", "private room for two", "ludo for couples", "online sanctuary"],
   alternates: {
     canonical: "https://msgreplier.com/love-space",

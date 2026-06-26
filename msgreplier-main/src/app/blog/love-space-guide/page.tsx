@@ -3,10 +3,14 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag, Clock, Heart, Check, Shield, Zap, MessageSquare, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
     title: "Love-Space: The Ultimate Guide to Private Connection | MsgReplier",
     description: "Discover how to create a 100% private, secure space for you and your partner. Learn about real-time chat, interactive games, and privacy-first features in Love-Space.",
+  alternates: {
+    canonical: "https://msgreplier.com/blog/love-space-guide",
+  }
 };
 
 export default function LoveSpaceGuidePost() {
@@ -69,6 +73,18 @@ export default function LoveSpaceGuidePost() {
                         <p>
                             We believe privacy should be simple. That's why Love-Space requires <strong>no accounts, no emails, and no phone numbers</strong>.
                         </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1536261614401-d7b90a79cc0c?w=900&q=80"
+                alt="Couple lying together looking at their phones in a cosy private setting"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">Love-Space creates a private digital sanctuary exclusively for you and your partner.</p>
+            </div>
+
                         <ul className="space-y-4 list-none pl-0 mt-4">
                             <li className="flex items-start gap-3">
                                 <Shield className="w-6 h-6 text-pink-500 shrink-0 mt-1" />
@@ -148,6 +164,8 @@ export default function LoveSpaceGuidePost() {
                                 </Link>
                             </Button>
                         </div>
+
+                        <AuthorCard authorId="priya" />
 
                     </div>
                 </article>

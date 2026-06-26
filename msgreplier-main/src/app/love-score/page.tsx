@@ -468,6 +468,56 @@ export default function LoveScoreCreator() {
                     </div>
                 </div>
 
+                {/* Detailed SEO Explanatory Content for Google AdSense */}
+                <div className="bg-white/60 dark:bg-slate-900/40 rounded-2xl p-6 sm:p-10 border border-slate-200 dark:border-slate-800 backdrop-blur-sm space-y-8 text-left">
+                    <section className="space-y-3">
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">What is the MsgReplier Love Score Quiz?</h2>
+                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm md:text-base">
+                            The Love Score Quiz is an interactive, fully customisable relationship game designed to test how well your partner, crush, or best friend actually knows you. Instead of standard online quizzes with generic questions, MsgReplier allows you to craft your own custom questions, set unique answer options, and define which one is correct. You can also specify a countdown timer to add exciting pressure! Once you complete the setup, a private, secure link is generated for you to share directly with your recipient.
+                        </p>
+                    </section>
+
+                    <section className="space-y-3">
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Why Create a Compatibility Quiz for Your Partner?</h2>
+                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm md:text-base">
+                            In any relationship, sharing trivia, reminiscing about first dates, and laughing over inside jokes builds a deeper connection. A custom couple quiz is a playful way to celebrate your unique story. It sparks conversations about memories you might have forgotten—like the exact movie you watched on your first date, your partner's pet peeve, or your dream travel destination. By testing each other, you can enjoy lighthearted competition and see who holds the highest "Love Score".
+                        </p>
+                    </section>
+
+                    <section className="space-y-3">
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Tips for Creating the Ultimate Couple Quiz</h2>
+                        <ul className="list-decimal list-inside space-y-2 text-slate-600 dark:text-slate-400 text-sm md:text-base">
+                            <li><strong className="text-slate-900 dark:text-white">Mix the Easy and Hard:</strong> Include a few obvious questions (like your birthday or favorite color) alongside deeper memory tests (like what you wore when you first met or your first impressions).</li>
+                            <li><strong className="text-slate-900 dark:text-white">Add Playful Hints:</strong> Use the optional Hint field to give subtle clues or tease your partner about the answer.</li>
+                            <li><strong className="text-slate-900 dark:text-white">Use the Pressure Timer:</strong> Setting a 1 or 2-minute time limit keeps the quiz fast-paced and prevents them from cheating or looking up answers!</li>
+                        </ul>
+                    </section>
+
+                    <section className="space-y-4">
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white border-b pb-2 dark:border-slate-800">Frequently Asked Questions</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-sm md:text-base">Are my quiz answers kept private?</h4>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                                    Absolutely. MsgReplier values privacy first. All quiz questions, options, and scores are handled securely and are only accessible by you and the person who receives the unique link.
+                                </p>
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-sm md:text-base">How is the Love Score calculated?</h4>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                                    The final score is a simple percentage of questions answered correctly before the timer runs out. When your partner finishes, they will see their compatibility level instantly.
+                                </p>
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-slate-800 dark:text-slate-200 text-sm md:text-base">Can I create multiple quizzes?</h4>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                                    Yes, you can create as many custom quizzes as you want! You can generate distinct links for different friends or test your partner on different topics.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
                 <footer className="pt-8 pb-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between text-sm text-slate-500">
                     <p>© {new Date().getFullYear()} MsgReplier.com</p>
                     <div className="flex items-center space-x-6 mt-4 sm:mt-0">

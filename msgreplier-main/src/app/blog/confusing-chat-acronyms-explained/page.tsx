@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag, BookText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "Understanding IYKYK, TFW, and Other Confusing Chat Acronyms",
   description:
     "Feeling lost in group chats? Here is a complete guide to understanding modern internet slang, from IYKYK to TFW.",
+  alternates: {
+    canonical: "https://msgreplier.com/blog/confusing-chat-acronyms-explained",
+  }
 };
 
 export default function ConfusingChatAcronyms() {
@@ -56,6 +60,18 @@ export default function ConfusingChatAcronyms() {
             <p>
               If you've recently been sent a message that looks like complete gibberish, don't worry. We're here to help you decode it.
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=900&q=80"
+                alt="Friends laughing together while reading confusing text messages on their phones"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">Decoding internet slang helps you stay in the loop with every conversation.</p>
+            </div>
+
 
             <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">The Big Ones Analyzed</h2>
 
@@ -118,6 +134,7 @@ export default function ConfusingChatAcronyms() {
               Typing fast on glass screens is annoying. Anything that saves thumb-taps is naturally going to catch on. Furthermore, using specific slang signals that you are "in the know" and part of the online community. Slang creates a sense of belonging among digital natives. Understanding these acronyms helps bridge the gap between generations.
             </p>
 
+            <AuthorCard authorId="arjun" />
           </div>
         </article>
       </div>

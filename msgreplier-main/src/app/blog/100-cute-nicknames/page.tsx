@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "100+ Cute Nicknames for Your Partner (2026 Edition)",
   description:
     "A curated list of sweet, funny, and romantic nicknames for your partner. Plus, learn how to spam them with love using our Text Repeater tool.",
   alternates: {
-    canonical: "/blog/100-cute-nicknames",
+    canonical: "https://msgreplier.com/blog/100-cute-nicknames",
   },
 };
 
@@ -88,6 +89,18 @@ export default function NicknamesPost() {
 
             <h2>Sweet & Classic</h2>
             <p>These never go out of style. Perfect for when you&apos;re feeling sentimental.</p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=900&q=80"
+                alt="Happy couple smiling and sharing a sweet romantic moment"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">Finding the perfect nickname deepens intimacy and brings couples closer together.</p>
+            </div>
+
             <ul>
               <li>Babe / Baby</li>
               <li>Honey / Hun</li>
@@ -162,6 +175,7 @@ export default function NicknamesPost() {
                 <Link href="/blog">Back to Blog</Link>
               </Button>
             </div>
+            <AuthorCard authorId="priya" />
           </div>
         </article>
       </div>

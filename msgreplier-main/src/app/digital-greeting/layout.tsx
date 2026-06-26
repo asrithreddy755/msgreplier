@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Wishes Website Builder - Free Interactive Greeting Cards",
-  description: "Create a beautiful website for wishes in seconds. Our free builder lets you create animated birthday and anniversary wish websites with music. Make your loved one's day special with an interactive digital surprise.",
+  title: "Wishes Website Builder - Interactive Greeting Cards | MsgReplier",
+  description: "Create a beautiful, interactive wishes website for birthdays, anniversaries, or any special occasion. Personalise with music, themes, and animations. Login required — free and paid plans available.",
   keywords: ["wishes website", "create website for wishes", "digital birthday card", "animated anniversary wish", "interactive greeting maker", "birthday wish website"],
   alternates: {
     canonical: "https://msgreplier.com/digital-greeting",

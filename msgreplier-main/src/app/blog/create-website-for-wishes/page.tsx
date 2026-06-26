@@ -32,7 +32,7 @@ export default function DigitalGreetingBlog() {
               <Clock size={16} /> 4 min read
             </div>
             <div className="flex items-center gap-2">
-              <Heart size={16} className="text-rose-400" /> By MsgReplier Team
+              <Heart size={16} className="text-rose-400" /> By Arjun Mehta
             </div>
           </div>
         </div>
@@ -67,6 +67,18 @@ export default function DigitalGreetingBlog() {
           <p>
             A Digital Greeting is more than just a card—it's a mini-website designed specifically for your recipient. Whether it's a <strong>Birthday</strong> or an <strong>Anniversary</strong>, MsgReplier allows you to build an immersive experience featuring 3D animations, background music, and a "magical" reveal that feels like opening a real gift.
           </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1513513246994-51b50b1c8c83?w=900&q=80"
+                alt="Beautifully wrapped gift box representing a digital surprise greeting"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">Creating a digital wishes website takes less than two minutes and creates a lasting memory.</p>
+            </div>
+
 
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">Why Create a Website for Wishes?</h2>
           <ul className="space-y-4 list-none pl-0">
@@ -103,7 +115,7 @@ export default function DigitalGreetingBlog() {
 
           <div className="p-8 bg-rose-50 rounded-[2rem] border-2 border-rose-100 text-center space-y-6">
             <h3 className="text-2xl font-black text-rose-600 uppercase tracking-tighter">Ready to Surprise Them?</h3>
-            <p className="text-slate-600 font-medium">Create a custom wishes website today for free. No login required.</p>
+            <p className="text-slate-600 font-medium">Create a custom wishes website today. Free tier and premium options available.</p>
             <Button asChild size="lg" className="h-16 px-10 rounded-full bg-rose-500 hover:bg-rose-600 text-white font-black text-lg shadow-xl shadow-rose-200 group">
               <Link href="/digital-greeting/create">
                 CREATE MAGIC NOW <ArrowRight className="ml-2 group-hover:translate-x-2 transition-transform" />
@@ -112,19 +124,17 @@ export default function DigitalGreetingBlog() {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="pt-12 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-xl">✍️</div>
-            <div>
-              <p className="font-bold text-slate-900">MsgReplier Team</p>
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-widest">Digital Experience Creators</p>
-            </div>
+        {/* Author Footer */}
+        <div className="pt-12 border-t border-slate-100 flex flex-col md:flex-row items-start gap-6">
+          <div className="w-14 h-14 rounded-full bg-[#110f0f] text-white flex items-center justify-center text-sm font-bold shrink-0">
+            AM
           </div>
-          <div className="flex gap-4">
-            <Button variant="outline" className="rounded-full px-6 border-slate-200 hover:bg-slate-50 text-slate-600 font-bold">
-              Share Article
-            </Button>
+          <div className="space-y-1">
+            <p className="font-bold text-slate-900 text-base">Arjun Mehta</p>
+            <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest">Tech &amp; Culture Writer</p>
+            <p className="text-sm text-slate-600 leading-relaxed mt-2">
+              Arjun writes about the intersection of technology, culture, and relationships. With a background in psychology and UX design, he explores how digital tools shape the way we connect and communicate with the people we love.
+            </p>
           </div>
         </div>
       </div>

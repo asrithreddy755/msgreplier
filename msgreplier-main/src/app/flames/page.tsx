@@ -12,7 +12,10 @@ export const dynamic = "force-static";
 
 export const metadata: Metadata = {
   title: "FLAMES Calculator - Real Love Compatibility Test (2026)",
-  description: "Calculate your relationship destiny with the classic FLAMES game. Check Friendship, Love, Affection, Marriage, Enemy, or Sister status instantly.",
+  description: "Play the classic FLAMES love compatibility test online. Enter two names and instantly discover if your relationship is Friendship, Love, Affection, Marriage, Enemy, or Sibling. Free, no login.",
+  alternates: {
+    canonical: "https://msgreplier.com/flames",
+  },
 };
 
 export default function FlamesPage() {

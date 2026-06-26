@@ -159,6 +159,15 @@ export default function TemplatesGallery() {
       tag: "Surprise",
       tagClass: "bg-[#8b1a1a]/85 text-white",
       imageCount: "0-4"
+    },
+    {
+      id: "wishes8",
+      title: `Curtain & Envelope Surprise 🚪`,
+      description: `A cinematic curtain entrance opening to a custom live countdown, swipeable memories carousel, and interactive sealable envelope letter.`,
+      image: "/curtain_envelope_preview.png",
+      tag: "Cinematic Curtain",
+      tagClass: "bg-[#78555e]/90 text-white",
+      imageCount: "0-4"
     }
   ];
 
@@ -489,6 +498,23 @@ export default function TemplatesGallery() {
                   ]),
                 }}
                 templateFolder="template_wishes7"
+              />
+            ) : previewTemplate === "wishes8" ? (
+              <IframeTemplate
+                greeting={{
+                  recipient_name: "Sarah",
+                  sender_name: "Michael",
+                  message: "This is a preview of your beautiful wish! It contains all the love and happiness in the world. Customize it to make it yours.",
+                  occasion: activeOccasion,
+                  music_id: "none",
+                  photo_url: JSON.stringify([
+                    { url: "", caption: "Example Picture 1" },
+                    { url: "", caption: "Example Picture 2" },
+                    { url: "", caption: "Example Picture 3" },
+                    { url: "", caption: "Example Picture 4" },
+                  ]),
+                }}
+                templateFolder="template_wishes8"
               />
             ) : (
               <IframeTemplate

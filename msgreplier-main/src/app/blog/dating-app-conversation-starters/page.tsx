@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "How to Start a Conversation on Dating Apps (Without Being Boring)",
   description:
     "Tired of sending 'Hey' on Tinder and Bumble? Learn how to start a conversation that guarantees a reply. Includes examples and free copyable prompts.",
+  alternates: {
+    canonical: "https://msgreplier.com/blog/dating-app-conversation-starters",
+  }
 };
 
 export default function DatingAppConversationStarters() {
@@ -56,6 +60,18 @@ export default function DatingAppConversationStarters() {
             <p>
               If your first instinct is to send "Hey," "What's up," or a waving hand emoji 👋, stop right there. In 2026, dating app inboxes are crowded. A generic greeting is almost guaranteed to be ignored. Instead, you need to stand out. Here is the ultimate guide to sparking a conversation that actually leads to a date.
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=900&q=80"
+                alt="Two people on a first date smiling and talking enthusiastically over coffee"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">A clever opening line on a dating app is the difference between a match and a conversation.</p>
+            </div>
+
 
             <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">1. The "Two Truths and a Lie" Approach</h2>
             <p>
@@ -118,6 +134,7 @@ export default function DatingAppConversationStarters() {
               Whatever opener you choose, avoid asking "interview" questions. "Where do you work?", "How many siblings do you have?", and "What do you do for fun?" feel like a chore to answer. Treat them like a friend you already know, and the conversation will flow naturally.
             </p>
 
+            <AuthorCard authorId="arjun" />
           </div>
         </article>
       </div>

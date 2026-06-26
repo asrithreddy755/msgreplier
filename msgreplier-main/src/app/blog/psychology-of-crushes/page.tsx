@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "Why Do We Have Crushes? The Psychology of Attraction",
   description:
     "Explore the science behind why we develop crushes, the role of dopamine and limerence, and why we obsess over compatibility tests.",
   alternates: {
-    canonical: "/blog/psychology-of-crushes",
+    canonical: "https://msgreplier.com/blog/psychology-of-crushes",
   },
 };
 
@@ -90,6 +91,18 @@ export default function PsychologyOfCrushesPost() {
             <p>
               When you see your crush or get a text from them, your brain releases dopamine—the &quot;feel-good&quot; neurotransmitter. It&apos;s the same chemical associated with rewards, like eating chocolate or winning a game.
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1501901609772-df0848060b33?w=900&q=80"
+                alt="Person gazing dreamily out of a window thinking about their crush"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">The brain chemistry behind a crush is surprisingly similar to addiction and obsession.</p>
+            </div>
+
             <p>
               This creates a cycle: you seek interaction to get that dopamine hit. The uncertainty (&quot;Do they like me back?&quot;) actually *increases* dopamine, making the crush even more intense.
             </p>
@@ -125,6 +138,7 @@ export default function PsychologyOfCrushesPost() {
                 <Link href="/blog">Back to Blog</Link>
               </Button>
             </div>
+            <AuthorCard authorId="arjun" />
           </div>
         </article>
       </div>

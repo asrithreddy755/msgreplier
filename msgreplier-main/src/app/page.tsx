@@ -6,11 +6,14 @@ import ReviewForm from "@/components/ReviewForm";
 export const dynamic = "force-static";
 
 export const metadata = {
-  title: "MsgReplier - Private Love Space, Wishes Website & AI Couple Tools",
+  title: "MsgReplier - Love Space, Wishes Website & Couple Tools",
   description:
-    "The ultimate digital toolkit for couples. Create a private Love-Space chat room, build an interactive Wishes Website for birthdays and anniversaries, and use our free AI couple tools. No login required.",
+    "Create a private Love-Space chatroom with no login, build an interactive Wishes Website for birthdays and anniversaries, and test your compatibility with the FLAMES calculator — all in one place.",
   alternates: {
-    canonical: "https://msgreplier.com",
+    canonical: "https://msgreplier.com/",
+  },
+  openGraph: {
+    description: "From private no-login couple chat rooms to interactive birthday and anniversary greeting websites — MsgReplier has all the tools couples need.",
   },
 };
 
@@ -39,11 +42,88 @@ export default function HomePage() {
     },
   };
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is MsgReplier completely free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Love Space, FLAMES Test, and AI Couple Prompts are completely free with no login required. Wishes Website offers a free plan and paid plans that unlock premium themes, music, and customization options."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need to create an account?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Love Space, FLAMES Test, and AI Prompts require no account or registration. Wishes Website requires a free account to create and save your greeting pages."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How private is Love-Space?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Love-Space rooms are accessed via a unique link shared only between you and your partner. All room data is automatically deleted after 24 hours. We do not read, monitor, or store your private conversations."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a Wishes Website?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Wishes Website is a personalised, interactive digital greeting page for birthdays, anniversaries, and special occasions. Add music, themes, animations, and a heartfelt message — then share the unique link. Free and paid plans are available."
+        }
+      }
+    ]
+  };
+
+  const webAppJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "MsgReplier",
+    "url": "https://msgreplier.com",
+    "applicationCategory": "LifestyleApplication",
+    "operatingSystem": "All",
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Love Space",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      {
+        "@type": "Offer",
+        "name": "Wishes Website",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "Free plan available. Paid plans unlock premium features."
+      }
+    ],
+    "description": "Couple tools platform offering private chat rooms, interactive wishes websites, FLAMES compatibility test, and AI couple prompts.",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "15000"
+    }
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppJsonLd) }}
       />
       <div 
         className="min-h-screen bg-[#f5eedf] text-[#110f0f] antialiased" 
@@ -253,7 +333,7 @@ export default function HomePage() {
                     <p className="text-[#5d6c7b] leading-relaxed text-sm md:text-base">
                       Pick from Love-Space, Wishes Website, FLAMES Calculator, or AI Prompts. Each tool is built to bring you closer and is completely free to use.
                     </p>
-                    <Link href="/about" className="inline-flex items-center justify-center border border-[#110f0f] hover:bg-[#110f0f] hover:text-white font-medium text-sm rounded-full px-5 py-2 transition-all duration-300">
+                    <Link href="/#features" className="inline-flex items-center justify-center border border-[#110f0f] hover:bg-[#110f0f] hover:text-white font-medium text-sm rounded-full px-5 py-2 transition-all duration-300">
                       Learn More
                     </Link>
                   </div>
@@ -267,10 +347,10 @@ export default function HomePage() {
                   <div className="space-y-4 max-w-md text-left">
                     <h3 className="text-xl md:text-2xl font-bold text-[#110f0f]">2. Enter Your Details</h3>
                     <p className="text-[#5d6c7b] leading-relaxed text-sm md:text-base">
-                      No accounts or registration needed. Simply enter a nickname for a chatroom or a name and message for your wishes website. Start using it in seconds.
+                      No account needed for Love Space or FLAMES. For Wishes Website, create a free account to get started. Simply enter a nickname for a chatroom or a name and message for your wishes website. Start using it in seconds.
                     </p>
-                    <Link href="/about" className="inline-flex items-center justify-center border border-[#110f0f] hover:bg-[#110f0f] hover:text-white font-medium text-sm rounded-full px-5 py-2 transition-all duration-300">
-                      Learn More
+                    <Link href="/love-space" className="inline-flex items-center justify-center border border-[#110f0f] hover:bg-[#110f0f] hover:text-white font-medium text-sm rounded-full px-5 py-2 transition-all duration-300">
+                      Try Love Space
                     </Link>
                   </div>
                   <div className="w-24 h-24 rounded-3xl bg-[#eedfc6]/40 border border-[#d4c3ab] flex items-center justify-center text-4xl font-bold text-[#110f0f] shrink-0">
@@ -285,8 +365,8 @@ export default function HomePage() {
                     <p className="text-[#5d6c7b] leading-relaxed text-sm md:text-base">
                       Share the unique generated link with your partner or loved one. Connect in real-time, play games, or surprise them with 3D animations and music.
                     </p>
-                    <Link href="/about" className="inline-flex items-center justify-center border border-[#110f0f] hover:bg-[#110f0f] hover:text-white font-medium text-sm rounded-full px-5 py-2 transition-all duration-300">
-                      Learn More
+                    <Link href="/digital-greeting" className="inline-flex items-center justify-center border border-[#110f0f] hover:bg-[#110f0f] hover:text-white font-medium text-sm rounded-full px-5 py-2 transition-all duration-300">
+                      Build Website
                     </Link>
                   </div>
                   <div className="w-24 h-24 rounded-3xl bg-[#eedfc6]/40 border border-[#d4c3ab] flex items-center justify-center text-4xl font-bold text-[#110f0f] shrink-0">
@@ -321,7 +401,7 @@ export default function HomePage() {
                   {
                     num: "1",
                     title: "Zero login required",
-                    desc: "Use any feature without creating an account or sharing an email address. Start connecting instantly with your loved ones."
+                    desc: "Love Space and our free tools need zero login. Jump in instantly with just a link."
                   },
                   {
                     num: "2",
@@ -367,7 +447,7 @@ export default function HomePage() {
                   {
                     num: "6",
                     title: "Cost effectiveness",
-                    desc: "Achieve a premium, interactive custom greetings experience without hiring developers. MsgReplier is completely free."
+                    desc: "Love Space and free tools cost nothing. Wishes Website offers premium plans to unlock more themes, music, and customization."
                   },
                   {
                     num: "7",
@@ -380,7 +460,7 @@ export default function HomePage() {
                     desc: "Every greeting page is built with search engine optimization, semantic HTML, and fast loading performance."
                   }
                 ].map((item, idx) => (
-                  <details key={idx} className="group border-b border-[#d4c3ab]/20 py-4 cursor-pointer">
+                  <details key={idx} open className="group border-b border-[#d4c3ab]/20 py-4 cursor-pointer">
                     <summary className="flex items-center justify-between list-none font-bold text-lg md:text-xl text-[#eedfc6] focus:outline-none py-2 select-none">
                       <span className="flex items-center gap-3">
                         <span className="text-xs font-bold opacity-60 text-white font-heading">{item.num}.</span>
@@ -501,6 +581,113 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Featured Guides & Insights Section */}
+        <section id="blog-highlights" className="py-20 px-3 md:px-4 border-b border-[#d4c3ab] bg-white/40">
+          <div className="container mx-auto max-w-6xl">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+              <div className="space-y-4 max-w-xl text-left">
+                <div className="bg-[#eedfc6] border border-[#d4c3ab] px-4 py-1 text-xs font-bold rounded-full uppercase tracking-wider text-[#110f0f] w-fit">
+                  Guides & Insights
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#110f0f]">
+                  Relationship & Messaging Tips
+                </h2>
+                <p className="text-base text-[#5d6c7b]">
+                  Explore our most popular, research-backed guides on relationship building, modern slang, and digital communication tricks.
+                </p>
+              </div>
+              <div className="shrink-0 text-left">
+                <Link 
+                  href="/blog" 
+                  className="inline-flex items-center justify-center bg-[#110f0f] text-white hover:bg-[#2b95ff] font-medium text-sm rounded-full px-6 py-3.5 transition-all duration-300 shadow-sm"
+                  style={{ fontFamily: 'Unbounded, sans-serif' }}
+                >
+                  View All Articles
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Featured Blog Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+              {/* Article 1 */}
+              <div className="group bg-white border border-[#d4c3ab] rounded-[28px] p-8 flex flex-col justify-between hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs text-[#948678] font-semibold">
+                    <span className="bg-[#eedfc6] px-3 py-1 rounded-full text-[#110f0f]">Relationships</span>
+                    <span>8 min read</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-[#110f0f] group-hover:text-[#2b95ff] transition-colors leading-snug">
+                    10 Relationship Communication Tips That Actually Work (2026)
+                  </h3>
+                  <p className="text-sm text-[#5d6c7b] leading-relaxed">
+                    Improve your relationship with these evidence-based communication strategies — from active listening to digital check-ins.
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-[#d4c3ab]/30 mt-6">
+                  <Link 
+                    href="/blog/relationship-communication-tips" 
+                    className="inline-flex items-center text-sm font-bold text-[#110f0f] hover:underline group/link"
+                  >
+                    Read Article
+                    <ChevronRight className="ml-1 h-4 w-4 transform group-hover/link:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Article 2 */}
+              <div className="group bg-white border border-[#d4c3ab] rounded-[28px] p-8 flex flex-col justify-between hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs text-[#948678] font-semibold">
+                    <span className="bg-[#eedfc6] px-3 py-1 rounded-full text-[#110f0f]">Relationships</span>
+                    <span>7 min read</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-[#110f0f] group-hover:text-[#2b95ff] transition-colors leading-snug">
+                    The Ultimate Guide to Long-Distance Relationships
+                  </h3>
+                  <p className="text-sm text-[#5d6c7b] leading-relaxed">
+                    Surviving a Long Distance Relationship is notoriously tough. But with the right mindset and the right digital tools, you can close the gap.
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-[#d4c3ab]/30 mt-6">
+                  <Link 
+                    href="/blog/long-distance-relationship-guide" 
+                    className="inline-flex items-center text-sm font-bold text-[#110f0f] hover:underline group/link"
+                  >
+                    Read Article
+                    <ChevronRight className="ml-1 h-4 w-4 transform group-hover/link:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Article 3 */}
+              <div className="group bg-white border border-[#d4c3ab] rounded-[28px] p-8 flex flex-col justify-between hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs text-[#948678] font-semibold">
+                    <span className="bg-[#eedfc6] px-3 py-1 rounded-full text-[#110f0f]">Internet Culture</span>
+                    <span>6 min read</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-[#110f0f] group-hover:text-[#2b95ff] transition-colors leading-snug">
+                    Understanding IYKYK, TFW, and Confusing Chat Acronyms
+                  </h3>
+                  <p className="text-sm text-[#5d6c7b] leading-relaxed">
+                    If reading a group chat feels like deciphering a secret code, you aren't alone. Let's break down the most confusing slang of the year.
+                  </p>
+                </div>
+                <div className="pt-6 border-t border-[#d4c3ab]/30 mt-6">
+                  <Link 
+                    href="/blog/confusing-chat-acronyms-explained" 
+                    className="inline-flex items-center text-sm font-bold text-[#110f0f] hover:underline group/link"
+                  >
+                    Read Article
+                    <ChevronRight className="ml-1 h-4 w-4 transform group-hover/link:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* User Review Form */}
         <ReviewForm />
 
@@ -524,11 +711,11 @@ export default function HomePage() {
               {[
                 {
                   q: "Is MsgReplier completely free?",
-                  a: "Yes! Every tool on MsgReplier — including Love-Space, Wishes Website, FLAMES Calculator, and AI Prompts — is completely free. We are supported by non-intrusive advertisements that keep the platform free for everyone, with no subscriptions or paywalls."
+                  a: "Love Space, FLAMES Test, and AI Prompts are free. Wishes Website has free and paid plans to unlock premium features."
                 },
                 {
                   q: "Do I need to create an account?",
-                  a: "No account needed at all. You can use every feature on MsgReplier without registering, providing an email, or entering any personal information. Just open the tool and start using it immediately."
+                  a: "Love Space, FLAMES, and AI Prompts require no account. Wishes Website requires a free account to get started."
                 },
                 {
                   q: "How private is Love-Space?",
@@ -543,7 +730,7 @@ export default function HomePage() {
                   a: "Absolutely not. We do not sell, rent, or trade any personal data to third parties. We use Google Analytics for anonymous traffic insights and Google AdSense for advertising. Both are governed by Google's privacy policy."
                 }
               ].map((faq, idx) => (
-                <details key={idx} className="group border-b border-[#d4c3ab] py-5 cursor-pointer">
+                <details key={idx} open className="group border-b border-[#d4c3ab] py-5 cursor-pointer">
                   <summary className="flex items-center justify-between list-none font-bold text-base md:text-lg text-[#110f0f] focus:outline-none select-none">
                     <span>{faq.q}</span>
                     <span className="p-1 rounded-full border border-[#d4c3ab] transition-transform group-open:rotate-45">

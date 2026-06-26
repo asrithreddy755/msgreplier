@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "The Ultimate Guide to Long-Distance Relationships in 2026",
   description:
     "Surviving an LDR is tough, but technology makes it easier. Learn how to maintain the spark with scheduled digital dates and private spaces.",
+  alternates: {
+    canonical: "https://msgreplier.com/blog/long-distance-relationship-guide",
+  }
 };
 
 export default function LongDistanceRelationshipGuide() {
@@ -56,6 +60,18 @@ export default function LongDistanceRelationshipGuide() {
             <p>
               Here is everything you need to know about navigating the complexities of an LDR in 2026.
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=900&q=80"
+                alt="Couple video calling on a laptop staying connected across a long distance relationship"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">Technology has made long-distance relationships more manageable than ever before.</p>
+            </div>
+
 
             <h2 className="text-2xl font-bold text-foreground mt-8 mb-4">1. Over-Communicate (But Respect Boundaries)</h2>
             <p>
@@ -104,6 +120,7 @@ export default function LongDistanceRelationshipGuide() {
               Long distance is hard work, but if you can survive the communication stress of an LDR, your relationship will be unbreakable once you are finally reunited.
             </p>
 
+            <AuthorCard authorId="arjun" />
           </div>
         </article>
       </div>

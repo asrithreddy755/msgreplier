@@ -155,52 +155,7 @@ export default async function RootLayout({
         <div id="global-loader-wrapper" suppressHydrationWarning>
           <div id="global-loader" suppressHydrationWarning>
             <div id="global-loader-bar" suppressHydrationWarning />
-            
-            {/* Stylesheet failure fallback overlay, centered and styled entirely inline */}
-            <div
-              id="stylesheet-fallback"
-              suppressHydrationWarning
-              style={{
-                display: "none",
-                textAlign: "center",
-                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                color: "#f8fafc",
-                padding: "20px",
-                maxWidth: "400px",
-                boxSizing: "border-box",
-                zIndex: 1000001,
-              }}
-            >
-              <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
-              <h2 style={{ fontSize: "20px", fontWeight: 600, margin: "0 0 10px 0", color: "#f43f5e", lineHeight: 1.4 }}>
-                Styles Failed to Load
-              </h2>
-              <p style={{ fontSize: "14px", color: "#94a3b8", margin: "0 0 24px 0", lineHeight: 1.5 }}>
-                We're having trouble loading the page styles. Please try refreshing the page.
-              </p>
-              <button
-                id="fallback-reload-btn"
-                style={{
-                  backgroundColor: "#f43f5e",
-                  color: "#ffffff",
-                  border: "none",
-                  padding: "10px 20px",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  transition: "background-color 0.2s",
-                  boxShadow: "0 4px 12px rgba(244, 63, 94, 0.3)",
-                  outline: "none",
-                }}
-              >
-                Refresh Page
-              </button>
-            </div>
           </div>
-          
-          {/* CSS marker to verify stylesheet loading */}
-          <div id="css-marker" className="css-loaded-marker" style={{ display: "none" }} suppressHydrationWarning />
 
           <script
             dangerouslySetInnerHTML={{
@@ -208,35 +163,11 @@ export default async function RootLayout({
                 (function() {
                   var loader = document.getElementById('global-loader');
                   var bar = document.getElementById('global-loader-bar');
-                  var fallback = document.getElementById('stylesheet-fallback');
-                  var reloadBtn = document.getElementById('fallback-reload-btn');
                   var isFinished = false;
 
-                  if (reloadBtn) {
-                    reloadBtn.addEventListener('click', function() {
-                      window.location.reload();
-                    });
-                  }
-
-                  function finishLoading(failed) {
+                  function finishLoading() {
                     if (isFinished) return;
                     isFinished = true;
-
-                    if (failed) {
-                      var hasReloaded = sessionStorage.getItem('css-reload-attempted');
-                      if (!hasReloaded) {
-                        sessionStorage.setItem('css-reload-attempted', 'true');
-                        window.location.reload();
-                        return;
-                      }
-                      // Show manual reload view inside overlay
-                      if (bar) bar.style.display = 'none';
-                      if (fallback) fallback.style.display = 'block';
-                      return;
-                    }
-
-                    // Clear sessionStorage attempt if css loaded successfully
-                    sessionStorage.removeItem('css-reload-attempted');
 
                     // Snap progress bar to 100%
                     if (bar) {
@@ -258,24 +189,14 @@ export default async function RootLayout({
                     }, 200);
                   }
 
-                  function checkCSS() {
-                    var marker = document.getElementById('css-marker');
-                    if (!marker) return false;
-                    var style = window.getComputedStyle(marker);
-                    var val = style.getPropertyValue('--main-stylesheet-loaded') || style.content;
-                    return val && val.trim().replace(/['"]/g, '') === 'true';
-                  }
-
                   // Hard 5-second timeout fallback
                   var timeoutId = setTimeout(function() {
-                    var cssLoaded = checkCSS();
-                    finishLoading(!cssLoaded);
+                    finishLoading();
                   }, 5000);
 
                   function handleLoad() {
                     clearTimeout(timeoutId);
-                    var cssLoaded = checkCSS();
-                    finishLoading(!cssLoaded);
+                    finishLoading();
                   }
 
                   if (document.readyState === 'complete') {

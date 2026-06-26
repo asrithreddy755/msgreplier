@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "The Science Behind the FLAMES Game: Is It Accurate?",
   description:
     "Explore the history, algorithm, and popularity of the FLAMES compatibility game. Why do we still play it, and how does it compare to other love tests?",
   alternates: {
-    canonical: "/blog/how-flames-works",
+    canonical: "https://msgreplier.com/blog/how-flames-works",
   },
 };
 
@@ -90,6 +91,18 @@ export default function FlamesWorksPost() {
             <p>
               Unlike random zodiac compatibility or complex personality tests, FLAMES is purely mathematical. It relies on the removal of common letters between two names. Here is the step-by-step breakdown:
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=900&q=80"
+                alt="Young couple playing a fun card game together and laughing"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">The FLAMES game has sparked countless school-age crushes across generations.</p>
+            </div>
+
             <ol>
               <li>Write down the two names (e.g., ROMEO and JULIET).</li>
               <li>Cross out the common letters found in both names (R, O, E are unique/common depending on the pair).</li>
@@ -130,6 +143,7 @@ export default function FlamesWorksPost() {
                 <Link href="/blog">Back to Blog</Link>
               </Button>
             </div>
+            <AuthorCard authorId="arjun" />
           </div>
         </article>
       </div>

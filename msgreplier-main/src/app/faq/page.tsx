@@ -202,7 +202,7 @@ export default function FAQPage() {
               </h2>
               <div className="space-y-1">
                 {cat.questions.map((item) => (
-                  <details key={item.id} className="group border-b border-[#d4c3ab]/30 py-4 cursor-pointer">
+                  <details key={item.id} open className="group border-b border-[#d4c3ab]/30 py-4 cursor-pointer">
                     <summary className="flex items-center justify-between list-none font-bold text-sm md:text-base text-[#110f0f] focus:outline-none select-none py-1">
                       <span>{item.q}</span>
                       <span className="p-1 rounded-full border border-[#d4c3ab] transition-transform group-open:rotate-45 shrink-0 ml-4">

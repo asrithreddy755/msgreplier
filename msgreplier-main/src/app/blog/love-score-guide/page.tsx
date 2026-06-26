@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "Love Score Guide: How It Works & What Your Score Means | MsgReplier",
   description:
     "Discover how MsgReplier's Love Score calculator works, what the different score ranges mean, and how to interpret your compatibility result. A complete guide.",
   alternates: {
-    canonical: "/blog/love-score-guide",
+    canonical: "https://msgreplier.com/blog/love-score-guide",
   },
 };
 
@@ -64,6 +65,18 @@ export default function LoveScoreGuide() {
             Score actually mean? This complete guide walks you through the algorithm, the score
             ranges, and how to use the result for fun — not fortune-telling.
           </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=900&q=80"
+                alt="Two hands reaching toward each other with heart shaped light between them"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">Your Love Score is a playful icebreaker � not a verdict on your relationship.</p>
+            </div>
+
         </header>
 
         <div className="space-y-8 text-muted-foreground leading-relaxed">
@@ -216,6 +229,7 @@ export default function LoveScoreGuide() {
           </section>
 
         </div>
+        <AuthorCard authorId="priya" />
       </article>
       </div>
     </div>

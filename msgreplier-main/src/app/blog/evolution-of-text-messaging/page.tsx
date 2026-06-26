@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "The Evolution of Text Messaging: From T9 SMS to WebRTC Reacts",
   description:
     "Explore the history of texting. From counting characters on a flip phone to real-time chat spaces.",
+  alternates: {
+    canonical: "https://msgreplier.com/blog/evolution-of-text-messaging",
+  }
 };
 
 export default function TextMessagingEvolution() {
@@ -52,6 +56,18 @@ export default function TextMessagingEvolution() {
             <p>
               In the late 1990s and early 2000s, SMS (Short Message Service) was severely limited. You had exactly 160 characters. Because of this artificial limit, humans invented a whole new language. Vowels were deleted. "See you later" became "c u l8r". 
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=900&q=80"
+                alt="Old mobile phone next to a modern smartphone representing the history of texting"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">From pressing buttons three times for one letter to instant voice notes � texting has transformed completely.</p>
+            </div>
+
             <p>
               Typing required a T9 multi-tap keyboard layout. You memorized the physical layout of your Nokia brick phone so well that you could draft an entire message while making eye contact with your teacher under your desk. It was an era of intense brevity and mechanical skill.
             </p>
@@ -78,6 +94,7 @@ export default function TextMessagingEvolution() {
               Communication will always evolve, but the core desire remains the same: we just want to feel connected.
             </p>
 
+            <AuthorCard authorId="arjun" />
           </div>
         </article>
       </div>

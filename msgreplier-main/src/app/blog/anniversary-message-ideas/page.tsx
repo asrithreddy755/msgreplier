@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Calendar, Tag, Clock, Heart, MessageSquare, Star, Shield } from "lucide-react";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "50 Cute Anniversary Message Ideas for Your Partner (2026) | MsgReplier",
   description:
     "Celebrate your love with the most heartfelt anniversary messages. From sweet one-liners to emotional paragraphs, find the perfect words for your partner.",
-  alternates: { canonical: "/blog/anniversary-message-ideas" },
+  alternates: { canonical: "https://msgreplier.com/blog/anniversary-message-ideas" },
 };
 
 const messages = [
@@ -49,8 +50,8 @@ export default function AnniversaryMessageIdeasPost() {
     "@type": "Article",
     headline: "50 Cute Anniversary Message Ideas for Your Partner (2026)",
     description: "A curated collection of heartfelt, funny, and romantic anniversary messages for couples.",
-    datePublished: "2026-06-01",
-    dateModified: "2026-06-01",
+    datePublished: "2026-05-26",
+    dateModified: "2026-05-26",
     author: { "@type": "Organization", name: "MsgReplier" },
     publisher: { "@type": "Organization", name: "MsgReplier", logo: { "@type": "ImageObject", url: "https://msgreplier.com/icon.png" } },
     url: "https://msgreplier.com/blog/anniversary-message-ideas",
@@ -79,7 +80,7 @@ export default function AnniversaryMessageIdeasPost() {
             <span className="flex items-center gap-1 bg-[#eedfc6] border border-[#d4c3ab] text-[#110f0f] px-2.5 py-0.5 rounded-full font-semibold text-xs">
               <Tag className="h-3 w-3" /> Relationships
             </span>
-            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 1, 2026</span>
+            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> May 26, 2026</span>
             <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> 6 min read</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
@@ -110,6 +111,18 @@ export default function AnniversaryMessageIdeasPost() {
                     <div key={i} className="bg-muted/30 rounded-xl p-4 border border-border/40 flex items-start gap-3">
                       <Heart className="h-4 w-4 text-rose-400 fill-rose-200 shrink-0 mt-1" />
                       <p className="text-sm leading-relaxed">&quot;{msg}&quot;</p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1519741497674-611481863552?w=900&q=80"
+                alt="Couple celebrating their wedding anniversary with flowers and champagne"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">Anniversary messages are a meaningful way to honour your shared journey.</p>
+            </div>
+
                     </div>
                   ))}
                 </div>
@@ -153,6 +166,7 @@ export default function AnniversaryMessageIdeasPost() {
                 </Button>
               </div>
             </div>
+            <AuthorCard authorId="priya" />
           </div>
         </article>
       </div>

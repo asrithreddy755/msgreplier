@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Calendar, Tag, Clock, Sun, Heart, Coffee, Smile } from "lucide-react";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "100+ Cute Good Morning Messages for Your Boyfriend or Girlfriend | MsgReplier",
   description:
     "Start their day with a smile. Browse 100+ original, sweet, funny, and romantic good morning messages for couples — perfect for WhatsApp, Instagram, or Love-Space.",
-  alternates: { canonical: "/blog/cute-good-morning-messages" },
+  alternates: { canonical: "https://msgreplier.com/blog/cute-good-morning-messages" },
 };
 
 const messageGroups = [
@@ -67,8 +68,8 @@ export default function CuteGoodMorningMessagesPost() {
     "@type": "Article",
     headline: "100+ Cute Good Morning Messages for Your Boyfriend or Girlfriend",
     description: "A curated collection of sweet, funny, and romantic good morning messages for couples.",
-    datePublished: "2026-06-01",
-    dateModified: "2026-06-01",
+    datePublished: "2026-06-04",
+    dateModified: "2026-06-04",
     author: { "@type": "Organization", name: "MsgReplier" },
     publisher: { "@type": "Organization", name: "MsgReplier", logo: { "@type": "ImageObject", url: "https://msgreplier.com/icon.png" } },
     url: "https://msgreplier.com/blog/cute-good-morning-messages",
@@ -97,7 +98,7 @@ export default function CuteGoodMorningMessagesPost() {
             <span className="flex items-center gap-1 bg-[#eedfc6] border border-[#d4c3ab] text-[#110f0f] px-2.5 py-0.5 rounded-full font-semibold text-xs">
               <Tag className="h-3 w-3" /> Couple Messaging
             </span>
-            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 1, 2026</span>
+            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 4, 2026</span>
             <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> 5 min read</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
@@ -123,6 +124,18 @@ export default function CuteGoodMorningMessagesPost() {
               For long-distance couples especially, a morning text is often the most intimate daily touchpoint. It
               bridges the physical gap and keeps the emotional connection alive across any distance.
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1515023115689-589c33041d3c?w=900&q=80"
+                alt="Cosy morning scene with sunlight coming through a window beside a coffee cup"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">A thoughtful good morning message sets a warm, loving tone for the whole day.</p>
+            </div>
+
 
             {messageGroups.map((group) => (
               <section key={group.title}>
@@ -174,6 +187,7 @@ export default function CuteGoodMorningMessagesPost() {
                 </Link>
               </Button>
             </div>
+            <AuthorCard authorId="priya" />
           </div>
         </article>
       </div>

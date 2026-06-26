@@ -408,16 +408,42 @@ function AppContent() {
         <section id="shortcutpedia-info" className="seo-content w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm">
             <h3 className="text-2xl font-bold mb-4">Decode Gen Z Slang with Shortcutpedia</h3>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Stop asking &quot;what does that mean?&quot; and start understanding. Shortcutpedia is your 2026 <strong>Internet Slang Dictionary</strong>.
-              We decode the most popular chat abbreviations used on TikTok, Snapchat, and Discord.
+              Stop asking &quot;what does that mean?&quot; and start understanding. Shortcutpedia is your go-to <strong>Internet Slang Dictionary</strong>.
+              We decode the most popular chat abbreviations, acronyms, and modern slang terms used across TikTok, Snapchat, Instagram, and Discord.
+              Whether you are trying to keep up with your friends, decode messages from your children, or understand trending social media comments,
+              our comprehensive database provides clear and concise definitions in real-time.
             </p>
-            <p className="font-bold mb-2">Trending Searches:</p>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li><strong>What does &apos;Rizz&apos; mean?</strong> Short for charisma; your ability to flirt.</li>
-              <li><strong>Meaning of &apos;No Cap&apos;:</strong> Being serious, not lying.</li>
-              <li><strong>IYKYK:</strong> &quot;If You Know You Know&quot; - inside jokes.</li>
-              <li><strong>TFW vs. MFW:</strong> &quot;That Feel When&quot; vs &quot;My Face When.&quot;</li>
+
+            <h4 className="text-lg font-semibold mt-4 mb-2">Why Do We Use Chat Shortcuts?</h4>
+            <p className="text-muted-foreground leading-relaxed mb-4">
+              Digital communication moves fast. To save time and keep up with rapid message exchanges, internet users have developed a rich vocabulary of shortcuts.
+              These terms often compress complex emotions, reactions, or phrases into just a few letters. From classic internet acronyms like &quot;lol&quot; and &quot;brb&quot;
+              to modern Gen Z expressions like &quot;rizz&quot; or &quot;no cap,&quot; understanding this evolving vocabulary helps you stay connected and communicate naturally in digital spaces.
+            </p>
+
+            <h4 className="text-lg font-semibold mt-4 mb-2">Main Categories of Online Slang:</h4>
+            <ul className="list-disc list-inside space-y-1.5 text-muted-foreground mb-4">
+              <li><strong className="text-foreground">Acronyms:</strong> Shortened phrases where each letter represents a word (e.g., <strong className="text-foreground">IYKYK</strong> for &quot;If You Know You Know&quot;, <strong className="text-foreground">FR</strong> for &quot;For Real&quot;).</li>
+              <li><strong className="text-foreground">Gen Z Slang:</strong> New words popularized by social media algorithms and creators (e.g., <strong className="text-foreground">Rizz</strong> for charisma, <strong className="text-foreground">Gyatt</strong>, or <strong className="text-foreground">Sigma</strong>).</li>
+              <li><strong className="text-foreground">Numerical Shortcuts:</strong> Numbers used to represent phonetic sounds or coded meanings (e.g., <strong className="text-foreground">143</strong> for &quot;I Love You&quot;).</li>
+              <li><strong className="text-foreground">Platform-Specific Jargon:</strong> Terms unique to specific communities, like Discord emotes or Twitch terms.</li>
             </ul>
+
+            <h4 className="text-lg font-semibold mt-6 mb-3 border-t pt-4">Frequently Asked Questions:</h4>
+            <div className="space-y-3">
+              <div>
+                <h5 className="font-semibold text-foreground">How often is Shortcutpedia updated?</h5>
+                <p className="text-sm text-muted-foreground mt-0.5">We update our slang dictionary weekly to ensure new words emerging from viral social media trends are added immediately.</p>
+              </div>
+              <div>
+                <h5 className="font-semibold text-foreground">Are my slang searches kept private?</h5>
+                <p className="text-sm text-muted-foreground mt-0.5">Yes, your privacy is our priority. All searches are processed on your device and are never tracked, stored, or linked back to you personally.</p>
+              </div>
+              <div>
+                <h5 className="font-semibold text-foreground">Can I request a new slang term to be added?</h5>
+                <p className="text-sm text-muted-foreground mt-0.5">We are constantly expanding our database. If you search for a term and find no results, our team is automatically notified of the missing keyword to review and add it in the next update.</p>
+              </div>
+            </div>
         </section>
         </>
         )}
@@ -592,15 +618,41 @@ function AppContent() {
         <section id="text-repeater-info" className="seo-content w-full max-w-3xl mt-8 text-left bg-card/50 backdrop-blur-sm border border-border/60 p-8 rounded-xl shadow-sm">
             <h3 className="text-2xl font-bold mb-4">Why Use the MsgReplier Text Repeater?</h3>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Need to send a message 10,000 times? Our <strong>Free Text Repeater</strong> is the perfect tool for
-              creating emphasis or playing harmless pranks on friends. Whether you need a <strong>WhatsApp text bomber</strong>
-              (use responsibly!) or want to spam comments on Instagram to get noticed, this tool handles it instantly.
+              The MsgReplier Text Repeater is a lightweight, responsive digital utility designed to duplicate any text string or emoji up to thousands of times instantly. Built to run entirely client-side, the text repeater provides custom formatting options to structure your text exactly as you want it. Whether you need to repeat a single word across a single row with space formatting, stack characters vertically in a neat column, or generate a block of text matching the maximum length limit of a specific social media platform, our tool is optimized to deliver results in milliseconds.
             </p>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li><strong>Instagram & TikTok:</strong> generate long blocks of text to space out your bio or captions.</li>
-              <li><strong>Blank Message Generator:</strong> Send empty messages on WhatsApp to confuse your friends.</li>
-              <li><strong>Testing & Dev:</strong> Developers can use this to generate dummy text strings for stress testing apps.</li>
+            
+            <h4 className="text-lg font-semibold mt-4 mb-2">How to Use the Text Repeater:</h4>
+            <ul className="list-decimal list-inside space-y-1.5 text-muted-foreground mb-4">
+              <li><strong className="text-foreground">Enter Your Text:</strong> Type or paste your word, message, or emoji inside the text area.</li>
+              <li><strong className="text-foreground">Select Platform or Custom Limit:</strong> Choose from pre-configured character limits for platforms like Instagram, TikTok, Snapchat, or custom limits.</li>
+              <li><strong className="text-foreground">Format Options:</strong> Select &apos;Row&apos; (with or without spacing) or &apos;Column&apos; (which places each repeated instance on a new line).</li>
+              <li><strong className="text-foreground">Define Count or Limit:</strong> Tick &apos;Specify count&apos; to enter a precise repetition limit, or leave it unticked to automatically fill the platform&apos;s character limit.</li>
+              <li><strong className="text-foreground">Copy & Share:</strong> Click &apos;Generate&apos; and copy your repeated text with a single click.</li>
             </ul>
+
+            <h4 className="text-lg font-semibold mt-4 mb-2">Common Practical Uses:</h4>
+            <ul className="list-disc list-inside space-y-1.5 text-muted-foreground mb-4">
+              <li><strong className="text-foreground">Emphasis and Fun:</strong> Playfully emphasize your messages, apologies, or expressions of love in your couple chats.</li>
+              <li><strong className="text-foreground">Form and Bio Formatting:</strong> Generate invisible space blocks or repeat symbols to align captions and profiles on Instagram and TikTok.</li>
+              <li><strong className="text-foreground">Blank Message Fun:</strong> Send blank messages to friends by generating empty spaces (using spacing settings).</li>
+              <li><strong className="text-foreground">Developer Testing:</strong> Quickly generate mock data, long paragraph strings, or boundary values for testing software text input fields.</li>
+            </ul>
+
+            <h4 className="text-lg font-semibold mt-6 mb-3 border-t pt-4">Frequently Asked Questions:</h4>
+            <div className="space-y-3">
+              <div>
+                <h5 className="font-semibold text-foreground">Is the Text Repeater free?</h5>
+                <p className="text-sm text-muted-foreground mt-0.5">Yes! It is 100% free with no hidden charges, login requirements, or advertisements blocking your generation.</p>
+              </div>
+              <div>
+                <h5 className="font-semibold text-foreground">Is there a repetition limit?</h5>
+                <p className="text-sm text-muted-foreground mt-0.5">There is no theoretical limit to how many times you can repeat, though browser memory limits may restrict extremely large generations (over 1 million characters).</p>
+              </div>
+              <div>
+                <h5 className="font-semibold text-foreground">Is my input text private?</h5>
+                <p className="text-sm text-muted-foreground mt-0.5">Absolutely. The Text Repeater runs completely in your local browser environment. We never upload, process, or save your text strings to our servers.</p>
+              </div>
+            </div>
         </section>
 
         {(isAiPage || isShortcutpediaPage) && (

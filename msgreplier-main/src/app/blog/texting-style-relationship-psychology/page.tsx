@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "What Your Texting Style Says About Your Relationship",
   description:
     "Do you double text? Use too many emojis? Learn what your digital communication habits say about the health of your relationship.",
+  alternates: {
+    canonical: "https://msgreplier.com/blog/texting-style-relationship-psychology",
+  }
 };
 
 export default function TextingStylePsychology() {
@@ -58,6 +62,18 @@ export default function TextingStylePsychology() {
             <p>
               Are you the person who replies instantly, while your partner takes hours? Or vice versa? An imbalance in response times can create underlying relationship tension. 
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1567443024551-f3e3cc2be870?w=900&q=80"
+                alt="Person reading a text message with a thoughtful and curious expression"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">Your texting style communicates far more than just the literal words you send.</p>
+            </div>
+
             <p>
               Psychologists suggest that if there is a severe mismatch, it triggers anxiety in the "fast replier" and a feeling of being smothered in the "slow replier." If you consistently take hours to respond to a simple question, it signals low prioritization. Conversely, demanding an immediate reply to non-urgent texts signals an anxious attachment style. Healthy couples tend to match each other's pace or communicate when they are unable to reply quickly.
             </p>
@@ -96,6 +112,7 @@ export default function TextingStylePsychology() {
               The healthiest texting relationships feature a concept called "Texting Mirroring." This is when both partners subconsciously adopt the same typing cadence, emoji usage, and message length. If you notice your partner using your favorite slang words, take it as a sign of deep connection!
             </p>
 
+            <AuthorCard authorId="arjun" />
           </div>
         </article>
       </div>

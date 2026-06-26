@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Calendar, Tag, Clock, Heart, MessageCircle, Smile } from "lucide-react";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "How to Create Sweet AI Replies for Your Partner (Couple Messaging Guide) | MsgReplier",
   description:
     "Discover how to craft heartfelt, funny, and romantic AI-generated replies for your partner. From good morning texts to cute responses, this guide covers it all.",
-  alternates: { canonical: "/blog/ai-replies-for-couples" },
+  alternates: { canonical: "https://msgreplier.com/blog/ai-replies-for-couples" },
 };
 
 export default function AiRepliesForCouplesPost() {
@@ -17,8 +18,8 @@ export default function AiRepliesForCouplesPost() {
     headline: "How to Create Sweet AI Replies for Your Partner",
     description:
       "A complete guide to using AI prompts and messaging tools to send heartfelt, funny, and romantic replies to your partner.",
-    datePublished: "2026-06-01",
-    dateModified: "2026-06-01",
+    datePublished: "2026-05-10",
+    dateModified: "2026-05-10",
     author: { "@type": "Organization", name: "MsgReplier" },
     publisher: {
       "@type": "Organization",
@@ -53,7 +54,7 @@ export default function AiRepliesForCouplesPost() {
               <Tag className="h-3 w-3" /> Messaging Tips
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> June 1, 2026
+              <Calendar className="h-3 w-3" /> May 10, 2026
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" /> 7 min read
@@ -83,6 +84,18 @@ export default function AiRepliesForCouplesPost() {
               — that you can then personalise with your own voice, inside jokes, and specific memories to make it truly
               yours.
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1611746872915-64382b5c76da?w=900&q=80"
+                alt="Person typing a heartfelt message on their smartphone"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">AI-assisted messaging helps couples express genuine emotions more clearly.</p>
+            </div>
+
 
             <h2 className="text-2xl font-bold mt-8">Types of Messages Couples Use AI For</h2>
 
@@ -182,6 +195,7 @@ export default function AiRepliesForCouplesPost() {
                 </Link>
               </Button>
             </div>
+            <AuthorCard authorId="arjun" />
           </div>
         </article>
       </div>

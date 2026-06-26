@@ -347,10 +347,10 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
             <label className="wishes-label">
               Photo
               <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '11px', marginLeft: '4px' }}>
-                {['wishes3', 'wishes5', 'wishes6', 'wishes7'].includes(theme) ? ' (recommended)' : ' (optional)'}
+                {['wishes3', 'wishes5', 'wishes6', 'wishes7', 'wishes8'].includes(theme) ? ' (recommended)' : ' (optional)'}
               </span>
             </label>
-            {['hearts', 'classic-2d', 'aurora', 'wishes3', 'wishes5', 'wishes6', 'wishes7'].includes(theme) ? (
+            {['hearts', 'classic-2d', 'aurora', 'wishes3', 'wishes5', 'wishes6', 'wishes7', 'wishes8'].includes(theme) ? (
               /* Render multiple slots for Cake Surprise, Classic 2D, Cham 3D or Zodiac templates */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '0.5rem' }}>
                 {getPhotosArray(photoUrlValue || '').map((photo, index) => (
@@ -551,7 +551,7 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
           setActivePhotoSlot(null);
         }}
         onSelect={(url) => {
-          if ((theme === 'hearts' || theme === 'classic-2d' || theme === 'aurora' || theme === 'wishes5') && activePhotoSlot !== null) {
+          if ((theme === 'hearts' || theme === 'classic-2d' || theme === 'aurora' || theme === 'wishes5' || theme === 'wishes3' || theme === 'wishes6' || theme === 'wishes7' || theme === 'wishes8') && activePhotoSlot !== null) {
             const photos = getPhotosArray(photoUrlValue || '');
             photos[activePhotoSlot].url = url;
             setValue('photo_url', JSON.stringify(photos), { shouldDirty: true });

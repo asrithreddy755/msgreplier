@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "New Feature: Creative AI Prompts for Couple Photos (Goodbye Chat, Hello Creativity!)",
   description:
     "We’ve pivoted from general chat to Couple Photo Prompts — a library of creative prompts for matching AI images and real-life couple photoshoots.",
   alternates: {
-    canonical: "/blog/perfect-couple-prompts",
+    canonical: "https://msgreplier.com/blog/perfect-couple-prompts",
   },
 };
 
@@ -95,6 +96,18 @@ export default function PerfectCouplePromptsPost() {
             <p>
               Instead of a “chat for everything”, we’re building focused tools that help people connect visually — especially couples who want more creative photos and memories.
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1516589091380-5d8e87df6999?w=900&q=80"
+                alt="Couple posing together for a romantic photoshoot in golden hour lighting"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">Creative AI prompts unlock couple photo ideas that traditional searches never surface.</p>
+            </div>
+
 
             <h2>The Problem</h2>
             <p>
@@ -145,6 +158,7 @@ export default function PerfectCouplePromptsPost() {
                 <Link href="/blog">Read More Articles</Link>
               </Button>
             </div>
+            <AuthorCard authorId="arjun" />
           </div>
         </article>
       </div>

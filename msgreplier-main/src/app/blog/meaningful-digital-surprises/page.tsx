@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "How to Plan a Meaningful Digital Surprise for Your Partner",
   description:
     "Distance shouldn't stop you from celebrating. Learn how to craft unforgettable virtual gifts, from custom wishes websites to surprise online dates.",
+  alternates: {
+    canonical: "https://msgreplier.com/blog/meaningful-digital-surprises",
+  }
 };
 
 export default function MeaningfulDigitalSurprises() {
@@ -58,6 +62,18 @@ export default function MeaningfulDigitalSurprises() {
             <p>
               Forget sending an e-card to their email spam folder. You can now build dedicated, personalized mini-websites entirely dedicated to wishing them a Happy Birthday or Happy Anniversary. 
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=900&q=80"
+                alt="Person opening a surprise gift box with a joyful expression on their face"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">Digital surprises can feel just as personal and meaningful as a physical gift.</p>
+            </div>
+
             
             <div className="bg-primary/5 p-6 rounded-xl border border-primary/20 mt-6 mb-6">
               <h3 className="text-xl font-bold text-foreground mb-3 flex items-center gap-2">
@@ -94,6 +110,7 @@ export default function MeaningfulDigitalSurprises() {
               Digital surprises prove that it's the thought, time, and creativity that count, not the physical price tag. Next time you forget to order a physical present 5 weeks in advance, use these instant digital ideas!
             </p>
 
+            <AuthorCard authorId="priya" />
           </div>
         </article>
       </div>

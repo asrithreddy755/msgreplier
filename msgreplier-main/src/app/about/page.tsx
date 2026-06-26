@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description:
     "Learn about MsgReplier — the free, privacy-first digital platform for couples. Discover our mission, the tools we build, and our commitment to keeping your data safe.",
   alternates: {
-    canonical: "/about",
+    canonical: "https://msgreplier.com/about",
   },
 };
 

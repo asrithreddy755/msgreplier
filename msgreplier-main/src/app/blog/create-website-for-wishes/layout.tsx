@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: "How to Create a Website for Wishes in Seconds | MsgReplier Blog",
   description: "Learn how to build a custom, interactive digital greeting website for birthdays and anniversaries with 3D animations and music.",
   alternates: {
-    canonical: "/blog/create-website-for-wishes",
+    canonical: "https://msgreplier.com/blog/create-website-for-wishes",
   },
 };
 

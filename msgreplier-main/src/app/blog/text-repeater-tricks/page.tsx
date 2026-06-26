@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
   title: "5 Creative Ways to Use a Text Repeater on WhatsApp",
   description:
     "Discover fun and unique ways to use a text repeater tool. From spamming besties to making impactful notes, learn how to elevate your messaging game.",
+  alternates: {
+    canonical: "https://msgreplier.com/blog/text-repeater-tricks",
+  }
 };
 
 export default function TextRepeaterTricksPost() {
@@ -58,6 +62,18 @@ export default function TextRepeaterTricksPost() {
             <p>
               Forgot an anniversary? Missed a date? Sometimes, saying &quot;sorry&quot; once isn&apos;t enough. Send a sincere apology repeated 50 or 100 times to show the sheer volume of your regret. It&apos;s dramatic, but effective.
             </p>
+            <div className="my-8 not-prose">
+              <img
+                src="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=900&q=80"
+                alt="Hands typing quickly on a smartphone keyboard sending a repeated message"
+                className="w-full rounded-2xl object-cover border border-[#d4c3ab] shadow-sm"
+                loading="lazy"
+                width="900"
+                height="500"
+              />
+              <p className="text-xs text-center text-[#948678] mt-2 italic">The text repeater has far more creative uses than simply spamming a word.</p>
+            </div>
+
             <p>Example: &quot;I am so sorry 🥺&quot; x 100</p>
 
             <h2>2. Spamming Your Bestie</h2>
@@ -94,6 +110,7 @@ export default function TextRepeaterTricksPost() {
                 <Link href="/blog">Back to Blog</Link>
               </Button>
             </div>
+            <AuthorCard authorId="arjun" />
           </div>
         </article>
       </div>

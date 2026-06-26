@@ -98,7 +98,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Blog Posts
     {
       url: `${baseUrl}/blog/create-website-for-wishes`,
-      lastModified: new Date("2026-05-15"),
+      lastModified: new Date("2026-05-02"),
       changeFrequency: "monthly",
       priority: 0.3,
     },
@@ -182,33 +182,39 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/blog/ai-replies-for-couples`,
-      lastModified: new Date("2026-06-01"),
+      lastModified: new Date("2026-05-10"),
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${baseUrl}/blog/birthday-wishes-website-guide`,
-      lastModified: new Date("2026-06-01"),
+      lastModified: new Date("2026-05-18"),
       changeFrequency: "monthly",
       priority: 0.6,
     },
     {
       url: `${baseUrl}/blog/anniversary-message-ideas`,
-      lastModified: new Date("2026-06-01"),
+      lastModified: new Date("2026-05-26"),
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${baseUrl}/blog/cute-good-morning-messages`,
-      lastModified: new Date("2026-06-01"),
+      lastModified: new Date("2026-06-04"),
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${baseUrl}/blog/relationship-communication-tips`,
-      lastModified: new Date("2026-06-01"),
+      lastModified: new Date("2026-06-12"),
       changeFrequency: "monthly",
       priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/blog/love-space-guide`,
+      lastModified: new Date("2026-03-19"),
+      changeFrequency: "monthly",
+      priority: 0.4,
     },
   ];
 }

@@ -101,6 +101,12 @@ const TEMPLATES = [
     icon: "🎁",
     description: "Surprise dark romantic layout with dynamic name, live seconds counter, gallery & letter",
   },
+  {
+    id: "wishes8",
+    label: "Curtain Surprise",
+    icon: "🚪",
+    description: "Cinematic opening curtain, custom countdown, memories swiper and sealable letter",
+  },
 ];
 
 const getInitialOccasion = (param: string | null) => {
@@ -126,6 +132,7 @@ const getInitialTheme = (param: string | null) => {
   if (n === "wishes5" || n === "zodiac celebration" || n === "zodiac") return "wishes5";
   if (n === "wishes6" || n === "sweet scratch" || n === "scratch") return "wishes6";
   if (n === "wishes7" || n === "birthday locked" || n === "locked") return "wishes7";
+  if (n === "wishes8" || n === "curtain surprise" || n === "curtain") return "wishes8";
   if (n === "propose_crush1" || n === "propose" || n === "crush") return "propose_crush1";
   return "classic-2d";
 };
@@ -592,7 +599,7 @@ function DigitalGreetingCreateForm() {
                 </label>
 
                 {user ? (
-                  formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" || formData.theme === "wishes5" || formData.theme === "wishes3" || formData.theme === "wishes6" || formData.theme === "wishes7" ? (
+                  formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" || formData.theme === "wishes5" || formData.theme === "wishes3" || formData.theme === "wishes6" || formData.theme === "wishes7" || formData.theme === "wishes8" ? (
                     /* Render multiple slots for Cake Surprise, Classic 2D, Cham 3D or Zodiac templates */
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                       {getPhotosArray(formData.photo_url).map((photo, index) => (
@@ -752,7 +759,8 @@ function DigitalGreetingCreateForm() {
 
             {/* Photo Fit Toggle — only for templates that display photos */}
             {(formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" ||
-              formData.theme === "wishes3" || formData.theme === "wishes4" || formData.theme === "wishes5") && (
+              formData.theme === "wishes3" || formData.theme === "wishes4" || formData.theme === "wishes5" ||
+              formData.theme === "wishes6" || formData.theme === "wishes7" || formData.theme === "wishes8") && (
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -1111,7 +1119,7 @@ function DigitalGreetingCreateForm() {
           setActivePhotoSlot(null);
         }}
         onSelect={(url) => {
-          if ((formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" || formData.theme === "wishes5" || formData.theme === "wishes3" || formData.theme === "wishes6" || formData.theme === "wishes7") && activePhotoSlot !== null) {
+          if ((formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" || formData.theme === "wishes5" || formData.theme === "wishes3" || formData.theme === "wishes6" || formData.theme === "wishes7" || formData.theme === "wishes8") && activePhotoSlot !== null) {
             const photos = getPhotosArray(formData.photo_url);
             photos[activePhotoSlot].url = url;
             setFormData((prev) => ({ ...prev, photo_url: JSON.stringify(photos) }));
