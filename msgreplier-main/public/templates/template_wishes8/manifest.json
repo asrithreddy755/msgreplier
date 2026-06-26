@@ -1,0 +1,16 @@
+{
+  "name": "Birthday-p4!",
+  "short_name": "Birthday-p4",
+  "description": "A special surprise website filled with love, memories, and heartfelt moments just for you💕",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "128x128",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <title>Birthday-p4!</title>
+  <meta name="description" content="A special surprise website filled with love, memories, and heartfelt moments just for you💕" />
+  
+  <!-- Favicons and Manifest -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="manifest" href="manifest.json" />
+  
+  <!-- Swiper.js CSS for Swipeable Gallery -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="antialiased">
+
+  <main>
+    <!-- Background glowing gradient -->
+    <div class="radial-bg"></div>
+    
+    <!-- Floating fireflies container -->
+    <div class="fireflies-container" id="fireflies"></div>
+
+    <!-- Curtain Entrance Screen -->
+    <div class="curtain-container" id="curtain">
+      <div class="curtain-vline" id="curtain-line"></div>
+      <div class="curtain-panel-left"></div>
+      <div class="curtain-panel-right"></div>
+      
+      <!-- Central interactive button -->
+      <div class="curtain-btn-overlay" id="curtain-btn-wrap">
+        <div class="btn-ring-wrap">
+          <div class="rring"></div>
+          <div class="rring rring-2"></div>
+          <div class="rring rring-3"></div>
+          <button class="open-btn" id="open-curtain-btn">
+            <span class="btn-initial">𓆩❤︎𓆪</span>
+            <span class="btn-label">TAP TO OPEN</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Static Footer Branding -->
+    <div class="brand-tag">webkaizen</div>
+
+    <!-- Screen Engine Mount Point -->
+    <div class="screen-wrapper">
+      
+      <!-- Screen 0: Loading Screen -->
+      <div class="screen active" id="screen-loader">
+        <div class="loader-content">
+          <img src="kitty.gif" class="loader-gif" alt="loading gif" />
+          <h1 class="loader-title">Loading something special...</h1>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="loader-progress"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen 1: Intro Screen -->
+      <div class="screen" id="screen-intro">
+        <div class="intro-content">
+          <div class="circle-frame">
+            <img src="gifs/intro.gif" alt="Cute illustration" />
+          </div>
+          <h1 class="intro-title">There’s something special I want to tell you...</h1>
+          <p class="intro-subtitle">that's why I made something special for you...</p>
+          <button class="premium-btn" id="btn-goto-countdown">
+            <span>Next✨</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Screen 2: Countdown / Anniversary Screen -->
+      <div class="screen" id="screen-countdown">
+        <div class="countdown-content">
+          <div class="circle-frame countdown-frame">
+            <img src="gifs/anniversary.gif" alt="Cute illustration" />
+          </div>
+          <h1 class="countdown-title">Happy Birthday <span>Cutiepiee</span></h1>
+          <div class="counter-grid">
+            <div class="counter-item">
+              <div class="counter-number" id="count-years">0</div>
+              <div class="counter-label">Years</div>
+            </div>
+            <div class="counter-item">
+              <div class="counter-number" id="count-months">0</div>
+              <div class="counter-label">Months</div>
+            </div>
+            <div class="counter-item">
+              <div class="counter-number" id="count-days">0</div>
+              <div class="counter-label">Days</div>
+            </div>
+          </div>
+          <button class="premium-btn" id="btn-goto-gallery">
+            <span>Continue💫</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Screen 3: Swipeable Gallery Card Deck -->
+      <div class="screen" id="screen-gallery">
+        <div class="gallery-content">
+          <h1 class="gallery-title">Cute Memories</h1>
+          <p class="gallery-subtitle">(Swipe for more ➡️)</p>
+          
+          <div class="swiper-wrapper-container">
+            <!-- Swiper Carousel -->
+            <div class="swiper">
+              <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                  <div class="slide-card">
+                    <img src="images/1.jpg" alt="Memory 1" />
+                  </div>
+                </div>
+                <div class="swiper-slide">
+                  <div class="slide-card">
+                    <img src="images/2.avif" alt="Memory 2" />
+                  </div>
+                </div>
+                <div class="swiper-slide">
+                  <div class="slide-card">
+                    <img src="images/3.jpg" alt="Memory 3" />
+                  </div>
+                </div>
+                <div class="swiper-slide">
+                  <div class="slide-card">
+                    <img src="images/1.jpg" alt="Memory 4" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <button class="premium-btn gallery-btn" id="btn-goto-letter">
+            <span>Read My Message 💌</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Screen 4: Envelope / Message Screen -->
+      <div class="screen" id="screen-letter">
+        <div class="letter-content">
+          <div class="letter-header">
+            <h1 class="letter-title">A Letter, Just For You</h1>
+            <p class="letter-subtitle">Tap the envelope to unseal</p>
+          </div>
+          
+          <!-- Interactive Envelope -->
+          <div class="envelope-perspective">
+            <div class="envelope" id="envelope-trigger">
+              <div class="envelope-bg"></div>
+              
+              <!-- Envelope Folding Lines SVG -->
+              <svg class="envelope-svg-lines" viewBox="0 0 280 190">
+                <line x1="0" y1="190" x2="140" y2="100" stroke="rgba(160, 120, 60, 0.25)" stroke-width="1" />
+                <line x1="280" y1="190" x2="140" y2="100" stroke="rgba(160, 120, 60, 0.25)" stroke-width="1" />
+                <line x1="0" y1="0" x2="140" y2="100" stroke="rgba(160, 120, 60, 0.2)" stroke-width="0.5" />
+                <line x1="280" y1="0" x2="140" y2="100" stroke="rgba(160, 120, 60, 0.2)" stroke-width="0.5" />
+              </svg>
+              
+              <!-- Top Flap of Envelope -->
+              <div class="envelope-flap">
+                <div class="envelope-flap-inner"></div>
+              </div>
+              
+              <!-- Wax Seal -->
+              <div class="wax-seal">
+                <div class="seal-body">
+                  <span class="seal-symbol">✦</span>
+                </div>
+              </div>
+              
+              <!-- Front Cover Text -->
+              <div class="envelope-label-area">
+                <div class="envelope-to">For You, My Cutuuu</div>
+                <div class="envelope-prompt">Tap to unseal ♡</div>
+              </div>
+              
+              <!-- Postmark Stamp -->
+              <div class="envelope-stamp-mark">❋</div>
+            </div>
+          </div>
+          
+          <div class="decor-line-wrap">
+            <div class="decor-line"></div>
+            <span class="decor-diamond">◈</span>
+            <div class="decor-line right"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Typewriter Parchment Paper Modal Overlay -->
+  <div class="modal-overlay" id="letter-modal">
+    <div class="modal-container" id="modal-container">
+      <!-- Ornate Metal Corners -->
+      <div class="corner-bracket corner-top-left"></div>
+      <div class="corner-bracket corner-top-right"></div>
+      <div class="corner-bracket corner-bottom-left"></div>
+      <div class="corner-bracket corner-bottom-right"></div>
+      
+      <!-- Watermark shape -->
+      <div class="watermark-radial"></div>
+      
+      <!-- Close button -->
+      <button class="modal-close-btn" id="modal-close">×</button>
+      
+      <!-- Header -->
+      <div class="modal-header">
+        <h3 class="modal-title">Happy Birthday ✨</h3>
+        <div class="modal-header-divider">
+          <div class="modal-divider-line"></div>
+          <span class="modal-divider-diamond">◈</span>
+          <div class="modal-divider-line right"></div>
+        </div>
+        <p class="modal-subtitle">Just for you ♡</p>
+      </div>
+      
+      <!-- Lined paper red left border line -->
+      <div class="paper-red-line"></div>
+      
+      <!-- Text Area -->
+      <div class="paper-text-wrapper" id="modal-text-wrapper">
+        <p class="paper-text" id="typewriter-text"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Swiper.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  
+  <!-- Main Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
