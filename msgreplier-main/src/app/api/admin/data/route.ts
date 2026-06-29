@@ -61,11 +61,44 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `Greetings fetch error: ${greetingsError.message}` }, { status: 500 });
         }
 
+        // 5. Fetch all profiles (to map user_id to email)
+        let profiles: any[] = [];
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, email');
+            if (error) {
+                console.error('[Admin API] Profiles fetch error:', error.message);
+            } else {
+                profiles = data ?? [];
+            }
+        } catch (e: any) {
+            console.error('[Admin API] Profiles exception:', e);
+        }
+
+        // 6. Fetch all gallery images
+        let gallery: any[] = [];
+        try {
+            const { data, error } = await supabase
+                .from('user_gallery')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) {
+                console.error('[Admin API] Gallery fetch error:', error.message);
+            } else {
+                gallery = data ?? [];
+            }
+        } catch (e: any) {
+            console.error('[Admin API] Gallery exception:', e);
+        }
+
         return NextResponse.json({
             rooms: rooms ?? [],
             members: members ?? [],
             messages: messages ?? [],
-            greetings: greetings ?? []
+            greetings: greetings ?? [],
+            profiles: profiles,
+            gallery: gallery
         });
     } catch (error: any) {
         console.error('[Admin API] Error fetching admin data:', error);

@@ -50,6 +50,7 @@ interface AdminGreeting {
     music_id: string;
     reveal_type: string;
     created_at: string;
+    user_id?: string;
 }
 
 export default function AdminPage() {
@@ -63,6 +64,8 @@ export default function AdminPage() {
     const [members, setMembers] = useState<AdminMember[]>([]);
     const [messages, setMessages] = useState<AdminMessage[]>([]);
     const [greetings, setGreetings] = useState<AdminGreeting[]>([]);
+    const [profiles, setProfiles] = useState<{ id: string; email: string }[]>([]);
+    const [gallery, setGallery] = useState<{ id: string; user_id: string; image_url: string; created_at: string }[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
 
     // Search and filters
@@ -118,6 +121,8 @@ export default function AdminPage() {
                 setMembers(data.members);
                 setMessages(data.messages);
                 setGreetings(data.greetings);
+                setProfiles(data.profiles || []);
+                setGallery(data.gallery || []);
                 toast.success('Successfully authenticated as Administrator!');
             } else {
                 setLoginError(data.error || 'Invalid administrator password.');
@@ -138,6 +143,8 @@ export default function AdminPage() {
         setMembers([]);
         setMessages([]);
         setGreetings([]);
+        setProfiles([]);
+        setGallery([]);
         toast.info('Logged out from admin panel.');
     };
 
@@ -158,6 +165,8 @@ export default function AdminPage() {
                 setMembers(data.members);
                 setMessages(data.messages);
                 setGreetings(data.greetings);
+                setProfiles(data.profiles || []);
+                setGallery(data.gallery || []);
                 toast.success('Admin records refreshed successfully!');
             }
         } catch {
@@ -214,10 +223,11 @@ export default function AdminPage() {
             const sender = g.sender_name.toLowerCase();
             const recipient = g.recipient_name.toLowerCase();
             const occasion = g.occasion.toLowerCase();
+            const userEmail = profiles.find(p => p.id === g.user_id)?.email?.toLowerCase() || '';
             const search = greetingSearch.toLowerCase();
-            return sender.includes(search) || recipient.includes(search) || occasion.includes(search) || g.slug.includes(search);
+            return sender.includes(search) || recipient.includes(search) || occasion.includes(search) || g.slug.includes(search) || userEmail.includes(search);
         });
-    }, [greetings, greetingSearch]);
+    }, [greetings, greetingSearch, profiles]);
 
     // Render Login Interface
     if (!isAuthenticated) {
@@ -606,6 +616,9 @@ export default function AdminPage() {
                                                             <p className="text-xs text-slate-400 font-semibold mt-0.5">
                                                                 Relationship: <strong className="text-slate-300 font-bold">{g.relationship}</strong>
                                                             </p>
+                                                            <p className="text-xs text-slate-400 font-semibold mt-0.5">
+                                                                Account Email: <strong className="text-indigo-400 font-bold">{profiles.find(p => p.id === g.user_id)?.email || 'Anonymous / Guest'}</strong>
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -667,7 +680,7 @@ export default function AdminPage() {
                                                                 {g.message}
                                                             </p>
                                                         </div>
-                                                        <div className="grid grid-cols-2 gap-4 text-[11px] font-medium text-slate-400">
+                                                        <div className="grid grid-cols-2 gap-4 text-[11px] font-medium text-slate-400 border-b border-slate-900 pb-4">
                                                             <div>
                                                                 <span className="text-[9px] font-bold text-slate-500 uppercase block">Reveal Type:</span>
                                                                 <span className="text-slate-200 bg-slate-900 px-2 py-0.5 rounded font-bold">{g.reveal_type}</span>
@@ -690,6 +703,51 @@ export default function AdminPage() {
                                                                 </div>
                                                             )}
                                                         </div>
+
+                                                        {/* User Gallery Images */}
+                                                        {(() => {
+                                                            const userImages = gallery.filter(img => img.user_id === g.user_id);
+                                                            if (userImages.length > 0) {
+                                                                return (
+                                                                    <div className="space-y-2 pt-2">
+                                                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
+                                                                            User Gallery ({userImages.length} images):
+                                                                        </span>
+                                                                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 bg-slate-900/30 border border-slate-900/60 p-3 rounded-lg">
+                                                                            {userImages.map((img) => (
+                                                                                <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden border border-slate-800 group/img">
+                                                                                    <img 
+                                                                                        src={img.image_url} 
+                                                                                        alt="Gallery" 
+                                                                                        className="object-cover w-full h-full hover:scale-110 transition-transform duration-200"
+                                                                                    />
+                                                                                    <a 
+                                                                                        href={img.image_url} 
+                                                                                        target="_blank" 
+                                                                                        rel="noopener noreferrer"
+                                                                                        className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity"
+                                                                                    >
+                                                                                        <ExternalLink className="w-4 h-4 text-white" />
+                                                                                    </a>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            } else if (g.user_id) {
+                                                                return (
+                                                                    <div className="space-y-2 pt-2">
+                                                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
+                                                                            User Gallery:
+                                                                        </span>
+                                                                        <p className="text-slate-500 italic bg-slate-900/30 border border-slate-900/60 p-2.5 rounded-lg">
+                                                                            No images uploaded to this user's gallery yet.
+                                                                        </p>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            return null;
+                                                        })()}
                                                     </motion.div>
                                                 )}
                                             </div>
