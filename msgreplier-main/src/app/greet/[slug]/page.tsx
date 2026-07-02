@@ -27,8 +27,9 @@ function IframeTemplate({ greeting, templateFolder }: { greeting: any; templateF
       music_id: greeting.music_id || "none",
       slug: greeting.slug || "",
       name: greeting.recipient_name || "",
-      dob: greeting.dob || dummyDOB,
+      dob: greeting.dob || greeting.birthday_date || dummyDOB,
       photo_url: greeting.photo_url || "",
+      fit_mode: greeting.fit_mode || "cover",
     });
 
     setSrc(`/templates/${templateFolder}/index.html?${params.toString()}`);
@@ -116,7 +117,7 @@ export default function GreetingWebsite() {
     );
   }
 
-  if (greeting.theme === "wishes3" || greeting.theme === "wishes4" || greeting.theme === "wishes5" || greeting.theme === "wishes6" || greeting.theme === "wishes7" || greeting.theme === "wishes8" || greeting.theme === "propose_crush1") {
+  if (greeting.theme === "wishes3" || greeting.theme === "wishes4" || greeting.theme === "wishes5" || greeting.theme === "wishes6" || greeting.theme === "wishes7" || greeting.theme === "wishes8" || greeting.theme === "wishes9" || greeting.theme === "wishes10" || greeting.theme === "wishes11" || greeting.theme === "propose_crush1") {
     return (
       <IframeTemplate
         greeting={{

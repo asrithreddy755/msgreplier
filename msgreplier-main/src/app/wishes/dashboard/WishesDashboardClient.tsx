@@ -61,6 +61,9 @@ const THEME_ICONS: Record<string, string> = {
   wishes6: '🧸',
   wishes7: '🎁',
   wishes8: '🚪',
+  wishes9: '🥺',
+  wishes10: '🌸',
+  wishes11: '🌌',
   propose_crush1: '💖',
 }
 
@@ -74,6 +77,9 @@ const THEME_LABELS: Record<string, string> = {
   wishes6: 'Sweet Scratch',
   wishes7: 'Birthday Surprise',
   wishes8: 'Curtain Surprise',
+  wishes9: 'Sweet Apology',
+  wishes10: 'Retro Windows',
+  wishes11: 'Matrix Neon',
   propose_crush1: 'Crush Proposal',
 }
 

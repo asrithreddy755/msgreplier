@@ -43,7 +43,7 @@ export default async function WishesDashboardPage() {
         .single(),
       supabase
         .from('love_greetings')
-        .select('id, slug, recipient_name, sender_name, occasion, theme, created_at, expires_at')
+        .select('id, slug, recipient_name, sender_name, occasion, theme, created_at, expires_at, birthday_date, fit_mode')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
     ]);

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Birthday | Webkaizen</title>
+    <meta name="description" content="An interactive glowing matrix-style birthday greeting card with customized animations, beautiful memories, and music." />
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="./assets/index-B5calzHl.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D2Hv8sH5.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      (function() {
+        const defaults = ['img1.jpeg', 'img2.jpeg', 'img3.jpeg', 'img4.jpeg'];
+        function replaceImages() {
+          const imgs = document.querySelectorAll('img');
+          imgs.forEach(img => {
+            const src = img.getAttribute('src') || '';
+            const isMatch = defaults.some(d => src.endsWith(d));
+            if (isMatch) {
+              const placeholder = document.createElement('div');
+              placeholder.className = img.className;
+              placeholder.style.cssText = img.style.cssText;
+              placeholder.style.display = 'flex';
+              placeholder.style.alignItems = 'center';
+              placeholder.style.justifyContent = 'center';
+              placeholder.style.background = '#050c05';
+              placeholder.style.border = '2px dashed #10b981';
+              placeholder.style.borderRadius = '4px';
+              placeholder.style.boxSizing = 'border-box';
+              placeholder.style.padding = '10px';
+              placeholder.style.width = img.width ? img.width + 'px' : '100%';
+              placeholder.style.height = img.height ? img.height + 'px' : '100%';
+              placeholder.style.minHeight = '140px';
+              placeholder.style.aspectRatio = '1 / 1';
+              placeholder.style.margin = 'auto';
+              
+              placeholder.innerHTML = `
+                <div style="text-align: center; color: #10b981; font-family: monospace; font-size: 11px; font-weight: bold; text-shadow: 0 0 5px rgba(16, 185, 129, 0.5);">
+                  <div style="font-size: 20px; margin-bottom: 4px;">🌌</div>
+                  Example Image
+                </div>
+              `;
+              img.parentNode.replaceChild(placeholder, img);
+            }
+          });
+        }
+        window.addEventListener('DOMContentLoaded', replaceImages);
+        window.addEventListener('load', replaceImages);
+        const observer = new MutationObserver(replaceImages);
+        observer.observe(document.body || document.documentElement, {
+          childList: true,
+          subtree: true
+        });
+        replaceImages();
+      })();
+    </script>
+  </body>
+</html>

@@ -75,8 +75,6 @@ function IframeTemplate({ greeting, templateFolder }: { greeting: any; templateF
   );
 }
 
-
-
 function TypingBanner() {
   const phrases = [
     "WISHES WEBSITE AND LOVE SPACE ARE TWO DIFFERENT SERVICES GIVEN BY MSGREPLIER.",
@@ -640,6 +638,33 @@ export default function ImmersiveWishesLanding() {
       tag: "Cinematic Curtain",
       tagClass: "bg-[#78555e]/90 text-white",
       imageCount: "0-4"
+    },
+    {
+      id: "wishes9",
+      title: `Sweet Apology Surprise 🥺`,
+      description: `A touching interactive apology letter experience with clean popups, soft music, and a "Beat Me" game if they are still sad.`,
+      image: "/wishes9_preview.png",
+      tag: "Apology & Game",
+      tagClass: "bg-amber-500/85 text-white",
+      imageCount: "0"
+    },
+    {
+      id: "wishes10",
+      title: `Retro Windows Memory 🌸`,
+      description: `A beautiful retro OS style surprise with cake slicing, customizable memory slides swiper, and custom letter wax seal.`,
+      image: "/wishes10_preview.png",
+      tag: "Retro 95 Style",
+      tagClass: "bg-[#ff5ea6]/85 text-white",
+      imageCount: "0-4"
+    },
+    {
+      id: "wishes11",
+      title: `Matrix Neon Surprise 🌌`,
+      description: `An immersive glowing cyberpunk code rain scene revealing your personalized wish, custom memories grid, and neon controls.`,
+      image: "/wishes11_preview.png",
+      tag: "Matrix Glowing",
+      tagClass: "bg-emerald-600/85 text-white",
+      imageCount: "0-4"
     }
   ];
 
@@ -973,7 +998,7 @@ export default function ImmersiveWishesLanding() {
                 {[
                   { key: "monthly", label: "Monthly" },
                   { key: "3month", label: "3 Months", badge: "10% OFF" },
-                  { key: "annual",  label: "Annual",   badge: "20% OFF" },
+                  { key: "annual", label: "Annual", badge: "20% OFF" },
                 ].map(({ key, label, badge }) => (
                   <button
                     key={key}
@@ -1006,8 +1031,8 @@ export default function ImmersiveWishesLanding() {
                         // savings badges
                         const savingEls = document.querySelectorAll('[data-savings-plan]');
                         const savingsData: Record<string, Record<string, number>> = {
-                          starter: { monthly: 0, '3month': 15,  annual: 118 },
-                          creator: { monthly: 0, '3month': 30,  annual: 238 }
+                          starter: { monthly: 0, '3month': 15, annual: 118 },
+                          creator: { monthly: 0, '3month': 30, annual: 238 }
                         };
                         savingEls.forEach(se => {
                           const sp = se.getAttribute('data-savings-plan');
@@ -1025,9 +1050,8 @@ export default function ImmersiveWishesLanding() {
                     }}
                     id={`pbtn-${key}`}
                     data-billing={key}
-                    className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
-                      key === 'monthly' ? 'bg-[#78555e] text-white shadow-sm' : 'text-[#817476]'
-                    }`}
+                    className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${key === 'monthly' ? 'bg-[#78555e] text-white shadow-sm' : 'text-[#817476]'
+                      }`}
                   >
                     {label}
                     {badge && <span className="bg-amber-400 text-black text-[9px] font-bold px-2 py-0.5 rounded-full">{badge}</span>}
@@ -1050,10 +1074,10 @@ export default function ImmersiveWishesLanding() {
                 </div>
                 <div className="h-px bg-[#78555e]/10 mb-5" />
                 <ul className="flex flex-col gap-2.5 flex-1 mb-6 text-sm">
-                  {[['✓','6 credits'],['✓','12 websites'],['✓','2MB image upload'],['✗','Email support'],['✗','Live chat']].map(([ic,txt],i)=>(
+                  {[['✓', '6 credits'], ['✓', '12 websites'], ['✓', '2MB image upload'], ['✗', 'Email support'], ['✗', 'Live chat']].map(([ic, txt], i) => (
                     <li key={i} className="flex items-center gap-2.5">
-                      <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold ${ic==='✓'?'bg-[#faf9fa] border border-[#78555e]/20 text-[#78555e]':'bg-[#fafafa] border border-[#e8e0e4] text-[#c4b0b5]'}`}>{ic}</span>
-                      <span className={ic==='✓'?'text-[#3d2c2e]':'text-[#b5a5a8]'}>{txt}</span>
+                      <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold ${ic === '✓' ? 'bg-[#faf9fa] border border-[#78555e]/20 text-[#78555e]' : 'bg-[#fafafa] border border-[#e8e0e4] text-[#c4b0b5]'}`}>{ic}</span>
+                      <span className={ic === '✓' ? 'text-[#3d2c2e]' : 'text-[#b5a5a8]'}>{txt}</span>
                     </li>
                   ))}
                 </ul>
@@ -1069,14 +1093,14 @@ export default function ImmersiveWishesLanding() {
                 <div className="mb-5 min-h-[80px]">
                   <div className="flex items-end gap-1 leading-none"><span className="text-xl font-semibold text-[#817476] mt-1">₹</span><span className="text-4xl font-extrabold text-[#1a1c1d]" data-price-plan="starter">49</span></div>
                   <span className="text-sm text-[#817476]" data-period="/month">/month</span>
-                  <div className="mt-2 min-h-[22px]"><span className="text-xs font-semibold bg-green-50 border border-green-200 text-green-700 px-2.5 py-1 rounded-full" data-savings-plan="starter" style={{visibility:'hidden'}}>–</span></div>
+                  <div className="mt-2 min-h-[22px]"><span className="text-xs font-semibold bg-green-50 border border-green-200 text-green-700 px-2.5 py-1 rounded-full" data-savings-plan="starter" style={{ visibility: 'hidden' }}>–</span></div>
                 </div>
                 <div className="h-px bg-[#78555e]/10 mb-5" />
                 <ul className="flex flex-col gap-2.5 flex-1 mb-6 text-sm">
-                  {[['✓','20 credits'],['✓','25 websites'],['✓','3GB image upload'],['✓','Email support'],['✗','Live chat']].map(([ic,txt],i)=>(
+                  {[['✓', '20 credits'], ['✓', '25 websites'], ['✓', '3GB image upload'], ['✓', 'Email support'], ['✗', 'Live chat']].map(([ic, txt], i) => (
                     <li key={i} className="flex items-center gap-2.5">
-                      <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold ${ic==='✓'?'bg-[#faf9fa] border border-[#78555e]/20 text-[#78555e]':'bg-[#fafafa] border border-[#e8e0e4] text-[#c4b0b5]'}`}>{ic}</span>
-                      <span className={ic==='✓'?'text-[#3d2c2e]':'text-[#b5a5a8]'}>{txt}</span>
+                      <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold ${ic === '✓' ? 'bg-[#faf9fa] border border-[#78555e]/20 text-[#78555e]' : 'bg-[#fafafa] border border-[#e8e0e4] text-[#c4b0b5]'}`}>{ic}</span>
+                      <span className={ic === '✓' ? 'text-[#3d2c2e]' : 'text-[#b5a5a8]'}>{txt}</span>
                     </li>
                   ))}
                 </ul>
@@ -1095,13 +1119,13 @@ export default function ImmersiveWishesLanding() {
                 <div className="mb-5 min-h-[80px]">
                   <div className="flex items-end gap-1 leading-none"><span className="text-xl font-semibold text-white/70 mt-1">₹</span><span className="text-4xl font-extrabold text-white" data-price-plan="creator">99</span></div>
                   <span className="text-sm text-white/70" data-period="/month">/month</span>
-                  <div className="mt-2 min-h-[22px]"><span className="text-xs font-semibold bg-white/20 text-white px-2.5 py-1 rounded-full" data-savings-plan="creator" style={{visibility:'hidden'}}>–</span></div>
+                  <div className="mt-2 min-h-[22px]"><span className="text-xs font-semibold bg-white/20 text-white px-2.5 py-1 rounded-full" data-savings-plan="creator" style={{ visibility: 'hidden' }}>–</span></div>
                 </div>
                 <div className="h-px bg-white/20 mb-5" />
                 <ul className="flex flex-col gap-2.5 flex-1 mb-6 text-sm text-white">
-                  {[['✓','50 credits'],['✓','100 websites'],['✓','5GB image upload'],['✓','Priority email support'],['★','Live chat included']].map(([ic,txt],i)=>(
+                  {[['✓', '50 credits'], ['✓', '100 websites'], ['✓', '5GB image upload'], ['✓', 'Priority email support'], ['★', 'Live chat included']].map(([ic, txt], i) => (
                     <li key={i} className="flex items-center gap-2.5">
-                      <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold ${ic==='★'?'bg-amber-100 text-amber-600':'bg-white/20 text-white'}`}>{ic}</span>
+                      <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold ${ic === '★' ? 'bg-amber-100 text-amber-600' : 'bg-white/20 text-white'}`}>{ic}</span>
                       <span className="text-white">{txt}</span>
                     </li>
                   ))}

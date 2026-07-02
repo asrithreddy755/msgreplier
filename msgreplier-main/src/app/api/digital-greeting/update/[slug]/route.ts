@@ -21,7 +21,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { recipient_name, sender_name, message, occasion, theme, photo_url } = body;
+    const { recipient_name, sender_name, message, occasion, theme, photo_url, birthday_date, fit_mode } = body;
 
     if (!recipient_name || !sender_name || !message) {
       return NextResponse.json(
@@ -33,7 +33,7 @@ export async function PATCH(
     // Update — the .eq('user_id', user.id) ensures ownership
     const { data, error } = await supabase
       .from('love_greetings')
-      .update({ recipient_name, sender_name, message, occasion, theme, photo_url })
+      .update({ recipient_name, sender_name, message, occasion, theme, photo_url, birthday_date, fit_mode })
       .eq('slug', slug)
       .eq('user_id', user.id)  // only update if this user owns it
       .select()

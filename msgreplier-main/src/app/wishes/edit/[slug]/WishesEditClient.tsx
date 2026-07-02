@@ -30,6 +30,7 @@ const editSchema = z.object({
   theme: z.string(),
   photo_url: z.string().optional().nullable(),
   birthday_date: z.string().optional().nullable(),
+  fit_mode: z.string().optional().nullable(),
 }).superRefine((data, ctx) => {
   if (data.occasion !== 'Anniversary' && (!data.birthday_date || data.birthday_date.trim() === '')) {
     ctx.addIssue({
@@ -52,6 +53,7 @@ type Greeting = {
   relationship: string;
   photo_url?: string | null;
   birthday_date?: string | null;
+  fit_mode?: string | null;
 };
 
 function IframeTemplate({ greeting, templateFolder }: { greeting: any; templateFolder: string }) {
@@ -74,6 +76,7 @@ function IframeTemplate({ greeting, templateFolder }: { greeting: any; templateF
       dob: greeting.dob || dummyDOB,
       photo_url: greeting.photo_url || "",
       preview: "true",
+      fit_mode: greeting.fit_mode || "cover",
     });
 
     setSrc(`/templates/${templateFolder}/index.html?${params.toString()}`);
@@ -121,6 +124,7 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
       theme: greeting.theme,
       photo_url: greeting.photo_url || '',
       birthday_date: greeting.birthday_date || '',
+      fit_mode: greeting.fit_mode || 'cover',
     },
   });
 
@@ -128,6 +132,7 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
   const theme = watch('theme');
   const message = watch('message');
   const photoUrlValue = watch('photo_url');
+  const fitModeValue = watch('fit_mode') || 'cover';
 
   const [activePhotoSlot, setActivePhotoSlot] = useState<number | null>(null);
 
@@ -347,10 +352,10 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
             <label className="wishes-label">
               Photo
               <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '11px', marginLeft: '4px' }}>
-                {['wishes3', 'wishes5', 'wishes6', 'wishes7', 'wishes8'].includes(theme) ? ' (recommended)' : ' (optional)'}
+                {['wishes3', 'wishes5', 'wishes6', 'wishes7', 'wishes8', 'wishes10', 'wishes11'].includes(theme) ? ' (recommended)' : ' (optional)'}
               </span>
             </label>
-            {['hearts', 'classic-2d', 'aurora', 'wishes3', 'wishes5', 'wishes6', 'wishes7', 'wishes8'].includes(theme) ? (
+            {['hearts', 'classic-2d', 'aurora', 'wishes3', 'wishes5', 'wishes6', 'wishes7', 'wishes8', 'wishes10', 'wishes11'].includes(theme) ? (
               /* Render multiple slots for Cake Surprise, Classic 2D, Cham 3D or Zodiac templates */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '0.5rem' }}>
                 {getPhotosArray(photoUrlValue || '').map((photo, index) => (
@@ -508,6 +513,76 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
             )}
           </div>
 
+          {/* Photo Fit Mode Toggle */}
+          {photoUrlValue && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'rgba(255, 255, 255, 0.5)',
+              border: '1px solid rgba(120, 85, 94, 0.1)',
+              padding: '0.75rem 1rem',
+              borderRadius: '14px',
+              marginTop: '1rem',
+              marginBottom: '1rem',
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#78555e' }}>Photo Fit Mode</span>
+                <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                  {fitModeValue === 'cover' ? 'Photos cropped to fill the template frame' : 'Full photo visible (may have letterbox bars)'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setValue('fit_mode', fitModeValue === 'cover' ? 'contain' : 'cover', { shouldDirty: true })}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  flexShrink: 0,
+                }}
+              >
+                {/* Track */}
+                <span style={{
+                  display: 'inline-block',
+                  width: '44px',
+                  height: '24px',
+                  borderRadius: '50px',
+                  background: fitModeValue === 'cover' ? 'linear-gradient(135deg,#be123c,#e11d48)' : 'rgba(0,0,0,0.12)',
+                  position: 'relative',
+                  transition: 'background 0.3s',
+                  border: fitModeValue === 'cover' ? '1.5px solid #be123c' : '1.5px solid rgba(0,0,0,0.1)',
+                }}>
+                  {/* Thumb */}
+                  <span style={{
+                    position: 'absolute',
+                    top: '3px',
+                    left: fitModeValue === 'cover' ? '22px' : '3px',
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    background: '#fff',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+                    transition: 'left 0.25s cubic-bezier(0.4,0,0.2,1)',
+                  }} />
+                </span>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  color: fitModeValue === 'cover' ? '#be123c' : '#94a3b8',
+                  minWidth: '22px',
+                  letterSpacing: '0.04em',
+                }}>
+                  {fitModeValue === 'cover' ? 'ON' : 'OFF'}
+                </span>
+              </button>
+            </div>
+          )}
+
           <div className="wishes-edit-actions">
             <Link href="/wishes/dashboard" className="wishes-btn-cancel">
               Cancel
@@ -551,7 +626,7 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
           setActivePhotoSlot(null);
         }}
         onSelect={(url) => {
-          if ((theme === 'hearts' || theme === 'classic-2d' || theme === 'aurora' || theme === 'wishes5' || theme === 'wishes3' || theme === 'wishes6' || theme === 'wishes7' || theme === 'wishes8') && activePhotoSlot !== null) {
+          if ((theme === 'hearts' || theme === 'classic-2d' || theme === 'aurora' || theme === 'wishes5' || theme === 'wishes3' || theme === 'wishes6' || theme === 'wishes7' || theme === 'wishes8' || theme === 'wishes10' || theme === 'wishes11') && activePhotoSlot !== null) {
             const photos = getPhotosArray(photoUrlValue || '');
             photos[activePhotoSlot].url = url;
             setValue('photo_url', JSON.stringify(photos), { shouldDirty: true });
@@ -614,64 +689,68 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
           </div>
           <div className="min-h-screen w-full relative z-10">
             {previewTemplate === "hearts" ? (
-              <TemplateCake
-                greeting={{
-                  recipient_name: previewData.recipient_name || "Sarah",
-                  sender_name: previewData.sender_name || "Michael",
-                  message:
-                    previewData.message ||
-                    "This is a preview of your beautiful wish! It contains all the love and happiness in the world.",
-                  occasion: previewData.occasion || "Birthday",
-                  music_id: "none",
-                  photo_url: previewData.photo_url || undefined,
-                  birthday_date: previewData.birthday_date || undefined,
-                }}
-                isPreview={true}
-              />
-            ) : previewTemplate === "classic-2d" ? (
-              <TemplateClassic2D
-                greeting={{
-                  recipient_name: previewData.recipient_name || "Sarah",
-                  sender_name: previewData.sender_name || "Michael",
-                  message:
-                    previewData.message ||
-                    "This is a preview of your beautiful wish! It contains all the love and happiness in the world.",
-                  occasion: previewData.occasion || "Birthday",
-                  photo_url: previewData.photo_url || undefined,
-                  birthday_date: previewData.birthday_date || undefined,
-                }}
-                isPreview={true}
-              />
-            ) : previewTemplate === "aurora" ? (
-              <TemplateAurora
-                greeting={{
-                  recipient_name: previewData.recipient_name || "Sarah",
-                  sender_name: previewData.sender_name || "Michael",
-                  message:
-                    previewData.message ||
-                    "This is a preview of your beautiful wish! It contains all the love and happiness in the world.",
-                  occasion: previewData.occasion || "Birthday",
-                  photo_url: previewData.photo_url || undefined,
-                  birthday_date: previewData.birthday_date || undefined,
-                }}
-                isPreview={true}
-              />
-            ) : (
-              <IframeTemplate
-                greeting={{
-                  recipient_name: previewData.recipient_name || "Sarah",
-                  sender_name: previewData.sender_name || "Michael",
-                  message:
-                    previewData.message ||
-                    "This is a preview of your beautiful wish! It contains all the love and happiness in the world.",
-                  occasion: previewData.occasion || "Birthday",
-                  music_id: "none",
-                  dob: previewData.birthday_date || "",
-                  photo_url: previewData.photo_url || undefined,
-                }}
-                templateFolder={`template_${previewTemplate}`}
-              />
-            )}
+               <TemplateCake
+                 greeting={{
+                   recipient_name: previewData.recipient_name || "Sarah",
+                   sender_name: previewData.sender_name || "Michael",
+                   message:
+                     previewData.message ||
+                     "This is a preview of your beautiful wish! It contains all the love and happiness in the world.",
+                   occasion: previewData.occasion || "Birthday",
+                   music_id: "none",
+                   photo_url: previewData.photo_url || undefined,
+                   birthday_date: previewData.birthday_date || undefined,
+                 }}
+                 photoFitMode={previewData.fit_mode === "cover"}
+                 isPreview={true}
+               />
+             ) : previewTemplate === "classic-2d" ? (
+               <TemplateClassic2D
+                 greeting={{
+                   recipient_name: previewData.recipient_name || "Sarah",
+                   sender_name: previewData.sender_name || "Michael",
+                   message:
+                     previewData.message ||
+                     "This is a preview of your beautiful wish! It contains all the love and happiness in the world.",
+                   occasion: previewData.occasion || "Birthday",
+                   photo_url: previewData.photo_url || undefined,
+                   birthday_date: previewData.birthday_date || undefined,
+                 }}
+                 photoFitMode={previewData.fit_mode === "cover"}
+                 isPreview={true}
+               />
+             ) : previewTemplate === "aurora" ? (
+               <TemplateAurora
+                 greeting={{
+                   recipient_name: previewData.recipient_name || "Sarah",
+                   sender_name: previewData.sender_name || "Michael",
+                   message:
+                     previewData.message ||
+                     "This is a preview of your beautiful wish! It contains all the love and happiness in the world.",
+                   occasion: previewData.occasion || "Birthday",
+                   photo_url: previewData.photo_url || undefined,
+                   birthday_date: previewData.birthday_date || undefined,
+                 }}
+                 photoFitMode={previewData.fit_mode === "cover"}
+                 isPreview={true}
+               />
+             ) : (
+               <IframeTemplate
+                 greeting={{
+                   recipient_name: previewData.recipient_name || "Sarah",
+                   sender_name: previewData.sender_name || "Michael",
+                   message:
+                     previewData.message ||
+                     "This is a preview of your beautiful wish! It contains all the love and happiness in the world.",
+                   occasion: previewData.occasion || "Birthday",
+                   music_id: "none",
+                   dob: previewData.birthday_date || "",
+                   photo_url: previewData.photo_url || undefined,
+                   fit_mode: previewData.fit_mode || "cover",
+                 }}
+                 templateFolder={`template_${previewTemplate}`}
+               />
+             )}
           </div>
         </div>
       )}

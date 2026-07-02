@@ -37,7 +37,9 @@ export async function POST(request: Request) {
       sender_avatar,
       photo_url,
       music_id,
-      reveal_type
+      reveal_type,
+      birthday_date,
+      fit_mode
     } = body;
 
     if (!recipient_name || !sender_name || !relationship || !occasion || !message) {
@@ -110,6 +112,8 @@ export async function POST(request: Request) {
           music_id: music_id || 'none',
           reveal_type: reveal_type || 'envelope',
           user_id: userId,  // null for anonymous users, user UUID for logged-in users
+          birthday_date: birthday_date || null,
+          fit_mode: fit_mode || 'cover',
         },
       ])
       .select()

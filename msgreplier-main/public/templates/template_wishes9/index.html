@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <title>Sorry</title>
+  <meta name="description" content="A special surprise website filled with love, memories, and heartfelt moments just for you💕" />
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Soft pink background layout -->
+  <div aria-hidden="true" class="soft-pink-bg"></div>
+  
+  <!-- Floating decorative hearts -->
+  <div aria-hidden="true" class="floating-heart heart-1">♡</div>
+  <div aria-hidden="true" class="floating-heart heart-2">♥</div>
+  <div aria-hidden="true" class="floating-heart heart-3">♥</div>
+  <div aria-hidden="true" class="floating-heart heart-4">♡</div>
+  <div aria-hidden="true" class="floating-heart heart-5">♡</div>
+  <div aria-hidden="true" class="floating-heart heart-6">♥</div>
+  <div aria-hidden="true" class="floating-heart heart-7">♥</div>
+
+  <!-- Stage wrapper containing different views -->
+  <div class="stage-wrapper">
+    
+    <!-- STAGE 0 (Sealed Envelope) -->
+    <div id="stage-sealed" class="stage" style="display: flex; width: 100%; justify-content: center; align-items: center;">
+      <div class="envelope-card">
+        <div class="corner-stamp" aria-hidden="true"><span>❤</span></div>
+        <div class="seal" aria-hidden="true"><span>🤍</span></div>
+        <h1 class="sealed-title">Sealed For You</h1>
+        <p class="sealed-subtitle">Hint — Just click on small heart to unlock button !</p>
+        
+        <button class="open-letter-btn disabled-btn" type="button" disabled>🔒 ACTIVATE HEART FIRST</button>
+      </div>
+    </div>
+
+    <!-- STAGE 1 (Don't Close Warning) -->
+    <div id="stage-warning" class="stage" style="display: none; width: 100%; justify-content: center; align-items: center;">
+      <div class="loader-card">
+        <div class="loader-flap"></div>
+        <div class="loader-emoji-top animate-pulse">𓆩❤︎𓆪</div>
+        <p class="loader-subtitle">HEY.....</p>
+        <h1 class="loader-title">Plz don't close this!!</h1>
+        
+        <div class="loader-gif-container">
+          <img src="gifs/first.gif" alt="cute character" class="loader-gif" />
+        </div>
+        
+        <div class="loader-description">
+          <p>before u leave.. :)</p>
+          <p>There's something my heart still wants to say ♡</p>
+        </div>
+        
+        <button class="loader-btn" id="stage2-next">✨ NEXT જ⁀➴ ♡</button>
+        <div class="loader-emoji-bottom">💗</div>
+      </div>
+    </div>
+
+    <!-- STAGE 2 (I messed up Intro) -->
+    <div id="stage-apology-intro" class="stage" style="display: none; width: 100%; justify-content: center; align-items: center;">
+      <div class="message-card">
+        <div class="message-flap"></div>
+        <div class="message-emoji-top animate-pulse">𓆩❤︎𓆪</div>
+        
+        <div class="message-gif-container">
+          <img src="gifs/second.gif" alt="special message" class="message-gif" />
+        </div>
+        
+        <p class="message-line main-heading">I messed up. genuinely sorry. ꫂ❁</p>
+        <p class="message-line body-text mb-1">No excuses from me. i’m really sorry..</p>
+        <p class="message-line body-text">Replayed it enough to know i was wrong. sorry.</p>
+        
+        <button class="message-btn" id="stage3-next">✨ NEXT જ⁀➴ ♡</button>
+        <div class="message-emoji-bottom">💗</div>
+      </div>
+    </div>
+
+    <!-- STAGE 3 (Beat Me Counter) -->
+    <div id="stage-beatme" class="stage" style="display: none; width: 100%; justify-content: center; align-items: center;">
+      <div class="birthday-container">
+        <div class="top-flap-card">
+          <div class="birthday-top-text">
+            <p class="sad-text">if u still sad ~</p>
+            <p class="action-text">then beat me</p>
+          </div>
+          
+          <div class="beat-counter-section">
+            <div class="beat-counter">
+              <span class="beat-number">0</span>
+              <span class="beat-times">x👊🏻</span>
+            </div>
+          </div>
+        </div>
+        
+        <button class="beat-me-btn">BEAT ME 💥</button>
+        
+        <div class="reveal-gif-wrapper">
+          <img src="gifs/third.gif" alt="cute sorry gif" class="reveal-gif" />
+        </div>
+        
+        <div class="message-revealed">
+          <p class="maybe-text">maybe be a little less mad at me now?</p>
+        </div>
+        
+        <div class="beat-emoji">•︵•</div>
+        
+        <div class="divider-wrapper">
+          <div class="divider-sad"></div>
+          <div class="divider-happy"></div>
+        </div>
+        
+        <button class="next-btn" id="stage4-next">✨ NEXT જ⁀➴ ♡</button>
+      </div>
+    </div>
+
+    <!-- STAGE 4 (Curtain Paper Letter) -->
+    <div id="stage-letter" class="stage" style="display: none; width: 100%; justify-content: center; align-items: center;">
+      <div class="message-wrapper">
+        <div class="love-card">
+          <div class="top-flap-card">
+            <div class="birthday-top-text">
+              <h2 class="top-title">Sorry....</h2>
+              <p class="top-subtitle">This is just a small apology from my heart ♡</p>
+            </div>
+          </div>
+          
+          <div class="curtain-area">
+            <div class="curtain left-curtain"></div>
+            <div class="curtain right-curtain"></div>
+            <div class="center-line"></div>
+            
+            <div class="open-center">
+              <button class="open-btn">
+                <span class="btn-heart">𓆩❤︎𓆪</span>
+                <span class="btn-text">OPEN</span>
+              </button>
+            </div>
+            
+            <div class="letter-paper">
+              <h2 class="letter-title">I'm Sorry 🤍</h2>
+              <div class="message-scroll">
+                <p>I know I hurt you and I genuinely regret it. I've replayed everything again and again in my head and I understand where I went wrong. You never deserved silence, confusion, or pain from me. I should have handled things better and been more understanding. I can't change what already happened, but I want you to know that my apology is real. You matter a lot to me and losing your trust hurts more than anything. I just hope someday you can forgive me and see that my intentions were never to hurt you. No excuses, only honesty from my side this time.</p>
+              </div>
+              <p class="letter-sender" id="letter-sender-name" style="margin-top:1rem; font-style:italic; text-align:right; font-size:0.95rem; color:#c06080;"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 5 (Final Yes/No choice) -->
+    <div id="stage-final" class="stage" style="display: none; width: 100%; justify-content: center; align-items: center;">
+      <div class="loader-card">
+        <div class="loader-flap"></div>
+        <div class="loader-emoji-top animate-pulse">𓆩❤︎𓆪</div>
+        <p class="loader-subtitle">꧁⎝ 𓆩༺✧༻𓆪 ⎠꧂</p>
+        <h1 class="loader-title">Hey, are you still angry at me? If yes, please just forgive me.</h1>
+        
+        <div class="loader-gif-container">
+          <img src="gifs/first.gif" alt="cute character" class="loader-gif" />
+        </div>
+        
+        <div class="loader-description">
+          <p>Don’t stay mad at me :)</p>
+          <p>just forgive me please ♡</p>
+        </div>
+        
+        <div class="buttons-container">
+          <button class="loader-btn btn-yes">✨ YES જ⁀➴ ♡</button>
+          <button class="loader-btn btn-no">NO</button>
+        </div>
+        
+        <div class="loader-emoji-bottom">💗</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal Popups Backdrop -->
+  <div class="backdrop">
+    <div class="claimold-popup">
+      <img src="gifs/fifth.gif" alt="popup gif" class="popup-gif" />
+      <p class="popup-text"></p>
+      <!-- WhatsApp button dynamically appended here on Yes -->
+    </div>
+  </div>
+
+  <!-- Footer credits -->
+  <div class="footer-credits">webkaizen</div>
+
+  <script src="app.js"></script>
+</body>
+</html>

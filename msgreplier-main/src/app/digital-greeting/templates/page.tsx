@@ -168,13 +168,40 @@ export default function TemplatesGallery() {
       tag: "Cinematic Curtain",
       tagClass: "bg-[#78555e]/90 text-white",
       imageCount: "0-4"
+    },
+    {
+      id: "wishes9",
+      title: `Sweet Apology Surprise 🥺`,
+      description: `A touching interactive apology letter experience with clean popups, soft music, and a "Beat Me" game if they are still sad.`,
+      image: "/wishes9_preview.png",
+      tag: "Apology & Game",
+      tagClass: "bg-amber-500/85 text-white",
+      imageCount: "0"
+    },
+    {
+      id: "wishes10",
+      title: `Retro Windows Memory 🌸`,
+      description: `A beautiful retro OS style surprise with cake slicing, customizable memory slides swiper, and custom letter wax seal.`,
+      image: "/wishes10_preview.png",
+      tag: "Retro 95 Style",
+      tagClass: "bg-[#ff5ea6]/85 text-white",
+      imageCount: "0-4"
+    },
+    {
+      id: "wishes11",
+      title: `Matrix Neon Surprise 🌌`,
+      description: `An immersive glowing cyberpunk code rain scene revealing your personalized wish, custom memories grid, and neon controls.`,
+      image: "/wishes11_preview.png",
+      tag: "Matrix Glowing",
+      tagClass: "bg-emerald-600/85 text-white",
+      imageCount: "0-4"
     }
   ];
 
   const getTemplatesForOccasion = (occName: string) => {
-    if (occName === "Birthday") return templatesList.filter((t) => !["wishes6", "propose_crush1"].includes(t.id));
+    if (occName === "Birthday") return templatesList.filter((t) => !["wishes6", "propose_crush1", "wishes9"].includes(t.id));
     if (occName === "Anniversary") return templatesList.filter((t) => ["classic-2d", "hearts", "wishes4", "wishes5"].includes(t.id));
-    if (occName === "Apoloy") return templatesList.filter((t) => ["wishes6", "propose_crush1"].includes(t.id));
+    if (occName === "Apoloy") return templatesList.filter((t) => ["wishes6", "propose_crush1", "wishes9"].includes(t.id));
     if (occName === "Love Greeting") return templatesList.filter((t) => ["propose_crush1", "wishes6"].includes(t.id));
     return [];
   };

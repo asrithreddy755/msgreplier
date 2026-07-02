@@ -107,6 +107,24 @@ const TEMPLATES = [
     icon: "🚪",
     description: "Cinematic opening curtain, custom countdown, memories swiper and sealable letter",
   },
+  {
+    id: "wishes9",
+    label: "Sweet Apology",
+    icon: "🥺",
+    description: "Apology letter experience with clean popups, soft style and a Beat Me game",
+  },
+  {
+    id: "wishes10",
+    label: "Retro Windows",
+    icon: "🌸",
+    description: "Retro OS style birthday surprise with cake slicing, memories swiper & wax seal",
+  },
+  {
+    id: "wishes11",
+    label: "Matrix Neon",
+    icon: "🌌",
+    description: "Cyberpunk glowing code rain wish with 2x2 grid memory photos",
+  },
 ];
 
 const getInitialOccasion = (param: string | null) => {
@@ -133,6 +151,9 @@ const getInitialTheme = (param: string | null) => {
   if (n === "wishes6" || n === "sweet scratch" || n === "scratch") return "wishes6";
   if (n === "wishes7" || n === "birthday locked" || n === "locked") return "wishes7";
   if (n === "wishes8" || n === "curtain surprise" || n === "curtain") return "wishes8";
+  if (n === "wishes9" || n === "apology" || n === "sweet apology") return "wishes9";
+  if (n === "wishes10" || n === "retro" || n === "retro windows") return "wishes10";
+  if (n === "wishes11" || n === "matrix" || n === "matrix neon") return "wishes11";
   if (n === "propose_crush1" || n === "propose" || n === "crush") return "propose_crush1";
   return "classic-2d";
 };
@@ -206,6 +227,7 @@ function DigitalGreetingCreateForm() {
     music_id: "none",
     reveal_type: "envelope",
     birthday_date: "",
+    fit_mode: "cover",
   });
 
   const [user, setUser] = useState<any>(null);
@@ -218,6 +240,13 @@ function DigitalGreetingCreateForm() {
   const [activePhotoSlot, setActivePhotoSlot] = useState<number | null>(null);
   // true = cover (fit to ratio / crop), false = contain (full photo visible)
   const [photoFitMode, setPhotoFitMode] = useState(true);
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      fit_mode: photoFitMode ? "cover" : "contain",
+    }));
+  }, [photoFitMode]);
 
   // Dynamic limits states
   const [plan, setPlan] = useState<string>('free');
@@ -354,8 +383,9 @@ function DigitalGreetingCreateForm() {
     const isAnniversary = formData.occasion === "Anniversary";
     const isProposeCrush = formData.theme === "propose_crush1";
     const isWishes6 = formData.theme === "wishes6";
-    if (!formData.recipient_name.trim() || !formData.sender_name.trim() || !formData.message.trim() || (!isAnniversary && !isProposeCrush && !isWishes6 && !formData.birthday_date.trim())) {
-      toast.error(isAnniversary || isProposeCrush || isWishes6
+    const isWishes9 = formData.theme === "wishes9";
+    if (!formData.recipient_name.trim() || !formData.sender_name.trim() || !formData.message.trim() || (!isAnniversary && !isProposeCrush && !isWishes6 && !isWishes9 && !formData.birthday_date.trim())) {
+      toast.error(isAnniversary || isProposeCrush || isWishes6 || isWishes9
         ? "Please fill all the remaining boxes: Recipient Name, Message, and Your Name."
         : "Please fill all the remaining boxes: Recipient Name, Date of Birth, Message, and Your Name."
       );
@@ -368,8 +398,9 @@ function DigitalGreetingCreateForm() {
     const isAnniversary = formData.occasion === "Anniversary";
     const isProposeCrush = formData.theme === "propose_crush1";
     const isWishes6 = formData.theme === "wishes6";
-    if (!formData.recipient_name.trim() || !formData.sender_name.trim() || !formData.message.trim() || (!isAnniversary && !isProposeCrush && !isWishes6 && !formData.birthday_date.trim())) {
-      toast.error(isAnniversary || isProposeCrush || isWishes6
+    const isWishes9 = formData.theme === "wishes9";
+    if (!formData.recipient_name.trim() || !formData.sender_name.trim() || !formData.message.trim() || (!isAnniversary && !isProposeCrush && !isWishes6 && !isWishes9 && !formData.birthday_date.trim())) {
+      toast.error(isAnniversary || isProposeCrush || isWishes6 || isWishes9
         ? "Please fill all the remaining boxes: Recipient Name, Message, and Your Name."
         : "Please fill all the remaining boxes: Recipient Name, Date of Birth, Message, and Your Name."
       );
@@ -409,10 +440,7 @@ function DigitalGreetingCreateForm() {
 
   const shareUrl =
     typeof window !== "undefined" && slug
-      ? `${window.location.origin}/greet/${slug}?${new URLSearchParams({
-          ...(formData.birthday_date ? { dob: formData.birthday_date } : {}),
-          fit_mode: photoFitMode ? "cover" : "contain",
-        }).toString()}`
+      ? `${window.location.origin}/greet/${slug}`
       : "";
 
   const copyLink = () => {
@@ -430,7 +458,7 @@ function DigitalGreetingCreateForm() {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
-  const canGenerate = formData.recipient_name.trim() && formData.sender_name.trim() && formData.message.trim() && (formData.birthday_date.trim() || formData.occasion === "Anniversary" || formData.theme === "propose_crush1" || formData.theme === "wishes6");
+  const canGenerate = formData.recipient_name.trim() && formData.sender_name.trim() && formData.message.trim() && (formData.birthday_date.trim() || formData.occasion === "Anniversary" || formData.theme === "propose_crush1" || formData.theme === "wishes6" || formData.theme === "wishes9");
 
   /* ════════════════════════════════════════════════════════════
      Render
@@ -497,7 +525,7 @@ function DigitalGreetingCreateForm() {
             </div>
 
             {/* Date of Birth */}
-            {formData.occasion !== "Anniversary" && formData.theme !== "propose_crush1" && formData.theme !== "wishes6" && (
+            {formData.occasion !== "Anniversary" && formData.theme !== "propose_crush1" && formData.theme !== "wishes6" && formData.theme !== "wishes9" && (
               <div className="create-field">
                 <label className="create-label">
                   Date of Birth
@@ -576,7 +604,7 @@ function DigitalGreetingCreateForm() {
             </div>
 
              {/* Photo Upload */}
-            {formData.theme !== "propose_crush1" && formData.theme !== "wishes6" && formData.theme !== "wishes7" && (
+            {formData.theme !== "propose_crush1" && formData.theme !== "wishes6" && formData.theme !== "wishes7" && formData.theme !== "wishes9" && (
               <div className="create-field">
                 <label className="create-label">
                   Photo
@@ -599,8 +627,8 @@ function DigitalGreetingCreateForm() {
                 </label>
 
                 {user ? (
-                  formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" || formData.theme === "wishes5" || formData.theme === "wishes3" || formData.theme === "wishes6" || formData.theme === "wishes7" || formData.theme === "wishes8" ? (
-                    /* Render multiple slots for Cake Surprise, Classic 2D, Cham 3D or Zodiac templates */
+                  formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" || formData.theme === "wishes5" || formData.theme === "wishes3" || formData.theme === "wishes6" || formData.theme === "wishes7" || formData.theme === "wishes8" || formData.theme === "wishes10" || formData.theme === "wishes11" ? (
+                    /* Render multiple slots for Cake Surprise, Classic 2D, Cham 3D, Zodiac, Retro or Matrix templates */
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                       {getPhotosArray(formData.photo_url).map((photo, index) => (
                         <div
@@ -760,7 +788,8 @@ function DigitalGreetingCreateForm() {
             {/* Photo Fit Toggle — only for templates that display photos */}
             {(formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" ||
               formData.theme === "wishes3" || formData.theme === "wishes4" || formData.theme === "wishes5" ||
-              formData.theme === "wishes6" || formData.theme === "wishes7" || formData.theme === "wishes8") && (
+              formData.theme === "wishes6" || formData.theme === "wishes7" || formData.theme === "wishes8" ||
+              formData.theme === "wishes10" || formData.theme === "wishes11") && (
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -986,6 +1015,7 @@ function DigitalGreetingCreateForm() {
                   music_id: "none",
                   reveal_type: "envelope",
                   birthday_date: "",
+                  fit_mode: "cover",
                 });
               }}
             >
@@ -1119,7 +1149,7 @@ function DigitalGreetingCreateForm() {
           setActivePhotoSlot(null);
         }}
         onSelect={(url) => {
-          if ((formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" || formData.theme === "wishes5" || formData.theme === "wishes3" || formData.theme === "wishes6" || formData.theme === "wishes7" || formData.theme === "wishes8") && activePhotoSlot !== null) {
+          if ((formData.theme === "hearts" || formData.theme === "classic-2d" || formData.theme === "aurora" || formData.theme === "wishes5" || formData.theme === "wishes3" || formData.theme === "wishes6" || formData.theme === "wishes7" || formData.theme === "wishes8" || formData.theme === "wishes10" || formData.theme === "wishes11") && activePhotoSlot !== null) {
             const photos = getPhotosArray(formData.photo_url);
             photos[activePhotoSlot].url = url;
             setFormData((prev) => ({ ...prev, photo_url: JSON.stringify(photos) }));
