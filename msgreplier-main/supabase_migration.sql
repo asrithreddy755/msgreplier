@@ -18,6 +18,7 @@ create table if not exists love_greetings (
 
 
 
+
 -- Enable RLS
 alter table love_greetings enable row level security;
 
