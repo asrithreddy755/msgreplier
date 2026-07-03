@@ -106,8 +106,8 @@ function isExpired(dateStr: string) {
 
 const PLAN_LIMITS = {
   free: { size: 2 * 1024 * 1024, count: 6, sizeLabel: '2MB', websiteLimit: 12 },
-  starter: { size: 3 * 1024 * 1024 * 1024, count: 15, sizeLabel: '3GB', websiteLimit: 25 },
-  creator: { size: 5 * 1024 * 1024 * 1024, count: 40, sizeLabel: '5GB', websiteLimit: 100 },
+  starter: { size: 5 * 1024 * 1024, count: 15, sizeLabel: '5MB', websiteLimit: 25 },
+  creator: { size: 15 * 1024 * 1024, count: 40, sizeLabel: '15MB', websiteLimit: 100 },
 };
 
 const getPlanLimits = (plan: string | undefined) => {
@@ -607,7 +607,7 @@ export default function WishesDashboardClient({ user, greetings }: Props) {
               {[
                 { icon: '⚡', label: 'Credits', value: String(creditsState), max: 'remaining' },
                 { icon: '🌐', label: 'Websites Limit', value: `${greetings.length} / ${plan === 'starter' ? '25' : plan === 'creator' ? '100' : '12'}`, max: 'used / limit' },
-                { icon: '🖼️', label: 'Image Upload', value: plan === 'starter' ? '3GB' : plan === 'creator' ? '5GB' : '2MB', max: 'limit' },
+                { icon: '🖼️', label: 'Image Upload', value: plan === 'starter' ? '5MB' : plan === 'creator' ? '15MB' : '2MB', max: 'limit' },
                 { icon: '💬', label: 'Live Chat', value: plan === 'creator' ? '✓' : '✕', max: plan === 'creator' ? 'included' : 'not included' },
               ].map((item, i) => (
                 <div key={i} className="bg-white rounded-[24px] p-5 border border-[#d4c3ab] shadow-sm text-center">
@@ -633,7 +633,7 @@ export default function WishesDashboardClient({ user, greetings }: Props) {
                   </div>
                 </div>
                 <ul className="flex flex-col gap-2 flex-1 mb-5 text-sm">
-                  {['20 credits / month', '25 websites limit', '3GB image size limit', 'Email support'].map((f, i) => (
+                  {['20 credits / month', '25 websites limit', '5MB image size limit', 'Email support'].map((f, i) => (
                     <li key={i} className="flex items-center gap-2 text-[#110f0f]">
                       <span className="w-4 h-4 rounded-md bg-[#eedfc6]/30 border border-[#d4c3ab] text-[#110f0f] text-[10px] font-bold flex items-center justify-center">✓</span>
                       {f}
@@ -656,7 +656,7 @@ export default function WishesDashboardClient({ user, greetings }: Props) {
                   </div>
                 </div>
                 <ul className="flex flex-col gap-2 flex-1 mb-5 text-sm text-white">
-                  {['50 credits / month', '100 websites limit', '5GB image size limit', 'Priority email support', 'Live chat support'].map((f, i) => (
+                  {['50 credits / month', '100 websites limit', '15MB image size limit', 'Priority email support', 'Live chat support'].map((f, i) => (
                     <li key={i} className="flex items-center gap-2 text-white/95">
                       <span className="w-4 h-4 rounded-md bg-white/20 text-white text-[10px] font-bold flex items-center justify-center">✓</span>
                       {f}
@@ -1045,13 +1045,13 @@ export default function WishesDashboardClient({ user, greetings }: Props) {
                   <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-[7px] px-1.5 rounded-full font-bold">POPULAR</span>
                   <p className="font-bold font-heading">Starter</p>
                   <p className="text-[#110f0f] mt-1 font-bold">25 Websites</p>
-                  <p className="text-[#110f0f] font-bold">3GB size</p>
+                  <p className="text-[#110f0f] font-bold">5MB size</p>
                   <p className="text-[#110f0f] font-bold">15 Images</p>
                 </div>
                 <div className="p-2 bg-[#110f0f] text-white rounded-xl">
                   <p className="font-bold font-heading text-[#eedfc6]">Creator</p>
                   <p className="text-white/80 mt-1">100 Websites</p>
-                  <p className="text-white/80">5GB size</p>
+                  <p className="text-white/80">15MB size</p>
                   <p className="text-white/80">40 Images</p>
                 </div>
               </div>

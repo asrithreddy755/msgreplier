@@ -32,8 +32,8 @@ function formatBytes(bytes: number, decimals = 2) {
 
 const PLAN_LIMITS = {
   free: { size: 2 * 1024 * 1024, count: 6, sizeLabel: '2MB' },
-  starter: { size: 3 * 1024 * 1024 * 1024, count: 15, sizeLabel: '3GB' },
-  creator: { size: 5 * 1024 * 1024 * 1024, count: 40, sizeLabel: '5GB' },
+  starter: { size: 5 * 1024 * 1024, count: 15, sizeLabel: '5MB' },
+  creator: { size: 15 * 1024 * 1024, count: 40, sizeLabel: '15MB' },
 };
 
 const getPlanLimits = (plan: string | undefined) => {
@@ -559,13 +559,13 @@ export default function GalleryPickerModal({ isOpen, onClose, onSelect }: Props)
                   <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-[7px] px-1.5 rounded-full font-bold">POPULAR</span>
                   <p className="font-bold font-heading">Starter</p>
                   <p className="text-[#110f0f] mt-1 font-bold">25 Websites</p>
-                  <p className="text-[#110f0f] font-bold">3GB size</p>
+                  <p className="text-[#110f0f] font-bold">5MB size</p>
                   <p className="text-[#110f0f] font-bold">15 Images</p>
                 </div>
                 <div className="p-2 bg-[#110f0f] text-white rounded-xl">
                   <p className="font-bold font-heading text-[#eedfc6]">Creator</p>
                   <p className="text-white/80 mt-1">100 Websites</p>
-                  <p className="text-white/80">5GB size</p>
+                  <p className="text-white/80">15MB size</p>
                   <p className="text-white/80">40 Images</p>
                 </div>
               </div>

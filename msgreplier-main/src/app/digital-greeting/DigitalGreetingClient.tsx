@@ -1097,7 +1097,7 @@ export default function ImmersiveWishesLanding() {
                 </div>
                 <div className="h-px bg-[#78555e]/10 mb-5" />
                 <ul className="flex flex-col gap-2.5 flex-1 mb-6 text-sm">
-                  {[['✓', '20 credits'], ['✓', '25 websites'], ['✓', '3GB image upload'], ['✓', 'Email support'], ['✗', 'Live chat']].map(([ic, txt], i) => (
+                  {[['✓', '20 credits'], ['✓', '25 websites'], ['✓', '5MB image upload'], ['✓', 'Email support'], ['✗', 'Live chat']].map(([ic, txt], i) => (
                     <li key={i} className="flex items-center gap-2.5">
                       <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold ${ic === '✓' ? 'bg-[#faf9fa] border border-[#78555e]/20 text-[#78555e]' : 'bg-[#fafafa] border border-[#e8e0e4] text-[#c4b0b5]'}`}>{ic}</span>
                       <span className={ic === '✓' ? 'text-[#3d2c2e]' : 'text-[#b5a5a8]'}>{txt}</span>
@@ -1123,7 +1123,7 @@ export default function ImmersiveWishesLanding() {
                 </div>
                 <div className="h-px bg-white/20 mb-5" />
                 <ul className="flex flex-col gap-2.5 flex-1 mb-6 text-sm text-white">
-                  {[['✓', '50 credits'], ['✓', '100 websites'], ['✓', '5GB image upload'], ['✓', 'Priority email support'], ['★', 'Live chat included']].map(([ic, txt], i) => (
+                  {[['✓', '50 credits'], ['✓', '100 websites'], ['✓', '15MB image upload'], ['✓', 'Priority email support'], ['★', 'Live chat included']].map(([ic, txt], i) => (
                     <li key={i} className="flex items-center gap-2.5">
                       <span className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 text-xs font-bold ${ic === '★' ? 'bg-amber-100 text-amber-600' : 'bg-white/20 text-white'}`}>{ic}</span>
                       <span className="text-white">{txt}</span>

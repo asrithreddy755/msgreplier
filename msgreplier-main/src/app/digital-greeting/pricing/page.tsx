@@ -52,7 +52,7 @@ const PLANS = [
     features: [
       { text: "20 credits",           included: true },
       { text: "25 websites",           included: true },
-      { text: "3GB image upload",      included: true },
+      { text: "5MB image upload",      included: true },
       { text: "Email support",         included: true },
       { text: "Live chat support",     included: false },
     ],
@@ -66,7 +66,7 @@ const PLANS = [
     features: [
       { text: "50 credits",           included: true },
       { text: "100 websites",          included: true },
-      { text: "5GB image upload",       included: true },
+      { text: "15MB image upload",      included: true },
       { text: "Priority email support", included: true },
       { text: "Live chat included",     included: true, highlight: true },
     ],
@@ -480,7 +480,7 @@ export default function DigitalGreetingPricingPage() {
                     { feature: "Monthly Price",    free: "₹0",  starter: "₹49", creator: "₹99" },
                     { feature: "Credits balance",  free: "6",   starter: "20",  creator: "50"  },
                     { feature: "Websites limit",   free: "12",  starter: "25",  creator: "100" },
-                    { feature: "Image Upload",      free: "2MB", starter: "3GB", creator: "5GB" },
+                    { feature: "Image Upload",      free: "2MB", starter: "5MB", creator: "15MB" },
                     { feature: "Email Support",     free: false, starter: true,  creator: true  },
                     { feature: "Live Chat",         free: false, starter: false, creator: true  },
                   ].map((row, i) => (

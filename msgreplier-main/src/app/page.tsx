@@ -419,7 +419,7 @@ export default function HomePage() {
                     desc: "Whether you need a private games night with Ludo, an anniversary website surprise, or an compatibility check, we have it all."
                   }
                 ].map((item, idx) => (
-                  <details key={idx} className="group border-b border-[#d4c3ab]/20 py-4 cursor-pointer" open={idx === 0}>
+                  <details key={idx} className="group border-b border-[#d4c3ab]/20 py-4 cursor-pointer">
                     <summary className="flex items-center justify-between list-none font-bold text-lg md:text-xl text-[#eedfc6] focus:outline-none py-2 select-none">
                       <span className="flex items-center gap-3">
                         <span className="text-xs font-bold opacity-60 text-white font-heading">{item.num}.</span>
@@ -460,7 +460,7 @@ export default function HomePage() {
                     desc: "Every greeting page is built with search engine optimization, semantic HTML, and fast loading performance."
                   }
                 ].map((item, idx) => (
-                  <details key={idx} open className="group border-b border-[#d4c3ab]/20 py-4 cursor-pointer">
+                  <details key={idx} className="group border-b border-[#d4c3ab]/20 py-4 cursor-pointer">
                     <summary className="flex items-center justify-between list-none font-bold text-lg md:text-xl text-[#eedfc6] focus:outline-none py-2 select-none">
                       <span className="flex items-center gap-3">
                         <span className="text-xs font-bold opacity-60 text-white font-heading">{item.num}.</span>
@@ -730,7 +730,7 @@ export default function HomePage() {
                   a: "Absolutely not. We do not sell, rent, or trade any personal data to third parties. We use Google Analytics for anonymous traffic insights and Google AdSense for advertising. Both are governed by Google's privacy policy."
                 }
               ].map((faq, idx) => (
-                <details key={idx} open className="group border-b border-[#d4c3ab] py-5 cursor-pointer">
+                <details key={idx} className="group border-b border-[#d4c3ab] py-5 cursor-pointer">
                   <summary className="flex items-center justify-between list-none font-bold text-base md:text-lg text-[#110f0f] focus:outline-none select-none">
                     <span>{faq.q}</span>
                     <span className="p-1 rounded-full border border-[#d4c3ab] transition-transform group-open:rotate-45">
