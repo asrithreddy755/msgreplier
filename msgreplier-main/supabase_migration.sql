@@ -16,6 +16,8 @@ create table if not exists love_greetings (
   expires_at timestamptz default (now() + interval '30 days')
 );
 
+
+
 -- Enable RLS
 alter table love_greetings enable row level security;
 
