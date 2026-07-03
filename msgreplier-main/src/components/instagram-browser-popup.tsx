@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Compass, MoreVertical, X, ArrowLeft, Chrome, ExternalLink } from "lucide-react";
-import Image from "next/image";
-
 export function InstagramBrowserPopup() {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -76,13 +74,10 @@ export function InstagramBrowserPopup() {
                   {/* Decorative Glowing GIF container */}
                   <div className="relative mb-6 rounded-full p-2 bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] shadow-xl">
                     <div className="w-24 h-24 rounded-full overflow-hidden bg-background flex items-center justify-center relative">
-                      <Image
+                      <img
                         src="/instagram-notice.gif"
                         alt="Notice GIF"
-                        fill
-                        className="object-cover scale-110"
-                        priority
-                        unoptimized
+                        className="w-full h-full object-cover scale-110"
                       />
                     </div>
                     {/* Glowing pulse ring */}
