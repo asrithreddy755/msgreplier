@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# cloudflare / opennext build output — never commit this
+/.open-next/
+
 # production
 /build
 
