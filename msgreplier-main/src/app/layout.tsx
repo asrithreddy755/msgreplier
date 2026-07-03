@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CookieConsent } from "@/components/cookie-consent";
+import { InstagramBrowserPopup } from "@/components/instagram-browser-popup";
 import { Navbar } from "@/components/navbar";
 import { MainWrapper } from "@/components/main-wrapper";
 import Script from "next/script";
@@ -222,6 +223,7 @@ export default async function RootLayout({
             </MainWrapper>
             <FooterWrapper />
             <CookieConsent />
+            <InstagramBrowserPopup />
           </div>
           <Toaster />
           <SonnerToaster position="top-center" richColors />
