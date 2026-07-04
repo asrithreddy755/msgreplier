@@ -1,4 +1,4 @@
-import { getSupabaseAdmin } from './src/app/api/love-space/_supabase';
+import { getSupabaseAdmin } from '../src/app/api/love-space/_supabase';
 
 async function migrate() {
     const { client: supabaseAdmin } = getSupabaseAdmin();
