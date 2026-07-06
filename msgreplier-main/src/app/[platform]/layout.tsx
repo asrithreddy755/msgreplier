@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { PLATFORMS } from "@/lib/constants";
-
-const getSiteUrl = () => {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
-  const base = envUrl?.trim() || "https://msgreplier.com";
-  return base.startsWith("https://") ? base : `https://${base.replace(/^http:\/\//, "")}`;
-};
+import { getSiteUrl } from "@/lib/site-url";
 
 const homeTitle = "MsgReplier - Free Text Repeater, Slang Dictionary & AI Reply Generator";
 const homeDescription =

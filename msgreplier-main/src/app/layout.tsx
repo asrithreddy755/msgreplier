@@ -11,14 +11,7 @@ import Script from "next/script";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { FooterWrapper } from "@/components/FooterWrapper";
 import AdsenseScript from "@/components/AdsenseScript";
-
-const getSiteUrl = () => {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
-  const base = envUrl?.trim() || "https://msgreplier.com";
-  return base.startsWith("https://")
-    ? base
-    : `https://${base.replace(/^http:\/\//, "")}`;
-};
+import { getSiteUrl } from "@/lib/site-url";
 
 const siteUrl = getSiteUrl();
 const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-1XPYWEPPGJ";
