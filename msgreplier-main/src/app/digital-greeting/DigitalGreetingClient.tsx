@@ -649,6 +649,15 @@ export default function ImmersiveWishesLanding() {
       imageCount: "0"
     },
     {
+      id: "apology_1",
+      title: `Interactive Apology Letter 🧸`,
+      description: `A cute interactive apology experience with swiper slide messages, moving buttons, dynamic math equations, and falling hearts.`,
+      image: "/wishes9_preview.png",
+      tag: "Apology & Hearts",
+      tagClass: "bg-pink-500/85 text-white",
+      imageCount: "0"
+    },
+    {
       id: "wishes10",
       title: `Retro Windows Memory 🌸`,
       description: `A beautiful retro OS style surprise with cake slicing, customizable memory slides swiper, and custom letter wax seal.`,
@@ -670,13 +679,13 @@ export default function ImmersiveWishesLanding() {
 
   const filteredTemplates =
     activeOccasion === "Birthday"
-      ? templatesList
+      ? templatesList.filter((t) => !["wishes6", "propose_crush1", "wishes9", "apology_1"].includes(t.id))
       : activeOccasion === "Anniversary"
         ? templatesList.filter((t) => ["classic-2d", "hearts", "wishes4", "wishes5"].includes(t.id))
         : activeOccasion === "Apoloy"
-          ? templatesList.filter((t) => ["wishes6"].includes(t.id))
+          ? templatesList.filter((t) => ["wishes6", "propose_crush1", "wishes9", "apology_1"].includes(t.id))
           : activeOccasion === "Love Greeting"
-            ? templatesList.filter((t) => ["propose_crush1"].includes(t.id))
+            ? templatesList.filter((t) => ["propose_crush1", "wishes6"].includes(t.id))
             : [];
 
   return (

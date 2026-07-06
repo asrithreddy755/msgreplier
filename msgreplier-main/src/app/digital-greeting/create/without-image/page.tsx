@@ -114,6 +114,12 @@ const TEMPLATES = [
     description: "Apology letter experience with clean popups, soft style and a Beat Me game",
   },
   {
+    id: "apology_1",
+    label: "Interactive Apology",
+    icon: "🥺",
+    description: "Cute apology slides, a playful 'Still angry' choice, and calculator equation resolver",
+  },
+  {
     id: "wishes10",
     label: "Retro Windows",
     icon: "🌸",
@@ -152,6 +158,7 @@ const getInitialTheme = (param: string | null) => {
   if (n === "wishes7" || n === "birthday locked" || n === "locked") return "wishes7";
   if (n === "wishes8" || n === "curtain surprise" || n === "curtain") return "wishes8";
   if (n === "wishes9" || n === "apology" || n === "sweet apology") return "wishes9";
+  if (n === "apology_1" || n === "apology1") return "apology_1";
   if (n === "wishes10" || n === "retro" || n === "retro windows") return "wishes10";
   if (n === "wishes11" || n === "matrix" || n === "matrix neon") return "wishes11";
   if (n === "propose_crush1" || n === "propose" || n === "crush") return "propose_crush1";
@@ -368,14 +375,17 @@ function DigitalGreetingCreateForm() {
     toast.success(`Random ${formData.occasion} message generated! ✨`);
   };
 
+  const isDobRequired = formData.occasion !== "Anniversary" &&
+                        formData.theme !== "propose_crush1" &&
+                        formData.theme !== "wishes6" &&
+                        formData.theme !== "wishes9" &&
+                        formData.theme !== "apology_1";
+
   const handlePreviewClick = (theme: string) => {
-    const isAnniversary = formData.occasion === "Anniversary";
-    const isProposeCrush = formData.theme === "propose_crush1";
-    const isWishes6 = formData.theme === "wishes6";
-    if (!formData.recipient_name.trim() || !formData.sender_name.trim() || !formData.message.trim() || (!isAnniversary && !isProposeCrush && !isWishes6 && !formData.birthday_date.trim())) {
-      toast.error(isAnniversary || isProposeCrush || isWishes6
-        ? "Please fill all the remaining boxes: Recipient Name, Message, and Your Name."
-        : "Please fill all the remaining boxes: Recipient Name, Date of Birth, Message, and Your Name."
+    if (!formData.recipient_name.trim() || !formData.sender_name.trim() || !formData.message.trim() || (isDobRequired && !formData.birthday_date.trim())) {
+      toast.error(isDobRequired
+        ? "Please fill all the remaining boxes: Recipient Name, Date of Birth, Message, and Your Name."
+        : "Please fill all the remaining boxes: Recipient Name, Message, and Your Name."
       );
       return;
     }
@@ -383,13 +393,10 @@ function DigitalGreetingCreateForm() {
   };
 
   const handleGenerate = async () => {
-    const isAnniversary = formData.occasion === "Anniversary";
-    const isProposeCrush = formData.theme === "propose_crush1";
-    const isWishes6 = formData.theme === "wishes6";
-    if (!formData.recipient_name.trim() || !formData.sender_name.trim() || !formData.message.trim() || (!isAnniversary && !isProposeCrush && !isWishes6 && !formData.birthday_date.trim())) {
-      toast.error(isAnniversary || isProposeCrush || isWishes6
-        ? "Please fill all the remaining boxes: Recipient Name, Message, and Your Name."
-        : "Please fill all the remaining boxes: Recipient Name, Date of Birth, Message, and Your Name."
+    if (!formData.recipient_name.trim() || !formData.sender_name.trim() || !formData.message.trim() || (isDobRequired && !formData.birthday_date.trim())) {
+      toast.error(isDobRequired
+        ? "Please fill all the remaining boxes: Recipient Name, Date of Birth, Message, and Your Name."
+        : "Please fill all the remaining boxes: Recipient Name, Message, and Your Name."
       );
       return;
     }
@@ -445,7 +452,7 @@ function DigitalGreetingCreateForm() {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
-  const canGenerate = formData.recipient_name.trim() && formData.sender_name.trim() && formData.message.trim() && (formData.birthday_date.trim() || formData.occasion === "Anniversary" || formData.theme === "propose_crush1" || formData.theme === "wishes6");
+  const canGenerate = formData.recipient_name.trim() && formData.sender_name.trim() && formData.message.trim() && (!isDobRequired || formData.birthday_date.trim());
 
   /* ════════════════════════════════════════════════════════════
      Render
@@ -512,7 +519,7 @@ function DigitalGreetingCreateForm() {
             </div>
 
             {/* Date of Birth */}
-            {formData.occasion !== "Anniversary" && formData.theme !== "propose_crush1" && formData.theme !== "wishes6" && (
+            {isDobRequired && (
               <div className="create-field">
                 <label className="create-label">
                   Date of Birth
@@ -591,7 +598,7 @@ function DigitalGreetingCreateForm() {
             </div>
 
              {/* Photo Upload */}
-            {formData.theme !== "propose_crush1" && formData.theme !== "wishes6" && (
+            {formData.theme !== "propose_crush1" && formData.theme !== "wishes6" && formData.theme !== "wishes9" && formData.theme !== "apology_1" && (
               <div className="create-field">
                 <label className="create-label">
                   Photo

@@ -65,6 +65,7 @@ const THEME_ICONS: Record<string, string> = {
   wishes10: '🌸',
   wishes11: '🌌',
   propose_crush1: '💖',
+  apology_1: '🥺',
 }
 
 const THEME_LABELS: Record<string, string> = {
@@ -81,6 +82,7 @@ const THEME_LABELS: Record<string, string> = {
   wishes10: 'Retro Windows',
   wishes11: 'Matrix Neon',
   propose_crush1: 'Crush Proposal',
+  apology_1: 'Interactive Apology',
 }
 
 function formatBytes(bytes: number, decimals = 2) {

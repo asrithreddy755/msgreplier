@@ -7,6 +7,7 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "A Special Surprise for You 💝",
   description: "Someone special has built a custom digital surprise for you! Open this link to experience a magical celebration with 3D animations and music.",
+  robots: { index: false, follow: false },
   openGraph: {
     title: "A Digital Surprise is Waiting for You! 🎁",
     description: "Experience a personalized digital greeting built just for you. Interactive, animated, and full of love. Tap to open your gift.",

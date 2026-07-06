@@ -111,7 +111,7 @@ export default function GreetingWebsite() {
     );
   }
 
-  if (greeting.theme === "wishes3" || greeting.theme === "wishes4" || greeting.theme === "wishes5" || greeting.theme === "propose_crush1" || greeting.theme === "wishes6" || greeting.theme === "wishes7" || greeting.theme === "wishes8" || greeting.theme === "wishes9" || greeting.theme === "wishes10" || greeting.theme === "wishes11") {
+  if (greeting.theme === "wishes3" || greeting.theme === "wishes4" || greeting.theme === "wishes5" || greeting.theme === "propose_crush1" || greeting.theme === "wishes6" || greeting.theme === "wishes7" || greeting.theme === "wishes8" || greeting.theme === "wishes9" || greeting.theme === "wishes10" || greeting.theme === "wishes11" || greeting.theme === "apology_1") {
     return (
       <IframeTemplate
         greeting={{

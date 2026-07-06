@@ -32,7 +32,12 @@ const editSchema = z.object({
   birthday_date: z.string().optional().nullable(),
   fit_mode: z.string().optional().nullable(),
 }).superRefine((data, ctx) => {
-  if (data.occasion !== 'Anniversary' && (!data.birthday_date || data.birthday_date.trim() === '')) {
+  const isDobRequired = data.occasion !== 'Anniversary' && 
+                        data.theme !== 'propose_crush1' && 
+                        data.theme !== 'wishes6' && 
+                        data.theme !== 'wishes9' && 
+                        data.theme !== 'apology_1';
+  if (isDobRequired && (!data.birthday_date || data.birthday_date.trim() === '')) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'Date of birth is required',
@@ -210,7 +215,15 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
   };
 
   const onInvalidSubmit = () => {
-    toast.error("Please fill all the remaining boxes: Recipient Name, Date of Birth, Message, and Your Name.");
+    const isDobRequired = occasion !== 'Anniversary' && 
+                          theme !== 'propose_crush1' && 
+                          theme !== 'wishes6' && 
+                          theme !== 'wishes9' && 
+                          theme !== 'apology_1';
+    toast.error(isDobRequired
+      ? "Please fill all the remaining boxes: Recipient Name, Date of Birth, Message, and Your Name."
+      : "Please fill all the remaining boxes: Recipient Name, Message, and Your Name."
+    );
   };
 
   const handleSave = async () => {
@@ -280,7 +293,7 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
             )}
           </div>
 
-          {occasion !== 'Anniversary' && (
+          {(occasion !== 'Anniversary' && theme !== 'propose_crush1' && theme !== 'wishes6' && theme !== 'wishes9' && theme !== 'apology_1') && (
             <div className="wishes-field">
               <label htmlFor="edit-birthday-date" className="wishes-label">Date of Birth</label>
               <input

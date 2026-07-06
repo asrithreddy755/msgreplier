@@ -201,6 +201,15 @@ export default function BlogPage() {
 
         {/* Recent Articles Section */}
         <section className="space-y-10 text-left">
+
+          {/* Editorial intro — server-rendered, crawlable */}
+          <div className="bg-white border border-[#d4c3ab] rounded-[24px] p-6 md:p-8 text-left space-y-3">
+            <h2 className="text-lg font-bold text-[#110f0f]">What We Write About</h2>
+            <p className="text-sm md:text-base text-[#5d6c7b] leading-relaxed">
+              The MsgReplier blog covers everything about modern digital communication — from practical guides on using our tools to deep dives into relationship psychology and internet culture. We write for couples navigating long-distance relationships, Gen Z users trying to keep up with fast-evolving slang, and anyone who wants to express themselves better in text. Our categories include <strong className="text-[#110f0f]">Messaging Tips</strong> (how to start conversations, craft better replies, and avoid awkward silences), <strong className="text-[#110f0f]">Relationships</strong> (anniversary ideas, good morning texts, and communication strategies), <strong className="text-[#110f0f]">Internet Culture</strong> (Gen Z slang, trending acronyms, and meme-speak decoded), and <strong className="text-[#110f0f]">Feature Guides</strong> (step-by-step tutorials for MsgReplier tools). Every article is written by our team in plain language — no jargon, no filler. Just genuinely useful reads.
+            </p>
+          </div>
+
           <div className="flex items-center gap-4 pb-4 border-b border-[#d4c3ab]">
             <h2 className="text-2xl font-bold tracking-tight text-[#110f0f]">Recent Articles</h2>
           </div>

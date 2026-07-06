@@ -11,17 +11,35 @@ const getSiteUrl = () => {
 
 /** Sign up a new user with email and password */
 export async function signUpWithEmail(email: string, password: string) {
+  if (!email || !password) {
+    console.error('Signup error: Email and password are required');
+    return { error: 'Email and password are required' };
+  }
+
   const supabase = createSupabaseBrowserClient();
-  const { error } = await supabase.auth.signUp({ email, password });
-  if (error) return { error: error.message };
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) {
+    console.error('Signup error:', error.message);
+    return { error: error.message };
+  }
+  console.log('Signup success:', data);
   return { error: null };
 }
 
 /** Sign in an existing user with email and password */
 export async function signInWithEmail(email: string, password: string) {
+  if (!email || !password) {
+    console.error('Login error: Email and password are required');
+    return { error: 'Email and password are required' };
+  }
+
   const supabase = createSupabaseBrowserClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: error.message };
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    console.error('Login error:', error.message);
+    return { error: error.message };
+  }
+  console.log('Login success:', data);
   return { error: null };
 }
 
@@ -56,10 +74,19 @@ export async function getSession() {
 
 /** Send a password reset email */
 export async function sendResetPasswordEmail(email: string) {
+  if (!email) {
+    console.error('Reset password error: Email is required');
+    return { error: 'Email is required' };
+  }
+
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${getSiteUrl()}/auth/callback?next=/wishes/dashboard`,
+    redirectTo: `${getSiteUrl()}/auth/callback`,
   });
-  if (error) return { error: error.message };
+  if (error) {
+    console.error('Reset password error:', error.message);
+    return { error: error.message };
+  }
+  console.log('Reset password link sent to:', email);
   return { error: null };
 }

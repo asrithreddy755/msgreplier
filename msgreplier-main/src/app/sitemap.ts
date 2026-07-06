@@ -17,20 +17,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/digital-greeting/create`,
-      lastModified: new Date("2026-05-24"),
+      url: `${baseUrl}/text-repeater`,
+      lastModified: new Date("2026-07-06"),
       changeFrequency: "weekly",
-      priority: 0.7,
+      priority: 0.8,
     },
     {
-      url: `${baseUrl}/text-repeater`,
-      lastModified: new Date("2026-05-24"),
+      url: `${baseUrl}/shortcutpedia`,
+      lastModified: new Date("2026-07-06"),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/library`,
+      lastModified: new Date("2026-07-06"),
       changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: baseUrl,
-      lastModified: new Date("2026-05-24"),
+      lastModified: new Date("2026-07-06"),
       changeFrequency: "weekly",
       priority: 1.0,
     },
@@ -39,6 +45,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date("2026-05-24"),
       changeFrequency: "weekly",
       priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/love-score`,
+      lastModified: new Date("2026-07-06"),
+      changeFrequency: "weekly",
+      priority: 0.7,
     },
 
     {
@@ -130,12 +142,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/blog/psychology-of-crushes`,
       lastModified: new Date("2026-02-26"),
       changeFrequency: "monthly",
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/love-score`,
-      lastModified: new Date("2026-05-24"),
-      changeFrequency: "weekly",
       priority: 0.3,
     },
     {
