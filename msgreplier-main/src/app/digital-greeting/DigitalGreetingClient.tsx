@@ -837,7 +837,7 @@ export default function ImmersiveWishesLanding() {
             </article>
             <article className="text-center p-4">
               <p className="font-headline text-4xl font-extrabold text-[#78555e]">
-                <Counter endValue={15} />
+                <Counter endValue={20} />
               </p>
               <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-[#817476]">Featured Templates</p>
             </article>
