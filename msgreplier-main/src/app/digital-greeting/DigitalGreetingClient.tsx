@@ -673,7 +673,7 @@ export default function ImmersiveWishesLanding() {
       image: "/wishes11_preview.png",
       tag: "Matrix Glowing",
       tagClass: "bg-emerald-600/85 text-white",
-      imageCount: "0-4"
+      imageCount: "0"
     }
   ];
 

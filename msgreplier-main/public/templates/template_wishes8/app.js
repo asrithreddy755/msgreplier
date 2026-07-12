@@ -31,28 +31,41 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (photoUrlParam.startsWith('[')) {
         photos = JSON.parse(photoUrlParam).filter(p => p && p.url);
-      } else {
+      } else if (photoUrlParam.trim() !== '') {
         photos = [{ url: photoUrlParam }];
       }
     } catch (e) {
       console.error('Error parsing photo_url:', e);
-      photos = [{ url: photoUrlParam }];
+      if (photoUrlParam.trim() !== '') {
+        photos = [{ url: photoUrlParam }];
+      }
     }
   }
 
+  const hasPhotos = photos.length > 0;
+
   const swiperWrapper = document.querySelector('.swiper-wrapper');
-  if (swiperWrapper && photos.length > 0) {
+  if (swiperWrapper && hasPhotos) {
+    // Replace example slides with actual user photos
     swiperWrapper.innerHTML = '';
     photos.forEach(photo => {
       const slide = document.createElement('div');
       slide.className = 'swiper-slide';
       slide.innerHTML = `
         <div class="slide-card">
-          <img src="${photo.url}" alt="${photo.caption || 'Memory'}" />
+          <img src="${photo.url}" alt="${photo.caption || 'Memory'}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />
         </div>
       `;
       swiperWrapper.appendChild(slide);
     });
+  }
+
+  // If no photos: hide gallery screen and its navigation button, change flow directly to letter
+  const gotoGalleryBtn = document.getElementById('btn-goto-gallery');
+  const galleryScreen = document.getElementById('screen-gallery');
+  if (!hasPhotos) {
+    if (gotoGalleryBtn) gotoGalleryBtn.style.display = 'none';
+    if (galleryScreen) galleryScreen.style.display = 'none';
   }
 
   // --- Firefly Generation ---
@@ -127,10 +140,21 @@ document.addEventListener('DOMContentLoaded', () => {
     showScreen('screen-countdown');
   });
 
-  // --- Screen 2: Countdown Calculation and Animation ---
+  // --- Screen 2: Countdown btn — goes to gallery if photos exist, else to letter directly ---
   document.getElementById('btn-goto-gallery').addEventListener('click', () => {
     showScreen('screen-gallery');
   });
+
+  // If no photos, add a direct-to-letter button in countdown screen
+  if (!hasPhotos) {
+    const countdownContent = document.querySelector('#screen-countdown .countdown-content');
+    const skipBtn = document.createElement('button');
+    skipBtn.className = 'premium-btn';
+    skipBtn.style.marginTop = '12px';
+    skipBtn.innerHTML = '<span>Read My Message 💌</span>';
+    skipBtn.addEventListener('click', () => showScreen('screen-letter'));
+    if (countdownContent) countdownContent.appendChild(skipBtn);
+  }
 
   function startCountdownAnimation() {
     let targetDate = new Date('2007-06-23');
