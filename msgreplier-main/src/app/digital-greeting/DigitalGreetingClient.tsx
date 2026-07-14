@@ -550,31 +550,58 @@ export default function ImmersiveWishesLanding() {
 
   const templatesList = [
     {
+      id: "wishes4",
+      title: `Love Letter Box ${occDisplay} ✉️`,
+      description: `Envelope opening with a custom message scratch card, letter popup, and 3D blowing experience for your ${occDisplay.toLowerCase()}.`,
+      image: "/love_letter.png",
+      tag: "Recommended",
+      tagClass: "bg-[#78555e]/90 text-white",
+      imageCount: "0-1"
+    },
+    {
+      id: "wishes7",
+      title: `Birthday Surprise 🎁`,
+      description: `A dark romantic birthday experience with animated GIF, live seconds counter, memory gallery, and a heartfelt letter opener.`,
+      image: "/birthday_locked_preview.png",
+      tag: "Surprise",
+      tagClass: "bg-[#8b1a1a]/85 text-white",
+      imageCount: "0-4"
+    },
+    {
+      id: "wishes10",
+      title: `Retro Windows Memory 🌸`,
+      description: `A beautiful retro OS style surprise with cake slicing, customizable memory slides swiper, and custom letter wax seal.`,
+      image: "/wishes10_preview.png",
+      tag: "Retro 95 Style",
+      tagClass: "bg-[#ff5ea6]/85 text-white",
+      imageCount: "0-4"
+    },
+    {
       id: "classic-2d",
       title: `Classic 2D ${occDisplay} Surprise`,
       description: `A gorgeous 2D experience for your ${occDisplay.toLowerCase()} with lights, floating balloons, and interactive candle blow.`,
       image: "/classic_2d.png",
-      tag: "Recommended",
-      tagClass: "bg-[#78555e]/90 text-white",
+      tag: "Classic 2D",
+      tagClass: "bg-[#78555e]/85 text-white",
       imageCount: "0-6"
     },
     {
-      id: "aurora",
-      title: `Cham 3D ${occDisplay} Scene`,
-      description: `An immersive 3D scene for your ${occDisplay.toLowerCase()} where candles need to be blown using the microphone.`,
-      image: "/aurora.png",
-      tag: "Interactive 3D",
-      tagClass: "bg-[#c64b7a]/85 text-white",
-      imageCount: "0-1"
+      id: "wishes8",
+      title: `Curtain & Envelope Surprise 🚪`,
+      description: `A cinematic curtain entrance opening to a custom live countdown, swipeable memories carousel, and interactive sealable envelope letter.`,
+      image: "/curtain_envelope_preview.png",
+      tag: "Cinematic Curtain",
+      tagClass: "bg-[#78555e]/90 text-white",
+      imageCount: "0-4"
     },
     {
-      id: "hearts",
-      title: `${occDisplay} Cake Surprise`,
-      description: `Interactive cake blowing combined with standard text messages for a sweet ${occDisplay.toLowerCase()} message.`,
-      image: "/hearts.png",
-      tag: "Classic Cake",
-      tagClass: "bg-[#bf8ea2]/90 text-white",
-      imageCount: "0-4"
+      id: "wishes11",
+      title: `Matrix Neon Surprise 🌌`,
+      description: `An immersive glowing cyberpunk code rain scene revealing your personalized wish, custom memories grid, and neon controls.`,
+      image: "/wishes11_preview.png",
+      tag: "Matrix Glowing",
+      tagClass: "bg-emerald-600/85 text-white",
+      imageCount: "0"
     },
     {
       id: "wishes3",
@@ -586,15 +613,6 @@ export default function ImmersiveWishesLanding() {
       imageCount: "0-4"
     },
     {
-      id: "wishes4",
-      title: `Love Letter Box ${occDisplay} ✉️`,
-      description: `Envelope opening with a custom message scratch card, letter popup, and 3D blowing experience for your ${occDisplay.toLowerCase()}.`,
-      image: "/love_letter.png",
-      tag: "Envelope Scratch",
-      tagClass: "bg-[#78555e]/85 text-white",
-      imageCount: "0-1"
-    },
-    {
       id: "wishes5",
       title: `Zodiac Celebration ${occDisplay} 🌟`,
       description: `Immersive cosmic ${occDisplay.toLowerCase()} space with zodiac details, custom message cards, stars map, and fortune crystal ball.`,
@@ -602,6 +620,24 @@ export default function ImmersiveWishesLanding() {
       tag: "Cosmic Zodiac",
       tagClass: "bg-indigo-900/85 text-white",
       imageCount: "0-4"
+    },
+    {
+      id: "hearts",
+      title: `${occDisplay} Cake Surprise`,
+      description: `Interactive cake blowing combined with standard text messages for a sweet ${occDisplay.toLowerCase()} message.`,
+      image: "/hearts.png",
+      tag: "Classic Cake",
+      tagClass: "bg-[#bf8ea2]/90 text-white",
+      imageCount: "0-4"
+    },
+    {
+      id: "aurora",
+      title: `Cham 3D ${occDisplay} Scene`,
+      description: `An immersive 3D scene for your ${occDisplay.toLowerCase()} where candles need to be blown using the microphone.`,
+      image: "/aurora.png",
+      tag: "Interactive 3D",
+      tagClass: "bg-[#c64b7a]/85 text-white",
+      imageCount: "0-1"
     },
     {
       id: "propose_crush1",
@@ -622,24 +658,6 @@ export default function ImmersiveWishesLanding() {
       imageCount: "0"
     },
     {
-      id: "wishes7",
-      title: `Birthday Surprise 🎁`,
-      description: `A dark romantic birthday experience with animated GIF, live seconds counter, memory gallery, and a heartfelt letter opener.`,
-      image: "/birthday_locked_preview.png",
-      tag: "Surprise",
-      tagClass: "bg-[#8b1a1a]/85 text-white",
-      imageCount: "0-4"
-    },
-    {
-      id: "wishes8",
-      title: `Curtain & Envelope Surprise 🚪`,
-      description: `A cinematic curtain entrance opening to a custom live countdown, swipeable memories carousel, and interactive sealable envelope letter.`,
-      image: "/curtain_envelope_preview.png",
-      tag: "Cinematic Curtain",
-      tagClass: "bg-[#78555e]/90 text-white",
-      imageCount: "0-4"
-    },
-    {
       id: "wishes9",
       title: `Sweet Apology Surprise 🥺`,
       description: `A touching interactive apology letter experience with clean popups, soft music, and a "Beat Me" game if they are still sad.`,
@@ -655,24 +673,6 @@ export default function ImmersiveWishesLanding() {
       image: "/wishes9_preview.png",
       tag: "Apology & Hearts",
       tagClass: "bg-pink-500/85 text-white",
-      imageCount: "0"
-    },
-    {
-      id: "wishes10",
-      title: `Retro Windows Memory 🌸`,
-      description: `A beautiful retro OS style surprise with cake slicing, customizable memory slides swiper, and custom letter wax seal.`,
-      image: "/wishes10_preview.png",
-      tag: "Retro 95 Style",
-      tagClass: "bg-[#ff5ea6]/85 text-white",
-      imageCount: "0-4"
-    },
-    {
-      id: "wishes11",
-      title: `Matrix Neon Surprise 🌌`,
-      description: `An immersive glowing cyberpunk code rain scene revealing your personalized wish, custom memories grid, and neon controls.`,
-      image: "/wishes11_preview.png",
-      tag: "Matrix Glowing",
-      tagClass: "bg-emerald-600/85 text-white",
       imageCount: "0"
     }
   ];
