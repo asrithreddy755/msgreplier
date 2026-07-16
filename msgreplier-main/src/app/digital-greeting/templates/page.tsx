@@ -204,14 +204,42 @@ export default function TemplatesGallery() {
       tag: "Apology & Hearts",
       tagClass: "bg-pink-500/85 text-white",
       imageCount: "0"
+    },
+    {
+      id: "wishes12",
+      title: `Birthday Heart Animation 🎈`,
+      description: `A retro canvas heart tree animation that grows on click with a live custom seconds counter and dynamic text.`,
+      image: "/wishes12_preview.png",
+      tag: "Heart Animation",
+      tagClass: "bg-red-500 text-white",
+      imageCount: "0"
+    },
+    {
+      id: "wishes13",
+      title: `Do You Love Me Question 💖`,
+      description: `A playful yes/no question screen where the 'No' button runs away, resolving to an adorable silent celebratory success video.`,
+      image: "/wishes13_preview.png",
+      tag: "Love Game",
+      tagClass: "bg-pink-500 text-white",
+      imageCount: "0"
+    },
+    {
+      id: "wishes15",
+      title: `Valentine Letter Envelope ✉️`,
+      description: `An envelope opening experience asking 'Will you be my Valentine?' with growing options, cute cat animations, and date plan final card.`,
+      image: "/wishes15_preview.png",
+      tag: "Valentine Card",
+      tagClass: "bg-[#78555e]/90 text-white",
+      imageCount: "0"
     }
   ];
 
   const getTemplatesForOccasion = (occName: string) => {
-    if (occName === "Birthday") return templatesList.filter((t) => !["wishes6", "propose_crush1", "wishes9", "apology_1"].includes(t.id));
+    if (occName === "Birthday") return templatesList.filter((t) => !["wishes6", "propose_crush1", "wishes9", "apology_1", "wishes13", "wishes15", "wishes12"].includes(t.id));
     if (occName === "Anniversary") return templatesList.filter((t) => ["classic-2d", "hearts", "wishes4", "wishes5"].includes(t.id));
     if (occName === "Apoloy") return templatesList.filter((t) => ["wishes6", "propose_crush1", "wishes9", "apology_1"].includes(t.id));
-    if (occName === "Love Greeting") return templatesList.filter((t) => ["propose_crush1", "wishes6"].includes(t.id));
+    if (occName === "Love Greeting") return templatesList.filter((t) => ["propose_crush1", "wishes6", "wishes13", "wishes15"].includes(t.id));
+    if (occName === "Flowers") return templatesList.filter((t) => ["wishes12"].includes(t.id));
     return [];
   };
 

@@ -3,6 +3,50 @@ import { getSupabaseAdmin } from '../../love-space/_supabase';
 
 export const dynamic = 'force-dynamic';
 
+async function fetchAllRows(
+    supabase: any,
+    tableName: string,
+    selectQuery: string = '*',
+    orderColumn?: string,
+    orderOptions?: { ascending?: boolean }
+) {
+    let allRows: any[] = [];
+    let from = 0;
+    const limit = 1000;
+    let totalCount: number | null = null;
+
+    while (totalCount === null || from < totalCount) {
+        let query = supabase
+            .from(tableName)
+            .select(selectQuery, from === 0 ? { count: 'exact' } : undefined)
+            .range(from, from + limit - 1);
+        
+        if (orderColumn) {
+            query = query.order(orderColumn, orderOptions || { ascending: false });
+        }
+
+        const { data, error, count } = await query;
+        if (error) {
+            throw error;
+        }
+
+        if (totalCount === null && count !== null) {
+            totalCount = count;
+        }
+
+        if (data && data.length > 0) {
+            allRows = allRows.concat(data);
+            from += limit;
+            if (data.length < limit) {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    return allRows;
+}
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
@@ -23,55 +67,41 @@ export async function POST(request: Request) {
         }
 
         // 1. Fetch all rooms
-        const { data: rooms, error: roomsError } = await supabase
-            .from('love_rooms')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (roomsError) {
-            return NextResponse.json({ error: `Rooms fetch error: ${roomsError.message}` }, { status: 500 });
+        let rooms: any[] = [];
+        try {
+            rooms = await fetchAllRows(supabase, 'love_rooms', '*', 'created_at', { ascending: false });
+        } catch (error: any) {
+            return NextResponse.json({ error: `Rooms fetch error: ${error.message || error}` }, { status: 500 });
         }
 
         // 2. Fetch all members
-        const { data: members, error: membersError } = await supabase
-            .from('love_room_members')
-            .select('*');
-
-        if (membersError) {
-            return NextResponse.json({ error: `Members fetch error: ${membersError.message}` }, { status: 500 });
+        let members: any[] = [];
+        try {
+            members = await fetchAllRows(supabase, 'love_room_members', '*');
+        } catch (error: any) {
+            return NextResponse.json({ error: `Members fetch error: ${error.message || error}` }, { status: 500 });
         }
 
         // 3. Fetch all messages
-        const { data: messages, error: messagesError } = await supabase
-            .from('love_messages')
-            .select('*')
-            .order('created_at', { ascending: true });
-
-        if (messagesError) {
-            return NextResponse.json({ error: `Messages fetch error: ${messagesError.message}` }, { status: 500 });
+        let messages: any[] = [];
+        try {
+            messages = await fetchAllRows(supabase, 'love_messages', '*', 'created_at', { ascending: true });
+        } catch (error: any) {
+            return NextResponse.json({ error: `Messages fetch error: ${error.message || error}` }, { status: 500 });
         }
 
         // 4. Fetch all digital greetings
-        const { data: greetings, error: greetingsError } = await supabase
-            .from('love_greetings')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (greetingsError) {
-            return NextResponse.json({ error: `Greetings fetch error: ${greetingsError.message}` }, { status: 500 });
+        let greetings: any[] = [];
+        try {
+            greetings = await fetchAllRows(supabase, 'love_greetings', '*', 'created_at', { ascending: false });
+        } catch (error: any) {
+            return NextResponse.json({ error: `Greetings fetch error: ${error.message || error}` }, { status: 500 });
         }
 
         // 5. Fetch all profiles (to map user_id to email)
         let profiles: any[] = [];
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('id, email');
-            if (error) {
-                console.error('[Admin API] Profiles fetch error:', error.message);
-            } else {
-                profiles = data ?? [];
-            }
+            profiles = await fetchAllRows(supabase, 'profiles', 'id, email');
         } catch (e: any) {
             console.error('[Admin API] Profiles exception:', e);
         }
@@ -79,15 +109,7 @@ export async function POST(request: Request) {
         // 6. Fetch all gallery images
         let gallery: any[] = [];
         try {
-            const { data, error } = await supabase
-                .from('user_gallery')
-                .select('*')
-                .order('created_at', { ascending: false });
-            if (error) {
-                console.error('[Admin API] Gallery fetch error:', error.message);
-            } else {
-                gallery = data ?? [];
-            }
+            gallery = await fetchAllRows(supabase, 'user_gallery', '*', 'created_at', { ascending: false });
         } catch (e: any) {
             console.error('[Admin API] Gallery exception:', e);
         }

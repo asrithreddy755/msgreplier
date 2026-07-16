@@ -36,7 +36,10 @@ const editSchema = z.object({
                         data.theme !== 'propose_crush1' && 
                         data.theme !== 'wishes6' && 
                         data.theme !== 'wishes9' && 
-                        data.theme !== 'apology_1';
+                        data.theme !== 'apology_1' && 
+                        data.theme !== 'wishes12' && 
+                        data.theme !== 'wishes13' && 
+                        data.theme !== 'wishes15';
   if (isDobRequired && (!data.birthday_date || data.birthday_date.trim() === '')) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -293,7 +296,7 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
             )}
           </div>
 
-          {(occasion !== 'Anniversary' && theme !== 'propose_crush1' && theme !== 'wishes6' && theme !== 'wishes9' && theme !== 'apology_1') && (
+          {(occasion !== 'Anniversary' && theme !== 'propose_crush1' && theme !== 'wishes6' && theme !== 'wishes9' && theme !== 'apology_1' && theme !== 'wishes12' && theme !== 'wishes13' && theme !== 'wishes15') && (
             <div className="wishes-field">
               <label htmlFor="edit-birthday-date" className="wishes-label">Date of Birth</label>
               <input
@@ -361,7 +364,7 @@ export default function WishesEditClient({ greeting }: { greeting: Greeting }) {
             )}
           </div>
 
-          {theme !== 'wishes11' && (
+          {!['wishes11', 'wishes12', 'wishes13', 'wishes15', 'wishes16'].includes(theme) && (
           <div className="wishes-field" style={{ marginTop: '1.5rem' }}>
             <label className="wishes-label">
               Photo

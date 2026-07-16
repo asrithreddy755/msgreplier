@@ -131,6 +131,24 @@ const TEMPLATES = [
     icon: "🌌",
     description: "Cyberpunk glowing code rain wish with 2x2 grid memory photos",
   },
+  {
+    id: "wishes12",
+    label: "Birthday Heart",
+    icon: "🎈",
+    description: "Retro heart tree growing canvas animation with live clock timer",
+  },
+  {
+    id: "wishes13",
+    label: "Do You Love Me",
+    icon: "💖",
+    description: "Playful question screen with moving No button and success animation",
+  },
+  {
+    id: "wishes15",
+    label: "Valentine Letter",
+    icon: "✉️",
+    description: "Valentine proposal envelope with cats and date details",
+  },
 ];
 
 const getInitialOccasion = (param: string | null) => {
@@ -161,6 +179,9 @@ const getInitialTheme = (param: string | null) => {
   if (n === "apology_1" || n === "apology1") return "apology_1";
   if (n === "wishes10" || n === "retro" || n === "retro windows") return "wishes10";
   if (n === "wishes11" || n === "matrix" || n === "matrix neon") return "wishes11";
+  if (n === "wishes12" || n === "birthday heart" || n === "heart animation") return "wishes12";
+  if (n === "wishes13" || n === "do you love me" || n === "love question") return "wishes13";
+  if (n === "wishes15" || n === "valentine letter" || n === "valentine") return "wishes15";
   if (n === "propose_crush1" || n === "propose" || n === "crush") return "propose_crush1";
   return "classic-2d";
 };
@@ -390,7 +411,10 @@ function DigitalGreetingCreateForm() {
                         formData.theme !== "propose_crush1" &&
                         formData.theme !== "wishes6" &&
                         formData.theme !== "wishes9" &&
-                        formData.theme !== "apology_1";
+                        formData.theme !== "apology_1" &&
+                        formData.theme !== "wishes12" &&
+                        formData.theme !== "wishes13" &&
+                        formData.theme !== "wishes15";
 
   const handlePreviewClick = (theme: string) => {
     if (!formData.recipient_name.trim() || !formData.sender_name.trim() || !formData.message.trim() || (isDobRequired && !formData.birthday_date.trim())) {
@@ -608,8 +632,8 @@ function DigitalGreetingCreateForm() {
               />
             </div>
 
-             {/* Photo Upload */}
-            {formData.theme !== "propose_crush1" && formData.theme !== "wishes6" && formData.theme !== "wishes7" && formData.theme !== "wishes9" && formData.theme !== "apology_1" && formData.theme !== "wishes11" && (
+            {/* Photo Upload */}
+            {formData.theme !== "propose_crush1" && formData.theme !== "wishes6" && formData.theme !== "wishes7" && formData.theme !== "wishes9" && formData.theme !== "apology_1" && formData.theme !== "wishes11" && formData.theme !== "wishes12" && formData.theme !== "wishes13" && formData.theme !== "wishes15" && formData.theme !== "wishes16" && (
               <div className="create-field">
                 <label className="create-label">
                   Photo
