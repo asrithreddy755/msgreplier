@@ -9,7 +9,15 @@ export const metadata: Metadata = {
   title: "10 Relationship Communication Tips That Actually Work (2026) | MsgReplier",
   description:
     "Improve your relationship communication with these 10 evidence-based tips. From active listening to digital check-ins, learn what really keeps couples connected.",
-  alternates: { canonical: "https://msgreplier.com/blog/relationship-communication-tips" },
+  alternates: {
+    canonical: "https://msgreplier.com/blog/relationship-communication-tips",
+  },
+  openGraph: {
+    title: "10 Relationship Communication Tips That Actually Work (2026) | MsgReplier",
+    description: "Improve your relationship communication with these 10 evidence-based tips. From active listening to digital check-ins, learn what really keeps couples connected.",
+    url: "https://msgreplier.com/blog/relationship-communication-tips",
+    type: "website",
+  },
 };
 
 const tips = [
@@ -91,9 +99,14 @@ export default function RelationshipCommunicationTipsPost() {
     "@type": "Article",
     headline: "10 Relationship Communication Tips That Actually Work (2026)",
     description: "Evidence-based tips for improving communication in your relationship.",
-    datePublished: "2026-06-12",
-    dateModified: "2026-06-12",
-    author: { "@type": "Organization", name: "MsgReplier" },
+    datePublished: "2026-06-24",
+    dateModified: "2026-06-24",
+    author: {
+      "@type": "Person",
+      name: "Priya Sharma",
+      jobTitle: "Licensed Relationship Counselor & Digital Wellness Expert",
+      url: "https://msgreplier.com/about"
+    },
     publisher: { "@type": "Organization", name: "MsgReplier", logo: { "@type": "ImageObject", url: "https://msgreplier.com/icon.png" } },
     url: "https://msgreplier.com/blog/relationship-communication-tips",
   };
@@ -121,7 +134,10 @@ export default function RelationshipCommunicationTipsPost() {
             <span className="flex items-center gap-1 bg-[#eedfc6] border border-[#d4c3ab] text-[#110f0f] px-2.5 py-0.5 rounded-full font-semibold text-xs">
               <Tag className="h-3 w-3" /> Relationships
             </span>
-            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 12, 2026</span>
+            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 24, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Priya Sharma</span>
             <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> 8 min read</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">

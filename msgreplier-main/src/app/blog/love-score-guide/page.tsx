@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://msgreplier.com/blog/love-score-guide",
   },
+  openGraph: {
+    title: "Love Score Guide: How It Works & What Your Score Means | MsgReplier",
+    description: "Discover how MsgReplier's Love Score calculator works, what the different score ranges mean, and how to interpret your compatibility result. A complete guide.",
+    url: "https://msgreplier.com/blog/love-score-guide",
+    type: "website",
+  },
 };
 
 export default function LoveScoreGuide() {
@@ -19,11 +25,12 @@ export default function LoveScoreGuide() {
     "@type": "BlogPosting",
     "headline": "Love Score Guide: How It Works & What Your Score Means",
     "description": "Discover how MsgReplier's Love Score calculator works, what the different score ranges mean, and how to interpret your compatibility result. A complete guide.",
-    "datePublished": "2026-02-28T08:00:00+00:00",
+    "datePublished": "2026-04-15T08:00:00+00:00",
     "author": {
-      "@type": "Organization",
-      "name": "MsgReplier",
-      "url": "https://msgreplier.com"
+      "@type": "Person",
+      "name": "Priya Sharma",
+      "jobTitle": "Licensed Relationship Counselor & Digital Wellness Expert",
+      "url": "https://msgreplier.com/about"
     },
     "publisher": {
       "@type": "Organization",

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Heart, Gift, Sparkles, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import AuthorCard from "@/components/AuthorCard";
 
 export default function DigitalGreetingBlog() {
   return (
@@ -125,18 +126,7 @@ export default function DigitalGreetingBlog() {
         </div>
 
         {/* Author Footer */}
-        <div className="pt-12 border-t border-slate-100 flex flex-col md:flex-row items-start gap-6">
-          <div className="w-14 h-14 rounded-full bg-[#110f0f] text-white flex items-center justify-center text-sm font-bold shrink-0">
-            AM
-          </div>
-          <div className="space-y-1">
-            <p className="font-bold text-slate-900 text-base">Arjun Mehta</p>
-            <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest">Tech &amp; Culture Writer</p>
-            <p className="text-sm text-slate-600 leading-relaxed mt-2">
-              Arjun writes about the intersection of technology, culture, and relationships. With a background in psychology and UX design, he explores how digital tools shape the way we connect and communicate with the people we love.
-            </p>
-          </div>
-        </div>
+        <AuthorCard authorId="arjun" />
       </div>
     </div>
   );

@@ -13,6 +13,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://msgreplier.com/library",
   },
+  openGraph: {
+    title: "Internet Slang Dictionary — 500+ Terms | Shortcutpedia Library",
+    description: "Browse the complete Shortcutpedia library of internet slang, chat abbreviations, Gen Z expressions, and emoji meanings. 500+ terms defined with tone labels — free to search and copy.",
+    url: "https://msgreplier.com/library",
+    type: "website",
+  },
 };
 
 type Shortcut = {
@@ -61,11 +67,16 @@ export default function LibraryPage() {
         </div>
 
         {/* ── Editorial intro — server-rendered, fully crawlable ─────────── */}
-        <section className="prose prose-slate dark:prose-invert max-w-none">
+        <section className="prose prose-slate dark:prose-invert max-w-none text-left">
           <div className="bg-card rounded-xl border p-6 md:p-8 space-y-5 not-prose">
             <h2 className="text-xl font-bold tracking-tight">What Is an Internet Slang Dictionary?</h2>
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
               Internet slang is a constantly evolving shorthand language born out of digital communication. From the early days of SMS when character limits forced creative abbreviations, to the explosion of social media where brevity and speed define the conversation, internet slang has become an essential part of how people communicate online. Shortcutpedia is a curated, searchable dictionary of these terms — covering classic chat acronyms, Gen Z expressions, platform-specific jargon, and coded numeric phrases.
+            </p>
+
+            <h2 className="text-xl font-bold tracking-tight">The Evolution of Digital Linguistics</h2>
+            <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+              Digital communication differs from face-to-face conversations in one key aspect: the absence of non-verbal cues. In person, tone of voice, facial expressions, and body language provide essential context. Online, acronyms, emojis, and internet slang serve as the substitute for these cues. Over the years, slang has transitioned from functional character-saving acronyms (like SMS abbreviations) to complex cultural identifiers. Understanding these terms helps bridge communication gaps across generations and platforms, ensuring that your digital messages are received with the exact intent you planned.
             </p>
 
             <h2 className="text-xl font-bold tracking-tight">How to Use This Dictionary</h2>
@@ -75,6 +86,11 @@ export default function LibraryPage() {
               <li><strong className="text-foreground">Copy:</strong> Hover over any card and click the copy icon to copy the shortcut to your clipboard in one tap.</li>
               <li><strong className="text-foreground">Tone labels:</strong> Every entry includes a tone label (e.g. Casual, Sarcastic, Romantic, Positive) to help you understand when and how to use the term appropriately.</li>
             </ol>
+
+            <h2 className="text-xl font-bold tracking-tight">Tone Labels in Relationship Texting</h2>
+            <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+              When messaging a partner, nuance is everything. A simple phrase like &quot;we need to talk&quot; or even &quot;fine&quot; can be interpreted in multiple ways. This is why Shortcutpedia integrates tone labels. E-messaging tone indicators clarify whether a statement is meant playfully, sarcastically, or seriously. By classifying terms into categories like Romantic, Casual, Sarcastic, and Supportive, our library helps couples decode not just the literal meaning of a slang term, but the emotional subtext behind it. Using slang with appropriate tone labels prevents texting misunderstandings and keeps digital communication lighthearted and positive.
+            </p>
 
             <h2 className="text-xl font-bold tracking-tight">Categories of Internet Slang in This Dictionary</h2>
             <ul className="space-y-2 text-sm md:text-base text-muted-foreground leading-relaxed list-disc list-inside">

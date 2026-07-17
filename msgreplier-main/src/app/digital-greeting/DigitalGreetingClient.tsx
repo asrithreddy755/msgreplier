@@ -120,8 +120,8 @@ function TypingBanner() {
 }
 
 function Counter({ endValue, duration = 1200, suffix = "" }: { endValue: number; duration?: number; suffix?: string }) {
-  const [count, setCount] = useState(0);
-  const elementRef = useRef<HTMLParagraphElement>(null);
+  const [count, setCount] = useState(endValue);
+  const elementRef = useRef<HTMLSpanElement>(null);
   const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
@@ -1224,9 +1224,18 @@ export default function ImmersiveWishesLanding() {
       {/* Replicated Footer */}
       <footer className="mt-24 border-t border-[#78555e]/15 bg-transparent">
         <div className="mx-auto w-full max-w-7xl px-4 pb-8 pt-8 md:px-8">
-          <div className="flex flex-col gap-3 text-xs text-[#817476] md:flex-row md:items-center md:justify-between">
-            <p>Copyright 2026 MsgReplier Wishes. Crafted with intentionality.</p>
-            <p>18,430+ community users • 49,210+ pages created</p>
+          <div className="flex flex-col gap-4 text-xs text-[#817476] md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p>Copyright 2026 MsgReplier Wishes. Crafted with intentionality.</p>
+              <p>18,430+ community users • 49,210+ pages created</p>
+            </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              <Link href="/privacy-policy" className="hover:text-[#78555e] transition-colors">Privacy Policy</Link>
+              <Link href="/terms-conditions" className="hover:text-[#78555e] transition-colors">Terms of Service</Link>
+              <Link href="/cookie-policy" className="hover:text-[#78555e] transition-colors">Cookie Policy</Link>
+              <Link href="/about" className="hover:text-[#78555e] transition-colors">About Us</Link>
+              <Link href="/contact" className="hover:text-[#78555e] transition-colors">Contact Us</Link>
+            </div>
           </div>
         </div>
       </footer>

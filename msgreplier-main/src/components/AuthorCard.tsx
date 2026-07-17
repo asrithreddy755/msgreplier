@@ -22,11 +22,12 @@ export default function AuthorCard({ authorId }: AuthorCardProps) {
           {author.avatar}
         </div>
         {/* Info */}
-        <div className="space-y-1">
+        <div className="space-y-1 text-left">
           <p className="font-bold text-[#110f0f] text-base">{author.name}</p>
-          <p className="text-xs text-[#948678] font-semibold uppercase tracking-wide">
-            {author.role}
-          </p>
+          <div className="text-xs text-[#948678] font-semibold uppercase tracking-wide space-y-0.5">
+            <p>{author.role}</p>
+            <p className="text-[10px] opacity-75 normal-case">{author.credentials}</p>
+          </div>
           <p className="text-sm text-[#5d6c7b] leading-relaxed mt-2">
             {author.bio}
           </p>

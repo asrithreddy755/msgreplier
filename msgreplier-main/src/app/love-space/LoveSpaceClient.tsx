@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -449,9 +450,23 @@ export default function LoveSpacePage() {
                 </section>
             </div>
 
-            <p className="mt-4 text-xs text-gray-400 dark:text-gray-600 text-center z-10 pb-8 uppercase tracking-widest font-semibold opacity-70">
+            <p className="mt-4 text-xs text-gray-400 dark:text-gray-600 text-center z-10 pb-4 uppercase tracking-widest font-semibold opacity-70">
                 Rooms automatically expire after 24 hours of creation.
             </p>
+
+            {/* Minimal footer for love space */}
+            <footer className="w-full text-center z-10 pb-8 space-y-3">
+              <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-gray-400 dark:text-gray-600">
+                <Link href="/" className="hover:text-pink-500 transition-colors">Home</Link>
+                <Link href="/privacy-policy" className="hover:text-pink-500 transition-colors">Privacy Policy</Link>
+                <Link href="/terms-conditions" className="hover:text-pink-500 transition-colors">Terms of Service</Link>
+                <Link href="/cookie-policy" className="hover:text-pink-500 transition-colors">Cookie Policy</Link>
+                <Link href="/contact" className="hover:text-pink-500 transition-colors">Contact Us</Link>
+              </div>
+              <p className="text-[10px] text-gray-400 dark:text-gray-600">
+                © {new Date().getFullYear()} MsgReplier Love Space. All rights reserved.
+              </p>
+            </footer>
         </div>
     );
 }

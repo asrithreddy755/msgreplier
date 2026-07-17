@@ -18,11 +18,12 @@ export default function WishesBlogLayout({
     "@type": "BlogPosting",
     "headline": "How to Create a Website for Wishes in Seconds",
     "description": "Learn how to build a custom, interactive digital greeting website for birthdays and anniversaries with 3D animations and music.",
-    "datePublished": "2026-05-15T08:00:00+00:00",
+    "datePublished": "2026-05-20T08:00:00+00:00",
     "author": {
-      "@type": "Organization",
-      "name": "MsgReplier",
-      "url": "https://msgreplier.com"
+      "@type": "Person",
+      "name": "Arjun Mehta",
+      "jobTitle": "Relationship Psychologist & Digital Communication Expert",
+      "url": "https://msgreplier.com/about"
     },
     "publisher": {
       "@type": "Organization",

@@ -146,15 +146,6 @@ export default function LoveScorePage() {
           </section>
         </div>
 
-        {/* Footer */}
-        <footer className="pt-8 pb-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between text-sm text-slate-500">
-          <p>© {new Date().getFullYear()} MsgReplier.com</p>
-          <div className="flex items-center space-x-6 mt-4 sm:mt-0">
-            <Link href="/terms-conditions?from=love-score" className="hover:text-rose-600 transition-colors">Terms</Link>
-            <Link href="/privacy-policy?from=love-score" className="hover:text-rose-600 transition-colors">Privacy</Link>
-            <Link href="/contact?from=love-score" className="hover:text-rose-600 transition-colors">Contact</Link>
-          </div>
-        </footer>
       </div>
     </div>
   );

@@ -8,7 +8,15 @@ export const metadata: Metadata = {
   title: "Birthday Wishes Website Guide: Create an Interactive Birthday Surprise | MsgReplier",
   description:
     "Learn how to create a personalised, animated birthday wishes website in minutes. The perfect digital birthday surprise — no coding required.",
-  alternates: { canonical: "https://msgreplier.com/blog/birthday-wishes-website-guide" },
+  alternates: {
+    canonical: "https://msgreplier.com/blog/birthday-wishes-website-guide",
+  },
+  openGraph: {
+    title: "Birthday Wishes Website Guide: Create an Interactive Birthday Surprise | MsgReplier",
+    description: "Learn how to create a personalised, animated birthday wishes website in minutes. The perfect digital birthday surprise — no coding required.",
+    url: "https://msgreplier.com/blog/birthday-wishes-website-guide",
+    type: "website",
+  },
 };
 
 export default function BirthdayWishesWebsiteGuidePost() {
@@ -53,7 +61,10 @@ export default function BirthdayWishesWebsiteGuidePost() {
               <Tag className="h-3 w-3" /> Feature Guide
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> May 18, 2026
+              <Calendar className="h-3 w-3" /> June 3, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Priya Sharma
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" /> 5 min read

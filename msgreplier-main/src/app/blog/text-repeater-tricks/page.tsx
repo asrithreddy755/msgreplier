@@ -10,7 +10,13 @@ export const metadata: Metadata = {
     "Discover fun and unique ways to use a text repeater tool. From spamming besties to making impactful notes, learn how to elevate your messaging game.",
   alternates: {
     canonical: "https://msgreplier.com/blog/text-repeater-tricks",
-  }
+  },
+  openGraph: {
+    title: "5 Creative Ways to Use a Text Repeater on WhatsApp",
+    description: "Discover fun and unique ways to use a text repeater tool. From spamming besties to making impactful notes, learn how to elevate your messaging game.",
+    url: "https://msgreplier.com/blog/text-repeater-tricks",
+    type: "website",
+  },
 };
 
 export default function TextRepeaterTricksPost() {
@@ -39,7 +45,10 @@ export default function TextRepeaterTricksPost() {
               <Tag className="h-3 w-3" /> Tech Tips
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> February 24, 2026
+              <Calendar className="h-3 w-3" /> March 11, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Arjun Mehta
             </span>
           </div>
 

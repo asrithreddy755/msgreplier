@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://msgreplier.com/blog/psychology-of-crushes",
   },
+  openGraph: {
+    title: "Why Do We Have Crushes? The Psychology of Attraction",
+    description: "Explore the science behind why we develop crushes, the role of dopamine and limerence, and why we obsess over compatibility tests.",
+    url: "https://msgreplier.com/blog/psychology-of-crushes",
+    type: "website",
+  },
 };
 
 export default function PsychologyOfCrushesPost() {
@@ -19,11 +25,12 @@ export default function PsychologyOfCrushesPost() {
     "@type": "BlogPosting",
     "headline": "Why Do We Have Crushes? The Psychology of Attraction",
     "description": "Explore the science behind why we develop crushes, the role of dopamine and limerence, and why we obsess over compatibility tests.",
-    "datePublished": "2026-02-26T08:00:00+00:00",
+    "datePublished": "2026-04-01T08:00:00+00:00",
     "author": {
-      "@type": "Organization",
-      "name": "MsgReplier",
-      "url": "https://msgreplier.com"
+      "@type": "Person",
+      "name": "Arjun Mehta",
+      "jobTitle": "Relationship Psychologist & Digital Communication Expert",
+      "url": "https://msgreplier.com/about"
     },
     "publisher": {
       "@type": "Organization",
@@ -68,7 +75,10 @@ export default function PsychologyOfCrushesPost() {
               <Tag className="h-3 w-3" /> Psychology
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> February 26, 2026
+              <Calendar className="h-3 w-3" /> April 1, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Arjun Mehta
             </span>
           </div>
 

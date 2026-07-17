@@ -10,7 +10,13 @@ export const metadata: Metadata = {
     "Surviving an LDR is tough, but technology makes it easier. Learn how to maintain the spark with scheduled digital dates and private spaces.",
   alternates: {
     canonical: "https://msgreplier.com/blog/long-distance-relationship-guide",
-  }
+  },
+  openGraph: {
+    title: "The Ultimate Guide to Long-Distance Relationships in 2026",
+    description: "Surviving an LDR is tough, but technology makes it easier. Learn how to maintain the spark with scheduled digital dates and private spaces.",
+    url: "https://msgreplier.com/blog/long-distance-relationship-guide",
+    type: "website",
+  },
 };
 
 export default function LongDistanceRelationshipGuide() {
@@ -39,7 +45,10 @@ export default function LongDistanceRelationshipGuide() {
               <Tag className="h-3 w-3" /> Relationships
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> March 29, 2026
+              <Calendar className="h-3 w-3" /> April 22, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Arjun Mehta
             </span>
           </div>
 

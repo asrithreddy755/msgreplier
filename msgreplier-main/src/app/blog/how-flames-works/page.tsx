@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://msgreplier.com/blog/how-flames-works",
   },
+  openGraph: {
+    title: "The Science Behind the FLAMES Game: Is It Accurate?",
+    description: "Explore the history, algorithm, and popularity of the FLAMES compatibility game. Why do we still play it, and how does it compare to other love tests?",
+    url: "https://msgreplier.com/blog/how-flames-works",
+    type: "website",
+  },
 };
 
 export default function FlamesWorksPost() {
@@ -19,11 +25,12 @@ export default function FlamesWorksPost() {
     "@type": "BlogPosting",
     "headline": "The Science Behind the FLAMES Game: Is It Accurate?",
     "description": "Explore the history, algorithm, and popularity of the FLAMES compatibility game. Why do we still play it, and how does it compare to other love tests?",
-    "datePublished": "2026-02-22T08:00:00+00:00",
+    "datePublished": "2026-03-04T08:00:00+00:00",
     "author": {
-      "@type": "Organization",
-      "name": "MsgReplier",
-      "url": "https://msgreplier.com"
+      "@type": "Person",
+      "name": "Arjun Mehta",
+      "jobTitle": "Relationship Psychologist & Digital Communication Expert",
+      "url": "https://msgreplier.com/about"
     },
     "publisher": {
       "@type": "Organization",
@@ -68,7 +75,10 @@ export default function FlamesWorksPost() {
               <Tag className="h-3 w-3" /> Love & Fun
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> February 22, 2026
+              <Calendar className="h-3 w-3" /> March 4, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Arjun Mehta
             </span>
           </div>
 

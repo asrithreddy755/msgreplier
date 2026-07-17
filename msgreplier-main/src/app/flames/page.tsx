@@ -1,12 +1,7 @@
 import { Metadata } from "next";
-import { Mail } from "lucide-react";
+import Link from "next/link";
+import { Mail, Plus } from "lucide-react";
 import FlamesCalculator from "@/components/flames-calculator";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 export const dynamic = "force-static";
 
@@ -15,6 +10,12 @@ export const metadata: Metadata = {
   description: "Play the classic FLAMES love compatibility test online. Enter two names and instantly discover if your relationship is Friendship, Love, Affection, Marriage, Enemy, or Sibling. Free, no login.",
   alternates: {
     canonical: "https://msgreplier.com/flames",
+  },
+  openGraph: {
+    title: "FLAMES Calculator - Real Love Compatibility Test (2026)",
+    description: "Play the classic FLAMES love compatibility test online. Enter two names and instantly discover if your relationship is Friendship, Love, Affection, Marriage, Enemy, or Sibling. Free, no login.",
+    url: "https://msgreplier.com/flames",
+    type: "website",
   },
 };
 
@@ -126,46 +127,58 @@ export default function FlamesPage() {
           <h2 className="text-3xl font-bold mb-6 text-slate-900 dark:text-white mt-0">
             Frequently Asked Questions
           </h2>
-          <Accordion type="single" collapsible className="w-full not-prose">
-            <AccordionItem value="faq-1">
-              <AccordionTrigger className="text-left">What is the FLAMES calculator?</AccordionTrigger>
-              <AccordionContent className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
-                The FLAMES calculator is a nostalgic relationship game from childhood that predicts the potential romantic or platonic dynamic between two people based solely on their names. FLAMES is an acronym that stands for Friendship, Love, Affection, Marriage, Enemy, and Sister (Sibling).
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="faq-2">
-              <AccordionTrigger className="text-left">Is the FLAMES test accurate?</AccordionTrigger>
-              <AccordionContent className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
-                The FLAMES test is purely for fun and entertainment! While the mathematical algorithm is consistent every time for the exact same names, its predictions shouldn&apos;t be taken as serious relationship or destiny advice.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="faq-3">
-              <AccordionTrigger className="text-left">How do you calculate FLAMES manually?</AccordionTrigger>
-              <AccordionContent className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
-                Write down both names and cross out the letters they share in common. Count the remaining uncrossed letters from both names. Then, count off the letters in the word F-L-A-M-E-S repeatedly using that tally until you land on one final letter!
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="faq-4">
-              <AccordionTrigger className="text-left">Does the order of the names matter in FLAMES?</AccordionTrigger>
-              <AccordionContent className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
-                No, the order of the names does not matter! Because the algorithm simply tallies up the combined total of unmatched letters from both names, &quot;Tom vs Emily&quot; will always yield the exact same remaining count as &quot;Emily vs Tom&quot;.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="faq-5">
-              <AccordionTrigger className="text-left">What should I do if my result is &quot;Enemy&quot;?</AccordionTrigger>
-              <AccordionContent className="text-slate-600 dark:text-slate-300 leading-relaxed text-base">
-                Don&apos;t worry at all! &quot;Enemy&quot; just means there might be some fiery friction, banter, or competitive rivalry between you two. Remember, the game is meant for nostalgia and laughs, not genuine destiny tracking!
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <div className="w-full not-prose space-y-2">
+            {[
+              {
+                q: "What is the FLAMES calculator?",
+                a: "The FLAMES calculator is a nostalgic relationship game from childhood that predicts the potential romantic or platonic dynamic between two people based solely on their names. FLAMES is an acronym that stands for Friendship, Love, Affection, Marriage, Enemy, and Sister (Sibling)."
+              },
+              {
+                q: "Is the FLAMES test accurate?",
+                a: "The FLAMES test is purely for fun and entertainment! While the mathematical algorithm is consistent every time for the exact same names, its predictions shouldn't be taken as serious relationship or destiny advice."
+              },
+              {
+                q: "How do you calculate FLAMES manually?",
+                a: "Write down both names and cross out the letters they share in common. Count the remaining uncrossed letters from both names. Then, count off the letters in the word F-L-A-M-E-S repeatedly using that tally until you land on one final letter!"
+              },
+              {
+                q: "Does the order of the names matter in FLAMES?",
+                a: "No, the order of the names does not matter! Because the algorithm simply tallies up the combined total of unmatched letters from both names, \"Tom vs Emily\" will always yield the exact same remaining count as \"Emily vs Tom\"."
+              },
+              {
+                q: "What should I do if my result is \"Enemy\"?",
+                a: "Don't worry at all! \"Enemy\" just means there might be some fiery friction, banter, or competitive rivalry between you two. Remember, the game is meant for nostalgia and laughs, not genuine destiny tracking!"
+              }
+            ].map((faq, idx) => (
+              <details key={idx} className="group border-b border-slate-200 dark:border-slate-800 py-4 cursor-pointer">
+                <summary className="flex items-center justify-between list-none font-bold text-base md:text-lg text-slate-900 dark:text-white focus:outline-none select-none">
+                  <span>{faq.q}</span>
+                  <span className="p-1 rounded-full border border-slate-200 dark:border-slate-800 transition-transform group-open:rotate-45">
+                    <Plus className="h-4 w-4 text-slate-500" />
+                  </span>
+                </summary>
+                <div className="mt-3 text-slate-600 dark:text-slate-300 leading-relaxed text-sm md:text-base pl-1">
+                  {faq.a}
+                </div>
+              </details>
+            ))}
+          </div>
         </section>
 
         {/* Footer */}
-        <div className="text-center pb-8 border-t border-slate-200 dark:border-slate-800 pt-8">
-          <a href="mailto:care.msgreplier@gmail.com" className="inline-flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
-            <Mail className="h-4 w-4" />
-            Suggestions & Feedback
-          </a>
+        <div className="text-center pb-8 border-t border-slate-200 dark:border-slate-800 pt-8 space-y-4">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
+            <Link href="/privacy-policy" className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">Privacy Policy</Link>
+            <Link href="/terms-conditions" className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">Terms of Service</Link>
+            <Link href="/cookie-policy" className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">Cookie Policy</Link>
+            <Link href="/about" className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">About Us</Link>
+          </div>
+          <div>
+            <a href="mailto:care.msgreplier@gmail.com" className="inline-flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+              <Mail className="h-4 w-4" />
+              Suggestions & Feedback
+            </a>
+          </div>
         </div>
       </div>
     </div>

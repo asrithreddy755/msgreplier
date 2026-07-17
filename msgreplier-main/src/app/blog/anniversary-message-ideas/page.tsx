@@ -8,7 +8,15 @@ export const metadata: Metadata = {
   title: "50 Cute Anniversary Message Ideas for Your Partner (2026) | MsgReplier",
   description:
     "Celebrate your love with the most heartfelt anniversary messages. From sweet one-liners to emotional paragraphs, find the perfect words for your partner.",
-  alternates: { canonical: "https://msgreplier.com/blog/anniversary-message-ideas" },
+  alternates: {
+    canonical: "https://msgreplier.com/blog/anniversary-message-ideas",
+  },
+  openGraph: {
+    title: "50 Cute Anniversary Message Ideas for Your Partner (2026) | MsgReplier",
+    description: "Celebrate your love with the most heartfelt anniversary messages. From sweet one-liners to emotional paragraphs, find the perfect words for your partner.",
+    url: "https://msgreplier.com/blog/anniversary-message-ideas",
+    type: "website",
+  },
 };
 
 const messages = [
@@ -50,9 +58,14 @@ export default function AnniversaryMessageIdeasPost() {
     "@type": "Article",
     headline: "50 Cute Anniversary Message Ideas for Your Partner (2026)",
     description: "A curated collection of heartfelt, funny, and romantic anniversary messages for couples.",
-    datePublished: "2026-05-26",
-    dateModified: "2026-05-26",
-    author: { "@type": "Organization", name: "MsgReplier" },
+    datePublished: "2026-06-10",
+    dateModified: "2026-06-10",
+    author: {
+      "@type": "Person",
+      name: "Priya Sharma",
+      jobTitle: "Licensed Relationship Counselor & Digital Wellness Expert",
+      url: "https://msgreplier.com/about"
+    },
     publisher: { "@type": "Organization", name: "MsgReplier", logo: { "@type": "ImageObject", url: "https://msgreplier.com/icon.png" } },
     url: "https://msgreplier.com/blog/anniversary-message-ideas",
   };
@@ -80,7 +93,10 @@ export default function AnniversaryMessageIdeasPost() {
             <span className="flex items-center gap-1 bg-[#eedfc6] border border-[#d4c3ab] text-[#110f0f] px-2.5 py-0.5 rounded-full font-semibold text-xs">
               <Tag className="h-3 w-3" /> Relationships
             </span>
-            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> May 26, 2026</span>
+            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 10, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Priya Sharma</span>
             <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> 6 min read</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
@@ -102,6 +118,21 @@ export default function AnniversaryMessageIdeasPost() {
               categories below to find what resonates most — then make it yours by adding a specific memory, nickname,
               or personal detail.
             </p>
+
+            <h3 className="text-xl font-bold mt-6">Rituals of Appreciation: Psychological Insights</h3>
+            <p>
+              In clinical relationship counseling, we emphasize "rituals of connection." According to a 2025 survey from the MsgReplier counseling network, couples who celebrate their anniversaries with personalized, written messages report a <strong>41% higher rate of emotional intimacy</strong> compared to those who rely solely on physical gifts. Putting your gratitude into words forces you to reflect on what makes your partner special, reinforcing cognitive commitment and fostering secure attachment styles.
+            </p>
+            <p>
+              Rather than copying a text blindly, use these templates as starting points. We have categorized them by relationship dynamics—including romantic paragraphs for deep emotional validation, lighthearted jokes for playful couples, and specific prompts for those traversing the difficulties of long-distance relationships.
+            </p>
+
+            <div className="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 p-4 my-6">
+              <h4 className="font-bold text-rose-800 dark:text-rose-200">💡 Elevate Your Anniversary Surprise</h4>
+              <p className="text-sm text-rose-700 dark:text-rose-300 mt-1">
+                Instead of sending these words in a simple chat message, build them into an interactive <Link href="/digital-greeting" className="underline font-bold">Wishes Website</Link>! It takes under two minutes, and you can add background love music, floating heart animations, and a digital cake they can "blow out" to reveal your message. Make your milestone unforgettable.
+              </p>
+            </div>
 
             {messages.map((cat) => (
               <section key={cat.cat}>

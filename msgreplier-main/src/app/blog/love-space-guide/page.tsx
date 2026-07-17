@@ -6,11 +6,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import AuthorCard from "@/components/AuthorCard";
 
 export const metadata: Metadata = {
-    title: "Love-Space: The Ultimate Guide to Private Connection | MsgReplier",
-    description: "Discover how to create a 100% private, secure space for you and your partner. Learn about real-time chat, interactive games, and privacy-first features in Love-Space.",
+  title: "Love-Space: The Ultimate Guide to Private Connection | MsgReplier",
+  description:
+    "Discover how to create a 100% private, secure space for you and your partner. Learn about real-time chat, interactive games, and privacy-first features in Love-Space.",
   alternates: {
     canonical: "https://msgreplier.com/blog/love-space-guide",
-  }
+  },
+  openGraph: {
+    title: "Love-Space: The Ultimate Guide to Private Connection | MsgReplier",
+    description: "Discover how to create a 100% private, secure space for you and your partner. Learn about real-time chat, interactive games, and privacy-first features in Love-Space.",
+    url: "https://msgreplier.com/blog/love-space-guide",
+    type: "website",
+  },
 };
 
 export default function LoveSpaceGuidePost() {
@@ -39,7 +46,10 @@ export default function LoveSpaceGuidePost() {
                             <Tag className="h-3 w-3" /> Love & Connection
                         </span>
                         <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" /> March 19, 2026
+                            <Calendar className="h-3 w-3" /> March 25, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Priya Sharma
                         </span>
                         <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" /> 6 min read

@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://msgreplier.com/blog/perfect-couple-prompts",
   },
+  openGraph: {
+    title: "New Feature: Creative AI Prompts for Couple Photos (Goodbye Chat, Hello Creativity!)",
+    description: "We’ve pivoted from general chat to Couple Photo Prompts — a library of creative prompts for matching AI images and real-life couple photoshoots.",
+    url: "https://msgreplier.com/blog/perfect-couple-prompts",
+    type: "website",
+  },
 };
 
 export default function PerfectCouplePromptsPost() {
@@ -21,9 +27,10 @@ export default function PerfectCouplePromptsPost() {
     "description": "We’ve pivoted from general chat to Couple Photo Prompts — a library of creative prompts for matching AI images and real-life couple photoshoots.",
     "datePublished": "2026-02-18T08:00:00+00:00",
     "author": {
-      "@type": "Organization",
-      "name": "MsgReplier",
-      "url": "https://msgreplier.com"
+      "@type": "Person",
+      "name": "Arjun Mehta",
+      "jobTitle": "Relationship Psychologist & Digital Communication Expert",
+      "url": "https://msgreplier.com/about"
     },
     "publisher": {
       "@type": "Organization",
@@ -69,6 +76,9 @@ export default function PerfectCouplePromptsPost() {
             </span>
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" /> February 18, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Arjun Mehta
             </span>
           </div>
 

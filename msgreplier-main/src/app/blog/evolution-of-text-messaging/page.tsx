@@ -10,7 +10,13 @@ export const metadata: Metadata = {
     "Explore the history of texting. From counting characters on a flip phone to real-time chat spaces.",
   alternates: {
     canonical: "https://msgreplier.com/blog/evolution-of-text-messaging",
-  }
+  },
+  openGraph: {
+    title: "The Evolution of Text Messaging: From T9 SMS to WebRTC Reacts",
+    description: "Explore the history of texting. From counting characters on a flip phone to real-time chat spaces.",
+    url: "https://msgreplier.com/blog/evolution-of-text-messaging",
+    type: "website",
+  },
 };
 
 export default function TextMessagingEvolution() {
@@ -33,7 +39,7 @@ export default function TextMessagingEvolution() {
               <Tag className="h-3 w-3" /> Tech History
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> March 12, 2026
+              <Calendar className="h-3 w-3" /> March 18, 2026
             </span>
           </div>
 

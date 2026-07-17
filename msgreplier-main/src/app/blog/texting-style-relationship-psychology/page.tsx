@@ -10,7 +10,13 @@ export const metadata: Metadata = {
     "Do you double text? Use too many emojis? Learn what your digital communication habits say about the health of your relationship.",
   alternates: {
     canonical: "https://msgreplier.com/blog/texting-style-relationship-psychology",
-  }
+  },
+  openGraph: {
+    title: "What Your Texting Style Says About Your Relationship",
+    description: "Do you double text? Use too many emojis? Learn what your digital communication habits say about the health of your relationship.",
+    url: "https://msgreplier.com/blog/texting-style-relationship-psychology",
+    type: "website",
+  },
 };
 
 export default function TextingStylePsychology() {
@@ -39,7 +45,10 @@ export default function TextingStylePsychology() {
               <Tag className="h-3 w-3" /> Psychology
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> April 05, 2026
+              <Calendar className="h-3 w-3" /> April 29, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Arjun Mehta
             </span>
           </div>
 

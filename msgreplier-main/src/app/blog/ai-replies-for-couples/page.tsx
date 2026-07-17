@@ -8,7 +8,15 @@ export const metadata: Metadata = {
   title: "How to Create Sweet AI Replies for Your Partner (Couple Messaging Guide) | MsgReplier",
   description:
     "Discover how to craft heartfelt, funny, and romantic AI-generated replies for your partner. From good morning texts to cute responses, this guide covers it all.",
-  alternates: { canonical: "https://msgreplier.com/blog/ai-replies-for-couples" },
+  alternates: {
+    canonical: "https://msgreplier.com/blog/ai-replies-for-couples",
+  },
+  openGraph: {
+    title: "How to Create Sweet AI Replies for Your Partner (Couple Messaging Guide) | MsgReplier",
+    description: "Discover how to craft heartfelt, funny, and romantic AI-generated replies for your partner. From good morning texts to cute responses, this guide covers it all.",
+    url: "https://msgreplier.com/blog/ai-replies-for-couples",
+    type: "website",
+  },
 };
 
 export default function AiRepliesForCouplesPost() {
@@ -18,9 +26,14 @@ export default function AiRepliesForCouplesPost() {
     headline: "How to Create Sweet AI Replies for Your Partner",
     description:
       "A complete guide to using AI prompts and messaging tools to send heartfelt, funny, and romantic replies to your partner.",
-    datePublished: "2026-05-10",
-    dateModified: "2026-05-10",
-    author: { "@type": "Organization", name: "MsgReplier" },
+    datePublished: "2026-05-27",
+    dateModified: "2026-05-27",
+    author: {
+      "@type": "Person",
+      name: "Arjun Mehta",
+      jobTitle: "Relationship Psychologist & Digital Communication Expert",
+      url: "https://msgreplier.com/about"
+    },
     publisher: {
       "@type": "Organization",
       name: "MsgReplier",
@@ -54,7 +67,10 @@ export default function AiRepliesForCouplesPost() {
               <Tag className="h-3 w-3" /> Messaging Tips
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> May 10, 2026
+              <Calendar className="h-3 w-3" /> May 27, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Arjun Mehta
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" /> 7 min read

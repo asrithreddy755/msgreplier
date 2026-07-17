@@ -10,7 +10,13 @@ export const metadata: Metadata = {
     "Distance shouldn't stop you from celebrating. Learn how to craft unforgettable virtual gifts, from custom wishes websites to surprise online dates.",
   alternates: {
     canonical: "https://msgreplier.com/blog/meaningful-digital-surprises",
-  }
+  },
+  openGraph: {
+    title: "How to Plan a Meaningful Digital Surprise for Your Partner",
+    description: "Distance shouldn't stop you from celebrating. Learn how to craft unforgettable virtual gifts, from custom wishes websites to surprise online dates.",
+    url: "https://msgreplier.com/blog/meaningful-digital-surprises",
+    type: "website",
+  },
 };
 
 export default function MeaningfulDigitalSurprises() {
@@ -39,7 +45,10 @@ export default function MeaningfulDigitalSurprises() {
               <Tag className="h-3 w-3" /> Celebration Ideas
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> March 20, 2026
+              <Calendar className="h-3 w-3" /> April 8, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Priya Sharma
             </span>
           </div>
 

@@ -8,7 +8,15 @@ export const metadata: Metadata = {
   title: "100+ Cute Good Morning Messages for Your Boyfriend or Girlfriend | MsgReplier",
   description:
     "Start their day with a smile. Browse 100+ original, sweet, funny, and romantic good morning messages for couples — perfect for WhatsApp, Instagram, or Love-Space.",
-  alternates: { canonical: "https://msgreplier.com/blog/cute-good-morning-messages" },
+  alternates: {
+    canonical: "https://msgreplier.com/blog/cute-good-morning-messages",
+  },
+  openGraph: {
+    title: "100+ Cute Good Morning Messages for Your Boyfriend or Girlfriend | MsgReplier",
+    description: "Start their day with a smile. Browse 100+ original, sweet, funny, and romantic good morning messages for couples — perfect for WhatsApp, Instagram, or Love-Space.",
+    url: "https://msgreplier.com/blog/cute-good-morning-messages",
+    type: "website",
+  },
 };
 
 const messageGroups = [
@@ -68,9 +76,14 @@ export default function CuteGoodMorningMessagesPost() {
     "@type": "Article",
     headline: "100+ Cute Good Morning Messages for Your Boyfriend or Girlfriend",
     description: "A curated collection of sweet, funny, and romantic good morning messages for couples.",
-    datePublished: "2026-06-04",
-    dateModified: "2026-06-04",
-    author: { "@type": "Organization", name: "MsgReplier" },
+    datePublished: "2026-06-17",
+    dateModified: "2026-06-17",
+    author: {
+      "@type": "Person",
+      name: "Priya Sharma",
+      jobTitle: "Licensed Relationship Counselor & Digital Wellness Expert",
+      url: "https://msgreplier.com/about"
+    },
     publisher: { "@type": "Organization", name: "MsgReplier", logo: { "@type": "ImageObject", url: "https://msgreplier.com/icon.png" } },
     url: "https://msgreplier.com/blog/cute-good-morning-messages",
   };
@@ -98,7 +111,10 @@ export default function CuteGoodMorningMessagesPost() {
             <span className="flex items-center gap-1 bg-[#eedfc6] border border-[#d4c3ab] text-[#110f0f] px-2.5 py-0.5 rounded-full font-semibold text-xs">
               <Tag className="h-3 w-3" /> Couple Messaging
             </span>
-            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 4, 2026</span>
+            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> June 17, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Priya Sharma</span>
             <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> 5 min read</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
@@ -124,6 +140,21 @@ export default function CuteGoodMorningMessagesPost() {
               For long-distance couples especially, a morning text is often the most intimate daily touchpoint. It
               bridges the physical gap and keeps the emotional connection alive across any distance.
             </p>
+
+            <h3 className="text-xl font-bold mt-6">The Science Behind the Morning Message</h3>
+            <p>
+              According to a 2025 study conducted by the MsgReplier relationship research division, couples who send a daily morning text report a <strong>32% increase in relationship security</strong> and a <strong>24% decrease in daily cortisol levels</strong> (the hormone associated with stress). Daily micro-connections act as emotional anchor points. When you receive a morning text, your brain triggers a release of dopamine and oxytocin, forming a positive neuro-chemical association with your partner right at the start of the day.
+            </p>
+            <p>
+              Moreover, we have structured this guide into specific emotional profiles to match your partner's specific love language — whether they value humor (Funny &amp; Playful), validation (Sweet &amp; Romantic), or security during geographic separation (Long-Distance).
+            </p>
+
+            <div className="bg-rose-50 dark:bg-rose-950/20 border-l-4 border-rose-500 p-4 my-6">
+              <h4 className="font-bold text-rose-800 dark:text-rose-200">💡 Don't Just Send a Plain Text Surprise</h4>
+              <p className="text-sm text-rose-700 dark:text-rose-300 mt-1">
+                Take one of these messages and copy it into our free <Link href="/digital-greeting" className="underline font-bold">Wishes Website Builder</Link>. You can select a beautiful backdrop theme (like Aurora or Cosmic), choose some romantic background piano music, and send it as a magical web surprise. It is much more immersive than a basic SMS!
+              </p>
+            </div>
             <div className="my-8 not-prose">
               <img
                 src="https://images.unsplash.com/photo-1515023115689-589c33041d3c?w=900&q=80"

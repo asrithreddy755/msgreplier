@@ -10,7 +10,13 @@ export const metadata: Metadata = {
     "Tired of sending 'Hey' on Tinder and Bumble? Learn how to start a conversation that guarantees a reply. Includes examples and free copyable prompts.",
   alternates: {
     canonical: "https://msgreplier.com/blog/dating-app-conversation-starters",
-  }
+  },
+  openGraph: {
+    title: "How to Start a Conversation on Dating Apps (Without Being Boring)",
+    description: "Tired of sending 'Hey' on Tinder and Bumble? Learn how to start a conversation that guarantees a reply. Includes examples and free copyable prompts.",
+    url: "https://msgreplier.com/blog/dating-app-conversation-starters",
+    type: "website",
+  },
 };
 
 export default function DatingAppConversationStarters() {
@@ -39,7 +45,7 @@ export default function DatingAppConversationStarters() {
               <Tag className="h-3 w-3" /> Dating & Social
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> April 10, 2026
+              <Calendar className="h-3 w-3" /> May 13, 2026
             </span>
           </div>
 

@@ -8,6 +8,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://msgreplier.com/prompt",
   },
+  openGraph: {
+    title: "Msg Prompt – Creative prompts for couple photos | MsgReplier",
+    description: "Scroll a curated library of copyable couple prompts. Copy, paste, and use them in any AI image tool to generate better couple pictures and photoshoot ideas.",
+    url: "https://msgreplier.com/prompt",
+    type: "website",
+  },
 };
 
 export default function PromptPage() {
@@ -28,8 +34,21 @@ export default function PromptPage() {
           <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
             Msg Prompt is a curated library of AI image prompts designed for couples and romantic photography. Instead of spending hours crafting the perfect prompt from scratch, you can browse our hand-tested collection, copy a prompt in one tap, and paste it directly into any AI image generator — Midjourney, DALL·E, Adobe Firefly, Stable Diffusion, Ideogram, or Leonardo AI. Each prompt has been refined to produce high-quality results with rich lighting descriptions, mood settings, and cinematic detail that generic prompts consistently miss.
           </p>
-          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
             Couples use Msg Prompt to generate unique digital artwork for anniversaries, to plan real-world photoshoots by visualising different styles first, to create personalised Valentine&apos;s Day cards, or to brainstorm content ideas for social media. It is completely free, works without any login, and is compatible with every major AI image platform available today.
+          </p>
+        </section>
+
+        {/* The Role of AI in Modern Romance & Photography Planning */}
+        <section>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+            The Role of AI in Modern Romance &amp; Photography Planning
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+            Visualizing your relationship in different aesthetic styles has never been easier. AI image generation has opened up creative avenues for couples to co-create digital art that mirrors their memories, dreams, and inside jokes. By testing photoshoot concepts virtually before hiring a professional photographer, couples save time and communicate their vision with total visual clarity.
+          </p>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+            Our prompts emphasize granular control over technical variables. From setting the right camera focal length (like an 85mm portrait prime lens for gorgeous bokeh) to defining a cinematic retro color grade, these details bridge the gap between amateur snapshots and studio-quality imagery. Use these prompts to build collaborative vision boards, create anniversary gifts, or simply have fun exploring fantastical digital backdrops together.
           </p>
         </section>
 

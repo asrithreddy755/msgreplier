@@ -10,7 +10,13 @@ export const metadata: Metadata = {
     "Feeling lost in group chats? Here is a complete guide to understanding modern internet slang, from IYKYK to TFW.",
   alternates: {
     canonical: "https://msgreplier.com/blog/confusing-chat-acronyms-explained",
-  }
+  },
+  openGraph: {
+    title: "Understanding IYKYK, TFW, and Other Confusing Chat Acronyms",
+    description: "Feeling lost in group chats? Here is a complete guide to understanding modern internet slang, from IYKYK to TFW.",
+    url: "https://msgreplier.com/blog/confusing-chat-acronyms-explained",
+    type: "website",
+  },
 };
 
 export default function ConfusingChatAcronyms() {
@@ -39,7 +45,10 @@ export default function ConfusingChatAcronyms() {
               <Tag className="h-3 w-3" /> Internet Culture
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" /> April 08, 2026
+              <Calendar className="h-3 w-3" /> May 6, 2026
+            </span>
+            <span className="flex items-center gap-1 bg-[#eedfc6]/40 border border-[#d4c3ab]/30 text-[#110f0f] px-2.5 py-0.5 rounded-full font-medium text-xs">
+              By Arjun Mehta
             </span>
           </div>
 
