@@ -1,8 +1,22 @@
 import { NextResponse } from 'next/server';
-import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
+import { AwsClient } from 'aws4fetch';
 import { getSupabaseAdmin } from '../../love-space/_supabase';
 
 export const dynamic = 'force-dynamic';
+
+let awsClient: AwsClient | null = null;
+
+function getAwsClient(accessKeyId: string, secretAccessKey: string) {
+  if (!awsClient) {
+    awsClient = new AwsClient({
+      accessKeyId,
+      secretAccessKey,
+      region: 'auto',
+      service: 's3',
+    });
+  }
+  return awsClient;
+}
 
 export async function POST(request: Request) {
   try {
@@ -23,29 +37,58 @@ export async function POST(request: Request) {
 
     if (!accountId || !accessKeyId || !secretAccessKey) {
       return NextResponse.json(
-        { error: 'Cloudflare R2 storage credentials are not configured in environment variables.' },
+        { error: 'Cloudflare R2 credentials are not configured in environment variables.' },
         { status: 500 }
       );
     }
 
-    const s3 = new S3Client({
-      region: 'auto',
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
+    // Create an edge-native AWS client using aws4fetch
+    const aws = getAwsClient(accessKeyId, secretAccessKey);
+
+    const r2Url = new URL(`https://${accountId}.r2.cloudflarestorage.com/${bucketName}`);
+    r2Url.searchParams.set('list-type', '2');
+    r2Url.searchParams.set('max-keys', limit.toString());
+    if (continuationToken) {
+      r2Url.searchParams.set('continuation-token', continuationToken);
+    }
+
+    // Sign request
+    const listRequest = await aws.sign(r2Url.toString(), {
+      method: 'GET',
     });
 
-    const command = new ListObjectsV2Command({
-      Bucket: bucketName,
-      MaxKeys: limit,
-      ContinuationToken: continuationToken || undefined,
-    });
+    // Execute call to list objects
+    const response = await fetch(listRequest);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`R2 storage service returned status ${response.status}: ${errorText}`);
+    }
 
-    const response = await s3.send(command);
-    const contents = response.Contents || [];
-    const nextContinuationToken = response.NextContinuationToken || null;
+    const xmlText = await response.text();
+
+    // Extract pagination ContinuationToken using regex
+    const nextTokenMatch = xmlText.match(/<NextContinuationToken>([^<]+)<\/NextContinuationToken>/);
+    const nextContinuationToken = nextTokenMatch ? nextTokenMatch[1] : null;
+
+    // Parse the XML Contents nodes with regex
+    const contents: { Key: string; Size: number; LastModified: string }[] = [];
+    const contentRegex = /<Contents>([\s\S]*?)<\/Contents>/g;
+    let match;
+
+    while ((match = contentRegex.exec(xmlText)) !== null) {
+      const contentBlock = match[1];
+      const keyMatch = contentBlock.match(/<Key>([^<]+)<\/Key>/);
+      const sizeMatch = contentBlock.match(/<Size>([^<]+)<\/Size>/);
+      const lastModifiedMatch = contentBlock.match(/<LastModified>([^<]+)<\/LastModified>/);
+
+      if (keyMatch) {
+        contents.push({
+          Key: keyMatch[1],
+          Size: sizeMatch ? parseInt(sizeMatch[1], 10) : 0,
+          LastModified: lastModifiedMatch ? lastModifiedMatch[1] : '',
+        });
+      }
+    }
 
     // Fetch user profiles to map user_id to email address
     const { client: supabase } = getSupabaseAdmin();
@@ -74,7 +117,7 @@ export async function POST(request: Request) {
       const lastModified = item.LastModified || null;
       const url = `${publicBaseUrl.replace(/\/$/, '')}/${key}`;
 
-      // Extract user_id from the key format 'wishes/user_id/filename'
+      // Extract user_id from key format wishes/{user_id}/filename
       const keyMatch = key.match(/^wishes\/([^/]+)\//);
       const userId = keyMatch ? keyMatch[1] : null;
       const email = userId ? profilesMap.get(userId) : null;
