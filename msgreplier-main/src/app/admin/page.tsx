@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { 
     Lock, Loader2, ShieldAlert, Key, Users, MessageSquareHeart, 
     Gift, Search, Copy, ExternalLink, Calendar, Heart, 
-    RefreshCw, ChevronDown, ChevronUp, LogOut, CheckCircle, Sparkles
+    RefreshCw, ChevronDown, ChevronUp, LogOut, CheckCircle, Sparkles,
+    Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,6 +79,22 @@ export default function AdminPage() {
     const [visibleRoomsCount, setVisibleRoomsCount] = useState(50);
     const [visibleGreetingsCount, setVisibleGreetingsCount] = useState(50);
 
+    // R2 storage images states
+    interface R2Image {
+        key: string;
+        url: string;
+        size: number;
+        lastModified: string | null;
+        userId: string | null;
+        email: string | null;
+    }
+    const [r2Images, setR2Images] = useState<R2Image[]>([]);
+    const [r2ContinuationToken, setR2ContinuationToken] = useState<string | null>(null);
+    const [isR2Loading, setIsR2Loading] = useState(false);
+    const [r2Search, setR2Search] = useState('');
+    const [r2Error, setR2Error] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState('rooms');
+
     // Reset visible counts when search filter changes
     useEffect(() => {
         setVisibleRoomsCount(50);
@@ -145,7 +162,45 @@ export default function AdminPage() {
         setGreetings([]);
         setProfiles([]);
         setGallery([]);
+        setR2Images([]);
+        setR2ContinuationToken(null);
+        setR2Search('');
+        setR2Error(null);
+        setActiveTab('rooms');
         toast.info('Logged out from admin panel.');
+    };
+
+    const loadR2Images = async (token?: string, clearExisting = false) => {
+        const savedPassword = sessionStorage.getItem('msgreplier_admin_token');
+        if (!savedPassword) return;
+
+        setIsR2Loading(true);
+        setR2Error(null);
+        try {
+            const res = await fetch('/api/admin/r2-images', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: savedPassword,
+                    continuationToken: token || null,
+                    limit: 48
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setR2Images(prev => clearExisting ? data.images : [...prev, ...data.images]);
+                setR2ContinuationToken(data.nextContinuationToken);
+            } else {
+                setR2Error(data.error || 'Failed to fetch R2 images');
+                toast.error(data.error || 'Failed to fetch R2 images');
+            }
+        } catch (err) {
+            setR2Error('Network error fetching R2 images');
+            toast.error('Network error fetching R2 images');
+        } finally {
+            setIsR2Loading(false);
+        }
     };
 
     const refreshData = async () => {
@@ -167,6 +222,11 @@ export default function AdminPage() {
                 setGreetings(data.greetings);
                 setProfiles(data.profiles || []);
                 setGallery(data.gallery || []);
+                
+                if (activeTab === 'r2-images' || r2Images.length > 0) {
+                    await loadR2Images(undefined, true);
+                }
+                
                 toast.success('Admin records refreshed successfully!');
             }
         } catch {
@@ -176,10 +236,39 @@ export default function AdminPage() {
         }
     };
 
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+        if (value === 'r2-images' && r2Images.length === 0) {
+            loadR2Images(undefined, true);
+        }
+    };
+
     // Copy to clipboard helper
     const copyText = (text: string, label: string) => {
         navigator.clipboard.writeText(text);
         toast.success(`${label} copied to clipboard!`);
+    };
+
+    const filteredR2Images = useMemo(() => {
+        return r2Images.filter(img => {
+            const search = r2Search.toLowerCase();
+            const key = img.key.toLowerCase();
+            const email = (img.email || '').toLowerCase();
+            const userId = (img.userId || '').toLowerCase();
+            return key.includes(search) || email.includes(search) || userId.includes(search);
+        });
+    }, [r2Images, r2Search]);
+
+    const totalR2SizeLoaded = useMemo(() => {
+        return r2Images.reduce((sum, img) => sum + img.size, 0);
+    }, [r2Images]);
+
+    const formatBytes = (bytes: number) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
     // Group members by room ID for fast lookup
@@ -391,8 +480,8 @@ export default function AdminPage() {
                 </div>
 
                 {/* Dashboard Tabs */}
-                <Tabs defaultValue="rooms" className="w-full">
-                    <TabsList className="bg-slate-900/50 border border-slate-900/80 p-1.5 rounded-2xl w-full md:w-auto mb-6 flex gap-2">
+                <Tabs defaultValue="rooms" value={activeTab} onValueChange={handleTabChange} className="w-full">
+                    <TabsList className="bg-slate-900/50 border border-slate-900/80 p-1.5 rounded-2xl w-full md:w-auto mb-6 flex gap-2 flex-wrap">
                         <TabsTrigger 
                             value="rooms"
                             className="flex-1 md:flex-initial rounded-xl px-6 py-3 text-sm font-bold data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-rose-400 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
@@ -404,6 +493,12 @@ export default function AdminPage() {
                             className="flex-1 md:flex-initial rounded-xl px-6 py-3 text-sm font-bold data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
                         >
                             🎁 Wishes Websites ({filteredGreetings.length})
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="r2-images"
+                            className="flex-1 md:flex-initial rounded-xl px-6 py-3 text-sm font-bold data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+                        >
+                            📷 R2 Bucket Images ({filteredR2Images.length})
                         </TabsTrigger>
                     </TabsList>
 
@@ -766,6 +861,143 @@ export default function AdminPage() {
                                 </div>
                             )}
                         </div>
+                    </TabsContent>
+
+                    {/* R2 Images Tab */}
+                    <TabsContent value="r2-images" className="space-y-6">
+                        {/* Search and Summary */}
+                        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                            <div className="relative w-full max-w-md">
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
+                                <Input
+                                    value={r2Search}
+                                    onChange={(e) => setR2Search(e.target.value)}
+                                    placeholder="Search by key, user ID, or email..."
+                                    className="pl-11 bg-slate-900/30 border-slate-800 text-slate-100 rounded-xl focus:border-pink-500 focus:ring-pink-500/20"
+                                />
+                            </div>
+                            <div className="text-xs text-slate-400 font-bold bg-slate-900 border border-slate-800 px-4 py-2.5 rounded-xl flex items-center gap-2 self-stretch sm:self-auto justify-center">
+                                <ImageIcon className="w-4 h-4 text-pink-500" />
+                                <span>Loaded: {r2Images.length} | Size: {formatBytes(totalR2SizeLoaded)}</span>
+                            </div>
+                        </div>
+
+                        {/* Error state */}
+                        {r2Error && (
+                            <div className="flex items-center gap-2 text-sm font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 max-w-md mx-auto my-6">
+                                <ShieldAlert className="w-5 h-5 flex-shrink-0" />
+                                <span>{r2Error}</span>
+                            </div>
+                        )}
+
+                        {/* Loading state */}
+                        {isR2Loading && r2Images.length === 0 ? (
+                            <div className="text-center py-16">
+                                <Loader2 className="w-10 h-10 animate-spin text-pink-500 mx-auto mb-4" />
+                                <p className="text-slate-400 text-sm font-medium">Fetching images from Cloudflare R2 bucket...</p>
+                            </div>
+                        ) : (
+                            <>
+                                {/* R2 Images Grid */}
+                                {filteredR2Images.length === 0 ? (
+                                    <div className="text-center py-16 bg-slate-900/20 rounded-[2rem] border border-slate-900">
+                                        <ImageIcon className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                                        <h3 className="font-bold text-lg text-slate-400">No R2 images found</h3>
+                                        <p className="text-slate-500 text-sm mt-1">Try modifying your search filter.</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                        {filteredR2Images.map((img) => (
+                                            <Card 
+                                                key={img.key} 
+                                                className="bg-slate-900/20 border-slate-900/85 rounded-2xl overflow-hidden hover:border-pink-500/25 transition-all flex flex-col group"
+                                            >
+                                                {/* Image Preview */}
+                                                <div className="relative aspect-square w-full bg-slate-950/80 flex items-center justify-center overflow-hidden border-b border-slate-900">
+                                                    <img 
+                                                        src={img.url} 
+                                                        alt={img.key}
+                                                        className="object-contain w-full h-full group-hover:scale-105 transition-transform duration-300"
+                                                        loading="lazy"
+                                                    />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-between p-3">
+                                                        <Button
+                                                            variant="secondary"
+                                                            size="icon"
+                                                            onClick={() => copyText(img.url, 'Image URL')}
+                                                            className="bg-slate-900/90 hover:bg-slate-950 text-white rounded-lg w-8 h-8 flex-shrink-0"
+                                                            title="Copy Image URL"
+                                                        >
+                                                            <Copy className="w-3.5 h-3.5" />
+                                                        </Button>
+                                                        <a 
+                                                            href={img.url} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer"
+                                                            className="bg-pink-500 hover:bg-pink-600 text-white p-2 rounded-lg w-8 h-8 flex items-center justify-center flex-shrink-0 shadow-md"
+                                                            title="Open original image in new tab"
+                                                        >
+                                                            <ExternalLink className="w-3.5 h-3.5" />
+                                                        </a>
+                                                    </div>
+                                                </div>
+
+                                                {/* Card Details */}
+                                                <div className="p-4 space-y-2.5 flex-1 flex flex-col justify-between">
+                                                    <div className="space-y-1.5">
+                                                        <div className="flex justify-between items-start gap-2">
+                                                            <span 
+                                                                className="text-[10px] font-bold text-pink-400 uppercase tracking-wider bg-pink-500/10 border border-pink-500/20 px-2.5 py-1 rounded-full truncate max-w-[70%]" 
+                                                                title={img.email || img.userId || 'Guest Upload'}
+                                                            >
+                                                                👤 {img.email || 'Direct Upload'}
+                                                            </span>
+                                                            <span className="text-[10px] text-slate-400 font-bold bg-slate-900/60 px-2 py-0.5 rounded border border-slate-900 whitespace-nowrap">
+                                                                {formatBytes(img.size)}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs text-slate-200 font-medium break-all line-clamp-2" title={img.key}>
+                                                            {img.key.replace(/^wishes\/[^/]+\//, '')}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="pt-2.5 border-t border-slate-900 flex justify-between items-center text-[10px] text-slate-500 font-semibold">
+                                                        <span className="truncate max-w-[125px]" title={`User ID: ${img.userId || 'None'}`}>
+                                                            ID: {img.userId ? img.userId.slice(0, 8) + '...' : 'N/A'}
+                                                        </span>
+                                                        <span>
+                                                            {img.lastModified ? new Date(img.lastModified).toLocaleDateString() : 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Paginated load more button */}
+                                {r2ContinuationToken && (
+                                    <div className="flex justify-center pt-6">
+                                        <Button
+                                            onClick={() => loadR2Images(r2ContinuationToken)}
+                                            disabled={isR2Loading}
+                                            className="bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white font-bold py-5 px-8 rounded-xl shadow-lg shadow-pink-500/10 transition-all active:scale-95 text-xs uppercase tracking-wider flex items-center gap-2"
+                                        >
+                                            {isR2Loading ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    Loading More...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Load More Images
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </TabsContent>
                 </Tabs>
             </div>
