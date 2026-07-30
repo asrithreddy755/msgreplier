@@ -45,50 +45,77 @@ export async function POST(request: Request) {
     // Create an edge-native AWS client using aws4fetch
     const aws = getAwsClient(accessKeyId, secretAccessKey);
 
-    const r2Url = new URL(`https://${accountId}.r2.cloudflarestorage.com/${bucketName}`);
-    r2Url.searchParams.set('list-type', '2');
-    r2Url.searchParams.set('max-keys', limit.toString());
-    if (continuationToken) {
-      r2Url.searchParams.set('continuation-token', continuationToken);
-    }
-
-    // Sign request
-    const listRequest = await aws.sign(r2Url.toString(), {
-      method: 'GET',
-    });
-
-    // Execute call to list objects
-    const response = await fetch(listRequest);
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`R2 storage service returned status ${response.status}: ${errorText}`);
-    }
-
-    const xmlText = await response.text();
-
-    // Extract pagination ContinuationToken using regex
-    const nextTokenMatch = xmlText.match(/<NextContinuationToken>([^<]+)<\/NextContinuationToken>/);
-    const nextContinuationToken = nextTokenMatch ? nextTokenMatch[1] : null;
-
-    // Parse the XML Contents nodes with regex
+    // Fetch all objects recursively from Cloudflare R2
     const contents: { Key: string; Size: number; LastModified: string }[] = [];
-    const contentRegex = /<Contents>([\s\S]*?)<\/Contents>/g;
-    let match;
+    let currentContinuationToken: string | null = null;
+    let hasMore = true;
+    let safetyCounter = 0;
 
-    while ((match = contentRegex.exec(xmlText)) !== null) {
-      const contentBlock = match[1];
-      const keyMatch = contentBlock.match(/<Key>([^<]+)<\/Key>/);
-      const sizeMatch = contentBlock.match(/<Size>([^<]+)<\/Size>/);
-      const lastModifiedMatch = contentBlock.match(/<LastModified>([^<]+)<\/LastModified>/);
+    while (hasMore && safetyCounter < 30) { // Limit to 30,000 keys max for safety
+      safetyCounter++;
+      const r2Url = new URL(`https://${accountId}.r2.cloudflarestorage.com/${bucketName}`);
+      r2Url.searchParams.set('list-type', '2');
+      r2Url.searchParams.set('max-keys', '1000'); // Retrieve maximum page size
+      if (currentContinuationToken) {
+        r2Url.searchParams.set('continuation-token', currentContinuationToken);
+      }
 
-      if (keyMatch) {
-        contents.push({
-          Key: keyMatch[1],
-          Size: sizeMatch ? parseInt(sizeMatch[1], 10) : 0,
-          LastModified: lastModifiedMatch ? lastModifiedMatch[1] : '',
-        });
+      // Sign request
+      const listRequest = await aws.sign(r2Url.toString(), {
+        method: 'GET',
+      });
+
+      // Execute call to list objects
+      const response = await fetch(listRequest);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`R2 storage service returned status ${response.status}: ${errorText}`);
+      }
+
+      const xmlText = await response.text();
+
+      // Parse the XML Contents nodes with regex
+      const contentRegex = /<Contents>([\s\S]*?)<\/Contents>/g;
+      let match;
+      let countThisBatch = 0;
+
+      while ((match = contentRegex.exec(xmlText)) !== null) {
+        const contentBlock = match[1];
+        const keyMatch = contentBlock.match(/<Key>([^<]+)<\/Key>/);
+        const sizeMatch = contentBlock.match(/<Size>([^<]+)<\/Size>/);
+        const lastModifiedMatch = contentBlock.match(/<LastModified>([^<]+)<\/LastModified>/);
+
+        if (keyMatch) {
+          contents.push({
+            Key: keyMatch[1],
+            Size: sizeMatch ? parseInt(sizeMatch[1], 10) : 0,
+            LastModified: lastModifiedMatch ? lastModifiedMatch[1] : '',
+          });
+          countThisBatch++;
+        }
+      }
+
+      // Check for NextContinuationToken
+      const nextTokenMatch = xmlText.match(/<NextContinuationToken>([^<]+)<\/NextContinuationToken>/);
+      currentContinuationToken = nextTokenMatch ? nextTokenMatch[1] : null;
+
+      if (!currentContinuationToken || countThisBatch === 0) {
+        hasMore = false;
       }
     }
+
+    // Sort contents by LastModified date in descending order (newest first)
+    contents.sort((a, b) => {
+      const dateA = a.LastModified ? new Date(a.LastModified).getTime() : 0;
+      const dateB = b.LastModified ? new Date(b.LastModified).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    // Paginate sorted contents in memory using offsets
+    const offset = continuationToken ? parseInt(continuationToken, 10) : 0;
+    const paginatedContents = contents.slice(offset, offset + limit);
+    const nextOffset = offset + limit;
+    const nextContinuationToken = nextOffset < contents.length ? nextOffset.toString() : null;
 
     // Fetch user profiles to map user_id to email address
     const { client: supabase } = getSupabaseAdmin();
@@ -111,7 +138,7 @@ export async function POST(request: Request) {
     }
 
     // Process listed objects
-    const images = contents.map((item) => {
+    const images = paginatedContents.map((item) => {
       const key = item.Key || '';
       const size = item.Size || 0;
       const lastModified = item.LastModified || null;
