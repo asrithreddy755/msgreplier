@@ -23,6 +23,7 @@ import {
   LogOut,
   Crown,
   Menu,
+  MessageCircle,
 } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -613,6 +614,29 @@ export default function WishesDashboardClient({ user, greetings }: Props) {
                 </Link>
               </div>
             </div>
+
+            {/* Premium Support / WhatsApp Contact Card */}
+            {(plan === 'starter' || plan === 'creator') && (
+              <div className="bg-[#eedfc6]/20 border border-[#d4c3ab] rounded-[24px] p-6 mb-8 text-[#110f0f] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-bold font-heading text-lg text-[#110f0f] flex items-center gap-2">
+                    <span>👑</span> Premium Support
+                  </h3>
+                  <p className="text-sm text-[#5d6c7b] mt-1 leading-relaxed">
+                    As a valued premium member, feel free to contact us on WhatsApp for priority assistance, changes, or questions.
+                  </p>
+                </div>
+                <a
+                  href="https://wa.me/918499989032"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-shrink-0 flex items-center gap-2 bg-[#25d366] hover:bg-[#20ba56] text-white font-bold text-sm px-6 py-3 rounded-full transition-all shadow-md hover:scale-[1.02]"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span>+91 8499989032</span>
+                </a>
+              </div>
+            )}
 
             {/* Plan limits */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
