@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const occasion = urlParams.get('occasion') || 'Birthday';
   const dobParam = urlParams.get('dob') || urlParams.get('birthday_date');
   const photoUrlParam = urlParams.get('photo_url');
+  const fitModeParam = urlParams.get('fit_mode') || 'cover';
+  const objectFitVal = fitModeParam === 'contain' ? 'contain' : 'cover';
 
   // Dynamic layout changes based on parsed parameters
   document.title = `${occasion} Surprise for ${recipientName}`;
@@ -25,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalTitleEl.textContent = `Happy ${occasion} ✨`;
   }
 
-  // --- Dynamic Photo Swiper Gallery ---
+  // --- Parse URL Query Parameters ---
   let photos = [];
   if (photoUrlParam) {
     try {
@@ -53,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       slide.className = 'swiper-slide';
       slide.innerHTML = `
         <div class="slide-card">
-          <img src="${photo.url}" alt="${photo.caption || 'Memory'}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />
+          <img src="${photo.url}" alt="${photo.caption || 'Memory'}" style="width:100%;height:100%;object-fit:${objectFitVal};border-radius:inherit;" />
         </div>
       `;
       swiperWrapper.appendChild(slide);

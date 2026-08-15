@@ -130,12 +130,12 @@ export default function GreetingWebsite() {
   }
 
   if (greeting.theme === "aurora") {
-    return <TemplateAurora greeting={greeting} />;
+    return <TemplateAurora greeting={greeting} photoFitMode={greeting.fit_mode !== "contain"} />;
   }
 
   if (greeting.theme === "classic-2d") {
-    return <TemplateClassic2D greeting={greeting} />;
+    return <TemplateClassic2D greeting={greeting} photoFitMode={greeting.fit_mode !== "contain"} />;
   }
 
-  return <TemplateCake greeting={greeting} />;
+  return <TemplateCake greeting={greeting} photoFitMode={greeting.fit_mode !== "contain"} />;
 }
