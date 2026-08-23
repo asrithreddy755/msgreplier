@@ -289,7 +289,6 @@ export default function ClientGreetingWebsite() {
                   style={q1YesPos}
                   onMouseEnter={moveQ1Yes}
                   onTouchStart={moveQ1Yes}
-                  onClick={() => setStep("q2")}
                   className="px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-black rounded-full shadow-[0_4px_12px_rgba(244,63,94,0.2)] text-sm tracking-wider uppercase"
                 >
                   Yes
