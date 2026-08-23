@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="title" content="Happy Birthday Special">
+    <title>Happy Birthday Special</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Titan+One&family=Poppins:wght@500;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* ========== PHOTO FIT TOGGLE ========== */
+        .photo-fit-toggle-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.12);
+            border: 1.5px solid rgba(255,71,126,0.3);
+            border-radius: 50px;
+            padding: 5px 12px 5px 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.3s;
+        }
+        .photo-fit-toggle-wrap:hover { background: rgba(255,71,126,0.12); }
+        .photo-fit-label-txt {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #c4687e;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .toggle-track {
+            width: 40px;
+            height: 22px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50px;
+            position: relative;
+            display: inline-block;
+            transition: background 0.3s;
+            border: 1.5px solid rgba(255,71,126,0.2);
+            flex-shrink: 0;
+        }
+        .toggle-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(200,100,126,0.6);
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), background 0.3s;
+        }
+        .photo-fit-toggle-wrap.active .toggle-track {
+            background: var(--main-pink);
+            border-color: var(--main-pink);
+        }
+        .photo-fit-toggle-wrap.active .toggle-thumb {
+            transform: translateX(18px);
+            background: #fff;
+        }
+        .toggle-state-text {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #c4687e;
+            min-width: 20px;
+            letter-spacing: 0.05em;
+        }
+        .photo-fit-toggle-wrap.active .toggle-state-text { color: var(--main-pink); }
+        .fit-toggle-section {
+            margin-top: 8px;
+            display: none; /* shown only when photo is displayed */
+            justify-content: center;
+        }
+        .fit-toggle-hint {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.68rem;
+            color: #c4687e;
+            text-align: center;
+            margin-top: 4px;
+            display: none;
+        }
+        /* Photo image fit states */
+        #person-img.photo-cover  { object-fit: cover; }
+        #person-img.photo-contain { object-fit: contain; background: rgba(255,255,255,0.05); }
+
+        /* Animated receiver name for without-image (no photo) mode */
+        .animated-name-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 12px;
+            padding: 20px 0;
+        }
+        .animated-name-chars {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2px;
+        }
+        .animated-name-chars span {
+            display: inline-block;
+            font-family: 'Titan One', cursive;
+            font-size: clamp(2rem, 8vw, 4rem);
+            color: var(--main-pink);
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.08);
+            animation: namePop 0.6s var(--char-delay, 0s) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        @keyframes namePop {
+            0%  { opacity: 0; transform: scale(0) rotate(-10deg) translateY(-30px); }
+            100%{ opacity: 1; transform: scale(1) rotate(0deg) translateY(0); }
+        }
+        .animated-name-label {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(1rem, 4vw, 1.4rem);
+            color: var(--light-pink);
+            font-weight: 700;
+            animation: fade 1.5s 1.5s both;
+        }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Fix close button – ensure it's always fully visible */
+        .close {
+            position: absolute !important;
+            top: -16px !important;
+            right: -16px !important;
+            background: var(--main-pink) !important;
+            color: white !important;
+            width: 42px !important;
+            height: 42px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 12px rgba(255,71,126,0.4) !important;
+            font-size: 1.2rem !important;
+            transition: transform 0.2s !important;
+            border: 3px solid var(--white) !important;
+            z-index: 1000 !important;
+        }
+        .letter__border {
+            overflow: visible !important;
+        }
+
+        /* Live second counter – shown after scratch reveal */
+        #scratch-counter-badge {
+            display: none;
+            margin: 14px auto 0;
+            text-align: center;
+            animation: fade 0.6s both;
+        }
+        #scratch-counter-label {
+            font-family: 'Caveat', cursive;
+            font-size: 1.25rem;
+            color: var(--light-pink);
+            font-weight: 700;
+            display: block;
+            margin-bottom: 6px;
+        }
+        #scratch-live-timer {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--white);
+            border: 3px solid var(--main-pink);
+            border-radius: 50px;
+            padding: 8px 24px;
+            box-shadow: 0 4px 0 #ffb3c6;
+        }
+        #scratch-live-timer .timer-num {
+            font-family: 'Titan One', cursive;
+            font-size: 2rem;
+            color: var(--main-pink);
+            min-width: 2.5ch;
+            text-align: center;
+            line-height: 1;
+        }
+        #scratch-live-timer .timer-unit {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #c4687e;
+        }
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50%       { transform: scale(1.15); }
+        }
+        #scratch-live-timer .timer-num.pulse {
+            animation: timerPulse 0.3s ease;
+        }
+
+        /* Developer credit */
+        #copy { position: fixed; bottom: 10px; width: 100%; text-align: center; z-index: 10; pointer-events: none; }
+        #copy p { font-size: 12px; color: #999; font-weight: 500; pointer-events: auto; }
+        #copy a { color: var(--main-pink); font-weight: 700; text-decoration: none; }
+    </style>
+    
+    <!-- jQuery & Confetti JS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <!-- Floating Love Notes -->
+    <div class="bg-bubbles">
+        <div class="bubble love-note" data-msg="You are my sunshine! ☀️"><i class="fa-solid fa-heart"></i></div>
+        <div class="bubble love-note" data-msg="Your smile is my favorite! 😍"><i class="fa-solid fa-star"></i></div>
+        <div class="bubble love-note" data-msg="I love you to the moon &amp; back! 🌙"><i class="fa-solid fa-heart"></i></div>
+        <div class="bubble love-note" data-msg="You make my heart skip a beat! 💓"><i class="fa-solid fa-star"></i></div>
+    </div>
+
+    <!-- Note Popup Toast -->
+    <div id="toast-note" class="toast">Message</div>
+
+    <div id="wrapper">
+        <div class="flag__birthday">
+            <img src="./images/1.png" alt="" class="flag__left">
+            <img src="./images/1.png" alt="" class="flag__right">
+        </div>
+        
+        <div class="content">
+            <!-- Left Side -->
+            <div class="left">
+                <div class="title">
+                    <div class="happy text-row">
+                        <span style="--t: 0.1s;">H</span><span style="--t: 0.2s;">a</span><span style="--t: 0.3s;">p</span><span style="--t: 0.4s;">p</span><span style="--t: 0.5s;">y</span>
+                    </div>
+                    <!-- "Birthday" row is replaced dynamically with receiver name letters -->
+                    <div class="birthday text-row" id="birthday-row">
+                        <span style="--t: 0.6s;">B</span><span style="--t: 0.7s;">i</span><span style="--t: 0.8s;">r</span><span style="--t: 0.9s;">t</span><span style="--t: 1.0s;">h</span><span style="--t: 1.1s;">d</span><span style="--t: 1.2s;">a</span><span style="--t: 1.3s;">y</span>
+                    </div>
+                    <!-- Receiver name shown below -->
+                    <div class="birthday text-row" id="receiver-name-row" style="font-size: clamp(1.5rem, 6vw, 3rem); margin-top: -4px;"></div>
+                    <div class="hat">
+                        <img src="./images/hat.png" alt="">
+                    </div>
+                </div>
+                
+                <div class="date__of__birth pop-in-date">
+                    <span></span>
+                </div>
+                
+                <div class="btn pop-in-btn">
+                    <button id="btn__letter" class="shimmer-btn">
+                        <span>Click here</span>
+                        <i class="fa-solid fa-envelope-open-heart"></i>
+                    </button>
+                </div>
+
+                <!-- Cake and Scratch Card Buttons -->
+                <div class="extra-actions pop-in-btn">
+                    <button id="btn__cake" class="icon-btn" title="Blow the Candle"><i class="fa-solid fa-cake-candles"></i></button>
+                    <button id="btn__scratch" class="icon-btn" title="Surprise Gift"><i class="fa-solid fa-gift"></i></button>
+                </div>
+            </div>
+
+            <!-- Right Side -->
+            <div class="right">
+                <div class="box__account slide-up-bottom">
+                    <div class="image float-anim" id="person-image-container">
+                        <!-- Image shown if photo_url given, else animated name -->
+                        <!-- hidden by default; JS shows it only when photo_url is provided -->
+                        <img id="person-img" src="./images/r5.png" alt="Birthday Person" class="photo-cover" style="display:none; width: 100%; height: 100%;">
+                    </div>
+
+                    <div class="name">
+                        <i class="fa-solid fa-heart beat"></i>
+                        <span id="name-display">Someone</span>
+                        <i class="fa-solid fa-heart beat"></i>
+                    </div>
+                    
+                    <div class="balloon_one swing-right">
+                        <img src="./images/balloon1.png" alt="">
+                    </div>
+                    <div class="balloon_two swing-left">
+                        <img src="./images/balloon2.png" alt="">
+                    </div>
+                </div>
+                
+                <div class="cricle scale-in">
+                    <div class="text__cricle">
+                        <span style="--i: 1;">h</span><span style="--i: 2;">a</span><span style="--i: 3;">p</span><span style="--i: 4;">p</span><span style="--i: 5;">y</span><span style="--i: 6;">-</span>
+                        <span style="--i: 7;">b</span><span style="--i: 8;">i</span><span style="--i: 9;">r</span><span style="--i: 10;">t</span><span style="--i: 11;">h</span><span style="--i: 12;">d</span><span style="--i: 13;">a</span><span style="--i: 14;">y</span><span style="--i: 15;">-</span>
+                    </div>
+                    <i class="fa-solid fa-heart center-heart"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Secret Letter Box -->
+        <div class="box__letter modal-box">
+            <div class="letter__border">
+                <div class="close"><i class="fa-solid fa-xmark"></i></div>
+                <div class="letter">
+                    <div class="title__letter"></div>
+                    <div class="content__letter">
+                        <div class="left">
+                            <img id="heart__letter" src="https://media.giphy.com/media/YKUvclrGYmDKXwtphf/giphy.gif" alt="">
+                            <img class="heart heart_1" style="--t: 0.2s" width="20" src="./images/heart.png" alt="">
+                            <img class="heart heart_2" style="--t: 0.4s" width="20" src="./images/heart.png" alt="">
+                            <img class="heart heart_3" style="--t: 0.6s" width="20" src="./images/heart.png" alt="">
+                            <img class="heart heart_4" style="--t: 0.8s" width="20" src="./images/heart.png" alt="">
+                        </div>
+                        <div class="right">
+                            <div class="love__img">
+                                <img src="https://media.giphy.com/media/m85llaN7ZkFIHtURiC/giphy.gif" alt="" width="150">
+                            </div>
+                            <div class="text__letter">
+                                 <p></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Cake Modal -->
+        <div id="cake-modal" class="modal-box">
+            <div class="letter__border cake-card">
+                <div class="close btn-close-cake"><i class="fa-solid fa-xmark"></i></div>
+                <h2 class="title__letter cake-title">Make a Wish! 🎂</h2>
+                
+                <!-- Realistic 3D CSS Cake -->
+                <div class="cake-container">
+                    <div class="cake-3d">
+                        <div class="cake-side"></div>
+                        <div class="cake-top">
+                            <div class="frosting"></div>
+                            <div class="candle" id="candle">
+                                <div class="flame" id="flame"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="instruction">Tap the flame to blow it out!</p>
+                <p class="wish-text hidden">May all your wishes come true! ✨</p>
+            </div>
+        </div>
+
+        <!-- Advanced Scratch Card Modal -->
+        <div id="scratch-modal" class="modal-box">
+            <div class="letter__border scratch-card-box">
+                <div class="close btn-close-scratch"><i class="fa-solid fa-xmark"></i></div>
+                <h2 class="title__letter">Your Surprise 🎁</h2>
+                
+                <div class="scratch-container" id="scratch-container">
+                    <div class="scratch-secret" style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; height: 100%;">
+                        <!-- Live Age/DOB Counter — shown AFTER scratch reveal -->
+                        <div id="scratch-counter-badge" style="width: 100%;">
+                            <h3 id="scratch-timer-title" style="font-family: 'Dancing Script', cursive; font-size: 1.6rem; color: var(--main-pink); margin-bottom: 2px;">Time Spreading Love & Light</h3>
+                            <p id="scratch-timer-subtitle" style="font-family: 'Poppins', sans-serif; font-size: 0.65rem; color: #c4687e; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;">Every second since you arrived</p>
+                            
+                            <div style="display: flex; justify-content: center; align-items: center; gap: 6px;">
+                                <div style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.7); border: 2.5px solid var(--main-pink); padding: 6px 8px; border-radius: 10px; min-width: 54px; box-shadow: 0 2px 0 #ffb3c6;">
+                                    <span style="font-family: 'Titan One', cursive; font-size: 1.25rem; color: var(--main-pink); line-height: 1.1;" id="scratch-days">0</span>
+                                    <span style="font-family: 'Poppins', sans-serif; font-size: 0.55rem; font-weight: 700; color: #c4687e; text-transform: uppercase; margin-top: 1px;">Days</span>
+                                </div>
+                                <span style="font-family: 'Titan One', cursive; font-size: 1.1rem; color: var(--main-pink); align-self: center;">:</span>
+                                <div style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.7); border: 2.5px solid var(--main-pink); padding: 6px 8px; border-radius: 10px; min-width: 54px; box-shadow: 0 2px 0 #ffb3c6;">
+                                    <span style="font-family: 'Titan One', cursive; font-size: 1.25rem; color: var(--main-pink); line-height: 1.1;" id="scratch-hours">0</span>
+                                    <span style="font-family: 'Poppins', sans-serif; font-size: 0.55rem; font-weight: 700; color: #c4687e; text-transform: uppercase; margin-top: 1px;">Hours</span>
+                                </div>
+                                <span style="font-family: 'Titan One', cursive; font-size: 1.1rem; color: var(--main-pink); align-self: center;">:</span>
+                                <div style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.7); border: 2.5px solid var(--main-pink); padding: 6px 8px; border-radius: 10px; min-width: 54px; box-shadow: 0 2px 0 #ffb3c6;">
+                                    <span style="font-family: 'Titan One', cursive; font-size: 1.25rem; color: var(--main-pink); line-height: 1.1;" id="scratch-minutes">0</span>
+                                    <span style="font-family: 'Poppins', sans-serif; font-size: 0.55rem; font-weight: 700; color: #c4687e; text-transform: uppercase; margin-top: 1px;">Mins</span>
+                                </div>
+                                <span style="font-family: 'Titan One', cursive; font-size: 1.1rem; color: var(--main-pink); align-self: center;">:</span>
+                                <div style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.7); border: 2.5px solid var(--main-pink); padding: 6px 8px; border-radius: 10px; min-width: 54px; box-shadow: 0 2px 0 #ffb3c6;">
+                                    <span style="font-family: 'Titan One', cursive; font-size: 1.25rem; color: var(--main-pink); line-height: 1.1;" id="scratch-seconds">0</span>
+                                    <span style="font-family: 'Poppins', sans-serif; font-size: 0.55rem; font-weight: 700; color: #c4687e; text-transform: uppercase; margin-top: 1px;">Secs</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="scratch-canvas"></canvas>
+                </div>
+                <p class="instruction mt-3 scratch-instruction">Scratch the gold foil to reveal!</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Developer Credit (dynamic) -->
+    <div id="copy">
+        <p>Developed with ❤️ by <a href="#" id="dev-credit-link">Someone Special</a></p>
+    </div>
+
+<script>
+    /* ============================================================
+       URL PARAMS
+       ============================================================ */
+    const urlParams = new URLSearchParams(window.location.search);
+    const recipientName = urlParams.get('recipient_name') || 'Priya Mareddy ';
+    const senderName    = urlParams.get('sender_name')    || 'Charan Tej ';
+    const message       = urlParams.get('message')        || `To the Rgukt's gorgeous GR a Happy Birthday greeting from ur  cruel, heatless CR
+
+Ur the only girl who come near me and become my comfort zone Hope we stay together 🫂✨&Sorry for hurting u sometimes 🙇 But remember Priya Mareddy ki chaala mandhi undachu kaani Charan Tej ki matram unnadhi nuvvu okkate 🫵🫶✨ ❤️‍🩹
+
+May God give u some more brain 🧠 this year .and Once again a very happy born day to my fav losseuuuu pilla priya mareddy gaaru ✨💗🎀`;
+    const occasion      = urlParams.get('occasion')       || 'Birthday';
+    const musicId       = urlParams.get('music_id')       || 'none';
+    const photoUrl      = urlParams.get('photo_url')      || 'https://images.msgreplier.com/wishes/a4828006-1ffe-4b31-bc82-747ffeda72a0/1786727800184-007d66af-1a0b-429c-a74c-3805264b970c.webp';
+    const isPreview     = urlParams.get('preview')        === 'true';
+    const dobStr        = urlParams.get('dob')            || '2009-08-16';
+
+    let liveTimerInterval = null;   // holds the live DOB counter interval
+
+    function startLiveAgeCounter() {
+        if (!dobStr) return;
+        const birthDate = new Date(dobStr);
+        if (isNaN(birthDate.getTime())) return;
+
+        const daysEl = document.getElementById('scratch-days');
+        const hoursEl = document.getElementById('scratch-hours');
+        const minsEl = document.getElementById('scratch-minutes');
+        const secsEl = document.getElementById('scratch-seconds');
+        const titleEl = document.getElementById('scratch-timer-title');
+        const subtitleEl = document.getElementById('scratch-timer-subtitle');
+
+        function updateCounter() {
+            const now = new Date();
+            const diffMs = now.getTime() - birthDate.getTime();
+            const isFuture = diffMs < 0;
+            const absDiff = Math.abs(diffMs);
+
+            const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((absDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((absDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((absDiff % (1000 * 60)) / 1000);
+
+            if (titleEl) {
+                titleEl.textContent = isFuture ? "Countdown to Celebration" : "Time Spreading Love & Light";
+            }
+            if (subtitleEl) {
+                subtitleEl.textContent = isFuture ? "Days until the magic day" : "Every second since you arrived";
+            }
+
+            if (daysEl) daysEl.textContent = days;
+            if (hoursEl) hoursEl.textContent = hours;
+            if (minsEl) minsEl.textContent = minutes;
+            if (secsEl) {
+                secsEl.textContent = seconds;
+                // Pulse animation
+                secsEl.classList.remove('pulse');
+                void secsEl.offsetWidth; // force reflow
+                secsEl.classList.add('pulse');
+            }
+        }
+
+        updateCounter();
+        if (liveTimerInterval) clearInterval(liveTimerInterval);
+        liveTimerInterval = setInterval(updateCounter, 1000);
+    }
+
+    /* ── Page title ─────────────────────────────────────────── */
+    document.title = `${occasion} Surprise for ${recipientName}`;
+
+    /* ── Developer credit ───────────────────────────────────── */
+    const devCreditEl = document.getElementById('dev-credit-link');
+    if (devCreditEl) devCreditEl.textContent = senderName || 'Someone Special';
+
+    /* ── Photo / Animated Name ──────────────────────────────── */
+    const personImg       = document.getElementById('person-img');
+    const imgContainer    = document.getElementById('person-image-container');
+
+    // Photo fit toggle state (true = cover/fit, false = contain/full visible)
+    // Read from URL param fit_mode if present (set by create page)
+    const _fitModeParam4 = urlParams.get('fit_mode');
+    let photoFitMode4 = _fitModeParam4 === 'contain' ? false : true; // default ON (cover)
+
+    function applyPhotoFit4() {
+        if (!personImg) return;
+        personImg.classList.toggle('photo-cover',   photoFitMode4);
+        personImg.classList.toggle('photo-contain', !photoFitMode4);
+    }
+
+    window.togglePhotoFit4 = function() {
+        photoFitMode4 = !photoFitMode4;
+        const btn   = document.getElementById('photoFitToggle4');
+        const label = document.getElementById('fitToggleText4');
+        const hint  = document.getElementById('fitToggleHint4');
+        if (btn)   btn.classList.toggle('active', photoFitMode4);
+        if (label) label.textContent = photoFitMode4 ? 'ON' : 'OFF';
+        if (hint)  hint.textContent  = photoFitMode4
+            ? 'Photos cropped to fit frame.'
+            : 'Full photo visible (letterbox possible).';
+        applyPhotoFit4();
+    };
+
+    if (isPreview) {
+        if (personImg) personImg.style.display = 'none';
+        if (imgContainer) {
+            imgContainer.innerHTML = '';
+            const placeholderDiv = document.createElement('div');
+            placeholderDiv.className = 'example-picture-placeholder';
+            placeholderDiv.style.width = '100%';
+            placeholderDiv.style.height = '100%';
+            placeholderDiv.style.display = 'flex';
+            placeholderDiv.style.flexDirection = 'column';
+            placeholderDiv.style.alignItems = 'center';
+            placeholderDiv.style.justifyContent = 'center';
+            placeholderDiv.style.border = '2px dashed rgba(255, 255, 255, 0.25)';
+            placeholderDiv.style.borderRadius = '12px';
+            placeholderDiv.style.color = 'rgba(255, 255, 255, 0.6)';
+            placeholderDiv.style.fontFamily = 'sans-serif';
+            placeholderDiv.style.fontSize = '12px';
+            placeholderDiv.style.textTransform = 'uppercase';
+            placeholderDiv.style.fontWeight = 'bold';
+            placeholderDiv.style.letterSpacing = '1.5px';
+            placeholderDiv.style.padding = '20px';
+            placeholderDiv.style.boxSizing = 'border-box';
+            placeholderDiv.style.background = 'rgba(255, 255, 255, 0.04)';
+            placeholderDiv.innerHTML = `
+                <span style="font-size: 26px; margin-bottom: 8px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));">📸</span>
+                <span>Example Picture</span>
+            `;
+            imgContainer.appendChild(placeholderDiv);
+        }
+    } else if (photoUrl && personImg) {
+        personImg.src = photoUrl;
+        personImg.style.display = 'block';
+        applyPhotoFit4();
+        // Show the toggle
+        const toggleSec = document.getElementById('fitToggleSection');
+        const toggleHint = document.getElementById('fitToggleHint4');
+        const toggleBtn = document.getElementById('photoFitToggle4');
+        const toggleLabel = document.getElementById('fitToggleText4');
+        if (toggleSec)  { toggleSec.style.display  = 'flex'; }
+        if (toggleHint) { toggleHint.style.display = 'block'; }
+        // Sync visual state with URL param
+        if (toggleBtn)  { toggleBtn.classList.toggle('active', photoFitMode4); }
+        if (toggleLabel){ toggleLabel.textContent = photoFitMode4 ? 'ON' : 'OFF'; }
+        if (toggleHint) { toggleHint.textContent = photoFitMode4 ? 'Photos cropped to fit frame.' : 'Full photo visible (letterbox possible).'; }
+    } else if (!photoUrl) {
+        // No photo: hide default img and show animated name
+        if (personImg) personImg.style.display = 'none';
+        if (imgContainer) {
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'animated-name-display';
+
+            const charsDiv = document.createElement('div');
+            charsDiv.className = 'animated-name-chars';
+            [...recipientName].forEach((char, i) => {
+                const span = document.createElement('span');
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                span.style.setProperty('--char-delay', `${0.1 + i * 0.12}s`);
+                charsDiv.appendChild(span);
+            });
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'animated-name-label';
+            labelDiv.textContent = '🎂 It\'s your day!';
+
+            nameDiv.appendChild(charsDiv);
+            nameDiv.appendChild(labelDiv);
+            imgContainer.appendChild(nameDiv);
+        }
+    }
+
+    /* ── Name display ───────────────────────────────────────── */
+    const nameEl = document.getElementById('name-display');
+    if (nameEl) nameEl.textContent = recipientName;
+
+    /* ── "Happy Birthday [ReceiverName]" title rows ─────────── */
+    // Keep "Birthday" row as static, add receiver name row below
+    const receiverNameRow = document.getElementById('receiver-name-row');
+    if (receiverNameRow) {
+        receiverNameRow.innerHTML = recipientName.split('').map((char, i) =>
+            `<span style="--t: ${1.4 + i * 0.12}s;">${char === ' ' ? '&nbsp;' : char}</span>`
+        ).join('');
+    }
+
+    /* ── Button text ────────────────────────────────────────── */
+    const btnSpan = document.querySelector('#btn__letter span');
+    if (btnSpan) btnSpan.textContent = `Click here ${recipientName}`;
+
+    /* ── Occasion title adjustment ──────────────────────────── */
+    const bdayRow = document.getElementById('birthday-row');
+    if (bdayRow && occasion !== 'Birthday') {
+        bdayRow.innerHTML = occasion.split('').map((char, i) =>
+            `<span style="--t: ${0.6 + i * 0.1}s;">${char}</span>`
+        ).join('');
+    }
+
+    /* ── Anniversary occasion configurations ────────────────── */
+    if (occasion === 'Anniversary') {
+        // Hides .date__of__birth element
+        $('.date__of__birth').hide();
+
+        // Update spinning circle text
+        const textCircle = document.querySelector('.text__cricle');
+        if (textCircle) {
+            textCircle.style.setProperty('--deg', '20deg');
+            textCircle.innerHTML = [...'happy-anniversary-'].map((char, index) => 
+                `<span style="--i: ${index + 1};">${char}</span>`
+            ).join('');
+        }
+
+        // Hide DOB counter details and show developed by credit card inside scratch card
+        const scratchSecret = document.querySelector('.scratch-secret');
+        if (scratchSecret) {
+            scratchSecret.innerHTML = `
+                <div id="scratch-counter-badge" style="width: 100%; display: block;">
+                    <p style="font-family: 'Dancing Script', cursive; font-size: 1.6rem; color: var(--main-pink); text-align: center; padding: 10px; line-height: 1.4;">
+                        This website is developed by the ${senderName || 'sender'} for the ${recipientName}
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+
+    /* ============================================================
+       MAIN SETUP & TEXTS
+       ============================================================ */
+    let datetxt         = 'Today ✨';
+    let datatxtletter   = message;
+    let titleLetter     = senderName ? `From ${senderName} 💖` : `For ${recipientName} 💖`;
+
+    let charArrDate       = datetxt.split('');
+    let charArrDateLetter = datatxtletter.split('');
+    let charArrTitle      = titleLetter.split('');
+    let currentIndex = 0, currentIndexLetter = 0, currentIndexTitle = 0;
+
+    let date__of__birth = document.querySelector('.date__of__birth span');
+    let text__letter    = document.querySelector('.text__letter p');
+    let intervalContent, intervalTitle;
+
+
+    /* ============================================================
+       TYPING ANIMATION (date)
+       ============================================================ */
+    setTimeout(function(){
+        const timeDatetxt = setInterval(function(){
+            if (currentIndex < charArrDate.length) {
+                if (date__of__birth) date__of__birth.textContent += charArrDate[currentIndex];
+                currentIndex++;
+            } else {
+                clearInterval(timeDatetxt);
+            }
+        }, 100);
+    }, 3800);
+
+    /* ============================================================
+       MAIN LETTER LOGIC
+       ============================================================ */
+    $('#btn__letter').on('click', function(){
+        fireConfetti();
+        $('.box__letter').css('display', 'flex').hide().fadeIn(400);
+        setTimeout(() => $('.box__letter .letter__border').addClass('active'), 100);
+
+        setTimeout(function(){
+            intervalTitle = setInterval(function(){
+                if (currentIndexTitle < charArrTitle.length) {
+                    document.querySelector('.title__letter').textContent += charArrTitle[currentIndexTitle];
+                    currentIndexTitle++;
+                } else {
+                    const icon = document.createElement('i');
+                    icon.className = 'fa-solid fa-heart fa-beat';
+                    icon.style.color = '#ff4d6d';
+                    icon.style.marginLeft = '8px';
+                    document.querySelector('.title__letter').appendChild(icon);
+                    clearInterval(intervalTitle);
+                }
+            }, 100);
+        }, 800);
+
+        setTimeout(function(){
+            const heartLetter = document.querySelector('#heart__letter');
+            const loveImg     = document.querySelector('.love__img');
+            if (heartLetter) heartLetter.classList.add('animationOp');
+            if (loveImg)     loveImg.classList.add('animationOp');
+            document.querySelectorAll('.heart').forEach(item => item.classList.add('animation'));
+        }, 1200);
+
+        setTimeout(function(){
+            intervalContent = setInterval(function(){
+                if (currentIndexLetter < charArrDateLetter.length) {
+                    if (text__letter) text__letter.textContent += charArrDateLetter[currentIndexLetter];
+                    currentIndexLetter++;
+                } else {
+                    clearInterval(intervalContent);
+                }
+            }, 50);
+        }, 2200);
+    });
+
+    $('.box__letter .close').on('click', function(){
+        clearInterval(intervalContent);
+        const titleLetterEl = document.querySelector('.title__letter');
+        if (titleLetterEl) titleLetterEl.textContent = '';
+        if (text__letter)  text__letter.textContent  = '';
+        currentIndexLetter = 0; currentIndexTitle = 0;
+        const heartLetter = document.querySelector('#heart__letter');
+        const loveImg     = document.querySelector('.love__img');
+        if (heartLetter) heartLetter.classList.remove('animationOp');
+        if (loveImg)     loveImg.classList.remove('animationOp');
+        document.querySelectorAll('.heart').forEach(item => item.classList.remove('animation'));
+        $('.box__letter .letter__border').removeClass('active');
+        setTimeout(() => $('.box__letter').fadeOut(400), 400);
+    });
+
+    /* ============================================================
+       3D CAKE & CINEMATIC LIGHT LOGIC
+       ============================================================ */
+    $('#btn__cake').on('click', function() {
+        $('#cake-modal').css('display', 'flex').hide().fadeIn(400);
+        setTimeout(() => $('#cake-modal .letter__border').addClass('active'), 100);
+        $('#flame').css('display', 'block');
+        $('.wish-text').addClass('hidden');
+    });
+
+    $('#flame').on('click touchstart', function(e) {
+        e.preventDefault();
+        $(this).fadeOut(300);
+
+        $('#cake-modal').css('background', '#000000');
+        $('#cake-modal .letter__border').css({
+            'background':   '#0a0a0a',
+            'box-shadow':   'none',
+            'border-color': '#111'
+        });
+        $('.cake-3d').css('filter', 'brightness(0.1)');
+        $('.instruction, .cake-title').css('opacity', '0');
+
+        setTimeout(() => {
+            $('#cake-modal').css('background', 'radial-gradient(circle, #240046 0%, #000 100%)');
+            $('#cake-modal .letter__border').addClass('party-mode');
+            $('.cake-3d').css('filter', 'brightness(1.1) drop-shadow(0 0 15px rgba(255,0,110,0.5))');
+            $('.wish-text').removeClass('hidden').hide().fadeIn();
+            fireConfetti();
+        }, 1500);
+    });
+
+    $('.btn-close-cake').on('click', function(){
+        $('#cake-modal .letter__border').removeClass('active party-mode');
+        setTimeout(() => {
+            $('#cake-modal').fadeOut(400);
+            setTimeout(() => {
+                $('#cake-modal').css('background', '');
+                $('#cake-modal .letter__border').css({'background': '', 'box-shadow': '', 'border-color': ''});
+                $('.cake-3d').css('filter', '');
+                $('.instruction, .cake-title').css('opacity', '1');
+            }, 400);
+        }, 100);
+    });
+
+    /* ============================================================
+       ADVANCED SCRATCH CARD LOGIC
+       ============================================================ */
+    $('#btn__scratch').on('click', function() {
+        $('#scratch-modal').css('display', 'flex').hide().fadeIn(400);
+        setTimeout(() => $('#scratch-modal .letter__border').addClass('active'), 100);
+
+        // Reset states
+        $('.scratch-secret').removeClass('pop-gift');
+        $('#scratch-canvas').show().css('opacity', '1');
+        $('.scratch-instruction').text('Scratch the gold foil to reveal your gift!');
+
+        // Reset live timer + counter badge
+        if (liveTimerInterval) { clearInterval(liveTimerInterval); liveTimerInterval = null; }
+        const daysEl = document.getElementById('scratch-days');
+        const hoursEl = document.getElementById('scratch-hours');
+        const minsEl = document.getElementById('scratch-minutes');
+        const secsEl = document.getElementById('scratch-seconds');
+        if (daysEl) daysEl.textContent = '0';
+        if (hoursEl) hoursEl.textContent = '0';
+        if (minsEl) minsEl.textContent = '0';
+        if (secsEl) secsEl.textContent = '0';
+        $('#scratch-counter-badge').hide();
+
+        initScratchCard();
+    });
+
+    $('.btn-close-scratch').on('click', function(){
+        // Stop the live timer when modal is closed
+        if (liveTimerInterval) { clearInterval(liveTimerInterval); liveTimerInterval = null; }
+        $('#scratch-modal .letter__border').removeClass('active');
+        setTimeout(() => $('#scratch-modal').fadeOut(400), 400);
+    });
+
+    function initScratchCard() {
+        const canvas    = document.getElementById('scratch-canvas');
+        const ctx       = canvas.getContext('2d');
+        const container = document.getElementById('scratch-container');
+
+        canvas.width  = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+
+        // Realistic Gold Foil Background
+        let gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0,   '#D4AF37');
+        gradient.addColorStop(0.5, '#FFDF73');
+        gradient.addColorStop(1,   '#AA7700');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Foil Text
+        ctx.fillStyle  = 'rgba(255, 255, 255, 0.6)';
+        ctx.font       = 'bold 22px Poppins';
+        ctx.textAlign  = 'center';
+        ctx.fillText('✨ SCRATCH ME ✨', canvas.width / 2, canvas.height / 2 + 8);
+
+        let isDrawing  = false;
+        let isRevealed = false;
+
+        function getBrushPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+            return { x, y };
+        }
+
+        function scratch(e) {
+            if (!isDrawing || isRevealed) return;
+            e.preventDefault();
+            const pos = getBrushPos(e);
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 25, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        function checkReveal() {
+            if (isRevealed) return;
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let transparentPixels = 0;
+            for (let i = 3; i < imageData.data.length; i += 4) {
+                if (imageData.data[i] === 0) transparentPixels++;
+            }
+            const percentage = (transparentPixels / (canvas.width * canvas.height)) * 100;
+
+            if (percentage > 45) {
+                isRevealed = true;
+                $(canvas).animate({ opacity: 0 }, 500, function(){ $(this).hide(); });
+
+                setTimeout(() => {
+                    $('.scratch-secret').addClass('pop-gift');
+                    $('.scratch-instruction').text('Yay! You found it! 🎉');
+                    confetti({ particleCount: 100, spread: 60, origin: { y: 0.7 }, zIndex: 1500 });
+
+                    // Show the live-second counter badge after reveal
+                    const counterBadge = document.getElementById('scratch-counter-badge');
+                    if (counterBadge) {
+                        counterBadge.style.display = 'block';
+                    }
+
+                    // Start live DOB timer
+                    if (occasion !== 'Anniversary') {
+                        startLiveAgeCounter();
+                    }
+                }, 200);
+            }
+        }
+
+        canvas.addEventListener('mousedown',  () => isDrawing = true);
+        canvas.addEventListener('touchstart', () => isDrawing = true);
+        canvas.addEventListener('mouseup',    () => { isDrawing = false; checkReveal(); });
+        canvas.addEventListener('touchend',   () => { isDrawing = false; checkReveal(); });
+        canvas.addEventListener('mousemove',  scratch);
+        canvas.addEventListener('touchmove',  scratch);
+    }
+
+    /* ============================================================
+       FLOATING LOVE NOTES
+       ============================================================ */
+    $('.love-note').on('click touchstart', function(e) {
+        e.preventDefault();
+        const msg   = $(this).attr('data-msg');
+        const toast = $('#toast-note');
+        toast.text(msg).fadeIn(300);
+        setTimeout(() => toast.fadeOut(500), 3000);
+    });
+
+    /* ============================================================
+       HELPER
+       ============================================================ */
+    function fireConfetti() {
+        confetti({
+            particleCount: 200, spread: 90, origin: { y: 0.6 },
+            colors: ['#ff4d6d', '#ff758f', '#fff', '#ffd60a'],
+            disableForReducedMotion: true,
+            zIndex: 2000
+        });
+    }
+
+    /* ============================================================
+       AUDIO PLAYBACK
+       ============================================================ */
+    let musicStarted = false;
+    const audio1 = new Audio('130version.mp3.mpeg');
+    const audio2 = new Audio('Fullversion.mp3.mpeg');
+    audio2.loop = true;
+
+    audio1.addEventListener('ended', function() {
+        audio2.play().catch(e => console.log("Fullversion play error:", e));
+    });
+
+    function startMusic() {
+        if (musicStarted) return;
+        musicStarted = true;
+        audio1.play().catch(e => {
+            console.log("Autoplay blocked, user interaction required:", e);
+            musicStarted = false; // allow retry on next click
+        });
+    }
+
+    $(document).on('click touchstart', function() {
+        startMusic();
+    });
+</script>
+</body>
+</html>

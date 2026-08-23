@@ -19,7 +19,7 @@ export function Navbar() {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   // Hide Navbar on specific immersive pages
-  const isGreetingPage = pathname?.includes("/greet/");
+  const isGreetingPage = pathname?.includes("/greet/") || pathname === "/client/305";
   const isWishesDashboard = pathname?.includes("/wishes/dashboard");
   const hideNavbar = isGreetingPage;
 
