@@ -900,18 +900,13 @@ May God give u some more brain 🧠 this year .and Once again a very happy born 
        AUDIO PLAYBACK
        ============================================================ */
     let musicStarted = false;
-    const audio1 = new Audio('130version.mp3.mpeg');
-    const audio2 = new Audio('Fullversion.mp3.mpeg');
-    audio2.loop = true;
-
-    audio1.addEventListener('ended', function() {
-        audio2.play().catch(e => console.log("Fullversion play error:", e));
-    });
+    const bgMusic = new Audio('full.mpeg');
+    bgMusic.loop = true;
 
     function startMusic() {
         if (musicStarted) return;
         musicStarted = true;
-        audio1.play().catch(e => {
+        bgMusic.play().catch(e => {
             console.log("Autoplay blocked, user interaction required:", e);
             musicStarted = false; // allow retry on next click
         });

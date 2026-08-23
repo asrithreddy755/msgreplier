@@ -12,8 +12,7 @@ const gifsToPreload = [
   "/templates/template_propose_crush1/manja.gif",
   "/templates/template_propose_crush1/no1.gif",
   "/templates/template_propose_crush1/no2.gif",
-  "/templates/template_propose_crush1/no3.gif",
-  "/templates/template_propose_crush1/yes.gif"
+  "/templates/template_propose_crush1/no3.gif"
 ];
 
 export default function ClientGreetingWebsite() {
@@ -490,16 +489,18 @@ export default function ClientGreetingWebsite() {
             <div className="bg-white/70 backdrop-blur-xl border border-pink-200/60 rounded-[32px] p-8 shadow-[0_12px_40px_rgba(244,63,94,0.15)] flex flex-col items-center text-center relative overflow-hidden">
               <div className="w-40 h-40 rounded-2xl overflow-hidden bg-pink-50 border-2 border-pink-200 shadow-inner flex items-center justify-center mb-6 relative">
                 <img
-                  src="/templates/template_propose_crush1/yes.gif"
-                  alt="Cute Hugging Cats GIF"
-                  className="w-full h-full object-cover"
+                  src="/templates/template_propose_crush1/no1.gif"
+                  alt="Teasing Cat GIF"
+                  className="w-full h-full object-contain p-2"
                 />
               </div>
 
-              <h2 className="text-2xl font-black bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent tracking-tight mb-2">
-                I knew it! 💗
+              <h2 className="text-2xl font-black tracking-tight mb-6 text-pink-600">
+                <span className="bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+                  Ayina Niku antha scene ledh le
+                </span>{" "}
+                😉
               </h2>
-              <p className="text-xs text-rose-500 font-bold mb-6">I love you so much, Priya Mareddy! 💗</p>
 
               <motion.button
                 whileHover={{ scale: 1.05 }}
