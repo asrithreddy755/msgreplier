@@ -6,6 +6,16 @@ import { Heart, Lock, Key, AlertCircle } from "lucide-react";
 
 type StepType = "locked" | "q1" | "q2" | "no1" | "no2" | "no3" | "success" | "wishes";
 
+const gifsToPreload = [
+  "/templates/template_wishes8/kitty.gif",
+  "/templates/template_wishes9/gifs/first.gif",
+  "/templates/template_propose_crush1/manja.gif",
+  "/templates/template_propose_crush1/no1.gif",
+  "/templates/template_propose_crush1/no2.gif",
+  "/templates/template_propose_crush1/no3.gif",
+  "/templates/template_propose_crush1/yes.gif"
+];
+
 export default function ClientGreetingWebsite() {
   const [src, setSrc] = useState("");
   const [password, setPassword] = useState("");
@@ -14,6 +24,7 @@ export default function ClientGreetingWebsite() {
   const [shouldShake, setShouldShake] = useState(false);
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isPreloading, setIsPreloading] = useState(true);
 
   // Position styles for runaway buttons
   const [q1YesPos, setQ1YesPos] = useState<React.CSSProperties>({});
@@ -23,6 +34,29 @@ export default function ClientGreetingWebsite() {
     setMounted(true);
     const search = typeof window !== "undefined" ? window.location.search : "";
     setSrc(`/templates/template_client/index.html${search}`);
+
+    // Preload all gifs
+    let loadedCount = 0;
+    const timeout = setTimeout(() => {
+      setIsPreloading(false);
+    }, 3500); // 3.5s max wait fallback
+
+    const handleLoad = () => {
+      loadedCount++;
+      if (loadedCount === gifsToPreload.length) {
+        clearTimeout(timeout);
+        setIsPreloading(false);
+      }
+    };
+
+    gifsToPreload.forEach((gifPath) => {
+      const img = new Image();
+      img.src = gifPath;
+      img.onload = handleLoad;
+      img.onerror = handleLoad;
+    });
+
+    return () => clearTimeout(timeout);
   }, []);
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -45,7 +79,7 @@ export default function ClientGreetingWebsite() {
 
   const moveQ1Yes = () => {
     const randomX = Math.floor(Math.random() * 80 + 10); // 10% to 90%
-    const randomY = Math.floor(Math.random() * 80 + 10); // 10% to 90%
+    const randomY = Math.floor(Math.random() * 45 + 15); // 15% to 60% (excludes bottom center buttons)
     setQ1YesPos({
       position: "absolute",
       top: `${randomY}%`,
@@ -58,7 +92,7 @@ export default function ClientGreetingWebsite() {
 
   const moveNoButton = () => {
     const randomX = Math.floor(Math.random() * 80 + 10); // 10% to 90%
-    const randomY = Math.floor(Math.random() * 80 + 10); // 10% to 90%
+    const randomY = Math.floor(Math.random() * 45 + 15); // 15% to 60% (excludes bottom center buttons)
     setNoButtonPos({
       position: "absolute",
       top: `${randomY}%`,
@@ -77,6 +111,17 @@ export default function ClientGreetingWebsite() {
         style={{ display: "block", width: "100%", height: "100vh" }}
         allow="microphone; autoplay; clipboard-write"
       />
+    );
+  }
+
+  if (isPreloading && mounted) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-tr from-pink-50 via-rose-100 to-pink-100 relative overflow-hidden font-sans select-none">
+        <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}>
+          <Heart className="w-16 h-16 text-pink-500 fill-pink-300 filter drop-shadow-[0_0_15px_rgba(244,63,94,0.4)]" />
+        </motion.div>
+        <p className="mt-4 text-pink-600 font-black uppercase tracking-widest text-xs">Delivering Love...</p>
+      </div>
     );
   }
 
@@ -244,6 +289,7 @@ export default function ClientGreetingWebsite() {
                   style={q1YesPos}
                   onMouseEnter={moveQ1Yes}
                   onTouchStart={moveQ1Yes}
+                  onClick={() => setStep("q2")}
                   className="px-8 py-3 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-black rounded-full shadow-[0_4px_12px_rgba(244,63,94,0.2)] text-sm tracking-wider uppercase"
                 >
                   Yes
