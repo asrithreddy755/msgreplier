@@ -106,6 +106,20 @@ export async function POST(request: Request) {
             console.error('[Admin API] Profiles exception:', e);
         }
 
+        try {
+            const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
+            if (!authError && authData?.users) {
+                const existingIds = new Set(profiles.map((p: any) => p.id));
+                authData.users.forEach((u: any) => {
+                    if (u.id && u.email && !existingIds.has(u.id)) {
+                        profiles.push({ id: u.id, email: u.email });
+                    }
+                });
+            }
+        } catch (authErr) {
+            console.error('[Admin API] auth.admin.listUsers exception:', authErr);
+        }
+
         // 6. Fetch all gallery images
         let gallery: any[] = [];
         try {

@@ -5,12 +5,17 @@ import {
     Lock, Loader2, ShieldAlert, Key, Users, MessageSquareHeart, 
     Gift, Search, Copy, ExternalLink, Calendar, Heart, 
     RefreshCw, ChevronDown, ChevronUp, LogOut, CheckCircle, Sparkles,
-    Image as ImageIcon
+    Image as ImageIcon, Mail, Trash2, CheckSquare, Square, AlertTriangle, Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { 
+    Dialog, DialogContent, DialogHeader, DialogTitle, 
+    DialogDescription, DialogFooter 
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -54,6 +59,15 @@ interface AdminGreeting {
     user_id?: string;
 }
 
+interface R2Image {
+    key: string;
+    url: string;
+    size: number;
+    lastModified: string | null;
+    userId: string | null;
+    email: string | null;
+}
+
 export default function AdminPage() {
     const [password, setPassword] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -80,20 +94,21 @@ export default function AdminPage() {
     const [visibleGreetingsCount, setVisibleGreetingsCount] = useState(50);
 
     // R2 storage images states
-    interface R2Image {
-        key: string;
-        url: string;
-        size: number;
-        lastModified: string | null;
-        userId: string | null;
-        email: string | null;
-    }
     const [r2Images, setR2Images] = useState<R2Image[]>([]);
     const [r2ContinuationToken, setR2ContinuationToken] = useState<string | null>(null);
     const [isR2Loading, setIsR2Loading] = useState(false);
     const [r2Search, setR2Search] = useState('');
     const [r2Error, setR2Error] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState('rooms');
+
+    // Gmail Inspector states
+    const [gmailSearchInput, setGmailSearchInput] = useState('');
+    const [activeInspectorGmail, setActiveInspectorGmail] = useState('');
+
+    // Selection & Delete state for Wishes
+    const [selectedWishIds, setSelectedWishIds] = useState<Set<string>>(new Set());
+    const [wishIdsToDelete, setWishIdsToDelete] = useState<string[] | null>(null);
+    const [isDeletingWishes, setIsDeletingWishes] = useState(false);
 
     // Reset visible counts when search filter changes
     useEffect(() => {
@@ -167,6 +182,10 @@ export default function AdminPage() {
         setR2Search('');
         setR2Error(null);
         setActiveTab('rooms');
+        setSelectedWishIds(new Set());
+        setWishIdsToDelete(null);
+        setGmailSearchInput('');
+        setActiveInspectorGmail('');
         toast.info('Logged out from admin panel.');
     };
 
@@ -247,6 +266,151 @@ export default function AdminPage() {
     const copyText = (text: string, label: string) => {
         navigator.clipboard.writeText(text);
         toast.success(`${label} copied to clipboard!`);
+    };
+
+    // Delete Wishes handler
+    const handleDeleteWishes = async (idsToDelete: string[]) => {
+        if (!idsToDelete || idsToDelete.length === 0) return;
+        const savedPassword = sessionStorage.getItem('msgreplier_admin_token');
+        if (!savedPassword) {
+            toast.error('Session expired. Please log in again.');
+            return;
+        }
+
+        setIsDeletingWishes(true);
+        try {
+            const res = await fetch('/api/admin/delete-wishes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: savedPassword,
+                    ids: idsToDelete
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                toast.success(`Successfully deleted ${idsToDelete.length} wish(es)!`);
+                setGreetings(prev => prev.filter(g => !idsToDelete.includes(g.id)));
+                setSelectedWishIds(prev => {
+                    const next = new Set(prev);
+                    idsToDelete.forEach(id => next.delete(id));
+                    return next;
+                });
+                setWishIdsToDelete(null);
+            } else {
+                toast.error(data.error || 'Failed to delete wishes');
+            }
+        } catch (err) {
+            toast.error('Network error deleting wishes');
+        } finally {
+            setIsDeletingWishes(false);
+        }
+    };
+
+    // Toggle individual wish selection
+    const toggleSelectWish = (id: string) => {
+        setSelectedWishIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
+
+    // Toggle select all wishes for a list
+    const toggleSelectAllWishes = (wishesList: AdminGreeting[]) => {
+        const wishIds = wishesList.map(w => w.id);
+        const allSelected = wishIds.length > 0 && wishIds.every(id => selectedWishIds.has(id));
+        
+        setSelectedWishIds(prev => {
+            const next = new Set(prev);
+            if (allSelected) {
+                wishIds.forEach(id => next.delete(id));
+            } else {
+                wishIds.forEach(id => next.add(id));
+            }
+            return next;
+        });
+    };
+
+    // Gather list of unique Gmails/emails across profiles & R2 images
+    const allKnownGmails = useMemo(() => {
+        const emailsSet = new Set<string>();
+        profiles.forEach(p => {
+            if (p.email) emailsSet.add(p.email);
+        });
+        r2Images.forEach(img => {
+            if (img.email) emailsSet.add(img.email);
+        });
+        return Array.from(emailsSet).sort();
+    }, [profiles, r2Images]);
+
+    // Inspector data for active Gmail
+    const inspectedUserData = useMemo(() => {
+        if (!activeInspectorGmail.trim()) return null;
+        const targetEmail = activeInspectorGmail.trim().toLowerCase();
+
+        // 1. Find profile
+        const profile = profiles.find(p => p.email?.toLowerCase() === targetEmail);
+        const userId = profile?.id;
+
+        // 2. Gather gallery pictures (from Supabase DB gallery & R2 bucket)
+        const dbGalleryItems = gallery.filter(img => userId && img.user_id === userId);
+        const r2GalleryItems = r2Images.filter(img => 
+            img.email?.toLowerCase() === targetEmail || (userId && img.userId === userId)
+        );
+
+        // Map into unified gallery image list
+        const galleryPictures: { id: string; url: string; source: 'Database' | 'R2 Storage'; created_at?: string }[] = [];
+        const seenUrls = new Set<string>();
+
+        dbGalleryItems.forEach(img => {
+            if (!seenUrls.has(img.image_url)) {
+                seenUrls.add(img.image_url);
+                galleryPictures.push({
+                    id: img.id,
+                    url: img.image_url,
+                    source: 'Database',
+                    created_at: img.created_at
+                });
+            }
+        });
+
+        r2GalleryItems.forEach(img => {
+            if (!seenUrls.has(img.url)) {
+                seenUrls.add(img.url);
+                galleryPictures.push({
+                    id: img.key,
+                    url: img.url,
+                    source: 'R2 Storage',
+                    created_at: img.lastModified || undefined
+                });
+            }
+        });
+
+        // 3. Gather user's wishes/greetings
+        const userWishes = greetings.filter(g => {
+            if (userId && g.user_id === userId) return true;
+            const greetingUserEmail = profiles.find(p => p.id === g.user_id)?.email?.toLowerCase();
+            return greetingUserEmail === targetEmail;
+        });
+
+        return {
+            email: activeInspectorGmail.trim(),
+            userId: userId || null,
+            galleryPictures,
+            userWishes
+        };
+    }, [activeInspectorGmail, profiles, gallery, r2Images, greetings]);
+
+    const inspectGmail = (emailToInspect: string) => {
+        setGmailSearchInput(emailToInspect);
+        setActiveInspectorGmail(emailToInspect);
+        setActiveTab('gmail-inspector');
     };
 
     const filteredR2Images = useMemo(() => {
@@ -404,7 +568,7 @@ export default function AdminPage() {
                             </span>
                         </div>
                         <p className="text-slate-400 text-sm">
-                            Manage private spaces, view live chat sessions, and greeting records.
+                            Manage private spaces, view live chat sessions, inspect Gmail galleries & delete wishes.
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -493,6 +657,12 @@ export default function AdminPage() {
                             className="flex-1 md:flex-initial rounded-xl px-6 py-3 text-sm font-bold data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
                         >
                             🎁 Wishes Websites ({filteredGreetings.length})
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="gmail-inspector"
+                            className="flex-1 md:flex-initial rounded-xl px-6 py-3 text-sm font-bold data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+                        >
+                            📧 Gmail & Gallery Inspector
                         </TabsTrigger>
                         <TabsTrigger 
                             value="r2-images"
@@ -622,7 +792,6 @@ export default function AdminPage() {
                                                         ) : (
                                                             <div className="max-h-[350px] overflow-y-auto space-y-3 pr-2 scrollbar-thin scrollbar-thumb-slate-800">
                                                                 {roomMessages.map((msg) => {
-                                                                    // Alternate styles based on nickname
                                                                     const memberIndex = roomMembers.findIndex(m => m.nickname === msg.sender_nickname);
                                                                     const isEven = memberIndex % 2 === 0;
 
@@ -669,15 +838,51 @@ export default function AdminPage() {
 
                     {/* Greetings Tab */}
                     <TabsContent value="greetings" className="space-y-4">
-                        {/* Search Bar */}
-                        <div className="relative max-w-md">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
-                            <Input
-                                value={greetingSearch}
-                                onChange={(e) => setGreetingSearch(e.target.value)}
-                                placeholder="Search greetings by sender, recipient, or occasion..."
-                                className="pl-11 bg-slate-900/30 border-slate-800 text-slate-100 rounded-xl focus:border-indigo-500 focus:ring-indigo-500/20"
-                            />
+                        {/* Search and Selection Toolbar */}
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-900">
+                            <div className="relative w-full sm:max-w-md">
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
+                                <Input
+                                    value={greetingSearch}
+                                    onChange={(e) => setGreetingSearch(e.target.value)}
+                                    placeholder="Search greetings by sender, recipient, occasion, or Gmail..."
+                                    className="pl-11 bg-slate-900/60 border-slate-800 text-slate-100 rounded-xl focus:border-indigo-500 focus:ring-indigo-500/20"
+                                />
+                            </div>
+
+                            {/* Batch Selection Controls */}
+                            <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => toggleSelectAllWishes(filteredGreetings)}
+                                    className="bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800 rounded-xl text-xs font-semibold flex items-center gap-2"
+                                >
+                                    {filteredGreetings.length > 0 && filteredGreetings.every(g => selectedWishIds.has(g.id)) ? (
+                                        <>
+                                            <CheckSquare className="w-4 h-4 text-indigo-400" />
+                                            Deselect All
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Square className="w-4 h-4 text-slate-500" />
+                                            Select All ({filteredGreetings.length})
+                                        </>
+                                    )}
+                                </Button>
+
+                                {selectedWishIds.size > 0 && (
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => setWishIdsToDelete(Array.from(selectedWishIds))}
+                                        className="bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-rose-500/20 animate-pulse"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        Delete Selected ({selectedWishIds.size})
+                                    </Button>
+                                )}
+                            </div>
                         </div>
 
                         {/* Greetings List */}
@@ -691,16 +896,32 @@ export default function AdminPage() {
                             ) : (
                                 filteredGreetings.slice(0, visibleGreetingsCount).map(g => {
                                     const isExpanded = activeGreetingId === g.id;
+                                    const isSelected = selectedWishIds.has(g.id);
                                     const greetingUrl = `${window.location.origin}/digital-greeting/${g.slug}`;
+                                    const userEmail = profiles.find(p => p.id === g.user_id)?.email || null;
 
                                     return (
                                         <Card 
                                             key={g.id}
-                                            className={`bg-slate-900/20 border-slate-900/80 hover:border-indigo-500/20 transition-all rounded-2xl overflow-hidden ${isExpanded ? 'border-indigo-500/30 bg-slate-900/30 shadow-lg' : ''}`}
+                                            className={`bg-slate-900/20 border-slate-900/80 hover:border-indigo-500/20 transition-all rounded-2xl overflow-hidden relative ${
+                                                isSelected ? 'border-indigo-500/60 bg-indigo-950/20 shadow-lg' : isExpanded ? 'border-indigo-500/30 bg-slate-900/30 shadow-lg' : ''
+                                            }`}
                                         >
                                             <div className="p-5 flex flex-col justify-between h-full gap-4">
                                                 <div className="flex justify-between items-start gap-4">
                                                     <div className="flex items-center gap-3">
+                                                        {/* Checkbox for batch select */}
+                                                        <div 
+                                                            onClick={(e) => { e.stopPropagation(); toggleSelectWish(g.id); }}
+                                                            className="flex items-center justify-center p-1 cursor-pointer"
+                                                        >
+                                                            <Checkbox
+                                                                checked={isSelected}
+                                                                onCheckedChange={() => toggleSelectWish(g.id)}
+                                                                className="border-indigo-500/50 data-[state=checked]:bg-indigo-500 data-[state=checked]:text-white w-5 h-5 rounded-md"
+                                                            />
+                                                        </div>
+
                                                         <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0 text-xl">
                                                             {g.sender_avatar || '🎁'}
                                                         </div>
@@ -711,11 +932,35 @@ export default function AdminPage() {
                                                             <p className="text-xs text-slate-400 font-semibold mt-0.5">
                                                                 Relationship: <strong className="text-slate-300 font-bold">{g.relationship}</strong>
                                                             </p>
-                                                            <p className="text-xs text-slate-400 font-semibold mt-0.5">
-                                                                Account Email: <strong className="text-indigo-400 font-bold">{profiles.find(p => p.id === g.user_id)?.email || 'Anonymous / Guest'}</strong>
-                                                            </p>
+                                                            <div className="flex items-center gap-1.5 mt-1">
+                                                                <span className="text-xs text-slate-400 font-semibold">Account Gmail:</span>
+                                                                {userEmail ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => inspectGmail(userEmail)}
+                                                                        className="text-xs font-bold text-indigo-400 hover:text-indigo-300 hover:underline flex items-center gap-1 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full"
+                                                                        title="Inspect this Gmail gallery & wishes"
+                                                                    >
+                                                                        <Mail className="w-3 h-3" />
+                                                                        {userEmail}
+                                                                    </button>
+                                                                ) : (
+                                                                    <span className="text-xs text-slate-500 italic">Anonymous / Guest</span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
+
+                                                    {/* Individual Delete Button */}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => setWishIdsToDelete([g.id])}
+                                                        className="h-8 w-8 text-rose-400/70 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg flex-shrink-0 transition-colors"
+                                                        title="Delete this wish"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
                                                 </div>
 
                                                 <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-wider">
@@ -863,6 +1108,328 @@ export default function AdminPage() {
                         </div>
                     </TabsContent>
 
+                    {/* Gmail & Gallery Inspector Tab */}
+                    <TabsContent value="gmail-inspector" className="space-y-6">
+                        {/* Search Card */}
+                        <Card className="bg-slate-900/40 border-slate-900 rounded-[1.5rem] p-6 space-y-5">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-900 pb-4">
+                                <div>
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <Mail className="w-5 h-5 text-rose-500" />
+                                        Gmail & User Gallery Inspector
+                                    </h3>
+                                    <p className="text-slate-400 text-xs mt-1">
+                                        Enter a user Gmail address to view their gallery pictures, wishes, and delete wishes.
+                                    </p>
+                                </div>
+                                {allKnownGmails.length > 0 && (
+                                    <span className="text-xs font-bold text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
+                                        {allKnownGmails.length} Registered Gmails
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Gmail Input & Suggestions */}
+                            <div className="space-y-3 max-w-2xl">
+                                <form 
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        if (gmailSearchInput.trim()) {
+                                            setActiveInspectorGmail(gmailSearchInput.trim());
+                                        }
+                                    }}
+                                    className="flex flex-col sm:flex-row gap-3"
+                                >
+                                    <div className="relative flex-1">
+                                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
+                                        <Input
+                                            type="email"
+                                            list="gmail-suggestions"
+                                            value={gmailSearchInput}
+                                            onChange={(e) => setGmailSearchInput(e.target.value)}
+                                            placeholder="Enter user Gmail (e.g. user@gmail.com)..."
+                                            className="pl-11 bg-slate-950/60 border-slate-800 text-slate-100 rounded-xl focus:border-rose-500 focus:ring-rose-500/20 text-sm"
+                                        />
+                                        <datalist id="gmail-suggestions">
+                                            {allKnownGmails.map(email => (
+                                                <option key={email} value={email} />
+                                            ))}
+                                        </datalist>
+                                    </div>
+                                    <Button
+                                        type="submit"
+                                        className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-bold rounded-xl px-6 py-2.5 text-sm shadow-md transition-all flex items-center gap-2"
+                                    >
+                                        <Search className="w-4 h-4" />
+                                        Inspect Gmail
+                                    </Button>
+                                </form>
+
+                                {/* Quick Email Badges */}
+                                {allKnownGmails.length > 0 && (
+                                    <div className="space-y-1.5 pt-1">
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Known User Gmails:</span>
+                                        <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1">
+                                            {allKnownGmails.map(email => (
+                                                <button
+                                                    key={email}
+                                                    type="button"
+                                                    onClick={() => inspectGmail(email)}
+                                                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-all ${
+                                                        activeInspectorGmail.toLowerCase() === email.toLowerCase()
+                                                            ? 'bg-rose-500/20 text-rose-300 border-rose-500/50 shadow-sm'
+                                                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                                                    }`}
+                                                >
+                                                    {email}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </Card>
+
+                        {/* Inspected User View */}
+                        {!activeInspectorGmail.trim() ? (
+                            <div className="text-center py-16 bg-slate-900/20 rounded-[2rem] border border-slate-900 space-y-3">
+                                <Mail className="w-12 h-12 text-slate-600 mx-auto" />
+                                <h3 className="font-bold text-lg text-slate-400">No Gmail inspected yet</h3>
+                                <p className="text-slate-500 text-sm max-w-md mx-auto">
+                                    Type a Gmail address above or click any known user Gmail badge to inspect their gallery photos and wishes.
+                                </p>
+                            </div>
+                        ) : !inspectedUserData ? (
+                            <div className="text-center py-16 bg-slate-900/20 rounded-[2rem] border border-slate-900">
+                                <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
+                                <h3 className="font-bold text-lg text-slate-300">No records found for "{activeInspectorGmail}"</h3>
+                                <p className="text-slate-500 text-sm mt-1">Make sure the Gmail address is spelled correctly.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-8">
+                                {/* Summary Header Banner */}
+                                <div className="bg-gradient-to-r from-rose-950/40 via-purple-950/30 to-slate-900/40 border border-rose-500/20 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+                                                Inspecting User
+                                            </span>
+                                            <h2 className="text-2xl font-extrabold text-white">{inspectedUserData.email}</h2>
+                                        </div>
+                                        <p className="text-xs text-slate-400 font-medium">
+                                            User ID: <code className="text-slate-300 font-bold bg-slate-900 px-2 py-0.5 rounded">{inspectedUserData.userId || 'Guest / Unregistered'}</code>
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-xs font-bold">
+                                        <div className="bg-slate-900/80 border border-slate-800 px-4 py-2.5 rounded-xl text-center">
+                                            <span className="text-slate-400 block text-[10px] uppercase">Gallery Photos</span>
+                                            <span className="text-xl font-extrabold text-pink-400">{inspectedUserData.galleryPictures.length}</span>
+                                        </div>
+                                        <div className="bg-slate-900/80 border border-slate-800 px-4 py-2.5 rounded-xl text-center">
+                                            <span className="text-slate-400 block text-[10px] uppercase">Total Wishes</span>
+                                            <span className="text-xl font-extrabold text-indigo-400">{inspectedUserData.userWishes.length}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Section 1: Gallery Pictures */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-lg font-extrabold text-white flex items-center gap-2">
+                                            <ImageIcon className="w-5 h-5 text-pink-500" />
+                                            Gallery Pictures ({inspectedUserData.galleryPictures.length})
+                                        </h3>
+                                    </div>
+
+                                    {inspectedUserData.galleryPictures.length === 0 ? (
+                                        <div className="text-center py-12 bg-slate-900/20 rounded-2xl border border-slate-900">
+                                            <ImageIcon className="w-10 h-10 text-slate-700 mx-auto mb-2" />
+                                            <p className="text-sm text-slate-500 font-semibold">No gallery pictures found for this Gmail.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                            {inspectedUserData.galleryPictures.map((pic) => (
+                                                <Card 
+                                                    key={pic.id}
+                                                    className="bg-slate-900/30 border-slate-900 rounded-xl overflow-hidden group hover:border-pink-500/30 transition-all"
+                                                >
+                                                    <div className="relative aspect-square w-full bg-slate-950 flex items-center justify-center overflow-hidden">
+                                                        <img 
+                                                            src={pic.url} 
+                                                            alt="Gallery"
+                                                            className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-300"
+                                                            loading="lazy"
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                                                            <Button
+                                                                variant="secondary"
+                                                                size="icon"
+                                                                onClick={() => copyText(pic.url, 'Picture URL')}
+                                                                className="h-8 w-8 bg-slate-900 text-white rounded-lg"
+                                                                title="Copy URL"
+                                                            >
+                                                                <Copy className="w-3.5 h-3.5" />
+                                                            </Button>
+                                                            <a 
+                                                                href={pic.url} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer"
+                                                                className="h-8 w-8 bg-pink-500 text-white rounded-lg flex items-center justify-center shadow-md"
+                                                                title="Open original"
+                                                            >
+                                                                <ExternalLink className="w-3.5 h-3.5" />
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-2.5 text-[10px] text-slate-400 font-semibold flex justify-between items-center bg-slate-950/60 border-t border-slate-900">
+                                                        <span className="truncate max-w-[80px]" title={pic.source}>{pic.source}</span>
+                                                        <span>{pic.created_at ? new Date(pic.created_at).toLocaleDateString() : ''}</span>
+                                                    </div>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Section 2: Wishes */}
+                                <div className="space-y-4">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-900">
+                                        <h3 className="text-lg font-extrabold text-white flex items-center gap-2">
+                                            <Gift className="w-5 h-5 text-indigo-500" />
+                                            Wishes Created ({inspectedUserData.userWishes.length})
+                                        </h3>
+
+                                        {/* Selection & Batch Delete Controls */}
+                                        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => toggleSelectAllWishes(inspectedUserData.userWishes)}
+                                                className="bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800 rounded-xl text-xs font-semibold flex items-center gap-2"
+                                            >
+                                                {inspectedUserData.userWishes.length > 0 && inspectedUserData.userWishes.every(w => selectedWishIds.has(w.id)) ? (
+                                                    <>
+                                                        <CheckSquare className="w-4 h-4 text-indigo-400" />
+                                                        Deselect All
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Square className="w-4 h-4 text-slate-500" />
+                                                        Select All ({inspectedUserData.userWishes.length})
+                                                    </>
+                                                )}
+                                            </Button>
+
+                                            {inspectedUserData.userWishes.some(w => selectedWishIds.has(w.id)) && (
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        const userSelectedIds = inspectedUserData.userWishes.map(w => w.id).filter(id => selectedWishIds.has(id));
+                                                        setWishIdsToDelete(userSelectedIds);
+                                                    }}
+                                                    className="bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-lg shadow-rose-500/20"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    Delete Selected Wishes
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {inspectedUserData.userWishes.length === 0 ? (
+                                        <div className="text-center py-12 bg-slate-900/20 rounded-2xl border border-slate-900">
+                                            <Gift className="w-10 h-10 text-slate-700 mx-auto mb-2" />
+                                            <p className="text-sm text-slate-500 font-semibold">No wishes websites created by this Gmail user yet.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {inspectedUserData.userWishes.map((w) => {
+                                                const isSelected = selectedWishIds.has(w.id);
+                                                const greetingUrl = `${window.location.origin}/digital-greeting/${w.slug}`;
+
+                                                return (
+                                                    <Card 
+                                                        key={w.id}
+                                                        className={`bg-slate-900/20 border-slate-900/80 hover:border-indigo-500/30 transition-all rounded-2xl overflow-hidden p-5 flex flex-col justify-between gap-4 ${
+                                                            isSelected ? 'border-indigo-500/60 bg-indigo-950/20 shadow-lg' : ''
+                                                        }`}
+                                                    >
+                                                        <div className="flex justify-between items-start gap-3">
+                                                            <div className="flex items-center gap-3">
+                                                                <div 
+                                                                    onClick={() => toggleSelectWish(w.id)}
+                                                                    className="cursor-pointer p-1"
+                                                                >
+                                                                    <Checkbox
+                                                                        checked={isSelected}
+                                                                        onCheckedChange={() => toggleSelectWish(w.id)}
+                                                                        className="border-indigo-500/50 data-[state=checked]:bg-indigo-500 data-[state=checked]:text-white w-5 h-5 rounded-md"
+                                                                    />
+                                                                </div>
+                                                                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0 text-xl">
+                                                                    {w.sender_avatar || '🎁'}
+                                                                </div>
+                                                                <div>
+                                                                    <h4 className="font-bold text-white text-base">
+                                                                        {w.sender_name} ➔ {w.recipient_name}
+                                                                    </h4>
+                                                                    <p className="text-xs text-slate-400 font-medium">
+                                                                        Occasion: <strong className="text-slate-200 font-semibold">{w.occasion}</strong>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => setWishIdsToDelete([w.id])}
+                                                                className="h-8 w-8 text-rose-400/70 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg flex-shrink-0"
+                                                                title="Delete this wish"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
+
+                                                        <div className="bg-slate-950/40 border border-slate-900 rounded-xl p-3 text-xs text-slate-300 font-medium leading-relaxed max-h-24 overflow-y-auto whitespace-pre-wrap">
+                                                            {w.message}
+                                                        </div>
+
+                                                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-900 text-xs text-slate-400">
+                                                            <span className="text-[10px] font-bold uppercase bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-full">
+                                                                Theme: {w.theme}
+                                                            </span>
+                                                            <div className="flex items-center gap-2">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={() => copyText(greetingUrl, 'Wishes Website URL')}
+                                                                    className="h-7 w-7 bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 rounded-md"
+                                                                    title="Copy Link"
+                                                                >
+                                                                    <Copy className="w-3.5 h-3.5" />
+                                                                </Button>
+                                                                <a 
+                                                                    href={greetingUrl}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="h-7 bg-indigo-600 hover:bg-indigo-700 text-[11px] font-bold text-white flex items-center gap-1 rounded-md px-2.5 py-0.5 transition-all shadow-sm"
+                                                                >
+                                                                    <ExternalLink className="w-3 h-3" />
+                                                                    Visit
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </Card>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </TabsContent>
+
                     {/* R2 Images Tab */}
                     <TabsContent value="r2-images" className="space-y-6">
                         {/* Search and Summary */}
@@ -946,12 +1513,20 @@ export default function AdminPage() {
                                                 <div className="p-4 space-y-2.5 flex-1 flex flex-col justify-between">
                                                     <div className="space-y-1.5">
                                                         <div className="flex justify-between items-start gap-2">
-                                                            <span 
-                                                                className="text-[10px] font-bold text-pink-400 uppercase tracking-wider bg-pink-500/10 border border-pink-500/20 px-2.5 py-1 rounded-full truncate max-w-[70%]" 
-                                                                title={img.email || img.userId || 'Guest Upload'}
-                                                            >
-                                                                👤 {img.email || 'Direct Upload'}
-                                                            </span>
+                                                            {img.email ? (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => inspectGmail(img.email!)}
+                                                                    className="text-[10px] font-bold text-pink-400 uppercase tracking-wider bg-pink-500/10 border border-pink-500/20 px-2.5 py-1 rounded-full truncate max-w-[70%] hover:underline"
+                                                                    title="Inspect Gmail Gallery"
+                                                                >
+                                                                    👤 {img.email}
+                                                                </button>
+                                                            ) : (
+                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-900 border border-slate-800 px-2 py-0.5 rounded-full">
+                                                                    Direct Upload
+                                                                </span>
+                                                            )}
                                                             <span className="text-[10px] text-slate-400 font-bold bg-slate-900/60 px-2 py-0.5 rounded border border-slate-900 whitespace-nowrap">
                                                                 {formatBytes(img.size)}
                                                             </span>
@@ -1001,6 +1576,54 @@ export default function AdminPage() {
                     </TabsContent>
                 </Tabs>
             </div>
+
+            {/* Delete Wishes Confirmation Dialog */}
+            <Dialog open={!!wishIdsToDelete} onOpenChange={(open) => { if (!open) setWishIdsToDelete(null); }}>
+                <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 rounded-2xl max-w-md p-6">
+                    <DialogHeader className="space-y-2">
+                        <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center justify-center text-rose-400 mx-auto sm:mx-0">
+                            <AlertTriangle className="w-6 h-6" />
+                        </div>
+                        <DialogTitle className="text-xl font-bold text-white">
+                            Confirm Delete {wishIdsToDelete?.length || 0} Wish(es)?
+                        </DialogTitle>
+                        <DialogDescription className="text-slate-400 text-sm">
+                            Are you sure you want to permanently delete {wishIdsToDelete?.length === 1 ? 'this wish website' : `these ${wishIdsToDelete?.length} wish websites`}? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setWishIdsToDelete(null)}
+                            disabled={isDeletingWishes}
+                            className="bg-slate-950 border-slate-800 text-slate-300 hover:bg-slate-800 rounded-xl"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                if (wishIdsToDelete) handleDeleteWishes(wishIdsToDelete);
+                            }}
+                            disabled={isDeletingWishes}
+                            className="bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl flex items-center gap-2"
+                        >
+                            {isDeletingWishes ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="w-4 h-4" />
+                                    Delete Permanently
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
