@@ -591,6 +591,39 @@ export default function WishesDashboardClient({ user, greetings }: Props) {
 
       {/* Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Custom Wishes Website Banner */}
+        <div className="mb-8 bg-gradient-to-r from-[#110f0f] via-[#241f1e] to-[#110f0f] rounded-[24px] p-6 text-white border border-[#d4c3ab] shadow-md relative overflow-hidden">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative z-10">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#25d366]/20 border border-[#25d366]/40 flex items-center justify-center shrink-0 text-[#25d366] shadow-sm">
+                <MessageCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="bg-[#25d366] text-black text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider">
+                    Custom Order
+                  </span>
+                  <h2 className="text-xl font-bold font-heading text-[#eedfc6]">
+                    Custom Wishes Website is Available!
+                  </h2>
+                </div>
+                <p className="text-sm text-gray-300 max-w-2xl leading-relaxed">
+                  Want a unique, 100% personalized wishes website with custom animations, photos, music, and tailored themes? Contact us directly on WhatsApp to get your custom website designed!
+                </p>
+              </div>
+            </div>
+            <a
+              href="https://wa.me/918499989032?text=Hi%2C%20I%20am%20interested%20in%20a%20Custom%20Wishes%20Website!"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 flex items-center gap-2.5 bg-[#25d366] hover:bg-[#20ba56] text-white font-bold text-sm px-6 py-3 rounded-full transition-all shadow-md hover:scale-[1.02] w-full md:w-auto justify-center font-heading"
+            >
+              <MessageCircle className="w-5 h-5 fill-current" />
+              <span>Contact on WhatsApp (+91 8499989032)</span>
+            </a>
+          </div>
+        </div>
+
         {activeTab === 'plan' ? (
           /* ── My Plan Tab ── */
           <div className="max-w-4xl mx-auto">

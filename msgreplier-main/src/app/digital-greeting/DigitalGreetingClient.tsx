@@ -16,6 +16,7 @@ import {
   Layers,
   Image as ImageIcon,
   MessageSquare,
+  MessageCircle,
   Menu,
   X,
   Music,
@@ -77,6 +78,7 @@ function IframeTemplate({ greeting, templateFolder }: { greeting: any; templateF
 
 function TypingBanner() {
   const phrases = [
+    "CUSTOM WISHES WEBSITES IS AVAILABLE! CONTACT US ON WHATSAPP: +91 8499989032",
     "WISHES WEBSITE AND LOVE SPACE ARE TWO DIFFERENT SERVICES GIVEN BY MSGREPLIER.",
     "THE LOGIN TO THE WISHES WEBSITE IS ONLY APPLY TO THE WISHES WEBSITE NOT APPLY TO THE LOVE SPACE."
   ];
@@ -165,6 +167,7 @@ export default function ImmersiveWishesLanding() {
   const fallbackRef = useRef<HTMLSpanElement>(null);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showTopBanner, setShowTopBanner] = useState(true);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -720,6 +723,46 @@ export default function ImmersiveWishesLanding() {
   return (
     <div className="l4u-body relative min-h-screen bg-[#faf9fa] text-[#1a1c1d] font-body selection:bg-[#ffd1dc] overflow-x-hidden">
 
+      {/* Top Dismissible Announcement Banner */}
+      <AnimatePresence>
+        {showTopBanner && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="w-full bg-[#110f0f] text-white text-xs md:text-sm py-2.5 px-4 flex items-center justify-between gap-3 border-b border-[#78555e]/40 relative z-30 shadow-sm"
+          >
+            <div className="flex items-center gap-2.5 mx-auto flex-wrap justify-center text-center">
+              <span className="bg-[#25d366] text-black text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wider">
+                CUSTOM ORDER
+              </span>
+              <span className="font-bold text-[#eedfc6]">
+                Custom Wishes Websites is Available!
+              </span>
+              <span className="hidden md:inline text-gray-300">
+                Get a 100% personalized website built for your special occasion.
+              </span>
+              <a
+                href="https://wa.me/918499989032?text=Hi%2C%20I%20am%20interested%20in%20a%20Custom%20Wishes%20Website!"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 bg-[#25d366] hover:bg-[#20ba56] text-white text-xs font-bold px-3 py-1 rounded-full transition-all ml-1 shadow-xs hover:scale-105"
+              >
+                <MessageCircle className="w-3.5 h-3.5 fill-current" />
+                <span>WhatsApp (+91 8499989032)</span>
+              </a>
+            </div>
+            <button
+              onClick={() => setShowTopBanner(false)}
+              aria-label="Close banner"
+              className="p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Dynamic Background drifting gradients */}
       <div className="l4u-background" aria-hidden="true">
         <span className="l4u-blob l4u-blob-a"></span>
@@ -740,7 +783,7 @@ export default function ImmersiveWishesLanding() {
         </section>
 
         {/* Hero Section */}
-        <section className="mx-auto w-full max-w-7xl px-4 pt-10 md:px-8">
+        <section className="mx-auto w-full max-w-7xl px-4 pt-6 md:px-8">
           <div className="l4u-landing-hero p-8 text-center md:p-14">
             <h1 className="font-headline text-4xl font-extrabold leading-[1.08] tracking-tight text-[#1a1c1d] md:text-7xl">
               <span ref={mountRef} id="heroMorphWord" className="block l4u-gradient-word-morph" aria-label="Digitally">

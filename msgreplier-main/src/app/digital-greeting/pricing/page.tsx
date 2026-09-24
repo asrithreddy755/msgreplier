@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, X, Star, Shield, RefreshCw, Mail, Zap, Crown, Gift } from "lucide-react";
+import { Check, X, Star, Shield, RefreshCw, Mail, Zap, Crown, Gift, MessageCircle } from "lucide-react";
 import Script from "next/script";
 
 // ─────────────────────────────────────────────
@@ -262,6 +262,37 @@ export default function DigitalGreetingPricingPage() {
 
         <section className="py-10 px-4">
           <div className="container mx-auto max-w-6xl">
+
+            {/* ─── Custom Wishes Website Banner ──────────────────── */}
+            <div className="mb-10 bg-gradient-to-r from-[#110f0f] via-[#2d2929] to-[#110f0f] border border-[#d4c3ab] rounded-[24px] p-6 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
+              <div className="flex items-start gap-4 relative z-10">
+                <div className="w-12 h-12 rounded-2xl bg-[#25d366]/20 border border-[#25d366]/40 flex items-center justify-center shrink-0 text-[#25d366] shadow-sm">
+                  <MessageCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="bg-[#25d366] text-black text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full tracking-wider">
+                      Custom Order
+                    </span>
+                    <h2 className="text-xl font-bold font-heading text-[#eedfc6]">
+                      Custom Wishes Websites is Available!
+                    </h2>
+                  </div>
+                  <p className="text-sm text-gray-300 max-w-xl leading-relaxed">
+                    Need a 100% custom-designed wishes website crafted specifically for your event, love story, or celebration? Get in touch with us on WhatsApp for custom orders.
+                  </p>
+                </div>
+              </div>
+              <a
+                href="https://wa.me/918499989032?text=Hi%2C%20I%20am%20interested%20in%20a%20Custom%20Wishes%20Website!"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-shrink-0 flex items-center gap-2 bg-[#25d366] hover:bg-[#20ba56] text-white font-bold text-sm px-6 py-3 rounded-full transition-all shadow-md hover:scale-[1.02] w-full md:w-auto justify-center font-heading relative z-10"
+              >
+                <MessageCircle className="w-5 h-5 fill-current" />
+                <span>WhatsApp Us (+91 8499989032)</span>
+              </a>
+            </div>
 
             {/* ─── Billing Toggle ──────────────────────────────── */}
             <div className="flex justify-center mb-12">

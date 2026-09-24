@@ -36,8 +36,8 @@ export function Footer() {
             </p>
 
             <Link 
-              href="/love-space"
-              className="font-heading font-medium text-xs bg-white text-black hover:bg-[#eedfc6] px-5 py-3 rounded-full transition-all duration-300 uppercase tracking-wider block"
+              href="/digital-greeting"
+              className="font-heading font-medium text-xs bg-white text-black hover:bg-[#eedfc6] px-5 py-3 rounded-full transition-all duration-300 uppercase tracking-wider block text-center"
             >
               Get Started
             </Link>

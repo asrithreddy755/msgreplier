@@ -97,8 +97,7 @@ export function Navbar() {
           
           <div className="flex items-center gap-2 ml-2">
             <Link 
-              href="/love-space"
-              target="_blank"
+              href="/digital-greeting"
               className="font-heading font-medium text-xs bg-[#110f0f] text-white hover:bg-[#eedfc6] hover:text-[#110f0f] border border-transparent hover:border-[#d4c3ab] dark:bg-white dark:text-black dark:hover:bg-[#110f0f] dark:hover:text-white px-5 py-2.5 rounded-full transition-all duration-300 uppercase tracking-wider"
             >
               Get Started
@@ -192,8 +191,7 @@ export function Navbar() {
               Contact
             </Link>
             <Link
-              href="/love-space"
-              target="_blank"
+              href="/digital-greeting"
               onClick={() => setIsOpen(false)}
               className="font-heading font-medium text-xs bg-[#110f0f] text-white text-center py-3 rounded-full uppercase tracking-wider block"
             >
