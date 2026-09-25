@@ -22,6 +22,42 @@ const nextConfig = {
         destination: '/terms-conditions',
         permanent: true,
       },
+      // These used to be served by the old src/app/[platform] catch-all route,
+      // which rendered byte-for-byte identical content (same H1, same "seo-content"
+      // copy) for every platform, only swapping the <title>/<meta description>.
+      // Google/AdSense treats that as thin, duplicate/doorway content. The
+      // dedicated /text-repeater page now covers every platform via its own
+      // in-page selector, so these old URLs just redirect there.
+      {
+        source: '/instagram-text-repeater',
+        destination: '/text-repeater',
+        permanent: true,
+      },
+      {
+        source: '/whatsapp-text-repeater',
+        destination: '/text-repeater',
+        permanent: true,
+      },
+      {
+        source: '/facebook-text-repeater',
+        destination: '/text-repeater',
+        permanent: true,
+      },
+      {
+        source: '/telegram-text-repeater',
+        destination: '/text-repeater',
+        permanent: true,
+      },
+      {
+        source: '/youtube-text-repeater',
+        destination: '/text-repeater',
+        permanent: true,
+      },
+      {
+        source: '/x-text-repeater',
+        destination: '/text-repeater',
+        permanent: true,
+      },
     ];
   },
   async headers() {
