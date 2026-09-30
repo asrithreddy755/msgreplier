@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 export function middleware(request: Request) {
   const url = new URL(request.url);
 
-
   // If a code parameter is present in the URL (e.g. from Google OAuth fallback redirect)
   // and we are not on the callback route, redirect to `/auth/callback` to exchange it.
   const code = url.searchParams.get('code');
@@ -13,16 +12,19 @@ export function middleware(request: Request) {
     return NextResponse.redirect(callbackUrl);
   }
 
-  const headers = new Headers(request.headers);
-  headers.set('x-url', url.pathname);
-
-  return NextResponse.next({
-    request: {
-      headers: headers,
-    },
-  });
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt
+     * - static files (.webp, .png, .jpg, .svg, .mp3, etc.)
+     */
+    '/((?!_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt|.*\\.(?:webp|png|jpg|jpeg|gif|svg|mp3|ico|txt)$).*)',
+  ],
 };
+

@@ -128,7 +128,7 @@ export async function POST(request: Request) {
           .select('id, email');
         
         if (!profilesError && profiles) {
-          profiles.forEach((profile) => {
+          profiles.forEach((profile: any) => {
             profilesMap.set(profile.id, profile.email);
           });
         }

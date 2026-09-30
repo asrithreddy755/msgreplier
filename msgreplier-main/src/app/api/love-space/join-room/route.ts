@@ -48,7 +48,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Room is full! Only 2 people allowed.' }, { status: 403 });
         }
 
-        if (existingMembers?.some(m => m.nickname.toLowerCase() === nickname.toLowerCase())) {
+        if (existingMembers?.some((m: any) => m.nickname.toLowerCase() === nickname.toLowerCase())) {
             return NextResponse.json({ error: 'That name is already taken in this room.' }, { status: 400 });
         }
 

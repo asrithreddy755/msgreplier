@@ -14,32 +14,32 @@ export const getEnvStatus = () => {
     };
 };
 
+let cachedAdminClient: any = null;
+let cachedKey = "";
+
 export const getSupabaseAdmin = () => {
     const { supabaseUrl, supabaseServiceKey, supabaseAnonKey, hasSupabaseUrl, hasServiceRoleKey, hasAnonKey } = getEnvStatus();
     if (!hasSupabaseUrl) {
         return { client: null, envStatus: { hasSupabaseUrl, hasServiceRoleKey } };
     }
-    if (hasServiceRoleKey) {
-        return {
-            client: createClient(supabaseUrl, supabaseServiceKey, {
-                auth: {
-                    autoRefreshToken: false,
-                    persistSession: false
-                }
-            }),
-            envStatus: { hasSupabaseUrl, hasServiceRoleKey }
-        };
+
+    const key = supabaseServiceKey || supabaseAnonKey;
+    if (!key) {
+        return { client: null, envStatus: { hasSupabaseUrl, hasServiceRoleKey } };
     }
-    if (hasAnonKey) {
-        return {
-            client: createClient(supabaseUrl, supabaseAnonKey, {
-                auth: {
-                    autoRefreshToken: false,
-                    persistSession: false
-                }
-            }),
-            envStatus: { hasSupabaseUrl, hasServiceRoleKey }
-        };
+
+    if (cachedAdminClient && cachedKey === key) {
+        return { client: cachedAdminClient, envStatus: { hasSupabaseUrl, hasServiceRoleKey } };
     }
-    return { client: null, envStatus: { hasSupabaseUrl, hasServiceRoleKey } };
+
+    cachedAdminClient = createClient(supabaseUrl, key, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    });
+    cachedKey = key;
+
+    return { client: cachedAdminClient, envStatus: { hasSupabaseUrl, hasServiceRoleKey } };
 };
+
