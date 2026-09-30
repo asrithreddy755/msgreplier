@@ -2,12 +2,12 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Heart, 
-  ChevronRight, 
-  ChevronLeft, 
-  Sparkles, 
-  Gem, 
+import {
+  Heart,
+  ChevronRight,
+  ChevronLeft,
+  Sparkles,
+  Gem,
   Users,
   User,
   Share2,
@@ -152,10 +152,10 @@ export default function LoveLetterCreate() {
                     </h2>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-600">Recipient's Name</label>
-                      <Input 
-                        placeholder="e.g. Sarah" 
+                      <Input
+                        placeholder="e.g. Sarah"
                         value={formData.recipient_name}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, recipient_name: e.target.value})}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, recipient_name: e.target.value })}
                         className="border-rose-100 focus-visible:ring-rose-400"
                       />
                     </div>
@@ -168,7 +168,7 @@ export default function LoveLetterCreate() {
                             key={rel.value}
                             variant={formData.relationship === rel.value ? "default" : "outline"}
                             className={`justify-start ${formData.relationship === rel.value ? 'bg-rose-500 hover:bg-rose-600' : 'border-rose-100 text-slate-600'}`}
-                            onClick={() => setFormData({...formData, relationship: rel.value})}
+                            onClick={() => setFormData({ ...formData, relationship: rel.value })}
                           >
                             {rel.label}
                           </Button>
@@ -184,24 +184,24 @@ export default function LoveLetterCreate() {
                             key={occ.value}
                             variant={formData.occasion === occ.value ? "default" : "outline"}
                             className={`justify-start ${formData.occasion === occ.value ? 'bg-rose-500 hover:bg-rose-600' : 'border-rose-100 text-slate-600'}`}
-                            onClick={() => setFormData({...formData, occasion: occ.value})}
+                            onClick={() => setFormData({ ...formData, occasion: occ.value })}
                           >
                             {occ.label}
                           </Button>
                         ))}
                       </div>
                       {formData.occasion === "Custom" && (
-                        <Input 
-                          placeholder="What's the occasion?" 
+                        <Input
+                          placeholder="What's the occasion?"
                           value={formData.custom_occasion}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, custom_occasion: e.target.value})}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, custom_occasion: e.target.value })}
                           className="mt-2 border-rose-100 focus-visible:ring-rose-400"
                         />
                       )}
                     </div>
                   </div>
 
-                  <Button 
+                  <Button
                     className="w-full bg-rose-500 hover:bg-rose-600 text-white shadow-lg"
                     onClick={nextStep}
                     disabled={!formData.recipient_name}
@@ -224,7 +224,7 @@ export default function LoveLetterCreate() {
                     <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
                       <Heart className="w-5 h-5 text-rose-500" /> Write your heart out
                     </h2>
-                    
+
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
                         <label className="text-sm font-medium text-slate-600">Personal Note</label>
@@ -232,12 +232,12 @@ export default function LoveLetterCreate() {
                           {formData.message.length}/500
                         </span>
                       </div>
-                      <Textarea 
-                        placeholder="Write something sweet..." 
+                      <Textarea
+                        placeholder="Write something sweet..."
                         className="min-h-[150px] border-rose-100 focus-visible:ring-rose-400"
                         maxLength={500}
                         value={formData.message}
-                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({...formData, message: e.target.value})}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, message: e.target.value })}
                       />
                     </div>
 
@@ -247,12 +247,11 @@ export default function LoveLetterCreate() {
                         {THEMES.map((t) => (
                           <button
                             key={t.id}
-                            onClick={() => setFormData({...formData, theme: t.id})}
-                            className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${
-                              formData.theme === t.id 
-                                ? 'border-rose-500 bg-rose-50 shadow-sm' 
+                            onClick={() => setFormData({ ...formData, theme: t.id })}
+                            className={`flex items-center gap-2 p-3 rounded-lg border transition-all ${formData.theme === t.id
+                                ? 'border-rose-500 bg-rose-50 shadow-sm'
                                 : 'border-slate-100 hover:border-rose-200'
-                            }`}
+                              }`}
                           >
                             <span className="text-xl">{t.icon}</span>
                             <span className="text-sm font-medium text-slate-700">{t.name}</span>
@@ -266,7 +265,7 @@ export default function LoveLetterCreate() {
                     <Button variant="outline" className="flex-1 border-rose-100" onClick={prevStep}>
                       <ChevronLeft className="mr-2 w-4 h-4" /> Back
                     </Button>
-                    <Button 
+                    <Button
                       className="flex-[2] bg-rose-500 hover:bg-rose-600 text-white shadow-lg"
                       onClick={nextStep}
                       disabled={!formData.message}
@@ -293,10 +292,10 @@ export default function LoveLetterCreate() {
 
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-600">Your Name (Sender)</label>
-                      <Input 
-                        placeholder="e.g. Michael" 
+                      <Input
+                        placeholder="e.g. Michael"
                         value={formData.sender_name}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({...formData, sender_name: e.target.value})}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, sender_name: e.target.value })}
                         className="border-rose-100 focus-visible:ring-rose-400"
                       />
                     </div>
@@ -307,12 +306,11 @@ export default function LoveLetterCreate() {
                         {AVATARS.map((avatar) => (
                           <button
                             key={avatar}
-                            onClick={() => setFormData({...formData, sender_avatar: avatar})}
-                            className={`w-12 h-12 flex items-center justify-center text-2xl rounded-full transition-all ${
-                              formData.sender_avatar === avatar 
-                                ? 'bg-rose-100 ring-2 ring-rose-400 scale-110' 
+                            onClick={() => setFormData({ ...formData, sender_avatar: avatar })}
+                            className={`w-12 h-12 flex items-center justify-center text-2xl rounded-full transition-all ${formData.sender_avatar === avatar
+                                ? 'bg-rose-100 ring-2 ring-rose-400 scale-110'
                                 : 'bg-slate-50 hover:bg-rose-50'
-                            }`}
+                              }`}
                           >
                             {avatar}
                           </button>
@@ -325,7 +323,7 @@ export default function LoveLetterCreate() {
                     <Button variant="outline" className="flex-1 border-rose-100" onClick={prevStep}>
                       <ChevronLeft className="mr-2 w-4 h-4" /> Back
                     </Button>
-                    <Button 
+                    <Button
                       className="flex-[2] bg-rose-500 hover:bg-rose-600 text-white shadow-lg"
                       onClick={handleGenerate}
                       disabled={!formData.sender_name || isGenerating}
@@ -367,14 +365,14 @@ export default function LoveLetterCreate() {
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-600">Shareable Link</label>
                       <div className="flex gap-2">
-                        <Input 
-                          readOnly 
+                        <Input
+                          readOnly
                           value={shareUrl}
                           className="bg-slate-50 border-rose-100"
                         />
-                        <Button 
-                          variant="outline" 
-                          size="icon" 
+                        <Button
+                          variant="outline"
+                          size="icon"
                           className="shrink-0 border-rose-100 text-rose-500"
                           onClick={copyLink}
                         >
@@ -384,13 +382,13 @@ export default function LoveLetterCreate() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <Button 
+                      <Button
                         onClick={shareWhatsApp}
                         className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2"
                       >
                         <MessageCircle className="w-4 h-4" /> WhatsApp
                       </Button>
-                      <Button 
+                      <Button
                         variant="outline"
                         asChild
                         className="border-rose-200 text-rose-600 hover:bg-rose-50"
@@ -403,8 +401,8 @@ export default function LoveLetterCreate() {
                   </div>
 
                   <div className="pt-4 border-t border-rose-100">
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className="w-full text-rose-400 hover:text-rose-500 hover:bg-rose-50"
                       onClick={() => {
                         setStep(1);
@@ -421,8 +419,8 @@ export default function LoveLetterCreate() {
         </Card>
 
         <div className="text-center">
-          <Link 
-            href="/love-space" 
+          <Link
+            href="/love-space"
             className="text-sm text-rose-400 hover:text-rose-500 flex items-center justify-center gap-1 transition-colors"
           >
             Also check out Love Space <ArrowRight className="w-3 h-3" />
@@ -434,16 +432,16 @@ export default function LoveLetterCreate() {
 }
 
 const ArrowRight = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width="24" 
-    height="24" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
     className={className}
   >
     <path d="M5 12h14" />
