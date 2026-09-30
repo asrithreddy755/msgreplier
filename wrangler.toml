@@ -1,0 +1,4 @@
+name = "msgreplier"
+pages_build_output_dir = "msgreplier-main/.open-next/assets"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
